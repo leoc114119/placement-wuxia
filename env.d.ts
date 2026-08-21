@@ -3,10 +3,11 @@ interface WxCanvas {
   width: number;
   height: number;
   getContext(type: '2d'): CanvasRenderingContext2D;
+  /** 微信小游戏主循环官方 API（全局无 requestAnimationFrame） */
+  requestAnimationFrame(callback: () => void): void;
 }
 
 declare const wx: {
   createCanvas(): WxCanvas;
 };
 
-declare function requestAnimationFrame(callback: () => void): number;

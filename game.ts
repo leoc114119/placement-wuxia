@@ -32,10 +32,10 @@ function main(): void {
       frames = 0;
       lastFpsLog = now;
     }
-    requestAnimationFrame(loop);
+    canvas.requestAnimationFrame(loop);
   }
 
-  requestAnimationFrame(loop);
+  canvas.requestAnimationFrame(loop);
 }
 
 main();

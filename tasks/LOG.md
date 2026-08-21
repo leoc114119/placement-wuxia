@@ -4,6 +4,8 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-21 20:48 | CodeBuddy | 📝 T02 热修 | appid→touristappid · 修复导入报错 |
+| 2026-08-21 20:50 | CodeBuddy → Leo | 🔬 C 环验收 T02 | PASS（工程三绿+禁区干净）· 待 Leo 微信开发者工具 L 环点验 |
 | 2026-08-21 20:40 | ZCode → CodeBuddy | 🤝 领单 T02 | working/T02.md · 状态进行中 · 开始施工 |
 | 2026-08-21 20:42 | ZCode → CodeBuddy | 📦 交付 T02 | done/T02-done.md · typecheck/lint 0 error · git 5e819ba · 待 C 环验收 |
 | 2026-08-21 20:30 | CodeBuddy → ZCode | 📤 发单 T02《工程骨架》 | inbox/T02.md · 优先级 P0 · 无依赖 |
