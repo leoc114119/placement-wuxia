@@ -49,6 +49,13 @@
   .log th, .log td { text-align: left; padding: 5px 8px; border-bottom: 1px solid rgba(43,43,43,.08); }
   .log th { color: var(--ink2); font-weight: 600; }
   .refresh { float: right; font-size: 12px; color: var(--teal); cursor: pointer; }
+  .live { margin-top: 18px; background: #fffdf8; border: 1.5px solid var(--panel2); border-radius: 14px; padding: 14px 18px; }
+  .live h3 { font-size: 14px; margin-bottom: 4px; }
+  .live .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 6px; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:.25} }
+  .live ul { list-style: none; margin-top: 8px; max-height: 240px; overflow-y: auto; }
+  .live li { font-size: 12px; color: var(--ink2); padding: 4px 0; border-bottom: 1px dashed rgba(43,43,43,.08); font-family: ui-monospace, monospace; }
+  .live li b { color: var(--ink); }
 </style>
 </head>
 <body>
@@ -56,6 +63,11 @@
   <div class="sub">CodeBuddy ⇄ ZCode 任务箱实时视图 · 数据源 <b>tasks/index.json</b>（沟通记录存 tasks/threads/）· <span class="refresh" onclick="load()">↻ 刷新</span></div>
   <div class="board" id="board"></div>
   <div class="detail" id="detail"></div>
+  <div class="live" id="live">
+    <h3><span class="dot"></span>施工现场（ZCode 实时动态）</h3>
+    <div style="font-size:11px;color:#444">ZCode 进程运行中 · 文件系统变更每 5 秒同步</div>
+    <ul id="liveList"></ul>
+  </div>
   <div class="log">
     <h3>📜 全局沟通日志（LOG.md 摘要）</h3>
     <table id="logTable"><thead><tr><th>时间</th><th>方向</th><th>事件</th><th>详情</th></tr></thead><tbody></tbody></table>
@@ -151,6 +163,20 @@ function renderLog(events) {
 
 load();
 setInterval(load, 30000); // 30s 自动刷新
+setInterval(loadLive, 5000); // 5s 施工现场刷新
+async function loadLive() {
+  try {
+    const r = await fetch("tasks/live.json?t=" + Date.now());
+    const d = await r.json();
+    const box = document.getElementById("liveList");
+    if (!box) return;
+    document.querySelector(".live .dot").style.background = d.running ? "#7FB069" : "#B0A890";
+    document.querySelector(".live div[style]").textContent = d.running
+      ? "ZCode 进程运行中 · " + (d.summary || "")
+      : "ZCode 空闲（无进程）· 最近动态：";
+    box.innerHTML = d.events.map(e => `<li><b>${e.t}</b> ${e.ev}</li>`).join("") || "<li>暂无动态</li>";
+  } catch (e) {}
+}
 </script>
 </body>
 </html>
