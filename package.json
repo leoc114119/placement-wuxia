@@ -7,11 +7,13 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc",
     "watch": "tsc --watch",
-    "lint": "eslint game.ts types.ts config systems ui net"
+    "lint": "eslint game.ts types.ts config systems ui net",
+    "test:battle": "vitest run tests/battle.test.ts"
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
     "eslint": "^9.0.0",
-    "typescript-eslint": "^8.0.0"
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.11"
   }
 }

@@ -1,6 +1,30 @@
 {
- "updated": "2026-08-21 20:42",
+ "updated": "2026-08-21 21:10",
  "events": [
+  {
+   "t": "08-21 21:10",
+   "dir": "ZCode",
+   "ev": "📦 交付 T05",
+   "detail": "test 14/14 三绿 · done/T05-done.md · 待 C 环验收"
+  },
+  {
+   "t": "08-21 21:05",
+   "dir": "ZCode",
+   "ev": "🤝 领单 T05",
+   "detail": "working/T05.md · headless 战斗核心开工"
+  },
+  {
+   "t": "08-21 21:00",
+   "dir": "CodeBuddy → ZCode",
+   "ev": "📤 T05 已在 inbox",
+   "detail": "战斗核心 headless · ZCode 可领"
+  },
+  {
+   "t": "08-21 20:58",
+   "dir": "Leo",
+   "ev": "✅ T02 验收归档",
+   "detail": "三环全绿 · 首个任务完整闭环"
+  },
   {
    "t": "08-21 20:50",
    "dir": "CodeBuddy → Leo",
@@ -38,19 +62,19 @@
   {
    "id": "T02",
    "title": "工程骨架",
-   "status": "C环PASS·待Leo验收",
+   "status": "done",
    "owner": "ZCode",
-   "col": "review",
-   "summary": "git init + 微信小游戏结构 + TS strict + 骨架分层 + Canvas 清屏",
+   "col": "done",
+   "summary": "已验收归档（08-21，三环全绿，含热修×3：appid/RAF×2）",
    "thread": "threads/T02.md"
   },
   {
    "id": "T05",
    "title": "战斗核心 headless",
-   "status": "inbox",
+   "status": "review",
    "owner": "ZCode",
-   "col": "todo",
-   "summary": "runBattleHeadless() + 行动条/档位/冷却/内力/托管 + ≥7 用例",
+   "col": "review",
+   "summary": "已交付待验收（14 用例全绿 + 三绿，回执齐）",
    "thread": "threads/T05.md"
   },
   {

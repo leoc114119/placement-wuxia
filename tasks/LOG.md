@@ -4,6 +4,10 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-21 21:10 | ZCode → CodeBuddy | 📦 交付 T05 | done/T05-done.md · test:battle 14/14 绿 + typecheck/lint/build 0 error · 待 C 环验收 |
+| 2026-08-21 21:05 | ZCode → CodeBuddy | 🤝 领单 T05 | working/T05.md · 状态进行中 · 战斗核心 headless 开工 |
+| 2026-08-21 20:58 | Leo | ✅ L 环验收 T02 | 通过并归档 · 三环闭环（含热修×3） |
+| 2026-08-21 20:58 | CodeBuddy | 📝 T02 热修#3 | RAF 三环境兼容层 · 修模拟器黑屏 |
 | 2026-08-21 20:55 | CodeBuddy | 📝 T02 热修#2 | RAF→canvas.requestAnimationFrame · 修复黑屏 |
 | 2026-08-21 20:48 | CodeBuddy | 📝 T02 热修 | appid→touristappid · 修复导入报错 |
 | 2026-08-21 20:50 | CodeBuddy → Leo | 🔬 C 环验收 T02 | PASS（工程三绿+禁区干净）· 待 Leo 微信开发者工具 L 环点验 |
