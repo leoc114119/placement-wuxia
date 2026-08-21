@@ -7,7 +7,39 @@ interface WxCanvas {
   requestAnimationFrame(callback: () => void): void;
 }
 
+/** wx.createImage 产物（结构同 HTMLImageElement，仅声明用到的字段） */
+interface WxImage {
+  src: string;
+  width: number;
+  height: number;
+  onload?: (() => void) | null;
+  onerror?: ((err: unknown) => void) | null;
+}
+
+interface WxTouch {
+  identifier: number;
+  clientX: number;
+  clientY: number;
+}
+
+interface WxTouchEvent {
+  touches: WxTouch[];
+  changedTouches: WxTouch[];
+}
+
+interface WxSystemInfo {
+  windowWidth: number;
+  windowHeight: number;
+  pixelRatio: number;
+}
+
 declare const wx: {
   createCanvas(): WxCanvas;
+  createImage(): WxImage;
+  onTouchStart(callback: (e: WxTouchEvent) => void): void;
+  onTouchMove(callback: (e: WxTouchEvent) => void): void;
+  onTouchEnd(callback: (e: WxTouchEvent) => void): void;
+  onTouchCancel(callback: (e: WxTouchEvent) => void): void;
+  getSystemInfoSync(): WxSystemInfo;
 };
 

@@ -109,3 +109,62 @@ export interface BattleConfig {
   mode: BattleMode; // 手动模式下玩家不操作时走 90s 托管状态机
   seed?: number; // RNG 种子（缺省用默认种子，保证确定性可测）
 }
+
+// ============ T03 场景系统类型（modules/02-场景系统.md §1/§2） ============
+
+/** 逻辑坐标（0~1 占屏比例；px = x * canvas.width，模块 02 §1.1） */
+export interface TouchPoint {
+  x: number;
+  y: number;
+}
+
+/** 角色朝向（立绘水平翻转依据；素材默认面左，朝右时翻转） */
+export type Facing = 'left' | 'right';
+
+/** 角色动作状态（fight/hangup 由模块 03/04/08 置位，T03 只驱动 idle/walk） */
+export type AvatarState = 'idle' | 'walk' | 'fight' | 'hangup';
+
+/** 主角化身（模块 02 §2.1） */
+export interface PlayerAvatar {
+  x: number; // 逻辑坐标 0~1（脚底锚点）
+  y: number;
+  speed: number; // 移动速度（逻辑坐标/秒）
+  moving: boolean;
+  targetX: number;
+  targetY: number;
+  state: AvatarState;
+  direction: Facing;
+}
+
+/** 场景配置（数据源 config/场景与NPC配置.md；npcs/boss/hangup 由模块 03/04/08 任务卡补） */
+export interface SceneConfig {
+  id: string;
+  name: string; // 左上角场景名标签
+  bg: string; // 背景图路径
+  unlockPractice: number; // 进入实战要求（0=新手）
+}
+
+/** 底部圆形按钮（代码绘制，需求表 #8） */
+export interface SceneButton {
+  id: 'biguan' | 'guaji' | 'boss';
+  icon: string; // 大图标字
+  label: string; // 小文字
+}
+
+/** 场景图片资源（加载失败为 null → 渲染降级，需求表 #9） */
+export interface SceneAssets {
+  bg: WxImage | null;
+  heroFrames: Array<WxImage | null>; // 索引=帧号（仅预载 00~04：idle 1 + walk 4）
+}
+
+/** 空资源（加载完成前的初始态） */
+export const EMPTY_SCENE_ASSETS: SceneAssets = { bg: null, heroFrames: [] };
+
+/** 渲染层场景视图（渲染层只读，AGENTS.md「UI 只展示」） */
+export interface SceneView {
+  scene: SceneConfig;
+  avatar: PlayerAvatar;
+  heroFrameIdx: number; // 当前帧号（00 idle / 01~04 walk）
+  assets: SceneAssets;
+  bobMs: number; // 行走累计时间（降级颠簸/动画共用）
+}

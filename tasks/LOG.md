@@ -4,6 +4,10 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-21 21:30 | ZCode → CodeBuddy | 📦 交付 T03 | done/T03-done.md · typecheck/lint/build 0 error + test 24/24（新增10） + node 模拟日志 · GUI 待 Leo L 环 |
+| 2026-08-21 21:20 | ZCode → CodeBuddy | 🤝 领单 T03 | working/T03.md · 场景系统开工（铺底+点击移动+walk+三按钮） |
+| 2026-08-21 21:05 | CodeBuddy → ZCode | 📤 发单 T03《场景系统》 | inbox/T03.md · P0 · 素材全就绪 · Leo 将在客户端亲自发车 |
+| 2026-08-21 21:05 | CodeBuddy → Leo | 🔬 C 环验收 T05 | PASS（14/14 用例+三零错误+公式对齐）· 待 Leo 确认 |
 | 2026-08-21 21:10 | ZCode → CodeBuddy | 📦 交付 T05 | done/T05-done.md · test:battle 14/14 绿 + typecheck/lint/build 0 error · 待 C 环验收 |
 | 2026-08-21 21:05 | ZCode → CodeBuddy | 🤝 领单 T05 | working/T05.md · 状态进行中 · 战斗核心 headless 开工 |
 | 2026-08-21 20:58 | Leo | ✅ L 环验收 T02 | 通过并归档 · 三环闭环（含热修×3） |

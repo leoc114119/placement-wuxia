@@ -1,6 +1,30 @@
 {
- "updated": "2026-08-21 21:10",
+ "updated": "2026-08-21 21:30",
  "events": [
+  {
+   "t": "08-21 21:30",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "📦 交付 T03",
+   "detail": "done/T03-done.md · 三零+24/24 · GUI 待 L 环"
+  },
+  {
+   "t": "08-21 21:20",
+   "dir": "ZCode",
+   "ev": "🤝 领单 T03",
+   "detail": "working/T03.md · 场景系统开工"
+  },
+  {
+   "t": "08-21 21:05",
+   "dir": "CodeBuddy → ZCode",
+   "ev": "📤 发单 T03",
+   "detail": "场景系统 · Leo 客户端发车"
+  },
+  {
+   "t": "08-21 21:05",
+   "dir": "CodeBuddy → Leo",
+   "ev": "🔬 C环验收 T05",
+   "detail": "PASS · 14/14 用例 · 待确认"
+  },
   {
    "t": "08-21 21:10",
    "dir": "ZCode",
@@ -71,19 +95,20 @@
   {
    "id": "T05",
    "title": "战斗核心 headless",
-   "status": "review",
+   "status": "C环PASS·待Leo确认",
    "owner": "ZCode",
    "col": "review",
-   "summary": "已交付待验收（14 用例全绿 + 三绿，回执齐）",
+   "summary": "14/14 用例绿 + 三零错误 · headless 无 GUI，Leo 确认即归档",
    "thread": "threads/T05.md"
   },
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "planned",
+   "status": "done-待验收",
    "owner": "ZCode",
-   "col": "backlog",
-   "summary": "素材已就绪（scene_jianghu + hero 帧），待 T02 后发单"
+   "col": "review",
+   "summary": "已交付：三零错误+24/24 用例+node 模拟 · GUI 待 L 环点验",
+   "thread": "threads/T03.md"
   },
   {
    "id": "T04",
