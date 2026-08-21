@@ -1,6 +1,12 @@
 {
- "updated": "2026-08-21 22:40",
+ "updated": "2026-08-21 23:00",
  "events": [
+  {
+   "t": "08-21 23:00",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "❗ Q1-T03 四轮·素材需求",
+   "detail": "素材重生成已备好 prompt · 待管线执行"
+  },
   {
    "t": "08-21 22:40",
    "dir": "ZCode → CodeBuddy",
@@ -140,10 +146,10 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "Q1三轮已修复-待复验",
+   "status": "Q1四轮-等素材重生成",
    "owner": "ZCode",
-   "col": "review",
-   "summary": "Q1 三轮：walk=01↔02 左右脚严格交替(收步↔迈开)· 待 L 环复验",
+   "col": "ask",
+   "summary": "素材缺口:需重生成 hero walk 帧(小步交替)·prompt 已备好 · 等 CodeBuddy 跑 --only hero 管线",
    "thread": "threads/T03.md"
   },
   {
