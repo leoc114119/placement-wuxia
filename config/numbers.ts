@@ -21,14 +21,18 @@ export const FPS_LOG_INTERVAL_MS = 5000;
 /** 主角移动速度（逻辑坐标/秒，任务卡 §3 有限自由：建议 0.4，可调） */
 export const HERO_WALK_SPEED = 0.4;
 
-/** 点击目标 clamp 边界（模块 02 §2.2） */
-export const TARGET_CLAMP_MIN = 0.05;
-export const TARGET_CLAMP_MAX = 0.95;
+/** 可走区：中央走廊矩形（Q2-T03 定稿，对齐 scene_jianghu v6：野径远端起 y≈0.45 林带、底部路宽约半屏、底部 16% 留 UI 渐暗收边；区外点击 → 拉到最近走廊边界点，不拒绝） */
+export const WALK_ZONE = {
+  xMin: 0.24,
+  xMax: 0.76,
+  yMin: 0.46,
+  yMax: 0.84,
+} as const;
 
 /** 到达判定距离（模块 02 §2.2：< 0.01 停止） */
 export const ARRIVE_EPS = 0.01;
 
-/** 主角出生点（逻辑坐标，模块 02 §0「立绘居中」+ 贴近地面行走的展示取值） */
+/** 主角出生点（逻辑坐标；(0.5, 0.72) 在 WALK_ZONE 走廊内 ✓） */
 export const HERO_START = { x: 0.5, y: 0.72 };
 
 /** 主角立绘显示高度占屏比（脚底锚点定位，模块 02 §1.1） */
@@ -54,19 +58,19 @@ export const HERO_FRAME = {
 /** hero 帧素材路径（实际文件为 hero_0X_transparent.png 透明版；白底 hero_0X.png 不用） */
 export const heroFrameSrc = (i: number): string => `assets/ui/frames/hero/hero_0${i}_transparent.png`;
 
-/** 场景名标签（左上角小胶囊：墨底淡金描边，需求表 #6） */
+/** 场景名标签（左上角小胶囊：墨底淡金描边，需求表 #6；y=0.115 为胶囊中心，Q3-T03：下移至人物状态栏下沿之下，预留胶囊/状态栏区） */
 export const SCENE_LABEL = {
   x: 0.05,
-  y: 0.055,
+  y: 0.115,
   heightRatio: 0.045,
   fontRatio: 0.022,
   padXRatio: 0.018,
   radiusRatio: 0.012,
 } as const;
 
-/** 底部三按钮（圆形朱砂描边，图标大文字小，需求表 #8；布局参考 UI 基准等距排布） */
+/** 底部三按钮（圆形朱砂描边，图标大文字小，需求表 #8；yRatio=0.82 为按钮行中心，Q3-T03：上移至四 Tab 栏上沿 0.92 之上、场景面板内） */
 export const SCENE_BUTTONS = {
-  yRatio: 0.885,
+  yRatio: 0.82,
   radiusRatio: 0.085, // 相对屏宽
   gap: 0.31, // 相邻按钮中心间距（占宽比，三钮等距）
   iconFontR: 0.72, // 图标字号 = r × 系数

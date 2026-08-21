@@ -7,8 +7,7 @@ import {
   HERO_WALK_SPEED,
   SCENE_BUTTONS,
   SCENE_BUTTON_DEFS,
-  TARGET_CLAMP_MAX,
-  TARGET_CLAMP_MIN,
+  WALK_ZONE,
 } from '../config/numbers';
 import { START_SCENE } from '../config/scenes';
 import type {
@@ -29,10 +28,10 @@ export interface ViewSize {
 
 // ---------- 纯函数（node 可测，需求表 #10） ----------
 
-/** 点击目标 clamp 到 [0.05, 0.95]（模块 02 §2.2） */
+/** 点击目标拉回中央走廊最近点（Q2-T03：区外点击不拒绝，走到最近走廊边界点；矩形投影 = 逐轴 clamp） */
 export function clampTarget(x: number, y: number): TouchPoint {
-  const c = (v: number): number => Math.min(TARGET_CLAMP_MAX, Math.max(TARGET_CLAMP_MIN, v));
-  return { x: c(x), y: c(y) };
+  const c = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
+  return { x: c(x, WALK_ZONE.xMin, WALK_ZONE.xMax), y: c(y, WALK_ZONE.yMin, WALK_ZONE.yMax) };
 }
 
 /** 朝向判定：目标在左→left，在右→right，几乎无横移→保持原朝向（模块 02 §2.2） */

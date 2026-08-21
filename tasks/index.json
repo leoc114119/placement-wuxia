@@ -1,6 +1,12 @@
 {
- "updated": "2026-08-21 23:40",
+ "updated": "2026-08-22 01:30",
  "events": [
+  {
+   "t": "08-22 01:30",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "✅ Q2+Q3-T03 修复",
+   "detail": "走廊 clamp + UI 层级 · 27/27 · 待复验"
+  },
   {
    "t": "08-21 22:10",
    "dir": "CodeBuddy → ZCode",
@@ -170,10 +176,10 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "Q1六轮-待复验",
+   "status": "Q2/Q3已修复-待复验",
    "owner": "ZCode",
    "col": "review",
-   "summary": "walk✓+腿间残留已清(00~03)·24/24 · 待 L 环复验收口",
+   "summary": "WALK_ZONE 走廊化 + 标签/按钮层级修正 · 三零+27/27 · 待复验",
    "thread": "threads/T03.md"
   },
   {
