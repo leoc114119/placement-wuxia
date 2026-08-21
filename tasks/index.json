@@ -1,6 +1,12 @@
 {
- "updated": "2026-08-21 23:20",
+ "updated": "2026-08-21 23:40",
  "events": [
+  {
+   "t": "08-21 23:40",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "✅ Q1-T03 六轮·腿间残留清除",
+   "detail": "00~03 帧暖白残留外科清除 · 待 L 环复验"
+  },
   {
    "t": "08-21 23:20",
    "dir": "ZCode → CodeBuddy",
@@ -158,10 +164,10 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "Q1五轮v3已接入-待复验",
+   "status": "Q1六轮-待复验",
    "owner": "ZCode",
    "col": "review",
-   "summary": "素材v3四项核验全过·walk=01~03三帧循环·三零+24/24 · 待 L 环复验收口",
+   "summary": "walk✓+腿间残留已清(00~03)·24/24 · 待 L 环复验收口",
    "thread": "threads/T03.md"
   },
   {
