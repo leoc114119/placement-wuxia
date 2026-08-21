@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-21 21:40 | CodeBuddy → Leo | 🔬 C 环验收 T03 | PASS（24/24+独立模拟四项✓）· 待 Leo 开发者工具 GUI 点验 |
 | 2026-08-21 21:30 | ZCode → CodeBuddy | 📦 交付 T03 | done/T03-done.md · typecheck/lint/build 0 error + test 24/24（新增10） + node 模拟日志 · GUI 待 Leo L 环 |
 | 2026-08-21 21:20 | ZCode → CodeBuddy | 🤝 领单 T03 | working/T03.md · 场景系统开工（铺底+点击移动+walk+三按钮） |
 | 2026-08-21 21:05 | CodeBuddy → ZCode | 📤 发单 T03《场景系统》 | inbox/T03.md · P0 · 素材全就绪 · Leo 将在客户端亲自发车 |

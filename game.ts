@@ -45,6 +45,7 @@ function main(): void {
     last = now;
     frames++;
 
+    scene.update(dt); // T03 L环热修：主循环漏调 update → 点击只换方向不移动
     render({ ctx, width: canvas.width, height: canvas.height, dt }, scene.view(assets));
 
     if (now - lastFpsLog >= FPS_LOG_INTERVAL_MS) {

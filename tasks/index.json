@@ -2,6 +2,12 @@
  "updated": "2026-08-21 21:30",
  "events": [
   {
+   "t": "08-21 21:40",
+   "dir": "CodeBuddy → Leo",
+   "ev": "🔬 C环验收 T03",
+   "detail": "PASS · 待 GUI 点验"
+  },
+  {
    "t": "08-21 21:30",
    "dir": "ZCode → CodeBuddy",
    "ev": "📦 交付 T03",
@@ -104,10 +110,10 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "done-待验收",
+   "status": "C环PASS·待Leo GUI验收",
    "owner": "ZCode",
    "col": "review",
-   "summary": "已交付：三零错误+24/24 用例+node 模拟 · GUI 待 L 环点验",
+   "summary": "24/24 用例+独立模拟四项验证 · 待开发者工具点验",
    "thread": "threads/T03.md"
   },
   {

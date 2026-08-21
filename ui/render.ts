@@ -1,6 +1,7 @@
 // 渲染层：只读数据、画出来（AGENTS.md 架构原则）
 // T03 分层渲染：L0 背景（cover 裁切）→ L1 主角（脚底锚点/朝向翻转）→ L2 UI 浮层（需求表 #1~#8）
 import {
+  BG_FIT_CONTAIN,
   CLEAR_COLOR,
   HERO_HEIGHT_RATIO,
   PALETTE,
@@ -25,9 +26,11 @@ export function render(frame: FrameContext, view: SceneView | null): void {
   // 助战入口 MVP 隐藏，不渲染（需求表 #7 / R-03）
 }
 
-/** cover 裁切铺底：短边撑满、长边居中裁切，不拉伸变形（需求表 #1） */
+/** 铺底：BG_FIT_CONTAIN=true 完整显示居中（宣纸底补边）；否则 cover 裁切 */
 function drawCover(ctx: CanvasRenderingContext2D, img: WxImage, w: number, h: number): void {
-  const scale = Math.max(w / img.width, h / img.height);
+  const scale = BG_FIT_CONTAIN
+    ? Math.min(w / img.width, h / img.height)
+    : Math.max(w / img.width, h / img.height);
   const dw = img.width * scale;
   const dh = img.height * scale;
   ctx.drawImage(img as unknown as CanvasImageSource, (w - dw) / 2, (h - dh) / 2, dw, dh);

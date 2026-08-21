@@ -32,7 +32,7 @@ export const ARRIVE_EPS = 0.01;
 export const HERO_START = { x: 0.5, y: 0.72 };
 
 /** 主角立绘显示高度占屏比（脚底锚点定位，模块 02 §1.1） */
-export const HERO_HEIGHT_RATIO = 0.3;
+export const HERO_HEIGHT_RATIO = 0.21; // L环反馈：0.3→0.21 缩小 30%
 
 /** hero 帧表映射（77 §0.1：00=idle，01~04=walk 四帧循环；05+ 暂不用，需求表 #2） */
 export const HERO_FRAME = {
@@ -73,3 +73,6 @@ export const SCENE_BUTTON_DEFS: ReadonlyArray<{ id: 'biguan' | 'guaji' | 'boss';
   { id: 'guaji', icon: '挂', label: '挂机' },
   { id: 'boss', icon: '战', label: '挑战Boss' },
 ];
+
+// L环反馈：场景完整显示（contain 居中，宣纸底色补边），替代 cover 裁切
+export const BG_FIT_CONTAIN = true;
