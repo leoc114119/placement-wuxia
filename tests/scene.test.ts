@@ -70,15 +70,19 @@ describe('stepAvatar', () => {
   });
 });
 
-// ---------- 用例组 4：walk 帧循环（需求表 #2/#3：01→04 循环） ----------
+// ---------- 用例组 4：walk 帧循环（Q1-T03 修正：素材=六帧表，walk 01~03，04 为出招预备帧） ----------
 describe('walkFrame', () => {
-  it('帧号在 01~04 循环，起步总是 01', () => {
+  it('帧号在 01~03 循环，起步总是 01，不越界到 04', () => {
     expect(walkFrame(0)).toBe(HERO_FRAME.walkStart);
     expect(walkFrame(HERO_FRAME.walkFrameMs)).toBe(2);
     expect(walkFrame(HERO_FRAME.walkFrameMs * 2)).toBe(3);
-    expect(walkFrame(HERO_FRAME.walkFrameMs * 3)).toBe(4);
-    expect(walkFrame(HERO_FRAME.walkFrameMs * 4)).toBe(1); // 回卷
-    expect(walkFrame(HERO_FRAME.walkFrameMs * 7 + 1)).toBe(4);
+    expect(walkFrame(HERO_FRAME.walkFrameMs * 3)).toBe(1); // 回卷
+    expect(walkFrame(HERO_FRAME.walkFrameMs * 7 + 1)).toBe(2);
+    for (let t = 0; t < 5000; t += 37) {
+      const f = walkFrame(t);
+      expect(f).toBeGreaterThanOrEqual(HERO_FRAME.walkStart);
+      expect(f).toBeLessThanOrEqual(HERO_FRAME.walkEnd); // 04 出招预备帧永不进 walk
+    }
   });
 });
 
@@ -143,7 +147,7 @@ describe('wx mock 状态机模拟', () => {
     expect(sys.avatar.moving).toBe(true);
     expect(sys.avatar.direction).toBe('right');
 
-    // ② 以 60fps 步进，帧号在 01~04 间推进
+    // ② 以 60fps 步进，帧号只在 01~03 间推进（六帧表素材口径）
     sys.update(1000 / 60);
     const frames = new Set<number>();
     for (let i = 0; i < 40; i++) {

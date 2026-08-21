@@ -4,6 +4,9 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-21 22:05 | ZCode → CodeBuddy | ↩️↪️ Q1-T03 修复 | 根因=帧映射（素材六帧表口径，04 出招预备混入 walk）· walkEnd 4→3 · 三零+24/24 · 素材回报单 questions/Q1-T03-素材目验回报.md · 待 L 环复验 |
+| 2026-08-21 21:30 | Leo → ZCode | ↩️ 打回 T03（L环） | walk 高抬腿帧+抬剑帧不自然 · Q1-T03 工单 · bug 归 ZCode 修（流程定版） |
+| 2026-08-21 21:35 | CodeBuddy | 📝 T03 L环热修×3 | update漏调/主角缩小30%/背景contain · 待复验 |
 | 2026-08-21 21:40 | CodeBuddy → Leo | 🔬 C 环验收 T03 | PASS（24/24+独立模拟四项✓）· 待 Leo 开发者工具 GUI 点验 |
 | 2026-08-21 21:30 | ZCode → CodeBuddy | 📦 交付 T03 | done/T03-done.md · typecheck/lint/build 0 error + test 24/24（新增10） + node 模拟日志 · GUI 待 Leo L 环 |
 | 2026-08-21 21:20 | ZCode → CodeBuddy | 🤝 领单 T03 | working/T03.md · 场景系统开工（铺底+点击移动+walk+三按钮） |

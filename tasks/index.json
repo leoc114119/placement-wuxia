@@ -1,6 +1,24 @@
 {
- "updated": "2026-08-21 21:30",
+ "updated": "2026-08-21 22:05",
  "events": [
+  {
+   "t": "08-21 22:05",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "↩️↪️ Q1-T03 修复",
+   "detail": "帧映射根因·walkEnd 4→3·三零+24/24·待 L 环复验"
+  },
+  {
+   "t": "08-21 21:30",
+   "dir": "Leo → ZCode",
+   "ev": "↩️ 打回 T03",
+   "detail": "walk 动画两处不自然 · Q1-T03"
+  },
+  {
+   "t": "08-21 21:35",
+   "dir": "CodeBuddy",
+   "ev": "📝 T03 热修×3",
+   "detail": "走不动根因已修+视觉两项调整"
+  },
   {
    "t": "08-21 21:40",
    "dir": "CodeBuddy → Leo",
@@ -110,10 +128,10 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "C环PASS·待Leo GUI验收",
+   "status": "打回已修复-待复验",
    "owner": "ZCode",
    "col": "review",
-   "summary": "24/24 用例+独立模拟四项验证 · 待开发者工具点验",
+   "summary": "Q1-T03：帧映射修正(walk 01~03)+素材回报单 · 待 Leo L 环复验",
    "thread": "threads/T03.md"
   },
   {

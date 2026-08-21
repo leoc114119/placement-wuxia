@@ -34,15 +34,19 @@ export const HERO_START = { x: 0.5, y: 0.72 };
 /** 主角立绘显示高度占屏比（脚底锚点定位，模块 02 §1.1） */
 export const HERO_HEIGHT_RATIO = 0.21; // L环反馈：0.3→0.21 缩小 30%
 
-/** hero 帧表映射（77 §0.1：00=idle，01~04=walk 四帧循环；05+ 暂不用，需求表 #2） */
+/**
+ * hero 帧表映射（Q1-T03 修正：素材实物 = 77 §2.2 六帧表口径——00 待机/01 左脚/02 右脚/03 左脚/04 举手预备/05 挥出/06 普攻；
+ * 任务卡「01~04=walk 四帧」系按 §0.1 八帧设计口径预写，与素材不符：04 实为出招预备帧，混入 walk 循环 = L 环「走动后抬剑帧」根因）
+ * walk = 01~03 左右脚交替三帧循环；04~06 留给 T06 战斗出招。
+ */
 export const HERO_FRAME = {
   idle: 0,
   walkStart: 1,
-  walkEnd: 4,
+  walkEnd: 3,
   /** walk 单帧时长（毫秒） */
   walkFrameMs: 160,
-  /** 预载帧数（00~04 共 5 张） */
-  preloadCount: 5,
+  /** 预载帧数（00~03 共 4 张；04+ 出招帧 T06 再预载） */
+  preloadCount: 4,
 } as const;
 
 /** hero 帧素材路径（实际文件为 hero_0X_transparent.png 透明版；白底 hero_0X.png 不用） */
