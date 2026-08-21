@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-21 20:55 | CodeBuddy | 📝 T02 热修#2 | RAF→canvas.requestAnimationFrame · 修复黑屏 |
 | 2026-08-21 20:48 | CodeBuddy | 📝 T02 热修 | appid→touristappid · 修复导入报错 |
 | 2026-08-21 20:50 | CodeBuddy → Leo | 🔬 C 环验收 T02 | PASS（工程三绿+禁区干净）· 待 Leo 微信开发者工具 L 环点验 |
 | 2026-08-21 20:40 | ZCode → CodeBuddy | 🤝 领单 T02 | working/T02.md · 状态进行中 · 开始施工 |

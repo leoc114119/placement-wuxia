@@ -15,6 +15,15 @@ void callCloud;
 function main(): void {
   const canvas = wx.createCanvas();
   const ctx = canvas.getContext('2d');
+
+  // 主循环兼容层：真机=canvas.requestAnimationFrame；开发者工具=全局 RAF；兜底 setTimeout
+  const raf: (cb: () => void) => void =
+    typeof canvas.requestAnimationFrame === 'function'
+      ? (cb) => canvas.requestAnimationFrame(cb)
+      : typeof (globalThis as unknown as { requestAnimationFrame?: unknown }).requestAnimationFrame === 'function'
+        ? (cb) =>
+            (globalThis as unknown as { requestAnimationFrame: (cb: () => void) => void }).requestAnimationFrame(cb)
+        : (cb) => setTimeout(cb, 1000 / 60);
   let last = Date.now();
   let lastFpsLog = last;
   let frames = 0;
@@ -32,10 +41,10 @@ function main(): void {
       frames = 0;
       lastFpsLog = now;
     }
-    canvas.requestAnimationFrame(loop);
+    raf(loop);
   }
 
-  canvas.requestAnimationFrame(loop);
+  raf(loop);
 }
 
 main();
