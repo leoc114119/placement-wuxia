@@ -78,11 +78,12 @@ col 五值：`todo / doing / ask / review / done`（backlog=未发单）。
 
 **注意**：线程行必须是单行文本；需要长篇说明时写入对应目录的文件（如 questions/Qn-T02.md），线程和 LOG 里只放一行摘要+文件指针。
 
-## 看板（Leo 的 oversight 入口）
+## 看板(Leo 的 oversight 入口)
 
-- `dashboard.html`（项目根目录）——本地 http.server 起后浏览器打开，读 index.json 渲染
-- 五列：待办 / 进行中 / 待答疑 / 待验收 / 已完成
-- 点任务卡 → 展开该任务完整沟通线程（threads/Txx.md）
+- `dashboard.html`(项目根目录)——本地 http.server 起后浏览器打开,读 index.json 渲染
+- 五列:待办 / 进行中 / 待答疑 / 待验收 / 已完成
+- 点任务卡 → 展开该任务完整沟通线程(threads/Txx.md)
+- **协作模式(2026-08-21 定版)**:CodeBuddy 与 ZCode 以任务箱为沟通渠道;**Leo 居中转发**——在 ZCode 客户端发单/传话,在看板看全局;斜杠命令 `/tasks` `/work` `/report`(项目 `.zcode/commands/`)供 ZCode 会话使用
 
 ## 与既有机制的关系
 
