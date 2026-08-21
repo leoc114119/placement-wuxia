@@ -1,6 +1,12 @@
 {
- "updated": "2026-08-21 23:00",
+ "updated": "2026-08-21 23:20",
  "events": [
+  {
+   "t": "08-21 23:20",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "✅ Q1-T03 五轮·v3 接入",
+   "detail": "四项核验全过 · walk=01~03 · 待 L 环复验"
+  },
   {
    "t": "08-21 21:50",
    "dir": "CodeBuddy → ZCode",
@@ -152,10 +158,10 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "新素材已落地·ZCode核验接入中",
+   "status": "Q1五轮v3已接入-待复验",
    "owner": "ZCode",
-   "col": "ask",
-   "summary": "素材缺口:需重生成 hero walk 帧(小步交替)·prompt 已备好 · 等 CodeBuddy 跑 --only hero 管线",
+   "col": "review",
+   "summary": "素材v3四项核验全过·walk=01~03三帧循环·三零+24/24 · 待 L 环复验收口",
    "thread": "threads/T03.md"
   },
   {
