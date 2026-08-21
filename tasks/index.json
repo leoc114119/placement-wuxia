@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-21 20:40",
+  "updated": "2026-08-21 20:42",
   "events": [
     {"t": "08-21 20:30", "dir": "CodeBuddy → ZCode", "ev": "📤 发单", "detail": "T02《工程骨架》→ inbox/T02.md"},
     {"t": "08-21 20:30", "dir": "CodeBuddy → ZCode", "ev": "📤 发单", "detail": "T05《战斗核心 headless》→ inbox/T05.md"},
@@ -7,7 +7,7 @@
   ],
   "tasks": [
     {"id": "T01", "title": "环境确认", "status": "done-archived", "owner": "Leo", "col": "done", "summary": "node v22 / npm 10 / 微信开发者工具已装（08-21）"},
-    {"id": "T02", "title": "工程骨架", "status": "working", "owner": "ZCode", "col": "doing", "summary": "git init + 微信小游戏结构 + TS strict + 骨架分层 + Canvas 清屏", "thread": "threads/T02.md"},
+    {"id": "T02", "title": "工程骨架", "status": "done", "owner": "ZCode", "col": "review", "summary": "git init + 微信小游戏结构 + TS strict + 骨架分层 + Canvas 清屏", "thread": "threads/T02.md"},
     {"id": "T05", "title": "战斗核心 headless", "status": "inbox", "owner": "ZCode", "col": "todo", "summary": "runBattleHeadless() + 行动条/档位/冷却/内力/托管 + ≥7 用例", "thread": "threads/T05.md"},
     {"id": "T03", "title": "场景系统", "status": "planned", "owner": "ZCode", "col": "backlog", "summary": "素材已就绪（scene_jianghu + hero 帧），待 T02 后发单"},
     {"id": "T04", "title": "NPC 系统", "status": "planned", "owner": "ZCode", "col": "backlog", "summary": "素材已就绪（山贼/野狼帧），待 T03 后发单"},
