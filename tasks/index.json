@@ -2,6 +2,12 @@
  "updated": "2026-08-21 23:40",
  "events": [
   {
+   "t": "08-21 22:10",
+   "dir": "CodeBuddy → ZCode",
+   "ev": "📤 Q2-T03",
+   "detail": "中央走廊可走区工单"
+  },
+  {
    "t": "08-21 23:40",
    "dir": "ZCode → CodeBuddy",
    "ev": "✅ Q1-T03 六轮·腿间残留清除",
