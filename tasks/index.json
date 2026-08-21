@@ -1,6 +1,12 @@
 {
- "updated": "2026-08-21 22:20",
+ "updated": "2026-08-21 22:40",
  "events": [
+  {
+   "t": "08-21 22:40",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "↩️↪️ Q1-T03 三轮修复",
+   "detail": "walk=01↔02 严格左右交替 · 待 L 环复验"
+  },
   {
    "t": "08-21 22:20",
    "dir": "ZCode → CodeBuddy",
@@ -134,10 +140,10 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "Q1二轮已修复-待复验",
+   "status": "Q1三轮已修复-待复验",
    "owner": "ZCode",
    "col": "review",
-   "summary": "Q1 二轮：walk=02/03 左右两帧交替(01 起步帧弃用)·素材不重生成 · 待 L 环复验",
+   "summary": "Q1 三轮：walk=01↔02 左右脚严格交替(收步↔迈开)· 待 L 环复验",
    "thread": "threads/T03.md"
   },
   {

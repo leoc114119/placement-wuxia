@@ -70,17 +70,17 @@ describe('stepAvatar', () => {
   });
 });
 
-// ---------- 用例组 4：walk 帧循环（Q1-T03 二轮定版：02/03 左右两帧交替，01 起步帧弃用） ----------
+// ---------- 用例组 4：walk 帧循环（Q1-T03 三轮定版：01↔02 左右脚严格交替） ----------
 describe('walkFrame', () => {
-  it('帧号在 02~03 左右交替，起步总是 02，不出现 01/04', () => {
+  it('帧号在 01~02 左右交替，不出现 03/04', () => {
     expect(walkFrame(0)).toBe(HERO_FRAME.walkStart);
-    expect(walkFrame(HERO_FRAME.walkFrameMs)).toBe(3);
-    expect(walkFrame(HERO_FRAME.walkFrameMs * 2)).toBe(2); // 交替回卷
-    expect(walkFrame(HERO_FRAME.walkFrameMs * 3)).toBe(3);
+    expect(walkFrame(HERO_FRAME.walkFrameMs)).toBe(2);
+    expect(walkFrame(HERO_FRAME.walkFrameMs * 2)).toBe(1); // 交替回卷
+    expect(walkFrame(HERO_FRAME.walkFrameMs * 3)).toBe(2);
     for (let t = 0; t < 5000; t += 37) {
       const f = walkFrame(t);
       expect(f).toBeGreaterThanOrEqual(HERO_FRAME.walkStart);
-      expect(f).toBeLessThanOrEqual(HERO_FRAME.walkEnd); // 01 起步帧 / 04 出招预备帧永不进 walk
+      expect(f).toBeLessThanOrEqual(HERO_FRAME.walkEnd); // 03 收步变体 / 04 出招预备帧永不进 walk
     }
   });
 });
@@ -146,7 +146,7 @@ describe('wx mock 状态机模拟', () => {
     expect(sys.avatar.moving).toBe(true);
     expect(sys.avatar.direction).toBe('right');
 
-    // ② 以 60fps 步进，帧号只在 02~03 间交替（Leo 二轮拍板口径）
+    // ② 以 60fps 步进，帧号只在 01~02 间交替（Leo 三轮拍板口径）
     sys.update(1000 / 60);
     const frames = new Set<number>();
     for (let i = 0; i < 40; i++) {
