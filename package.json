@@ -1,0 +1,17 @@
+{
+  "name": "placement-wuxia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "放置武侠 · 微信小游戏 MVP",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "lint": "eslint game.ts types.ts config systems ui net"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "eslint": "^9.0.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

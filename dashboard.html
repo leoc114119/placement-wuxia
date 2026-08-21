@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>放置武侠 · 工作流看板</title>
+<style>
+  :root {
+    --bg: #F8F4EA; --panel: #F0E6D4; --panel2: #E0D2B4;
+    --ink: #2B2B2B; --ink2: #444444;
+    --red: #E2574C; --red2: #C94A40; --coral: #FF7E67;
+    --green: #7FB069; --teal: #4A7A6B; --gold: #D4AF37;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC", "Microsoft YaHei", sans-serif; min-height: 100vh; padding: 24px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: var(--ink2); font-size: 12px; margin-bottom: 20px; }
+  .sub b { color: var(--red); }
+  .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .col { background: var(--panel); border-radius: 14px; padding: 12px; min-height: 220px; }
+  .col h2 { font-size: 13px; color: var(--ink); padding: 4px 8px 10px; display: flex; justify-content: space-between; }
+  .col h2 .cnt { color: var(--red); font-weight: 700; }
+  .card { background: #fffdf8; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; border: 1.5px solid transparent; transition: all .15s; box-shadow: 0 1px 3px rgba(43,43,43,.08); }
+  .card:hover { border-color: var(--red); transform: translateY(-1px); }
+  .card .tid { font-size: 11px; color: var(--gold); font-weight: 700; }
+  .card .title { font-size: 14px; font-weight: 600; margin: 2px 0; }
+  .card .sum { font-size: 11px; color: var(--ink2); line-height: 1.5; }
+  .card.p0 { border-left: 3px solid var(--red); }
+  .card.planned { opacity: .55; }
+  /* 线程面板 */
+  .detail { background: #fffdf8; border-radius: 14px; padding: 18px 20px; margin-top: 18px; display: none; border: 1.5px solid var(--panel2); }
+  .detail.show { display: block; }
+  .detail h3 { font-size: 16px; margin-bottom: 2px; }
+  .detail .meta { font-size: 11px; color: var(--ink2); margin-bottom: 12px; }
+  .chat { display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 82%; padding: 9px 13px; border-radius: 12px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+  .msg .who { font-size: 10px; font-weight: 700; margin-bottom: 3px; }
+  .msg.cb { align-self: flex-start; background: var(--panel); border-top-left-radius: 3px; }
+  .msg.cb .who { color: var(--teal); }
+  .msg.zc { align-self: flex-end; background: #FDECEA; border-top-right-radius: 3px; }
+  .msg.zc .who { color: var(--red2); }
+  .msg.leo { align-self: center; background: #F6EFDC; border-radius: 8px; text-align: center; }
+  .msg.leo .who { color: var(--gold); }
+  .msg .ev { font-size: 10px; color: var(--gold); margin-right: 6px; }
+  .msg .ts { font-size: 10px; color: #999; margin-top: 3px; }
+  .log { margin-top: 18px; background: var(--panel); border-radius: 14px; padding: 14px 18px; }
+  .log h3 { font-size: 14px; margin-bottom: 8px; }
+  .log table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .log th, .log td { text-align: left; padding: 5px 8px; border-bottom: 1px solid rgba(43,43,43,.08); }
+  .log th { color: var(--ink2); font-weight: 600; }
+  .refresh { float: right; font-size: 12px; color: var(--teal); cursor: pointer; }
+</style>
+</head>
+<body>
+  <h1>⛩ 放置武侠 · 工作流看板</h1>
+  <div class="sub">CodeBuddy ⇄ ZCode 任务箱实时视图 · 数据源 <b>tasks/index.json</b>（沟通记录存 tasks/threads/）· <span class="refresh" onclick="load()">↻ 刷新</span></div>
+  <div class="board" id="board"></div>
+  <div class="detail" id="detail"></div>
+  <div class="log">
+    <h3>📜 全局沟通日志（LOG.md 摘要）</h3>
+    <table id="logTable"><thead><tr><th>时间</th><th>方向</th><th>事件</th><th>详情</th></tr></thead><tbody></tbody></table>
+  </div>
+
+<script>
+const COLS = [
+  { key: "todo", name: "📥 待办（inbox）" },
+  { key: "doing", name: "🔨 进行中（working）" },
+  { key: "ask", name: "❓ 待答疑（questions）" },
+  { key: "review", name: "🔬 待验收（done）" },
+  { key: "done", name: "✅ 已完成（archive）" },
+];
+
+async function load() {
+  let idx;
+  try {
+    const r = await fetch("tasks/index.json?t=" + Date.now());
+    idx = await r.json();
+  } catch (e) {
+    document.getElementById("board").innerHTML = "<p style='color:#C94A40'>读取 tasks/index.json 失败——请用本地服务器打开（python3 -m http.server）</p>";
+    return;
+  }
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  COLS.forEach(c => {
+    const items = idx.tasks.filter(t => t.col === c.key);
+    const div = document.createElement("div");
+    div.className = "col";
+    div.innerHTML = `<h2>${c.name} <span class="cnt">${items.length}</span></h2>`;
+    items.forEach(t => {
+      const card = document.createElement("div");
+      card.className = "card " + (t.id.match(/^T0[2-7]$/) && !t.planned ? "p0" : "") + (t.col === "backlog" ? " planned" : "");
+      card.innerHTML = `<div class="tid">${t.id} · ${t.owner || ""}</div><div class="title">${t.title}</div><div class="sum">${t.summary || ""}</div>`;
+      if (t.thread) card.onclick = () => openThread(t, idx);
+      div.appendChild(card);
+    });
+    // backlog 卡也挂进待办列底部（半透明）
+    if (c.key === "todo") {
+      idx.tasks.filter(t => t.col === "backlog").forEach(t => {
+        const card = document.createElement("div");
+        card.className = "card planned";
+        card.innerHTML = `<div class="tid">${t.id} · ${t.owner || ""}</div><div class="title">${t.title}</div><div class="sum">${t.summary || ""}</div>`;
+        div.appendChild(card);
+      });
+    }
+    board.appendChild(div);
+  });
+  // LOG 摘要（内嵌在 index.json 里的事件流，若无可省）
+  renderLog(idx.events || []);
+}
+
+function openThread(t) {
+  const d = document.getElementById("detail");
+  d.classList.add("show");
+  d.innerHTML = `<h3>${t.id} · ${t.title}</h3><div class="meta">状态 ${t.status} · 负责人 ${t.owner} · 线程文件 tasks/${t.thread}</div><div class="chat">线程载入中…</div>`;
+  fetch("tasks/" + t.thread + "?t=" + Date.now())
+    .then(r => r.ok ? r.text() : Promise.reject())
+    .then(txt => {
+      const msgs = parseThread(txt);
+      const chat = d.querySelector(".chat");
+      chat.innerHTML = msgs.map(m =>
+        `<div class="msg ${m.cls}"><div class="who">${m.ev}${m.who}</div>${m.text}<div class="ts">${m.ts}</div></div>`
+      ).join("") || "<div class='msg cb'><div class='who'>CodeBuddy</div>暂无沟通记录</div>";
+    })
+    .catch(() => {
+      d.querySelector(".chat").innerHTML = "<div class='msg cb'><div class='who'>系统</div>线程文件读取失败，请直接打开 tasks/" + t.thread + "</div>";
+    });
+}
+
+// 解析 threads/Txx.md 的表格行：| 时间 | 发言人 | 事件 | 内容 |
+function parseThread(txt) {
+  const out = [];
+  txt.split("\n").forEach(line => {
+    if (!line.trim().startsWith("|")) return;
+    const cells = line.split("|").map(s => s.trim()).filter((s, i, a) => i > 0 && i < a.length);
+    if (cells.length < 4) return;
+    const [ts, who, ev, text] = cells;
+    if (ts === "---" || ts.includes("时间")) return;
+    let cls = "cb";
+    if (/ZCode/i.test(who)) cls = "zc";
+    else if (/Leo/i.test(who)) cls = "leo";
+    else if (/系统|system/i.test(who)) cls = "leo";
+    out.push({ ts: cells[0], who, ev, text, cls });
+  });
+  return out;
+}
+
+function renderLog(events) {
+  const tb = document.querySelector("#logTable tbody");
+  tb.innerHTML = events.map(e => `<tr><td>${e.t || ""}</td><td>${e.dir || ""}</td><td>${e.ev || ""}</td><td>${e.detail || ""}</td></tr>`).join("");
+}
+
+load();
+setInterval(load, 30000); // 30s 自动刷新
+</script>
+</body>
+</html>

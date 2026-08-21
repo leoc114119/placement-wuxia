@@ -1,0 +1,88 @@
+{
+  "_meta": {
+    "desc": "P0 开工素材清单（唯一真相）——77 清单 §2 结构化版本。字段：id/prompt/aspect/resolution/model/refs(img2img参考图)/split(切帧 cols,rows)/cutout(白底转透明)/frames_dir/out",
+    "created": "2026-08-21",
+    "style_anchor": "assets/ui/ref_char_style_v1.png（角色形象风格锚，img2img 参考用）",
+    "note": "model 字段默认 seedream-5.0-pro，待 A/B 实测后统一改"
+  },
+  "assets": [
+    {
+      "id": "spr_shanzei",
+      "desc": "山贼喽啰动画帧表（2×4=8帧：idle1+walk4+attack2+basic1）",
+      "model": "seedream-5.0-pro",
+      "aspect": "1:1",
+      "resolution": "2K",
+      "refs": [],
+      "prompt": "中国Q版水墨国风武侠游戏美术，活泼年轻、现代国风气质，明亮清透不灰暗。色板：宣纸米#F8F4EA、朱砂#E2574C点缀、墨色#2B2B2B、竹青#7FB069黛青#4A7A6B点缀、淡金#D4AF37。Q版水墨国风同一Q版山贼动画帧表，2行×4列等距排列，头扎粗布头巾、面色黝黑、破旧麻布短褐、手持豁口砍刀，八格动作依次为：①待机站立 ②起步抬左腿 ③左脚迈出落地 ④右脚跟步 ⑤举手蓄力 ⑥向前挥手挥刀击出 ⑦正面普攻出刀 ⑧空白，每格角色完全相同、造型服装一致，纯白背景，每格独立完整全身，无任何文字无水印",
+      "split": [4, 2],
+      "cutout": true,
+      "out": "assets/ui/frames/spr_shanzei_sheet.png",
+      "frames_dir": "assets/ui/frames/spr_shanzei/"
+    },
+    {
+      "id": "spr_lang",
+      "desc": "野狼动画帧表（2×4=8帧）",
+      "model": "seedream-5.0-pro",
+      "aspect": "1:1",
+      "resolution": "2K",
+      "refs": [],
+      "prompt": "中国Q版水墨国风武侠游戏美术，活泼年轻、现代国风气质，明亮清透不灰暗。色板：宣纸米#F8F4EA、朱砂#E2574C点缀、墨色#2B2B2B、竹青#7FB069黛青#4A7A6B点缀、淡金#D4AF37。Q版水墨国风同一Q版野狼动画帧表，2行×4列等距排列，灰黑毛发、竖耳尖牙、狼爪微张，八格动作依次为：①待机站立 ②起步抬前爪 ③前爪迈出落地 ④后爪跟步 ⑤前爪抬起蓄力 ⑥向前扑抓击出 ⑦正面普攻撕咬 ⑧空白，每格角色完全相同、造型一致，纯白背景，每格独立完整全身，无任何文字无水印",
+      "split": [4, 2],
+      "cutout": true,
+      "out": "assets/ui/frames/spr_lang_sheet.png",
+      "frames_dir": "assets/ui/frames/spr_lang/"
+    },
+    {
+      "id": "spr_boss_lang",
+      "desc": "独眼狼王 Boss 动画帧表（2×4=8帧，战斗 scale 1.3）",
+      "model": "seedream-5.0-pro",
+      "aspect": "1:1",
+      "resolution": "2K",
+      "refs": [],
+      "prompt": "中国Q版水墨国风武侠游戏美术，活泼年轻、现代国风气质，明亮清透不灰暗。色板：宣纸米#F8F4EA、朱砂#E2574C点缀、墨色#2B2B2B、竹青#7FB069黛青#4A7A6B点缀、淡金#D4AF37。Q版水墨国风同一Q版狼王Boss动画帧表，2行×4列等距排列，独眼戴黑色眼罩、通体玄黑皮毛、金黄鬃毛、身披兽皮甲、肩甲狰狞、狼爪巨大，八格动作依次为：①待机站立 ②起步抬左腿 ③左脚迈出落地 ④右脚跟步 ⑤仰头咆哮蓄力 ⑥向前挥爪扑杀击出 ⑦正面普攻挥爪 ⑧空白，每格角色完全相同、造型一致，纯白背景，每格独立完整全身，无任何文字无水印",
+      "split": [4, 2],
+      "cutout": true,
+      "out": "assets/ui/frames/spr_boss_lang_sheet.png",
+      "frames_dir": "assets/ui/frames/spr_boss_lang/"
+    },
+    {
+      "id": "hero",
+      "desc": "主角动画帧表（2×4=8帧）；⚠ 不可用 hero_idle.png 做参考——那是闭目打坐像，会把闭眼锁进全部帧（2026-08-21 踩坑）",
+      "model": "seedream-5.0-pro",
+      "aspect": "1:1",
+      "resolution": "2K",
+      "refs": [],
+      "prompt": "中国Q版水墨国风武侠游戏美术，活泼年轻、现代国风气质，明亮清透不灰暗。色板：宣纸米#F8F4EA、朱砂#E2574C点缀、墨色#2B2B2B、竹青#7FB069黛青#4A7A6B点缀、淡金#D4AF37。Q版水墨国风同一Q版少年侠客动画帧表，束发髻戴发带、白袍劲装、剑眉、双眼睁开目光有神有活力、精神饱满的站立姿态（不是打坐不是闭目），2行×4列等距排列，八格动作依次为：①待机站立 ②起步抬左腿 ③左脚迈出落地 ④右脚跟步 ⑤举手蓄力 ⑥向前挥手挥剑击出 ⑦正面普攻出剑 ⑧空白，每格角色完全相同、造型服装一致，纯白背景，每格独立完整全身，无任何文字无水印",
+      "split": [4, 2],
+      "cutout": true,
+      "out": "assets/ui/frames/hero_sheet.png",
+      "frames_dir": "assets/ui/frames/hero/"
+    },
+    {
+      "id": "scene_battle",
+      "desc": "战斗棋盘背景（75 规格：完整 2.5D 战场 + 中央嵌棋盘）",
+      "model": "seedream-5.0-pro",
+      "aspect": "9:16",
+      "resolution": "2K",
+      "refs": [],
+      "prompt": "中国Q版水墨国风武侠游戏场景美术，活泼年轻、明亮清透不灰暗。色板：宣纸米#F8F4EA、墨色#2B2B2B、竹青#7FB069黛青#4A7A6B、朱砂#E2574C点缀、淡金#D4AF37。竖版9:16完整2.5D战斗场景背景图（参考老网金：山道战场/草地大地图，立体透视，远近景深），中央嵌入一个2.5D等距菱形棋盘（绿色战斗台，带阴影嵌在场景中，占画面中央50%），无人物无文字，边缘暗角聚焦中央棋盘，无水印",
+      "split": null,
+      "cutout": false,
+      "out": "assets/ui/scene_battle.png",
+      "frames_dir": null
+    },
+    {
+      "id": "scene_jianghu",
+      "desc": "江湖主场景正式版（2.5D 可走野外，对齐 UI 稿定稿视觉）",
+      "model": "seedream-5.0",
+      "aspect": "9:16",
+      "resolution": "2K",
+      "refs": [],
+      "prompt": "中国Q版水墨国风武侠游戏场景美术，活泼年轻、现代国风气质，明亮清透不灰暗。色板：宣纸米#F8F4EA、墨色#2B2B2B、竹青#7FB069黛青#4A7A6B、朱砂#E2574C点缀、淡金#D4AF37。竖版9:16 2.5D游戏江湖野外场景：主体是斜向透视的可行走地面（前景草地、石板野径、几株松树），地面开阔平坦占画面主体，角色可在上面移动，远处水墨晕染远山云雾，顶部与底部留出少量空间供UI叠放，无人物无文字无水印",
+      "split": null,
+      "cutout": false,
+      "out": "assets/ui/scene_jianghu.png",
+      "frames_dir": null
+    }
+  ]
+}

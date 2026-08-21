@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>放置武侠 · 主界面 v11（可交互原型）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --c-ink:#2B2B2B; --c-ink-2:#444444; --c-ink-30:rgba(43,43,43,.30); --c-ink-25:rgba(43,43,43,.25); --c-ink-12:rgba(43,43,43,.12);
+    --c-paper:#F8F4EA; --c-paper-2:#F0E6D4; --c-paper-3:#E0D2B4; --c-paper-93:rgba(248,244,234,.93); --c-paper-70:rgba(248,244,234,.70); --c-paper-60:rgba(248,244,234,.60);
+    --c-cinnabar:#E2574C; --c-cinnabar-d:#C94A40; --c-cinnabar-12:rgba(226,87,76,.12); --c-coral:#FF7E67;
+    --c-bamboo:#7FB069; --c-teal:#4A7A6B; --c-gold:#D4AF37; --c-gold-60:rgba(212,175,55,.60); --c-purple:#6B5B95; --c-sky:#A8C4C8; --c-lotus:#E8D8DE;
+    --radius-xs:6px; --radius-sm:10px; --radius-md:14px; --radius-lg:18px; --radius-xl:20px; --radius-pill:999px;
+    --shadow-sm:0 2px 6px rgba(43,43,43,.08); --shadow-md:0 3px 10px rgba(43,43,43,.12); --shadow-lg:0 6px 18px rgba(43,43,43,.20); --shadow-xl:0 12px 32px rgba(43,43,43,.28);
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px;
+    --shadow-fog: 0 0 60px rgba(232,225,205,.65);
+    --shadow-hero: 0 12px 32px rgba(43,43,43,.35);
+    --shadow-card-ink: 0 8px 20px rgba(43,43,43,.08);
+    --noise-paper: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .06 0'/></filter><rect width='80' height='80' filter='url(%23n)'/></svg>");
+    --anim-breathe: 3.2s ease-in-out infinite alternate;
+    --anim-pulse: 3.2s ease-in-out infinite alternate;
+    --anim-float-x: 16s linear infinite;
+    --anim-card-in: .4s ease-out backwards;
+    --ease-ink: cubic-bezier(.2,.7,.2,1);
+  }
+  body { background: #ddd5c3; font-family: "Songti SC","SimSun",serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+  .stage { text-align: center; }
+  .stage-title { font-size: 14px; color: #633806; margin-bottom: 6px; letter-spacing: 2px; }
+  .hint { font-size: 11px; color: #5F5E5A; margin-bottom: 10px; }
+  .gpt-toggle { display: inline-block; font-size: 11px; color: #633806; background: #F0E6D4; border: 1.5px solid #633806; border-radius: 999px; padding: 4px 12px; margin-bottom: 10px; cursor: pointer; user-select: none; }
+  .gpt-toggle.active { background: #633806; color: #F8F4EA; }
+  .phone { width: 375px; height: 667px; border-radius: 32px; overflow: hidden; box-shadow: 0 16px 48px rgba(43,43,43,.4); position: relative; background: #F8F4EA; border: 3px solid #2B2B2B; display: flex; flex-direction: column; }
+
+  .bg { position: absolute; inset: 0; }
+  .bg img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.08) translateY(-3%); transform-origin: 50% 30%; }
+  .fog-far { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(232,225,205,0) 0%, rgba(232,225,205,0) 30%, rgba(232,225,205,.55) 70%, rgba(232,225,205,.75) 100%); animation: fade-in .6s ease-out backwards; }
+  .fog-side { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse 80% 50% at 100% 0%, rgba(255,237,205,.18), transparent 60%); }
+  .fog-vig { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: radial-gradient(ellipse 110% 80% at 50% 50%, transparent 55%, rgba(43,43,43,.28) 100%); }
+  .floater { position: absolute; z-index: 4; pointer-events: none; opacity: 0; font-size: 16px; color: rgba(212,175,55,.65); animation: float-x var(--anim-float-x) linear infinite; font-family: serif; text-shadow: 0 0 4px rgba(212,175,55,.4); }
+  .floater.f1 { top: 22%; left: -8%; animation-duration: 18s; animation-delay: -2s; }
+  .floater.f2 { top: 42%; left: -8%; animation-duration: 24s; animation-delay: -9s; opacity: .25; }
+  .floater.f3 { top: 62%; left: -8%; animation-duration: 14s; animation-delay: -5s; }
+  .floater.f4 { top: 30%; left: -8%; animation-duration: 20s; animation-delay: -12s; opacity: .2; }
+  .floater.f5 { top: 78%; left: -8%; animation-duration: 16s; animation-delay: -1s; opacity: .15; }
+  @keyframes float-x {
+    0%   { transform: translateX(0) translateY(0) rotate(0); opacity: 0; }
+    10%  { opacity: .4; }
+    50%  { transform: translateX(60vw) translateY(-6px) rotate(15deg); opacity: .5; }
+    90%  { opacity: .3; }
+    100% { transform: translateX(115vw) translateY(4px) rotate(30deg); opacity: 0; }
+  }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(43,43,43,.15), transparent 12%, transparent 78%, rgba(43,43,43,.2)); }
+
+  .topbar { position: relative; z-index: 10; margin: 8px 8px 0; height: 46px; flex: none; background-image: var(--noise-paper), linear-gradient(180deg, #8B6F47, #6B4E2D); border: 2px solid #2B2B2B; border-radius: 12px; box-shadow: 0 4px 14px rgba(43,43,43,.35), inset 0 2px 0 rgba(255,255,255,.18), inset 0 -2px 0 rgba(43,43,43,.3), inset 3px 0 0 rgba(212,175,55,.35), inset -3px 0 0 rgba(212,175,55,.35); display: flex; align-items: center; padding: 0 6px; gap: 4px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #D4AF37; box-shadow: 0 0 0 2px #2B2B2B, 0 2px 6px rgba(0,0,0,.4); background: #E8D8DE; overflow: hidden; flex: none; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .nick { font-size: 11px; color: #F8F4EA; font-weight: 700; font-family: "Kaiti SC",serif; text-shadow: 0 1px 2px rgba(0,0,0,.5); white-space: nowrap; }
+  .exp { font-size: 10px; color: rgba(248,244,234,.72); white-space: nowrap; }
+  .spacer { flex: 1; }
+  .silver { display: flex; align-items: center; gap: 2px; font-size: 10px; color: #F8F4EA; font-weight: 600; padding: 2px 5px; background: rgba(43,43,43,.4); border: 1px solid rgba(212,175,55,.7); border-radius: 8px; white-space: nowrap; }
+  .silver img { width: 12px; height: 12px; flex: none; object-fit: contain; }
+  .learn-pts { display: flex; align-items: center; gap: 2px; font-size: 10px; color: #F8F4EA; font-weight: 600; padding: 2px 5px; background: rgba(43,43,43,.4); border: 1px solid rgba(212,175,55,.7); border-radius: 8px; white-space: nowrap; }
+  .learn-pts img { width: 12px; height: 12px; flex: none; object-fit: contain; }
+  .setting { width: 22px; height: 22px; border: 1.5px solid rgba(212,175,55,.7); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #F8F4EA; background: rgba(43,43,43,.35); flex: none; }
+  .user-mid { display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; }
+  .nick-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
+  .sect-tag { display: flex; align-items: center; gap: 3px; font-size: 9px; color: #F8F4EA; font-family: "Kaiti SC",serif; background: rgba(43,43,43,.4); border: 1px solid rgba(212,175,55,.55); border-radius: 6px; padding: 0 5px; white-space: nowrap; }
+  .sect-tag::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: #D4AF37; flex: none; }
+  .exp-row { display: flex; align-items: center; gap: 3px; }
+  .exp-row svg { width: 11px; height: 11px; flex: none; }
+  .shop { width: 22px; height: 22px; border: 1.5px solid rgba(212,175,55,.7); border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(43,43,43,.35); flex: none; }
+  .shop svg { width: 11px; height: 11px; }
+
+  .scene { position: relative; z-index: 5; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 12px 4px; overflow-y: auto; }
+  .page { display: none; width: 100%; flex-direction: column; gap: 10px; }
+  .page.active { display: flex; }
+  #p-jianghu { flex: 1; }
+
+  .card { background-image: var(--noise-paper), linear-gradient(var(--c-paper-93), var(--c-paper-93)); border: 1.5px solid var(--c-ink); border-radius: var(--radius-md); padding: 10px 12px; box-shadow: var(--shadow-md), var(--shadow-card-ink); animation: card-in var(--anim-card-in); }
+  .card-t { font-size: 12px; color: #2B2B2B; font-weight: 700; font-family: "Kaiti SC",serif; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .card-t::before { content: ""; width: 4px; height: 13px; background: #E2574C; border-radius: 2px; display: inline-block; }
+
+  /* ===== 二级 Tab（页内切换） ===== */
+  .subtabbar { display: flex; gap: 6px; background: var(--c-paper-60); border: 1px solid var(--c-ink-25); border-radius: var(--radius-md); padding: 4px; }
+  .subtab { flex: 1; text-align: center; padding: 6px 0; font-size: 11px; color: var(--c-ink-2); font-weight: 600; font-family: "Kaiti SC",serif; border-radius: var(--radius-sm); cursor: pointer; position: relative; overflow: hidden; }
+  .subtab::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--c-cinnabar); transition: width .25s var(--ease-ink); }
+  .subtab.active { background: transparent; color: var(--c-ink); font-weight: 700; }
+  .subtab.active::after { width: 100%; }
+  .subpage { display: none; flex-direction: column; gap: 10px; }
+  .subpage.active { display: flex; }
+
+  .map-card { position: relative; border-radius: var(--radius-xl); overflow: hidden; border: 2px solid var(--c-ink); background-image: var(--noise-paper), linear-gradient(rgba(248,244,234,.2), rgba(248,244,234,.2)); box-shadow: var(--shadow-lg), var(--shadow-card-ink); animation: card-in var(--anim-card-in); }
+  .map-card img { width: 100%; height: 210px; object-fit: cover; display: block; }
+  .map-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(43,43,43,.55)); }
+  .map-tag { position: absolute; top: 8px; left: 8px; background: rgba(248,244,234,.92); border: 1.5px solid var(--c-ink); border-radius: var(--radius-sm); padding: 3px 9px; font-size: 11px; color: var(--c-ink); font-weight: 700; font-family: "Kaiti SC",serif; }
+  .map-name { position: absolute; bottom: 40px; left: 12px; color: #F8F4EA; font-size: 14px; font-weight: 700; font-family: "Kaiti SC",serif; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  .map-exp { position: absolute; bottom: 22px; left: 12px; color: #E8D8DE; font-size: 11px; }
+  .map-fight { position: absolute; bottom: 8px; right: 8px; padding: 7px 16px; background: linear-gradient(180deg,#E2574C,#C94A40); border: 1.5px solid var(--c-ink); border-radius: var(--radius-xl); color: var(--c-ink); font-size: 15px; font-weight: 700; font-family: "Kaiti SC",serif; box-shadow: var(--shadow-md), 0 0 8px rgba(226,87,76,.15); animation: cinnabar-glow 2.4s ease-in-out infinite alternate; }
+  @keyframes cinnabar-glow {
+    from { box-shadow: var(--shadow-md), 0 0 8px rgba(226,87,76,.15); }
+    to   { box-shadow: var(--shadow-md), 0 0 18px rgba(226,87,76,.35); }
+  }
+  @keyframes card-in { from { opacity: 0; filter: blur(2px); transform: translateY(6px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
+  .map-progress { position: absolute; bottom: 10px; left: 12px; right: 88px; height: 6px; background: rgba(43,43,43,.6); border-radius: 3px; overflow: hidden; }
+  .map-progress i { display: block; height: 100%; width: 38%; background: linear-gradient(90deg,#7FB069,#4A7A6B); }
+
+  /* 江湖页 · 主角展示 */
+  .map-card.compact img { height: 120px; }
+  .map-card.compact .map-name { bottom: 20px; left: 10px; font-size: 12px; }
+  .map-card.compact .map-progress { bottom: 6px; left: 10px; right: 10px; }
+  .hero-stage { position: relative; height: 240px; display: flex; align-items: center; justify-content: center; }
+  .hero-stage .hero-idle { position: relative; z-index: 2; height: 220px; width: auto; object-fit: contain; filter: drop-shadow(var(--shadow-hero)); animation: breathe var(--anim-breathe); }
+  .hero-stage .hero-glow { position: absolute; bottom: 8px; left: 50%; width: 220px; height: 36px; background: radial-gradient(ellipse at center, rgba(226,87,76,.55), transparent 70%); filter: blur(8px); z-index: 1; animation: pulse var(--anim-pulse); transform-origin: 50% 50%; }
+  @keyframes breathe { from { transform: scale(1); } to { transform: scale(1.025); } }
+  @keyframes pulse {
+    from { opacity: .55; transform: translateX(-50%) scale(1); }
+    to   { opacity: .9;  transform: translateX(-50%) scale(1.08); }
+  }
+  .hero-stage .hero-info { position: absolute; top: 4px; left: 12px; z-index: 3; }
+  .hero-stage .hero-name { font-size: 14px; color: var(--c-ink); font-weight: 700; font-family: "Kaiti SC",serif; }
+  .hero-stage .hero-title { font-size: 11px; color: var(--c-ink-2); }
+  .hero-stage .hero-fight { position: absolute; right: 12px; bottom: 18px; z-index: 3; }
+  .npc { position: absolute; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .npc .np-head { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--c-ink); display: flex; align-items: center; justify-content: center; font-size: 16px; font-family: "Kaiti SC",serif; color: var(--c-ink); box-shadow: 0 5px 12px rgba(43,43,43,.3), inset 0 -2px 4px rgba(43,43,43,.12); }
+  .npc .np-name { font-size: 11px; color: #F8F4EA; background: rgba(107,78,45,.92); padding: 2px 8px; border-radius: var(--radius-xs); font-family: "Kaiti SC",serif; border: 1px solid rgba(212,175,55,.5); box-shadow: 0 2px 6px rgba(43,43,43,.25); }
+  .npc-l { left: 6px; top: 48%; }
+  .npc-r { right: 56px; top: 42%; }
+  .npc-l .np-head { transform: rotate(-6deg); }
+  .npc-r .np-head { transform: rotate(4deg); }
+
+  .actions { display: flex; gap: 8px; }
+  .social-entry { display: flex; align-items: center; gap: 10px; background-image: var(--noise-paper), linear-gradient(var(--c-paper-93), var(--c-paper-93)); border: 1.5px solid var(--c-ink); border-radius: var(--radius-md); padding: 8px 12px; box-shadow: var(--shadow-md); animation: card-in var(--anim-card-in); }
+  .social-entry .se-ic { width: 34px; height: 34px; flex: none; border-radius: 50%; border: 1.5px solid var(--c-ink); background: var(--c-paper-2); color: var(--c-ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-family: "Kaiti SC",serif; font-weight: 700; overflow: hidden; }
+  .social-entry .se-ic img { width: 100%; height: 100%; object-fit: cover; }
+  .social-entry .se-info { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+  .social-entry .se-t { font-size: 13px; color: var(--c-ink); font-weight: 700; font-family: "Kaiti SC",serif; }
+  .social-entry .se-d { font-size: 11px; color: var(--c-ink-2); }
+  .social-entry .se-btn { padding: 6px 14px; background: var(--c-cinnabar-d); color: #fff; font-size: 12px; font-weight: 700; border: none; border-radius: var(--radius-pill); font-family: "Kaiti SC",serif; }
+  .btn-idle, .btn-boss { flex: 1; height: 42px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px solid var(--c-ink); border-radius: var(--radius-lg); font-size: 15px; font-weight: 700; font-family: "Kaiti SC",serif; cursor: pointer; }
+  .btn-idle { background: linear-gradient(180deg,#F0E6D4,#E0D2B4); color: #2B2B2B; box-shadow: 0 3px 0 #B4A98C; }
+  .btn-boss { background: linear-gradient(180deg,#2B2B2B,#444); color: #D4AF37; box-shadow: 0 3px 0 #111; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .stat { display: flex; justify-content: space-between; background: var(--c-paper-60); border-radius: var(--radius-sm); padding: 5px 8px; font-size: 11px; color: var(--c-ink); }
+  .stat b { color: #E2574C; font-weight: 700; }
+  .attr-stage { position: relative; display: flex; align-items: stretch; min-height: 196px; padding: 6px 0; }
+  .attr-figure { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 0; opacity: .16; pointer-events: none; }
+  .attr-figure svg { width: 124px; height: 196px; }
+  .attr-col { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; padding: 4px 6px; }
+  .attr-item { display: flex; align-items: center; justify-content: space-between; background: var(--c-paper-60); border-radius: var(--radius-sm); padding: 8px 12px; }
+  .attr-item .a-nm { font-size: 12px; color: var(--c-ink); font-family: "Kaiti SC",serif; }
+  .attr-item .a-val { font-size: 15px; color: var(--c-cinnabar); font-weight: 700; }
+  .row-list { display: flex; flex-direction: column; gap: 4px; }
+  .row-item { display: flex; align-items: center; gap: 8px; background: var(--c-paper-60); border-radius: var(--radius-sm); padding: 5px 9px; box-shadow: none; }
+  .row-item .nm { font-size: 11px; color: #2B2B2B; font-weight: 600; font-family: "Kaiti SC",serif; }
+  .row-item .ic-book { width: 26px; height: 26px; flex: none; border-radius: 6px; object-fit: cover; object-position: 50% 40%; filter: contrast(1.1) saturate(1.15); }
+  .row-item .lv { font-size: 11px; color: var(--c-ink-2); }
+  .bar-mini { flex: 1; height: 5px; background: #2B2B2B; border-radius: 3px; overflow: hidden; }
+  .bar-mini i { display: block; height: 100%; background: linear-gradient(90deg,#7FB069,#4A7A6B); }
+  .row-item .btn-m { padding: 3px 12px; background: var(--c-cinnabar-d); color: #fff; font-size: 12px; font-weight: 700; border: none; border-radius: var(--radius-pill); font-family: "Kaiti SC",serif; }
+
+  /* ===== 武学装备位·紧凑布局（外功+内功一行 / 轻功·特技·绝学一行） ===== */
+  .wuxue-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .wx-cell { position: relative; background-image: var(--noise-paper), linear-gradient(var(--c-paper-70), var(--c-paper-70)); border: 1.5px solid var(--c-ink); border-radius: var(--radius-sm); padding: 6px 6px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 64px; }
+  .wx-cell.filled { box-shadow: var(--shadow-sm); }
+  .wx-cell.empty { border-style: dashed; border-color: var(--c-ink-30); }
+  .wx-cell.empty .wx-name { color: var(--c-ink-2); font-weight: 400; }
+  .wx-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .wx-icon svg { width: 19px; height: 19px; }
+  .wx-name { font-size: 12px; color: var(--c-ink); font-weight: 700; font-family: "Kaiti SC",serif; text-align: center; line-height: 1.2; }
+  .wx-lv { font-size: 10px; color: var(--c-cinnabar); font-weight: 700; line-height: 1.2; }
+  .wx-cell.empty .wx-lv { color: transparent; }
+  .wx-main { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .wx-tag { font-size: 9px; color: var(--c-ink-2); background: var(--c-paper-2); border: 1px solid var(--c-ink-25); border-radius: var(--radius-xs); padding: 0 4px; line-height: 1.4; }
+  .wx-wide { width: calc(50% - 3px); }
+  .wx-narrow { width: calc(33.333% - 4px); }
+  .wx-wide .wx-name { font-size: 12px; }
+
+  /* ===== 江湖 Tab · 2.5D 场景（Leo 定义：场景+角色移动+NPC+助战+闯关/闭关）===== */
+  .jh2-scene { position: relative; flex: 1; min-height: 320px; border: 1.5px solid var(--c-ink); border-radius: var(--radius-md); overflow: hidden; background: #2B2B2B; }
+  .jh2-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+
+  /* 左上角：场景名称 */
+  .jh2-loc { position: absolute; top: 8px; left: 8px; z-index: 6; font-size: 11px; color: #F8F4EA; font-weight: 700; font-family: "Kaiti SC",serif; text-shadow: 0 1px 2px rgba(0,0,0,.7); background: rgba(43,43,43,.45); border: 1px solid rgba(212,175,55,.45); border-radius: 6px; padding: 2px 7px; }
+
+  /* 右上角：助战入口（场景内悬浮） */
+  .jh2-assist { position: absolute; top: 8px; right: 8px; z-index: 6; display: flex; align-items: center; gap: 5px; background: rgba(43,43,43,.65); border: 1px solid rgba(212,175,55,.6); border-radius: 999px; padding: 3px 8px 3px 4px; }
+  .jh2-assist-ic { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--c-gold); object-fit: cover; }
+  .jh2-assist-badge { position: absolute; top: -3px; left: 20px; min-width: 13px; height: 13px; padding: 0 3px; background: var(--c-cinnabar); color: #F8F4EA; font-size: 8px; font-weight: 700; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-family: "Kaiti SC",serif; }
+  .jh2-assist-t { font-size: 11px; color: #F8F4EA; font-weight: 700; font-family: "Kaiti SC",serif; }
+  .jh2-assist-d { font-size: 8px; color: rgba(248,244,234,.8); }
+
+  /* 角色 */
+  .jh2-hero { position: absolute; left: 50%; bottom: 150px; transform: translateX(-50%); width: 96px; height: auto; filter: drop-shadow(0 6px 8px rgba(43,43,43,.55)); z-index: 3; animation: jh2-breathe 3.2s ease-in-out infinite alternate; }
+  @keyframes jh2-breathe { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.02); } }
+  .jh2-hero-name { position: absolute; left: 50%; bottom: 248px; transform: translateX(-50%); z-index: 4; font-size: 10px; color: #F8F4EA; background: rgba(43,43,43,.7); border: 1px solid rgba(212,175,55,.6); border-radius: 6px; padding: 1px 8px; font-family: "Kaiti SC",serif; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+  .jh2-lv { color: var(--c-gold); }
+
+  /* NPC 战斗怪（随机走动、主动攻击） */
+  .jh2-mob { position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .jh2-mob .jh2-mob-hp { width: 40px; height: 4px; background: rgba(43,43,43,.7); border-radius: 2px; overflow: hidden; }
+  .jh2-mob .jh2-mob-hp i { display: block; height: 100%; background: linear-gradient(90deg,#C94A40,#E2574C); }
+  .jh2-mob .jh2-mob-ic { width: 34px; height: 34px; object-fit: cover; border-radius: 50%; border: 1px solid var(--c-ink); background: rgba(43,43,43,.6); }
+  .jh2-mob .jh2-mob-name { font-size: 8px; color: #F8F4EA; background: rgba(43,43,43,.65); border-radius: 4px; padding: 0 4px; font-family: "Kaiti SC",serif; white-space: nowrap; }
+  .jh2-mob.m1 { left: 5%; bottom: 240px; }
+  .jh2-mob.m2 { left: 22%; top: 90px; }
+  .jh2-mob.m3 { right: 8%; top: 60px; }
+
+  /* 战斗伤害飘字 */
+  .jh2-fight-fx { position: absolute; z-index: 6; font-size: 15px; color: #E2574C; font-weight: 700; font-family: "Kaiti SC",serif; text-shadow: 0 1px 3px rgba(0,0,0,.6); animation: jh2-fxup 1.2s ease-out infinite alternate; }
+  .jh2-fight-fx.fx2 { color: #F8F4EA; font-size: 12px; }
+  @keyframes jh2-fxup { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-14px); opacity: .3; } }
+
+  /* 右上角：助战入口 */
+  .jh2-assist { position: absolute; top: 8px; right: 8px; z-index: 6; display: flex; align-items: center; gap: 5px; background: rgba(43,43,43,.65); border: 1px solid rgba(212,175,55,.6); border-radius: 999px; padding: 3px 8px 3px 4px; }
+  .jh2-assist-ic { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--c-gold); object-fit: cover; }
+  .jh2-assist-badge { position: absolute; top: -3px; left: 20px; min-width: 13px; height: 13px; padding: 0 3px; background: var(--c-cinnabar); color: #F8F4EA; font-size: 8px; font-weight: 700; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-family: "Kaiti SC",serif; }
+  .jh2-assist-t { font-size: 11px; color: #F8F4EA; font-weight: 700; font-family: "Kaiti SC",serif; }
+  .jh2-assist-d { font-size: 8px; color: rgba(248,244,234,.8); }
+
+  /* 挂机模式：打怪动画 + 血条/内力条 + 收益条（点「挂机」后显示，在按钮上方） */
+  .jh2-hangup { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); z-index: 6; display: none; flex-direction: column; gap: 5px; width: 88%; }
+  body[data-jh2="fighting"] .jh2-hangup { display: flex; }
+  .jh2-hangup-battle { display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(43,43,43,.78); border: 1px solid var(--c-gold); border-radius: 10px; padding: 6px 8px; position: relative; }
+  .jh2-hangup-atk, .jh2-hangup-def { font-size: 11px; color: #F8F4EA; font-weight: 700; font-family: "Kaiti SC",serif; }
+  .jh2-hangup-atk { color: #FFD9B0; }
+  .jh2-hangup-vs { font-size: 12px; color: var(--c-cinnabar); font-weight: 700; }
+  .jh2-hangup-battle .jh2-fight-fx { font-size: 13px; left: 34%; top: 30px; }
+  .jh2-hangup-battle .jh2-fight-fx.fx2 { font-size: 11px; left: 56%; top: 34px; }
+  .jh2-bars { display: flex; gap: 6px; }
+  .jh2-bar { flex: 1; height: 12px; background: rgba(43,43,43,.7); border: 1px solid rgba(212,175,55,.6); border-radius: 6px; overflow: hidden; position: relative; }
+  .jh2-bar i { display: block; height: 100%; }
+  .jh2-bar.hp i { background: linear-gradient(90deg,#C94A40,#E2574C); }
+  .jh2-bar.mp i { background: linear-gradient(90deg,#4A7A6B,#7FB069); }
+  .jh2-bar span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #F8F4EA; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,.8); font-family: "Kaiti SC",serif; }
+  .jh2-gain { display: flex; gap: 5px; }
+  .jh2-gain-item { flex: 1; text-align: center; font-size: 10px; color: #F8F4EA; background: rgba(43,43,43,.7); border: 1px solid rgba(212,175,55,.5); border-radius: 8px; padding: 4px 2px; font-family: "Kaiti SC",serif; }
+  .jh2-gain-item b { color: #FFD9B0; font-weight: 700; }
+
+  /* 手动模式提示（已移除：改为引导，不常驻） */
+
+  /* 场景内底部三按钮（闭关 | 挂机 | 挑战Boss） */
+  .jh2-actions { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 7; display: flex; gap: 6px; width: 92%; }
+  .jh2-btn { flex: 1; height: 32px; display: flex; align-items: center; justify-content: center; gap: 4px; border: 1.5px solid var(--c-ink); border-radius: var(--radius-md); font-size: 12px; font-weight: 700; font-family: "Kaiti SC",serif; cursor: pointer; }
+  .jh2-btn-idle { background: linear-gradient(180deg,#F0E6D4,#E0D2B4); color: #2B2B2B; box-shadow: 0 2px 0 #B4A98C; }
+  .jh2-btn-fight { background: linear-gradient(180deg,#2B2B2B,#444); color: #D4AF37; box-shadow: 0 2px 0 #111; }
+  .jh2-btn-boss { background: linear-gradient(180deg,#E2574C,#C94A40); color: #2B2B2B; box-shadow: 0 2px 0 #993C1D; }
+  .learn-tabs { display: flex; gap: 4px; margin-bottom: 6px; background: var(--c-paper-60); border: 1px solid var(--c-ink-25); border-radius: var(--radius-sm); padding: 3px; }
+  .learn-tab { flex: 1; text-align: center; padding: 4px 0; font-size: 10px; color: var(--c-ink-2); font-weight: 600; font-family: "Kaiti SC",serif; border-radius: var(--radius-xs); cursor: pointer; border-bottom: 2px solid transparent; }
+  .learn-tab.active { background: transparent; color: var(--c-ink); font-weight: 700; border-bottom-color: var(--c-cinnabar); }
+  .learn-group { display: none; flex-direction: column; gap: 4px; }
+  .learn-group.active { display: flex; }
+  .learn-empty { text-align: center; font-size: 11px; color: var(--c-ink-2); padding: 10px 0; background: var(--c-paper-60); border-radius: var(--radius-sm); }
+
+  /* ===== 基础武学 · 分类二级 Tab ===== */
+  .base-tabs { display: flex; gap: 4px; margin-bottom: 6px; background: var(--c-paper-60); border: 1px solid var(--c-ink-25); border-radius: var(--radius-sm); padding: 3px; }
+  .base-tab { flex: 1; text-align: center; padding: 4px 0; font-size: 10px; color: var(--c-ink-2); font-weight: 600; font-family: "Kaiti SC",serif; border-radius: var(--radius-xs); cursor: pointer; border-bottom: 2px solid transparent; }
+  .base-tab.active { background: transparent; color: var(--c-ink); font-weight: 700; border-bottom-color: var(--c-cinnabar); }
+  .base-group { display: none; flex-direction: column; gap: 4px; }
+  .base-group.active { display: flex; }
+  .row-item .ef { font-size: 10px; color: var(--c-cinnabar); background: var(--c-cinnabar-12); border-radius: var(--radius-xs); padding: 1px 6px; flex: none; font-weight: 600; }
+
+  /* ===== 装备 · 装备/背包二级 Tab ===== */
+  .zb-tabs { display: flex; gap: 4px; margin-bottom: 6px; background: var(--c-paper-60); border: 1px solid var(--c-ink-25); border-radius: var(--radius-md); padding: 4px; }
+  .zb-tab { flex: 1; text-align: center; padding: 6px 0; font-size: 13px; color: var(--c-ink-2); font-weight: 600; font-family: "Kaiti SC",serif; border-radius: var(--radius-sm); cursor: pointer; border-bottom: 2px solid transparent; }
+  .zb-tab.active { background: transparent; color: var(--c-ink); font-weight: 700; border-bottom-color: var(--c-cinnabar); }
+  .zb-group { display: none; flex-direction: column; gap: 10px; }
+  .zb-group.active { display: flex; }
+
+  /* ===== 装备 Tab · 人物居中 + 两侧装备槽 ===== */
+  .equip-card { display: flex; gap: 8px; padding: 8px !important; align-items: stretch; }
+  .equip-col { flex: 1; display: flex; flex-direction: column; gap: 6px; justify-content: center; min-width: 0; }
+  .equip-slot { background-image: var(--noise-paper), linear-gradient(var(--c-paper-70), var(--c-paper-70)); border: 1.5px dashed var(--c-ink-30); border-radius: var(--radius-sm); padding: 6px 4px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .equip-slot.filled { border-style: solid; border-color: var(--c-ink); background: rgba(228,240,230,.9); box-shadow: inset 0 0 0 1px rgba(74,122,107,.3); }
+  .equip-slot .es-ic { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--c-ink); background: var(--c-paper-2); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--c-ink); font-family: "Kaiti SC",serif; font-weight: 700; }
+  .equip-slot .es-name { font-size: 10px; color: var(--c-ink); font-family: "Kaiti SC",serif; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .equip-slot .es-stat { font-size: 9px; color: var(--c-cinnabar); font-weight: 700; }
+  .equip-figure { flex: none; width: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background-image: var(--noise-paper), linear-gradient(var(--c-paper-60), var(--c-paper-60)); border: 1.5px dashed var(--c-ink-25); border-radius: var(--radius-sm); padding: 4px; }
+  .equip-hero { width: 104px; height: auto; filter: drop-shadow(0 4px 6px rgba(43,43,43,.18)); }
+  .equip-fx { font-size: 9px; color: var(--c-ink-2); text-align: center; font-family: "Kaiti SC",serif; line-height: 1.3; }
+  .equip-list { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .equip-row { display: flex; align-items: center; gap: 6px; background: var(--c-paper-60); border-radius: var(--radius-sm); padding: 3px 6px; }
+  .equip-row .eq-slot { width: 22px; height: 22px; flex: none; border-radius: 5px; border: 1.5px dashed var(--c-ink-30); background: var(--c-paper-2); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--c-ink-2); font-family: "Kaiti SC",serif; }
+  .equip-row .eq-slot.on { border-style: solid; border-color: var(--c-ink); background: rgba(228,240,230,.9); color: var(--c-ink); box-shadow: inset 0 0 0 1px rgba(74,122,107,.3); }
+  .equip-row .ep-name { font-size: 11px; color: var(--c-ink); font-weight: 600; font-family: "Kaiti SC",serif; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .equip-row .ep-name.empty { color: var(--c-ink-2); font-weight: 400; }
+  .equip-row .ep-q { font-size: 9px; padding: 0 5px; border-radius: var(--radius-xs); font-weight: 700; flex: none; }
+  .ep-q.q-white { background: rgba(248,244,234,.9); color: var(--c-ink); border: 1px solid var(--c-ink); }
+  .ep-q.q-green { background: var(--c-bamboo); color: #fff; }
+  .ep-q.q-blue { background: var(--c-teal); color: #fff; }
+  .ep-q.q-purple { background: var(--c-purple); color: #fff; }
+  .ep-q.q-orange { background: var(--c-coral); color: var(--c-ink); }
+  .equip-row .ep-stat { font-size: 11px; color: var(--c-cinnabar); font-weight: 700; flex: none; min-width: 38px; text-align: right; font-family: "Kaiti SC",serif; }
+  .bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+  .bonus { display: flex; justify-content: space-between; background: var(--c-paper-60); border-radius: var(--radius-sm); padding: 5px 10px; }
+  .bonus span { font-size: 11px; color: var(--c-ink-2); }
+  .bonus b { font-size: 13px; color: var(--c-cinnabar); font-weight: 700; }
+  .bonus-note { font-size: 10px; color: var(--c-ink-2); margin-top: 6px; text-align: center; }
+
+  /* ===== 背包 Tab · 网格 ===== */
+  .bag-tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+  .bag-tab { flex: 1; text-align: center; padding: 4px 0; font-size: 11px; color: var(--c-ink-2); font-weight: 600; font-family: "Kaiti SC",serif; background: var(--c-paper-60); border: 1px solid var(--c-ink-25); border-radius: var(--radius-sm); cursor: pointer; }
+  .bag-tab.active { background: var(--c-paper-2); color: var(--c-ink); border-color: var(--c-cinnabar); }
+  .bag-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; background-image: var(--noise-paper), linear-gradient(rgba(248,244,234,.85), rgba(248,244,234,.85)); border: 1px solid var(--c-ink); border-radius: var(--radius-sm); padding: 5px; }
+  .bag-cell { aspect-ratio: 1; background: var(--c-paper-70); border: 1.5px dashed var(--c-ink-30); border-radius: 4px; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .1s; }
+  .bag-cell.filled { border-style: solid; border-color: var(--c-ink); background: rgba(228,240,230,.9); }
+  .bag-cell:hover { transform: scale(1.05); border-color: var(--c-cinnabar); }
+  .bag-cell .bc-ic { font-size: 11px; color: var(--c-ink); font-family: "Kaiti SC",serif; font-weight: 700; }
+  .bag-cell .qty { position: absolute; bottom: 0; right: 2px; font-size: 8px; color: var(--c-ink); font-weight: 700; font-family: "Kaiti SC",serif; }
+  .bag-hint { font-size: 10px; color: var(--c-ink-2); margin-top: 4px; text-align: center; }
+
+  .slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .slot { aspect-ratio: 1; background-image: var(--noise-paper), linear-gradient(var(--c-paper-70), var(--c-paper-70)); border: 1.5px dashed var(--c-ink-30); border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--c-ink-2); }
+  .slot.on { border-style: solid; border-color: var(--c-teal); color: var(--c-ink); background: rgba(228,240,230,.9); box-shadow: inset 0 0 0 1px rgba(74,122,107,.3); }
+  .slot .ic { font-size: 17px; color: var(--c-ink); font-family: "Kaiti SC",serif; line-height: 1; }
+  .bag-row { display: flex; align-items: center; gap: 8px; background: var(--c-paper-60); border-radius: var(--radius-sm); padding: 6px 9px; font-size: 11px; color: var(--c-ink); }
+  .bag-row .q { margin-left: auto; color: #5F5E5A; font-size: 11px; }
+
+  .sect-list { display: flex; flex-direction: column; gap: 6px; }
+  .sect { display: flex; align-items: center; gap: 8px; background-image: var(--noise-paper), linear-gradient(rgba(240,230,212,.7), rgba(240,230,212,.7)); border: 1.5px solid rgba(43,43,43,.25); border-radius: var(--radius-sm); padding: 8px 10px; }
+  .sect .sc { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--c-ink); background-image: radial-gradient(circle at 30% 30%, var(--c-paper), var(--c-paper-2)); color: var(--c-ink); display: flex; align-items: center; justify-content: center; font-size: 12px; position: relative; }
+  .sect .sc::after { content: ""; position: absolute; top: -1px; right: -1px; width: 6px; height: 6px; background: var(--c-gold); border-radius: 50%; opacity: .7; }
+  .sect .nm { font-size: 11px; color: #2B2B2B; font-weight: 700; font-family: "Kaiti SC",serif; }
+  .sect .ds { font-size: 11px; color: #5F5E5A; }
+  .sect .st { margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: var(--radius-xs); }
+  .sect .st.ok { background: #EAF3DE; color: #3B6D11; border: 1px solid #3B6D11; }
+  .sect .st.no { background: #FCEBEB; color: #A32D2D; border: 1px solid #A32D2D; }
+
+  .warn { background: var(--c-cinnabar-12); border: 1.5px solid rgba(226,87,76,.5); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 11px; color: #712B13; }
+
+  .tabbar { position: relative; z-index: 10; flex: none; display: flex; gap: 8px; padding: 6px 10px 6px; }
+  .tab { flex: 1; height: 44px; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: linear-gradient(180deg, rgba(139,111,71,.9), rgba(98,72,42,.9)); border: 1.5px solid var(--c-ink); border-radius: var(--radius-lg); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(43,43,43,.4), 0 3px 8px rgba(43,43,43,.18); cursor: pointer; position: relative; transition: transform .15s, background .15s; }
+  .tab svg, .tab img { width: 32px; height: 32px; object-fit: contain; }
+  .tab svg path, .tab svg circle { stroke: rgba(248,244,234,.85); stroke-linecap: round; }
+  .tab span { font-size: 11px; color: rgba(248,244,234,.88); font-weight: 600; letter-spacing: 1px; }
+  .tab.active { background: linear-gradient(180deg, rgba(170,138,94,.96), rgba(139,111,71,.96)); transform: translateY(-2px); animation: tab-glow 2.4s ease-in-out infinite alternate; }
+  .tab.active svg path, .tab.active svg circle { stroke: #FFD9B0; }
+  .tab.active span { color: #F8F4EA; font-weight: 700; }
+  .tab.active::after { content: ""; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 16px; height: 8px; background: var(--c-gold); border-radius: 2px; box-shadow: 0 0 6px rgba(212,175,55,.6); }
+  @keyframes tab-glow {
+    from { box-shadow: var(--shadow-sm), 0 0 6px rgba(226,87,76,.12), inset 0 1px 0 rgba(255,255,255,.3), inset 0 -1px 0 rgba(43,43,43,.4); }
+    to   { box-shadow: var(--shadow-sm), 0 0 14px rgba(226,87,76,.28), inset 0 1px 0 rgba(255,255,255,.3), inset 0 -1px 0 rgba(43,43,43,.4); }
+  }
+
+  /* ===== 动效可关（31 §6）===== */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    .floater { display: none !important; }
+  }
+  [data-anim="off"] .floater, [data-anim="off"] .hero-idle, [data-anim="off"] .hero-glow, [data-anim="off"] .map-fight, [data-anim="off"] .tab.active,
+  [data-anim="low"] .floater { animation: none !important; }
+  [data-anim="off"] .hero-idle, [data-anim="off"] .hero-glow, [data-anim="off"] .map-fight, [data-anim="off"] .tab.active { box-shadow: var(--shadow-sm) !important; }
+
+  /* ===== 生图模式（喂给 GPT Image 的干净框架）===== */
+  /* 开启方式：body[data-gpt="on"] → 隐藏所有占位图标/图片，只留布局框与文字 */
+  body[data-gpt="on"] .topbar .avatar,
+  body[data-gpt="on"] .silver img,
+  body[data-gpt="on"] .learn-pts img,
+  body[data-gpt="on"] .shop,
+  body[data-gpt="on"] .setting,
+  body[data-gpt="on"] .tab img,
+  body[data-gpt="on"] .wx-icon,
+  body[data-gpt="on"] .se-ic,
+  body[data-gpt="on"] .ic-book,
+  body[data-gpt="on"] .hero-idle,
+  body[data-gpt="on"] .hero-glow,
+  body[data-gpt="on"] .npc,
+  body[data-gpt="on"] .floater,
+  body[data-gpt="on"] .bg img,
+  body[data-gpt="on"] .map-card img,
+  body[data-gpt="on"] .map-fight,
+  body[data-gpt="on"] .btn-idle,
+  body[data-gpt="on"] .btn-boss,
+  body[data-gpt="on"] .btn-m,
+  body[data-gpt="on"] .learn-empty,
+  body[data-gpt="on"] .attr-figure,
+  body[data-gpt="on"] .jh2-bg,
+  body[data-gpt="on"] .jh2-hero,
+  body[data-gpt="on"] .jh2-mob,
+  body[data-gpt="on"] .jh2-mob-ic,
+  body[data-gpt="on"] .jh2-assist-ic,
+  body[data-gpt="on"] .social-entry { display: none !important; }
+  /* 生图模式下给关键区域留出标注位，帮助 GPT 理解布局意图 */
+  body[data-gpt="on"] .topbar { justify-content: flex-start; }
+  body[data-gpt="on"] .silver, body[data-gpt="on"] .learn-pts { border: 1.5px dashed rgba(212,175,55,.9); background: rgba(248,244,234,.6); color: #2B2B2B; }
+  body[data-gpt="on"] .tab { background: rgba(248,244,234,.4); }
+  body[data-gpt="on"] .tab span { color: #2B2B2B; font-size: 13px; }
+  body[data-gpt="on"] .card, body[data-gpt="on"] .row-item, body[data-gpt="on"] .subtabbar, body[data-gpt="on"] .wx-cell, body[data-gpt="on"] .social-entry, body[data-gpt="on"] .base-tabs, body[data-gpt="on"] .learn-tabs, body[data-gpt="on"] .zb-tabs, body[data-gpt="on"] .equip-card, body[data-gpt="on"] .bag-grid { border-style: dashed; }
+  body[data-gpt="on"] .equip-hero, body[data-gpt="on"] .bc-ic, body[data-gpt="on"] .qty { opacity: .25; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="stage-title">放置武侠 · 主界面 v11（可交互原型）</div>
+  <div class="hint">点击底部 Tab 切换中央界面 · 4 大主场景原型</div>
+  <div class="gpt-toggle" id="gptToggle" role="button" tabindex="0">🔳 生图模式（隐藏占位图标）</div>
+  <div class="phone">
+    <div class="bg"><img src="../assets/ui/bg_main_v2.png" alt=""></div>
+    <div class="fog-far"></div>
+    <div class="fog-side"></div>
+    <div class="fog-vig"></div>
+    <div class="floater f1">·</div>
+    <div class="floater f2">·</div>
+    <div class="floater f3">·</div>
+    <div class="floater f4">·</div>
+    <div class="floater f5">·</div>
+    <div class="shade"></div>
+
+    <div class="topbar">
+      <div class="avatar"><img src="../assets/ui/hero_idle_transparent.png" alt=""></div>
+      <div class="user-mid">
+        <div class="nick-row">
+          <span class="nick">少侠·无名</span>
+          <span class="sect-tag">清风派</span>
+        </div>
+        <div class="exp-row">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M14 3 L21 10 L13 18 L7 12 Z" stroke="#D4AF37" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 18 L4 21" stroke="#D4AF37" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="exp">实战 1.2万</span>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="silver"><img src="../assets/ui/icons/icon_silver.png" alt="">1.2万</div>
+      <div class="learn-pts"><img src="../assets/ui/icons/icon_martial.png" alt="">888</div>
+      <div class="shop"></div>
+      <div class="setting">⚙</div>
+    </div>
+
+    <div class="scene">
+      <div class="page active" id="p-jianghu">
+        <!-- 2.5D 江湖场景 -->
+        <div class="jh2-scene">
+          <img class="jh2-bg" src="../assets/ui/bg_liblib_3.png" alt="">
+          <!-- 左上角：场景名称 -->
+          <div class="jh2-loc">⛰ 青牛山下 · 野径</div>
+          <!-- 右上角：助战入口（悬浮在场景内） -->
+          <div class="jh2-assist">
+            <img class="jh2-assist-ic" src="../assets/ui/icons/icon_friend.png" alt="">
+            <span class="jh2-assist-badge">2</span>
+            <span class="jh2-assist-t">助战</span>
+            <span class="jh2-assist-d">2/2 · 剩10场</span>
+          </div>
+          <!-- 角色（手动模式：点场景移动 / 点 NPC 战斗） -->
+          <img class="jh2-hero" src="../assets/ui/hero_idle_transparent.png" alt="少侠">
+          <div class="jh2-hero-name">少侠·无名 <span class="jh2-lv">Lv.8</span></div>
+          <!-- NPC 战斗怪（随机走动、主动攻击；手动模式点它=开战） -->
+          <div class="jh2-mob m1">
+            <div class="jh2-mob-hp"><i style="width:80%"></i></div>
+            <img class="jh2-mob-ic" src="../assets/ui/icons/icon_martial.png" alt="">
+            <div class="jh2-mob-name">山贼 · 马大壮</div>
+          </div>
+          <div class="jh2-mob m2">
+            <div class="jh2-mob-hp"><i style="width:55%"></i></div>
+            <img class="jh2-mob-ic" src="../assets/ui/icons/icon_martial.png" alt="">
+            <div class="jh2-mob-name">野狼</div>
+          </div>
+          <div class="jh2-mob m3">
+            <div class="jh2-mob-hp"><i style="width:35%"></i></div>
+            <img class="jh2-mob-ic" src="../assets/ui/icons/icon_martial.png" alt="">
+            <div class="jh2-mob-name">独眼熊</div>
+          </div>
+          <!-- 挂机模式专用：打怪小动画区 + 血条/内力条/收益条（挂机时显示） -->
+          <div class="jh2-hangup">
+            <div class="jh2-hangup-battle">
+              <span class="jh2-hangup-atk">⚔ 清风剑法</span>
+              <span class="jh2-hangup-vs">×</span>
+              <span class="jh2-hangup-def">山贼 · 马大壮</span>
+              <div class="jh2-fight-fx">-248</div>
+              <div class="jh2-fight-fx fx2">-132</div>
+            </div>
+            <div class="jh2-bars">
+              <div class="jh2-bar hp"><i style="width:72%"></i><span>气血 3200/4500</span></div>
+              <div class="jh2-bar mp"><i style="width:60%"></i><span>内力 1500/2500</span></div>
+            </div>
+            <div class="jh2-gain">
+              <span class="jh2-gain-item">学点 <b>+12</b>/s</span>
+              <span class="jh2-gain-item">实战 <b>+86</b></span>
+              <span class="jh2-gain-item">银两 <b>+5</b></span>
+            </div>
+          </div>
+          <!-- 场景内底部三按钮：闭关 | 挂机 | 挑战Boss -->
+          <div class="jh2-actions">
+            <div class="jh2-btn jh2-btn-idle">⛩ 闭关修炼</div>
+            <div class="jh2-btn jh2-btn-fight">▶ 挂机</div>
+            <div class="jh2-btn jh2-btn-boss">🐲 挑战Boss</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="p-wuxue">
+        <div class="subtabbar">
+          <div class="subtab active" data-sub="attr">基础属性</div>
+          <div class="subtab" data-sub="base">基础武学</div>
+          <div class="subtab" data-sub="config">武学配置</div>
+        </div>
+        <div class="subpage active" id="s-attr">
+          <div class="card"><div class="card-t">角色属性</div>
+            <div class="attr-stage">
+              <div class="attr-figure">
+                <svg viewBox="0 0 120 200" fill="none"><circle cx="60" cy="28" r="16" stroke="#2B2B2B" stroke-width="2.5"/><path d="M60 44 C 40 62 34 92 36 142 L 84 142 C 86 92 80 62 60 44 Z" stroke="#2B2B2B" stroke-width="2.5" stroke-linejoin="round"/><path d="M42 72 C 30 92 28 112 32 130" stroke="#2B2B2B" stroke-width="2.5" stroke-linecap="round"/><path d="M78 72 C 90 92 92 112 88 130" stroke="#2B2B2B" stroke-width="2.5" stroke-linecap="round"/><path d="M44 90 H 76" stroke="#E2574C" stroke-width="3"/></svg>
+              </div>
+              <div class="attr-col col-l">
+                <div class="attr-item"><span class="a-nm">气血</span><b class="a-val">3200</b></div>
+                <div class="attr-item"><span class="a-nm">内力</span><b class="a-val">2400</b></div>
+                <div class="attr-item"><span class="a-nm">暴击</span><b class="a-val">18%</b></div>
+              </div>
+              <div class="attr-col col-r">
+                <div class="attr-item"><span class="a-nm">攻击</span><b class="a-val">156</b></div>
+                <div class="attr-item"><span class="a-nm">防御</span><b class="a-val">92</b></div>
+                <div class="attr-item"><span class="a-nm">闪避</span><b class="a-val">14%</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="card"><div class="card-t">六维</div>
+            <div class="stat-grid">
+              <div class="stat"><span>臂力</span><b>27</b></div><div class="stat"><span>胆识</span><b>15</b></div>
+              <div class="stat"><span>根骨</span><b>27</b></div><div class="stat"><span>机敏</span><b>27</b></div>
+              <div class="stat"><span>定力</span><b>27</b></div><div class="stat"><span>悟性</span><b>27</b></div>
+            </div>
+          </div>
+          <div class="card"><div class="card-t">属性说明</div><div style="font-size:11px;color:#5F5E5A;line-height:1.7;">气血/内力/攻击等由武学与装备共同加成；六维进入游戏即有，由基础武学修炼提升。</div></div>
+        </div>
+        <div class="subpage" id="s-base">
+          <div class="card"><div class="card-t">基础武学</div>
+            <div class="base-tabs">
+              <div class="base-tab active" data-base="liuwei">六维强化</div>
+              <div class="base-tab" data-base="wuqi">武器精通</div>
+            </div>
+            <div class="base-group active" id="bg-liuwei">
+              <div class="row-item"><span class="nm">基本内功</span><span class="ef">根骨</span><span class="lv">Lv.10</span><div class="bar-mini"><i style="width:50%"></i></div><div class="btn-m">修炼</div></div>
+              <div class="row-item"><span class="nm">基本身法</span><span class="ef">机敏</span><span class="lv">Lv.12</span><div class="bar-mini"><i style="width:60%"></i></div><div class="btn-m">修炼</div></div>
+              <div class="row-item"><span class="nm">搏击格斗</span><span class="ef">臂力</span><span class="lv">Lv.8</span><div class="bar-mini"><i style="width:40%"></i></div><div class="btn-m">修炼</div></div>
+              <div class="row-item"><span class="nm">拆招卸力</span><span class="ef">定力</span><span class="lv">Lv.6</span><div class="bar-mini"><i style="width:30%"></i></div><div class="btn-m">修炼</div></div>
+              <div class="row-item"><span class="nm">读书识字</span><span class="ef">悟性</span><span class="lv">Lv.9</span><div class="bar-mini"><i style="width:45%"></i></div><div class="btn-m">修炼</div></div>
+            </div>
+            <div class="base-group" id="bg-wuqi">
+              <div class="row-item"><span class="nm">基本剑法</span><span class="ef">剑攻</span><span class="lv">Lv.7</span><div class="bar-mini"><i style="width:35%"></i></div><div class="btn-m">修炼</div></div>
+              <div class="row-item"><span class="nm">基本刀法</span><span class="ef">刀攻</span><span class="lv">Lv.5</span><div class="bar-mini"><i style="width:25%"></i></div><div class="btn-m">修炼</div></div>
+              <div class="row-item"><span class="nm">基本拳法</span><span class="ef">拳攻</span><span class="lv">Lv.9</span><div class="bar-mini"><i style="width:45%"></i></div><div class="btn-m">修炼</div></div>
+              <div class="row-item"><span class="nm">基本枪法</span><span class="ef">枪攻</span><span class="lv">Lv.3</span><div class="bar-mini"><i style="width:15%"></i></div><div class="btn-m">修炼</div></div>
+              <div class="row-item"><span class="nm">基本暗器</span><span class="ef">暗器攻</span><span class="lv">Lv.4</span><div class="bar-mini"><i style="width:20%"></i></div><div class="btn-m">修炼</div></div>
+            </div>
+          </div>
+          <div class="card"><div class="card-t">说明</div><div style="font-size:11px;color:#5F5E5A;line-height:1.7;">六维强化类提升角色基础属性（每 10 级 +1，封顶 100 级 +10）；武器精通类提升对应武器的基础攻击力。</div></div>
+        </div>
+        <div class="subpage" id="s-config">
+          <div class="card"><div class="card-t">武学装备位（紧凑）</div>
+            <div class="wuxue-grid">
+              <div class="wx-cell wx-wide filled">
+                <div class="wx-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="5" stroke="#E2574C" stroke-width="1.8"/><path d="M5 13 v6 M9 15 v6 M15 15 v6 M19 13 v6" stroke="#E2574C" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+                <div class="wx-main"><div class="wx-name">清风剑法</div><div class="wx-tag">外功</div></div>
+                <div class="wx-lv">Lv.5</div>
+              </div>
+              <div class="wx-cell wx-wide filled">
+                <div class="wx-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="6" stroke="#4A7A6B" stroke-width="1.8"/><path d="M12 6 a6 6 0 0 1 5 3" stroke="#4A7A6B" stroke-width="1.8" stroke-linecap="round"/><path d="M8 15 a6 6 0 0 1 -1 -5" stroke="#4A7A6B" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                <div class="wx-main"><div class="wx-name">太极心法</div><div class="wx-tag">内功</div></div>
+                <div class="wx-lv">Lv.3</div>
+              </div>
+              <div class="wx-cell wx-narrow filled">
+                <div class="wx-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8 H18 a3 3 0 1 0 -3 -3" stroke="#7FB069" stroke-width="1.8" stroke-linecap="round"/><path d="M4 13 H15 a2.5 2.5 0 1 1 -2.5 2.5" stroke="#7FB069" stroke-width="1.8" stroke-linecap="round"/><path d="M4 18 H12" stroke="#7FB069" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                <div class="wx-name">凌波微步</div><div class="wx-lv">Lv.2</div>
+              </div>
+              <div class="wx-cell wx-narrow empty">
+                <div class="wx-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 L5 13 H11 L9 22 L19 9 H13 Z" stroke="#D4AF37" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+                <div class="wx-name">未装配</div>
+              </div>
+              <div class="wx-cell wx-narrow empty">
+                <div class="wx-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="5" width="14" height="14" rx="2" stroke="#2B2B2B" stroke-width="1.8"/><circle cx="12" cy="8" r="1.2" fill="#E2574C"/><path d="M8 13 h8 M8 16 h5" stroke="#2B2B2B" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+                <div class="wx-name">未装配</div>
+              </div>
+            </div>
+          </div>
+          <div class="card"><div class="card-t">已学武学 · 升级</div>
+            <div class="learn-tabs">
+              <div class="learn-tab active" data-learn="waigong">外功</div>
+              <div class="learn-tab" data-learn="neigong">内功</div>
+              <div class="learn-tab" data-learn="qinggong">轻功</div>
+              <div class="learn-tab" data-learn="teji">特技</div>
+              <div class="learn-tab" data-learn="juexue">绝学</div>
+            </div>
+            <div class="learn-group active" id="lg-waigong">
+              <div class="row-item"><img class="ic-book" src="../assets/ui/icons/icon_b4a61bd5_transparent.png" alt="秘籍"><span class="nm">清风剑法</span><span class="lv">一阶 Lv.5</span><div class="bar-mini"><i style="width:25%"></i></div><div class="btn-m">升级</div></div>
+            </div>
+            <div class="learn-group" id="lg-neigong">
+              <div class="row-item"><img class="ic-book" src="../assets/ui/icons/icon_b4a61bd5_transparent.png" alt="秘籍"><span class="nm">太极心法</span><span class="lv">一阶 Lv.3</span><div class="bar-mini"><i style="width:15%"></i></div><div class="btn-m">升级</div></div>
+            </div>
+            <div class="learn-group" id="lg-qinggong">
+              <div class="row-item"><img class="ic-book" src="../assets/ui/icons/icon_b4a61bd5_transparent.png" alt="秘籍"><span class="nm">凌波微步</span><span class="lv">二阶 Lv.2</span><div class="bar-mini"><i style="width:10%"></i></div><div class="btn-m">升级</div></div>
+            </div>
+            <div class="learn-group" id="lg-teji">
+              <div class="learn-empty">尚未习得特技</div>
+            </div>
+            <div class="learn-group" id="lg-juexue">
+              <div class="learn-empty">尚未习得绝学</div>
+            </div>
+          </div>
+          <div class="card"><div class="card-t">说明</div><div style="font-size:11px;color:#5F5E5A;line-height:1.7;">装配的武学决定战斗招式；已学武学在此升级，无需去门派重复学习。</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="p-zhuangbei">
+        <div class="zb-tabs">
+          <div class="zb-tab active" data-zb="equip">装备</div>
+          <div class="zb-tab" data-zb="bag">背包</div>
+        </div>
+        <div class="zb-group active" id="zbg-equip">
+          <div class="card equip-card">
+            <div class="equip-col">
+              <div class="equip-slot filled"><div class="es-ic">剑</div><div class="es-name">精铁·长剑</div><div class="es-stat">攻+25</div></div>
+              <div class="equip-slot filled"><div class="es-ic">裘</div><div class="es-name">粗麻披风</div><div class="es-stat">防+12</div></div>
+              <div class="equip-slot filled"><div class="es-ic">冠</div><div class="es-name">束发纶巾</div><div class="es-stat">气血+50</div></div>
+              <div class="equip-slot filled"><div class="es-ic">链</div><div class="es-name">青玉项链</div><div class="es-stat">内力+40</div></div>
+            </div>
+            <div class="equip-figure">
+              <img class="equip-hero" src="../assets/ui/hero_idle_transparent.png" alt="少侠">
+              <div class="equip-fx">套装特效预留位</div>
+            </div>
+            <div class="equip-col">
+              <div class="equip-slot filled"><div class="es-ic">甲</div><div class="es-name">布衣短褐</div><div class="es-stat">防+18</div></div>
+              <div class="equip-slot filled"><div class="es-ic">履</div><div class="es-name">千层布鞋</div><div class="es-stat">机敏+8</div></div>
+              <div class="equip-slot filled"><div class="es-ic">拳</div><div class="es-name">鹿皮护手</div><div class="es-stat">攻+15</div></div>
+              <div class="equip-slot filled"><div class="es-ic">戒</div><div class="es-name">铜指戒</div><div class="es-stat">气血+30</div></div>
+            </div>
+          </div>
+          <div class="card"><div class="card-t">装备总加成</div>
+            <div class="bonus-grid">
+              <div class="bonus"><span>攻击</span><b>+120</b></div>
+              <div class="bonus"><span>防御</span><b>+85</b></div>
+              <div class="bonus"><span>气血</span><b>+360</b></div>
+              <div class="bonus"><span>内力</span><b>+220</b></div>
+            </div>
+            <div class="bonus-note">装备更新后角色形象与套装特效实时刷新</div>
+          </div>
+        </div>
+        <div class="zb-group" id="zbg-bag">
+          <div class="bag-tabs">
+            <div class="bag-tab active" data-bag="all">全部</div>
+            <div class="bag-tab" data-bag="equip">装备</div>
+            <div class="bag-tab" data-bag="potion">药水</div>
+            <div class="bag-tab" data-bag="material">材料</div>
+          </div>
+          <div class="bag-grid">
+            <div class="bag-cell filled"><span class="bc-ic">药</span><span class="qty">×10</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">药</span><span class="qty">×5</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">剑</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">布</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">书</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">石</span><span class="qty">×8</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">丹</span><span class="qty">×3</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">绳</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">袋</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">酒</span><span class="qty">×2</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">卷</span></div>
+            <div class="bag-cell filled"><span class="bc-ic">符</span></div>
+            <div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div>
+            <div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div>
+            <div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div><div class="bag-cell"></div>
+          </div>
+          <div class="bag-hint">点击 / 长按格子 → 弹出装备或道具详情（穿戴/使用/分解）</div>
+        </div>
+      </div>
+
+      <div class="page" id="p-menpai">
+        <div class="warn">⚠ 尚未入门派 · 实战经验需 ≥ 1,000 方可加入（当前 1.2万 ✅ 可加入）</div>
+        <div class="card"><div class="card-t">选择门派（学习新武功）</div>
+          <div class="sect-list">
+            <div class="sect"><div class="sc">清</div><div><div class="nm">清风派</div><div class="ds">剑法 · 正派</div></div><span class="st ok">可加入</span></div>
+            <div class="sect"><div class="sc">太</div><div><div class="nm">太极门</div><div class="ds">拳法 · 正派</div></div><span class="st ok">可加入</span></div>
+            <div class="sect"><div class="sc">峨</div><div><div class="nm">峨眉</div><div class="ds">剑法 · 正派</div></div><span class="st ok">可加入</span></div>
+            <div class="sect"><div class="sc">天</div><div><div class="nm">天山派</div><div class="ds">暗器 · 邪派</div></div><span class="st ok">可加入</span></div>
+            <div class="sect"><div class="sc">狂</div><div><div class="nm">狂刀谷</div><div class="ds">刀法 · 邪派</div></div><span class="st ok">可加入</span></div>
+            <div class="sect"><div class="sc">丐</div><div><div class="nm">丐帮</div><div class="ds">棍法 · 正邪皆可</div></div><span class="st ok">可加入</span></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-t">门派说明</div><div style="font-size:11px;color:#5F5E5A;line-height:1.7;">入门后按流程学习武功，满足进阶条件直接学习（暂不做任务系统）。</div></div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab" data-tab="wuxue"><img src="../assets/ui/icons/icon_b4a61bd5_transparent.png" alt="武学"><span>武学</span></div>
+      <div class="tab" data-tab="zhuangbei"><img src="../assets/ui/icons/icon_bag.png" alt="装备包裹"><span>装备包裹</span></div>
+      <div class="tab active" data-tab="jianghu"><img src="../assets/ui/icons/icon_map.png" alt="江湖"><span>江湖</span></div>
+      <div class="tab" data-tab="menpai"><img src="../assets/ui/icons/icon_martial.png" alt="门派"><span>门派</span></div>
+    </div>
+  </div>
+  <div style="margin-top:10px; font-size:11px; color:#5F5E5A;">v11.18：删掉手动模式常驻提示（改为引导）；三按钮移回场景内底部；角色/NPC 位置上移避让挂机 UI</div>
+
+  <script>
+    document.getElementById('gptToggle').addEventListener('click', () => {
+      const on = document.body.hasAttribute('data-gpt');
+      if (on) { document.body.removeAttribute('data-gpt'); document.getElementById('gptToggle').classList.remove('active'); }
+      else { document.body.setAttribute('data-gpt', 'on'); document.getElementById('gptToggle').classList.add('active'); }
+    });
+    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('p-' + t.dataset.tab).classList.add('active');
+    }));
+    document.querySelectorAll('.subtab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.subtab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.subpage').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('s-' + t.dataset.sub).classList.add('active');
+    }));
+    document.querySelectorAll('.learn-tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.learn-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.learn-group').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('lg-' + t.dataset.learn).classList.add('active');
+    }));
+    document.querySelectorAll('.base-tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.base-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.base-group').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('bg-' + t.dataset.base).classList.add('active');
+    }));
+    document.querySelectorAll('.zb-tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.zb-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.zb-group').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('zbg-' + t.dataset.zb).classList.add('active');
+    }));
+    /* 闯关演示：切换收益条显示（模拟推图结算） */
+    document.querySelector('.jh2-btn-fight').addEventListener('click', () => {
+      const fighting = document.body.hasAttribute('data-jh2');
+      if (fighting) document.body.removeAttribute('data-jh2');
+      else document.body.setAttribute('data-jh2', 'fighting');
+    });
+  </script>
+</div>
+</body>
+</html>

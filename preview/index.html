@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>放置武侠 · UI 拼装预览</title>
+  <style>
+    /* ============================================================
+       放置武侠 · UI 拼装验证页
+       任务:按 assets/ui/README.md 素材说明,用真实素材拼出下方界面。
+       素材未就绪的部分用规范色值 CSS 占位,并在交付说明中注明。
+       颜色规范:墨 #2B2B2B / 宣纸 #F8F4EA / 朱砂 #E2574C / 竹青 #7FB069 / 淡金 #D4AF37
+       ============================================================ */
+    :root {
+      --ink: #2B2B2B;
+      --paper: #F8F4EA;
+      --cinnabar: #E2574C;
+      --bamboo: #7FB069;
+      --gold: #D4AF37;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(160deg, #A8C4C8 0%, #F8F4EA 60%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Songti SC", "STSong", serif;
+      color: var(--ink);
+    }
+    #app {
+      width: 400px;
+      min-height: 560px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(43,43,43,.25);
+    }
+    /* ---- 待拼装区域(占位样式,由 ZCode 用真实素材替换) ---- */
+    .panel { border: 1px dashed #999; margin-bottom: 12px; }
+    .skill-bar { display: flex; gap: 12px; justify-content: center; }
+    .skill-slot { width: 64px; height: 64px; border: 1px dashed #999; }
+    .btn { padding: 8px 24px; border: none; cursor: pointer; }
+    /* 预览辅助信息 */
+    .hint { font-size: 12px; color: #888; text-align: center; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- 门派信息面板:用 panel_dialog.png 做底 -->
+    <div class="panel" id="faction-panel" style="height: 180px;">
+      <h3>门派面板(panel_dialog.png)</h3>
+    </div>
+
+    <!-- 技能栏:3 个图标槽位,用 icon_sword/icon_palm/icon_coin.png -->
+    <div class="panel" id="skill-bar-panel" style="padding: 12px;">
+      <h3>技能栏(icons)</h3>
+      <div class="skill-bar">
+        <div class="skill-slot" data-icon="icon_sword.png"></div>
+        <div class="skill-slot" data-icon="icon_palm.png"></div>
+        <div class="skill-slot" data-icon="icon_coin.png"></div>
+      </div>
+    </div>
+
+    <!-- 主操作按钮:用 btn_primary_normal/pressed.png -->
+    <div style="text-align:center;">
+      <button class="btn" id="main-btn" style="background: var(--cinnabar); color: #fff;">
+        开始修炼(btn_primary_*.png)
+      </button>
+    </div>
+
+    <p class="hint">↑ 此页面由 ZCode 按 assets/ui/README.md 拼装素材</p>
+  </div>
+
+  <script>
+    // ============================================================
+    // ZCode 任务:
+    // 1. 将 #faction-panel 背景替换为 panel_dialog.png(九宫格裁切)
+    // 2. 将 .skill-slot 背景替换为对应图标(居中,透明底)
+    // 3. 将 #main-btn 背景替换为 btn_primary_normal.png / _pressed.png(按下切换)
+    // 4. 素材缺失时保留 CSS 占位并注明
+    // ============================================================
+  </script>
+</body>
+</html>

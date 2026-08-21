@@ -1,0 +1,12 @@
+{
+  "compileType": "game",
+  "appid": "touristappid",
+  "projectname": "placement-wuxia",
+  "libVersion": "latest",
+  "setting": {
+    "es6": false,
+    "minified": false,
+    "urlCheck": false
+  },
+  "condition": {}
+}
