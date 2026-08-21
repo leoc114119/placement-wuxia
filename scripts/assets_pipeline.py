@@ -130,6 +130,46 @@ def cutout_white(src, dst=None):
     return dst
 
 
+
+
+def cutout_leg_gap(frame_path):
+    """腿部间隙白色补抠：腿区带状区域内的小块白色连通域置透明（迈步帧两腿间露出白底问题）"""
+    from PIL import ImageDraw
+    im = Image.open(frame_path).convert("RGBA")
+    w, h = im.size
+    y0, y1 = int(h * 0.55), int(h * 0.88)  # 腿区带
+    rgb = Image.new("RGB", (w, h))
+    rgb.paste(im, (0, 0), im)
+    px = rgb.load()
+    alpha = im.load()
+    visited = [[False] * w for _ in range(y1 - y0)]
+    for sy in range(y0, y1):
+        for sx in range(w):
+            if visited[sy - y0][sx]:
+                continue
+            r, g, b = px[sx, sy][:3]
+            if (r + g + b) / 3 <= 245:
+                continue
+            # 白色起点 → BFS 找连通块（只在腿区内）
+            stack, blob = [(sx, sy)], []
+            visited[sy - y0][sx] = True
+            while stack:
+                x, y = stack.pop()
+                blob.append((x, y))
+                for nx, ny in ((x+1,y),(x-1,y),(x,y+1),(x,y-1)):
+                    if y0 <= ny < y1 and 0 <= nx < w and not visited[ny - y0][nx]:
+                        rr, gg, bb = px[nx, ny][:3]
+                        if (rr + gg + bb) / 3 > 245:
+                            visited[ny - y0][nx] = True
+                            stack.append((nx, ny))
+            if len(blob) < w * (y1 - y0) * 0.5:  # 小块（< 腿区面积一半）才视为腿间白
+                for x, y in blob:
+                    a = alpha[x, y][3]
+                    if a > 0:
+                        cr, cg, cb = alpha[x, y][:3]
+                        alpha[x, y] = (cr, cg, cb, 0)
+    im.save(frame_path)
+
 def contact_sheet(frames, out, cols=4, cell=220):
     """拼验收大图：所有帧并排 + 编号"""
     from PIL import ImageDraw
@@ -165,6 +205,7 @@ def run_asset(asset):
         if asset.get("cutout"):
             for f in frames:
                 cutout_white(f)
+                cutout_leg_gap(f)
         result["frames"] = frames
         cs = contact_sheet(frames, os.path.join(os.path.dirname(sheet_path), f"{aid}_contact.png"))
         result["contact"] = cs
