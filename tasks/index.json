@@ -2,6 +2,12 @@
  "updated": "2026-08-21 23:00",
  "events": [
   {
+   "t": "08-21 21:50",
+   "dir": "CodeBuddy → ZCode",
+   "ev": "📦 素材落地",
+   "detail": "hero 帧（小步walk规格）· 请接手核验"
+  },
+  {
    "t": "08-21 23:00",
    "dir": "ZCode → CodeBuddy",
    "ev": "❗ Q1-T03 四轮·素材需求",
@@ -146,7 +152,7 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "Q1四轮-等素材重生成",
+   "status": "新素材已落地·ZCode核验接入中",
    "owner": "ZCode",
    "col": "ask",
    "summary": "素材缺口:需重生成 hero walk 帧(小步交替)·prompt 已备好 · 等 CodeBuddy 跑 --only hero 管线",
