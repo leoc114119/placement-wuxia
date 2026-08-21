@@ -42,3 +42,6 @@
 | 2026-08-22 00:50 | CodeBuddy | 📦 scene v5 出图 | gpt-image-2 首秀（93s）：去河✓径宽到窄✓NPC位✓ · 可走带占屏54%（历版最大）· 推荐 v5 转正+WALK_ZONE y[0.46,0.84] · 待 L 目验 |
 | 2026-08-22 01:00 | Leo/CodeBuddy | ✅ scene v6 定稿+素材大扫除 | 45 个未采用文件删除（drafts+archive+探索批次）· v6 转正路径不变 · config 收敛 6 条 · Q2-T03 数值定稿 x[0.24,0.76] y[0.46,0.84] · 下一步催 ZCode 领单 |
 | 2026-08-22 01:16 | CodeBuddy | 📤 发单 Q3-T03《UI层级修正》 | 标签下移至0.115+按钮上移至0.82（对齐定稿堆叠）· 与 Q2-T03 一并待 ZCode 领 |
+| 2026-08-22 01:50 | CodeBuddy | 🔬✅ C 环 PASS Q2+Q3旧规格 | 三零+27/27+c49d577 · Q3 出 R2 自适应返工单（三段式锚定，9:16 定稿图降级风格参考）· 待 L 发车 ZCode |
+| 2026-08-22 02:11 | CodeBuddy | 📦 UI 定稿图 v2 出图 | 9:16 gpt-image-2 88s · 无文字版高质量 · 待 L 目验后转正 |
+| 2026-08-22 02:18 | Leo/CodeBuddy | ✅ UI 基准 v2+七图标转正 | ref_jianghu_ui_v2 定稿 · 七图标 gpt-image-2 版替换 · point/sect 专属就位（接线待 T08）· ICON-MATRIX 更新 |

@@ -29,17 +29,19 @@ assets/ui/
 
 ---
 
-## 2. 已用素材清单（主界面 v11.6 已接入）
+## 2. 已用素材清单（2026-08-22 v2 全面重生成 · gpt-image-2 · Leo 目验转正）
 
-| ID | 素材 | 用在 | 显示尺寸 | 来源 |
+> **v2 说明**：七图标全部重生成（风格与定稿图 ref_jianghu_ui_v2 统一）；新增 icon_point / icon_sect 专属图，解除 icon_martial 一图三用。旧 Liblib 版已随清理删除。**代码接线**：icon_point / icon_sect 尚未接入代码（仍指向旧映射），待 T08《主界面 UI 框架》统一接线。
+
+| ID | 素材 | 用在 | 显示尺寸 | 状态 |
 |---|---|---|---|---|
-| ✅ icon_silver | icon_silver.png | 顶栏「银两」数值标签 | 12px（24rpx） | Liblib 已生成 |
-| ✅ icon_martial | icon_martial.png | 顶栏「学点」**（临时复用，待专属 icon_point 替换）**） | 12px（24rpx） | Liblib 已生成 |
-| ✅ icon_martial | icon_martial.png | 底部 Tab「门派」**（临时复用，待专属 icon_sect 替换）** | 32px（64rpx） | Liblib 已生成 |
-| ✅ icon_b4a61bd5_transparent | icon_b4a61bd5_transparent.png | 底部 Tab「武学」+ 已学武学秘籍图标 | 32px / 26px | Liblib 已生成 |
-| ✅ icon_bag | icon_bag.png | 底部 Tab「装备包裹」 | 32px（64rpx） | Liblib 已生成 |
-| ✅ icon_map | icon_map.png | 底部 Tab「江湖」 | 32px（64rpx） | Liblib 已生成 |
-| ✅ icon_friend | icon_friend.png | 江湖界面「侠友」社交入口 | 34×34px 圆切 | Liblib 已生成 |
+| ✅ icon_silver | icon_silver.png | 顶栏「银两」数值标签 | 12px（24rpx） | v2 金元宝 |
+| ✅ icon_point | icon_point.png | 顶栏「学点」数值标签（**专属已就位，代码接线待 T08**） | 12px（24rpx） | v2 书卷 |
+| ✅ icon_sect | icon_sect.png | 底部 Tab「门派」（**专属已就位，代码接线待 T08**） | 32px（64rpx） | v2 山门旌旗 |
+| ✅ icon_b4a61bd5_transparent | icon_b4a61bd5_transparent.png | 底部 Tab「武学」+ 已学武学秘籍图标（旧图沿用，后续可并入 martial） | 32px / 26px | 旧版 |
+| ✅ icon_bag | icon_bag.png | 底部 Tab「装备包裹」 | 32px（64rpx） | v2 行囊 |
+| ✅ icon_map | icon_map.png | 底部 Tab「江湖」 | 32px（64rpx） | v2 山水云路 |
+| ✅ icon_friend | icon_friend.png | 江湖界面「侠友」社交入口 | 34×34px 圆切 | v2 侠客对拜 |
 
 ---
 
@@ -51,11 +53,11 @@ assets/ui/
 
 | ID | 用途 | 当前占位 | Prompt 内容（风格前缀之后） |
 |---|---|---|---|
-| ⏳ icon_point | 顶栏「学点」数值标签 | 临时复用 icon_martial | 「1:1 正方形透明底 PNG 单个图标：书卷/竹简卷轴，水墨简笔，主体居中占比 60%-70%，无文字」（替代 martial 后学点视觉更聚焦） |
+| ✅ icon_point（已生成 v2） | 顶栏「学点」数值标签 | 已落位 icons/icon_point.png | 「1:1 正方形透明底 PNG 单个图标：书卷/竹简卷轴，水墨简笔，主体居中占比 60%-70%，无文字」（替代 martial 后学点视觉更聚焦） |
 | ⏳ icon_shop | 顶栏「商店/集市」入口 | 空 | 「1:1 正方形透明底 PNG 单个图标：传统木匾铺面/瓦顶小屋+挂幌，宣纸底水墨简笔，主体居中占比 60%，无文字」 |
 | ⏳ icon_setting | 顶栏「设置」入口 | 文本 ⚙ | 「1:1 正方形透明底 PNG 单个图标：传统齿轮/铜锁简笔，水墨单色，无文字」 |
 | ⏳ icon_exp | 顶栏「实战」数值标签 | 内联 SVG | 「1:1 正方形透明底 PNG 单个图标：交叉双剑/刀剑简笔，朱砂+墨双色点缀，无文字」 |
-| ⏳ icon_sect | 底部 Tab「门派」专属 | 临时复用 icon_martial | 「1:1 正方形透明底 PNG 单个图标：山门/旌旗简笔，三角顶+两侧飘旗，水墨单色无文字」 |
+| ✅ icon_sect（已生成 v2） | 底部 Tab「门派」专属 | 已落位 icons/icon_sect.png | 「1:1 正方形透明底 PNG 单个图标：山门/旌旗简笔，三角顶+两侧飘旗，水墨单色无文字」 |
 | ⏳ icon_waigong | 武学装备位「外功」 | 内联 SVG | 「1:1 正方形透明底 PNG 单个图标：单剑竖立，金属剑身+朱红剑穗，水墨单色无文字」 |
 | ⏳ icon_neigong | 武学装备位「内功」 | 内联 SVG | 「1:1 正方形透明底 PNG 单个图标：太极双鱼图，墨色简笔，无文字」 |
 | ⏳ icon_qinggong | 武学装备位「轻功」 | 内联 SVG | 「1:1 正方形透明底 PNG 单个图标：一缕飞燕/云朵剪影，水墨单色，无文字」 |
