@@ -24,16 +24,24 @@ tasks/
 ## 状态机
 
 ```
-[inbox 待领] → [working 进行中] → [done 待验收] → [archive 已归档]
+[inbox 待领] → [答疑中] → [working 进行中] → [done 待验收] → [archive 已归档]
                     │ ↑
-                    ↓ │ questions/answers（答疑循环，不改变状态）
+                    └─┘ questions/answers 循环（答疑期内多轮问答）
 ```
+
+> **先答后工（Leo 2026-08-22 定）**：ZCode 领单后**不直接开发**——先通读任务卡引用的规格文档与素材清单，产出**问题清单**（含理解复述：用自己的话概述要做的事 + 有疑义的点），经我方一轮确认后进入开发。
+>
+> - 答疑期：任务卡**仍留 inbox/**（不移 working），index.json `col: "questions"`；
+> - ZCode 把问题写入 `questions/Q1-Txx.md`（格式：# 序号 | 问题 | 引用依据 | 建议），threads/LOG 双写；
+> - CodeBuddy 出 `answers/A1-Txx.md` 汇总答复；需求级歧义项交 Leo 拍板；
+> - 全部确认 → CodeBuddy 在 threads 宣布「✅ 确认开工」→ 任务卡移 `working/`、`col: "working"`。
+> - 无疑问也要走此步：问题清单可写「无疑问 + 理解复述」，确认后同样移 working。
 
 ## 铁律（双方必须遵守）
 
 1. **双写**：任何任务相关沟通，写 `threads/Txx.md` 的**同时**必须登记 `LOG.md` 一行。
-2. **状态同步**：任务卡头部有 `状态:` 字段；状态变化（领取/完成/验收/打回）时移动文件到对应目录并更新头部 + index.json。
-3. **歧义必问**（81 机制）：ZCode 遇到需求含糊/冲突 → 写 `questions/Qn-Txx.md` 停下等待，禁止自行假设；CodeBuddy 24h 内答复 `answers/An-Txx.md`。
+2. **状态同步**：任务卡头部有 `状态:` 字段；状态变化（领取/答疑/开工/完成/验收/打回）时移动文件到对应目录并更新头部 + index.json。
+3. **先答后工**：领单后先进答疑阶段（问题清单+理解复述），未经「✅ 确认开工」不得开始编码；开发期遇需求含糊仍随时停下提问，禁止自行假设。
 4. **DoD 交付**：ZCode 完成任务 → 任务卡移 `done/` + 写 `done/Txx-done.md` 回执（勾选 DoD + 架构决策说明 + 文件清单）→ 等 CodeBuddy 工程验收（C 环）→ Leo 终验（L 环）。
 5. **不动箱外**：任务卡与线程之外的沟通不生效；口头/会话里的承诺要落到文件才算数。
 6. **Leo 可见**：所有文件 Leo 随时可读可插话；dashboard.html（根目录）是只读看板入口。
@@ -46,6 +54,7 @@ tasks/
 | 🤝 领单 | 移入 working，开工 | ZCode |
 | ❓ 提问 | questions/Qn | ZCode |
 | 💬 答复 | answers/An | CodeBuddy |
+| ✅ 确认开工 | 答疑一轮确认完毕，卡移 working 准许编码 | CodeBuddy |
 | 📦 交付 | done 回执，DoD 勾选 | ZCode |
 | 🔬 C 环验收 | CodeBuddy 工程测试（编译/类型/静态/单测/模拟） | CodeBuddy |
 | ✅ L 环验收 | Leo 点验签字 → archive | Leo |
@@ -71,21 +80,33 @@ tasks/
 **③ index.json 更新**（仅状态变化时）：改对应任务的 `status` 与 `col` 字段：
 
 ```json
-{"id": "T02", "status": "working", "col": "doing", ...}
+{"id": "T06", "status": "clarifying", "col": "questions", ...}
 ```
 
-col 五值：`todo / doing / ask / review / done`（backlog=未发单）。
+col 五值（= 物理目录名，2026-08-22 定版口径）：`inbox / working / questions / done / archive`（backlog=未发单）。dashboard 按同口径渲染。
 
 **注意**：线程行必须是单行文本；需要长篇说明时写入对应目录的文件（如 questions/Qn-T02.md），线程和 LOG 里只放一行摘要+文件指针。
 
 ## 看板(Leo 的 oversight 入口)
 
-- `dashboard.html`(项目根目录)——本地 http.server 起后浏览器打开,读 index.json 渲染
-- 五列:待办 / 进行中 / 待答疑 / 待验收 / 已完成
-- 点任务卡 → 展开该任务完整沟通线程(threads/Txx.md)
-- **协作模式(2026-08-21 定版)**:CodeBuddy 与 ZCode 以任务箱为沟通渠道;**Leo 居中转发**——在 ZCode 客户端发单/传话,在看板看全局;斜杠命令 `/tasks` `/work` `/report`(项目 `.zcode/commands/`)供 ZCode 会话使用
+- 先起任务箱服务:`python3 scripts/task_api.py`(默认 :8787,兼静态服务)
+- 浏览器开 `http://127.0.0.1:8787/dashboard.html`(多项目加 `?project=项目ID`)
+- 五列:待办 / 进行中 / 待答疑 / 待验收 / 已完成;点任务卡 → 展开该任务完整沟通线程
+- **协作模式(2026-08-21 定版)**:CodeBuddy 与 ZCode 以任务箱为沟通渠道;**Leo 居中转发**——在 ZCode 客户端发单/传话,在看板看全局
+
+## 数据源与变更通道（2026-08-22 15:29 SQLite 化 · Leo 拍板）
+
+- **结构化状态真源 = `tasks/box.db`**（SQLite WAL，多项目单库：projects/tasks/events 三表）
+- **变更一律走通道，禁止手改 box.db / 禁止再更新 index.json**：
+  - CLI：`python3 scripts/task.py move|event|card|list|board`（直连库）
+  - API：`python3 scripts/task_api.py` 起 :8787 → `GET /api/{pid}/board`、`PATCH /api/{pid}/tasks/{id}`、`POST /api/{pid}/events`
+  - 两条通道共用 `scripts/task_box.py` 校验（col 白名单 + 写后自动分布断言），非法值直接 400/报错
+- `index.json` 已冻结为只读快照存档（头部有 _frozen 标记），不再更新
+- **看板**：先起服务 `python3 scripts/task_api.py`，浏览器开 `http://127.0.0.1:8787/dashboard.html`（多项目加 `?project=项目ID`）；线程详情同源加载
+- 多项目：`POST /api/projects {id,name}` 或在库中 INSERT projects 一行即可，各项目任务卡互不干扰
 
 ## 与既有机制的关系
+
 
 - 任务卡格式 = `docs/81-研发协作机制`（需求表/边界/DoD/用例九表）
 - 状态总账 = `docs/任务管理总表.xlsx`（CodeBuddy 维护，与 index.json 同步）

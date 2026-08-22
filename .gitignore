@@ -3,3 +3,7 @@ dist/
 *.log
 .DS_Store
 scripts/__pycache__/
+tasks/box.db-shm
+tasks/box.db-wal
+.workbuddy_memory_skip
+assets/ui/drafts/promo_tmp/

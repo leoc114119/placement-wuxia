@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "eslint": "^9.0.0",
+    "playwright-core": "^1.62.1",
     "typescript": "^5.5.0",
     "typescript-eslint": "^8.0.0",
     "vitest": "^4.1.11"

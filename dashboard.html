@@ -60,7 +60,7 @@
 </head>
 <body>
   <h1>⛩ 放置武侠 · 工作流看板</h1>
-  <div class="sub">CodeBuddy ⇄ ZCode 任务箱实时视图 · 数据源 <b>tasks/index.json</b>（沟通记录存 tasks/threads/）· <span class="refresh" onclick="load()">↻ 刷新</span></div>
+  <div class="sub">CodeBuddy ⇄ ZCode 任务箱实时视图 · 数据源 <b>tasks/box.db（SQLite · 经 task_api :8787）</b>· 沟通记录存 tasks/threads/ · <span class="refresh" onclick="load()">↻ 刷新</span></div>
   <div class="board" id="board"></div>
   <div class="detail" id="detail"></div>
   <div class="log">
@@ -70,20 +70,36 @@
 
 <script>
 const COLS = [
-  { key: "todo", name: "📥 待办（inbox）" },
-  { key: "doing", name: "🔨 进行中（working）" },
-  { key: "ask", name: "❓ 待答疑（questions）" },
-  { key: "review", name: "🔬 待验收（done）" },
-  { key: "done", name: "✅ 已完成（archive）" },
+  { key: "inbox", name: "📥 待办（inbox）" },
+  { key: "working", name: "🔨 进行中（working）" },
+  { key: "questions", name: "❓ 待答疑（questions）" },
+  { key: "done", name: "🔬 待验收（done）" },
+  { key: "archive", name: "✅ 已完成（archive）" },
 ];
 
 async function load() {
+  const pid = new URLSearchParams(location.search).get("project") || "placement-wuxia";
+  const RIGHT = "http://127.0.0.1:8787/dashboard.html" + (location.search || "");
   let idx;
   try {
-    const r = await fetch("tasks/index.json?t=" + Date.now());
+    if (location.protocol === "file:" || (location.host !== "127.0.0.1:8787" && location.host !== "localhost:8787")) {
+      throw Object.assign(new Error("WRONG_ORIGIN"), {});
+    }
+    const r = await fetch(`/api/${pid}/board?t=` + Date.now());
+    if (!r.ok) throw new Error("HTTP " + r.status);
     idx = await r.json();
+    if (idx.error) throw new Error(idx.error);
   } catch (e) {
-    document.getElementById("board").innerHTML = "<p style='color:#C94A40'>读取 tasks/index.json 失败——请用本地服务器打开（python3 -m http.server）</p>";
+    const board = document.getElementById("board");
+    if (e.message === "WRONG_ORIGIN") {
+      board.innerHTML =
+        `<p style='color:#C94A40'>打开方式不对：看板必须经任务箱服务访问。</p>
+         <p style='margin:8px 0'><a href="${RIGHT}" style="color:#4A7A6B;font-weight:700">→ 点这里跳转正确地址（127.0.0.1:8787）</a></p>
+         <p style='color:#444'>若跳转失败，先启动服务：<code>python3 scripts/task_api.py</code>（已配 launchd 开机自启则无需手动）</p>`;
+    } else {
+      board.innerHTML =
+        `<p style='color:#C94A40'>读取任务箱失败（${e.message}）——服务可能没在跑。启动：<code>python3 scripts/task_api.py</code>，然后刷新本页。</p>`;
+    }
     return;
   }
   const board = document.getElementById("board");
