@@ -1,7 +1,13 @@
 {
  "_frozen": "⚠ 本文件已于 2026-08-22 15:29 冻结退役——结构化数据迁入 tasks/box.db（SQLite），变更一律走 scripts/task.py（CLI）或 task_api.py（HTTP :8787）。本文件仅为迁移时点快照存档，不再更新。看板数据源 = GET /api/{pid}/board",
- "updated": "2026-08-22 17:40",
+ "updated": "2026-08-22 20:30",
  "events": [
+  {
+   "t": "08-22 20:30",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "📦 T06 二轮交付",
+   "detail": "两层架构 · 53/53 · 待 C 环"
+  },
   {
    "t": "08-22 17:40",
    "dir": "ZCode → CodeBuddy",
@@ -354,10 +360,10 @@
   {
    "id": "T06",
    "title": "战斗界面",
-   "status": "done-待C环",
+   "status": "二轮已交付-待C环",
    "owner": "ZCode",
    "col": "review",
-   "summary": "战斗界面交付:51/51+node 全等 · C 环重点查 resolveAction 等价性",
+   "summary": "两层架构(Layer0 静态/Layer1 代码台面)+内切删除 · 53/53 · 待 C 环",
    "thread": "threads/T06.md"
   },
   {

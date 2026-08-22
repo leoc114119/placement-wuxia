@@ -2,7 +2,7 @@
 // UI 全代码绘制（ref_battle_ui_v4 仅风格基准）；格子由代码绘制叠加 scene_battle（背景无格线，唯一几何真源）
 import {
   BAR,
-  BG_PLATFORM,
+  PLATFORM,
   BODY_HEIGHT_RATIO,
   BOARD_COLS,
   BOARD_ROWS,
@@ -65,7 +65,8 @@ export function renderBattle(
   // 相机：以主角渲染位置为中心，视窗不出棋盘世界包围盒（§1b.2；无缩放）
   const cam = computeCamera(session, width, height, dragOffset);
   const L = layoutInfo ?? { btnHits: [], overlayText: null, panel: null };
-  drawBoardBg(ctx, assets, cam);
+  drawEnvLayer(ctx, assets, width, height); // Layer0 静态环境（不随 cam）
+  drawPlatform(ctx, session, cam); // Layer1 代码台面
   drawGrid(ctx, session, cam);
   drawManualCells(ctx, session, cam);
   drawFxs(ctx, fxBook, cam, frame.dt);
@@ -110,11 +111,13 @@ export function computeCamera(
   const heroW = projectGrid(session, hero.renderX, hero.renderY);
   let cx = heroW.x + dragOffset.x;
   let cy = heroW.y + dragOffset.y;
-  // 棋盘包围盒（0..COLS-1 / 0..ROWS-1 格中心的世界范围 + 半格 + pad）
-  const minX = projectGrid(session, BOARD_COLS - 1, 0).x - TILE_HALF_W - CAMERA.worldPad;
-  const maxX = projectGrid(session, 0, BOARD_ROWS - 1).x + TILE_HALF_W + CAMERA.worldPad;
-  const minY = projectGrid(session, 0, 0).y - TILE_HALF_H - CAMERA.worldPad;
-  const maxY = projectGrid(session, BOARD_COLS - 1, BOARD_ROWS - 1).y + TILE_HALF_H + CAMERA.worldPad;
+  // 棋盘（台面）世界包围盒——与朝向翻转无关的常量式（flip 是对称 y 翻转，极值不变；
+  // 按角点公式取格会在 flip 下角互换错位——clamp 用例坐实后修正）
+  void projectGrid;
+  const minX = -BOARD_ROWS * TILE_HALF_W - CAMERA.worldPad;
+  const maxX = BOARD_COLS * TILE_HALF_W + CAMERA.worldPad;
+  const minY = -TILE_HALF_H - CAMERA.worldPad;
+  const maxY = (BOARD_COLS + BOARD_ROWS - 1) * TILE_HALF_H + TILE_HALF_H + CAMERA.worldPad;
   const halfW = width / 2;
   const halfH = height / 2;
   // 视窗若已能覆盖全包围盒则居中；否则 clamp 相机中心使视窗不脱出
@@ -140,15 +143,61 @@ function diamondPath(ctx: CanvasRenderingContext2D, sx: number, sy: number): voi
 
 // ---------- L0 背景 + 格子 ----------
 
-function drawBoardBg(ctx: CanvasRenderingContext2D, assets: BattleAssets, cam: Camera): void {
+/** Layer0 环境层（75 v2.3 §1b.4）：屏幕空间静态 cover——不随拖动/相机平移（只拖棋盘不动景）。
+ * v3 环境图 9:16 无台面（零几何契约）；缺图降级宣纸底。 */
+function drawEnvLayer(ctx: CanvasRenderingContext2D, assets: BattleAssets, w: number, h: number): void {
   const img = assets.bg;
-  if (!img) return; // 缺图降级宣纸底（加载器已打日志）
-  // 素材原始像素 1:1 贴入世界系：BG_PLATFORM 锚点（台面顶面中心，像素实测）对齐棋盘菱形中心
-  // （格 (3.5, 5.5) 投影点）——代码格叠素材台面重合的几何基础（L 环 08-22 对齐）
-  const centerX = ((BOARD_COLS - 1) / 2 - (BOARD_ROWS - 1) / 2) * TILE_HALF_W;
-  const centerY = ((BOARD_COLS - 1) / 2 + (BOARD_ROWS - 1) / 2) * TILE_HALF_H;
-  const topLeft = worldToScreen(cam, centerX - BG_PLATFORM.anchorX, centerY - BG_PLATFORM.anchorY);
-  ctx.drawImage(img as unknown as CanvasImageSource, topLeft.x, topLeft.y, img.width, img.height);
+  if (!img) return;
+  const scale = Math.max(w / img.width, h / img.height);
+  const dw = img.width * scale;
+  const dh = img.height * scale;
+  ctx.drawImage(img as unknown as CanvasImageSource, (w - dw) / 2, (h - dh) / 2, dw, dh);
+}
+
+/** Layer1 战斗台（75 v2.3 §1b.4）：8×12 菱形台面全代码绘制——外轮廓填充 + 厚度侧沿 + 描边 + 格线。
+ * 几何唯一真源 = 代码常量（THW/THH 投影），无任何贴图采样，「重合」由构造保证。 */
+function drawPlatform(ctx: CanvasRenderingContext2D, session: BattleSession, cam: Camera): void {
+  // 外轮廓四角 = 格 (0,0)/(COLS-1,0)/(COLS-1,ROWS-1)/(0,ROWS-1) 的顶点外扩半格
+  const corner = (x: number, y: number) => {
+    const w0 = projectGrid(session, x, y);
+    return worldToScreen(cam, w0.x, w0.y);
+  };
+  const top = corner(0, 0);
+  const right = corner(BOARD_COLS - 1, 0);
+  const bottom = corner(BOARD_COLS - 1, BOARD_ROWS - 1);
+  const left = corner(0, BOARD_ROWS - 1);
+  const edge = (dx: number, dy: number): { x: number; y: number } => ({ x: dx * TILE_HALF_W, y: dy * TILE_HALF_H });
+  const eT = edge(0, -1);
+  const eR = edge(1, 0);
+  const eB = edge(0, 1);
+  const eL = edge(-1, 0);
+  const pt = (c: { x: number; y: number }, e: { x: number; y: number }) => ({ x: c.x + e.x, y: c.y + e.y });
+
+  // 侧沿（厚度：下/右/左三条边向下挤出 sideDepth，模拟悬浮台侧立面）
+  const d = PLATFORM.sideDepth;
+  ctx.beginPath();
+  ctx.moveTo(pt(left, eL).x, pt(left, eL).y);
+  ctx.lineTo(pt(bottom, eB).x, pt(bottom, eB).y);
+  ctx.lineTo(pt(right, eR).x, pt(right, eR).y);
+  ctx.lineTo(pt(right, eR).x + d * 0.35, pt(right, eR).y + d);
+  ctx.lineTo(pt(bottom, eB).x, pt(bottom, eB).y + d);
+  ctx.lineTo(pt(left, eL).x - d * 0.35, pt(left, eL).y + d);
+  ctx.closePath();
+  ctx.fillStyle = PLATFORM.side;
+  ctx.fill();
+
+  // 台面填充（外轮廓菱形）
+  ctx.beginPath();
+  ctx.moveTo(pt(top, eT).x, pt(top, eT).y);
+  ctx.lineTo(pt(right, eR).x, pt(right, eR).y);
+  ctx.lineTo(pt(bottom, eB).x, pt(bottom, eB).y);
+  ctx.lineTo(pt(left, eL).x, pt(left, eL).y);
+  ctx.closePath();
+  ctx.fillStyle = PLATFORM.fill;
+  ctx.fill();
+  ctx.strokeStyle = PLATFORM.edge;
+  ctx.lineWidth = PLATFORM.edgeWidth;
+  ctx.stroke();
 }
 
 function drawGrid(ctx: CanvasRenderingContext2D, session: BattleSession, cam: Camera): void {

@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-22 20:30 | ZCode → CodeBuddy | 📦 T06 二轮改造交付 | 两层架构落地(Layer0 静态环境/Layer1 代码台面零贴图) · 内切逻辑删除 · 53/53 · 待 C 环(重点:diff 无贴图采样) |
 | 2026-08-22 19:05 | ZCode → CodeBuddy | ↩️↪️ T06 L 环修复×3 | 台面对齐(宽对齐内切+1:1 贴图,比例 1.446 报备素材管线)/镜头拖动/人物比例 · 51/51 |
 | 2026-08-22 17:40 | ZCode → CodeBuddy | 📦 交付 T06 | 战斗界面演出层 · resolveAction 零变更抽取+二选一口径+双模式 · 51/51 · node 全等验证 · 待 C 环（重点：resolveAction 等价性/diff 干净度/同 seed 确定性） |
 | 2026-08-22 16:00 | ZCode → CodeBuddy | 🤝 领单 T06 开工 | A1 v2 裁决全收 · 方案A/Q8 二选一/暗器后置 · working/ 开始编码 |
@@ -79,3 +80,7 @@
 | 2026-08-22 01:50 | CodeBuddy | 🔬✅ C 环 PASS Q2+Q3旧规格 | 三零+27/27+c49d577 · Q3 出 R2 自适应返工单（三段式锚定，9:16 定稿图降级风格参考）· 待 L 发车 ZCode |
 | 2026-08-22 02:11 | CodeBuddy | 📦 UI 定稿图 v2 出图 | 9:16 gpt-image-2 88s · 无文字版高质量 · 待 L 目验后转正 |
 | 2026-08-22 02:18 | Leo/CodeBuddy | ✅ UI 基准 v2+七图标转正 | ref_jianghu_ui_v2 定稿 · 七图标 gpt-image-2 版替换 · point/sect 专属就位（接线待 T08）· ICON-MATRIX 更新 |
+| 2026-08-22 15:58 | Leo/CodeBuddy | 📐 75 v2.2 战场两层架构定稿 | Leo 拍板方案 A（背景只管氛围/棋盘代码绘制）· §1b.4 新节 + §1 渲染行 + §1b.2 拖动口径 + §8b 分母铁律 + 素材联动（scene_battle v3 无棋盘横幅图） |
+| 2026-08-22 16:10 | CodeBuddy → ZCode | 💬 答复 A2-T06 | L 环修复②③终态采纳；①内切=过渡，升级两层架构；施工指令+DoD 增补 · 卡 done→working · scene_battle v3 出图中 |
+| 2026-08-22 16:30 | Leo/CodeBuddy | 📐 75 v2.3 静态背景定稿 | Leo 简化案：Layer0 屏幕空间静态定位不随拖动（只拖棋盘不动景）· 取消夹取/覆盖计算 · 画幅回归 9:16 · A2-T06 修订下发 |
+| 2026-08-22 17:55 | CodeBuddy | ✅ scene_battle v3 转正 | d3 竖版覆盖 scene_battle.png（1440×2560）· v2 留底 drafts · ICON-MATRIX v1.5 + 配方 refs 清空 · 待 ZCode 按 A2 换图 |

@@ -5,6 +5,8 @@ import { BAR, BOARD_COLS, BOARD_ROWS } from '../config/battle';
 import { NPC_POOL } from '../config/npcs';
 import type { SkillDef } from '../types';
 import { fillRate, skillRange } from '../systems/battle-core';
+import { computeCamera, renderBattle } from '../ui/battle-render';
+import { CAMERA, TILE_HALF_H, TILE_HALF_W } from '../config/battle';
 import {
   battleWalkFrame,
   createBattleSession,
@@ -236,5 +238,71 @@ describe('battleWalkFrame', () => {
       expect(f).toBeGreaterThanOrEqual(1);
       expect(f).toBeLessThanOrEqual(3);
     }
+  });
+});
+
+// ---------- A2-T06 二轮：两层架构（Layer0 静态 / Layer1 代码台面） ----------
+describe('战场两层架构（75 v2.3 §1b.4）', () => {
+  /** 录制型 ctx：捕获全部绘制调用（drawImage 专列） */
+  function recordingCtx() {
+    const draws: unknown[][] = [];
+    const calls: Record<string, number> = {};
+    const ctx = new Proxy(
+      {},
+      {
+        get: (_t, prop: string) => {
+          if (prop === 'measureText') return () => ({ width: 80 });
+          if (prop === 'canvas') return undefined;
+          return (...args: unknown[]) => {
+            calls[prop] = (calls[prop] ?? 0) + 1;
+            if (prop === 'drawImage') draws.push(args);
+          };
+        },
+        set: () => true,
+      },
+    ) as unknown as CanvasRenderingContext2D;
+    return { ctx, draws, calls };
+  }
+
+  it('拖动四边 clamp 生效：任意大偏移下相机中心恒在台面包围盒+边距界内', () => {
+    const s = createBattleSession(NPC_POOL, SEED, 'auto');
+    // 与 computeCamera 同式的常量包围盒（与 facingFlip 无关：对称翻转极值不变）
+    const pad = CAMERA.worldPad;
+    const minX = -12 * TILE_HALF_W - pad;
+    const maxX = 8 * TILE_HALF_W + pad;
+    const minY = -TILE_HALF_H - pad;
+    const maxY = 20 * TILE_HALF_H + pad;
+    void gridToWorld;
+    for (const off of [
+      { x: 5000, y: 0 }, { x: -5000, y: 0 }, { x: 0, y: 5000 }, { x: 0, y: -5000 }, { x: 9999, y: -9999 },
+    ]) {
+      const cam = computeCamera(s, 375, 667, off); // 小视窗 < 棋盘 → clamp 必须夹紧
+      const cx = 375 / 2 - cam.ox;
+      const cy = 667 / 2 - cam.oy;
+      expect(cx).toBeGreaterThanOrEqual(minX + 375 / 2 - 0.01);
+      expect(cx).toBeLessThanOrEqual(maxX - 375 / 2 + 0.01);
+      expect(cy).toBeGreaterThanOrEqual(minY + 667 / 2 - 0.01);
+      expect(cy).toBeLessThanOrEqual(maxY - 667 / 2 + 0.01);
+    }
+  });
+
+  it('背景保持静止：不同拖动偏移下 Layer0 drawImage 目标矩形完全相同；台面路径零贴图（全屏仅一次 drawImage）', () => {
+    const s = createBattleSession(NPC_POOL, SEED, 'auto');
+    const bgImg = { src: 'mock', width: 1440, height: 2560 } as WxImage;
+    const assets = { bg: bgImg, framesByKind: new Map() };
+    const shoot = (off: { x: number; y: number }) => {
+      const rec = recordingCtx();
+      renderBattle({ ctx: rec.ctx, width: 375, height: 667, dt: 16 }, s, assets, [], 0, undefined, off);
+      return rec;
+    };
+    const a = shoot({ x: 0, y: 0 });
+    const b = shoot({ x: 400, y: -300 });
+    expect(a.draws.length).toBe(1); // 仅 Layer0 背景一次——台面/格子/高亮全代码几何零贴图采样
+    expect(a.draws).toEqual(b.draws); // 拖动不改变背景目标矩形（屏幕空间静态）
+    const [, dx, dy, dw, dh] = a.draws[0] as [unknown, number, number, number, number];
+    expect(dw).toBeGreaterThanOrEqual(375 - 0.01); // cover 铺满（9:16 图在更方的视窗可恰等高）
+    expect(dh).toBeGreaterThanOrEqual(667 - 0.01);
+    expect(dx).toBe((375 - dw) / 2);
+    expect(dy).toBe((667 - dh) / 2);
   });
 });
