@@ -4,6 +4,7 @@
 // 确定性：rng 注入（同 seed + 同操作序列 → 事件流全等）。渲染无关，node 可测。
 import {
   BAR,
+  FX,
   BOARD_COLS,
   BOARD_ROWS,
   BATTLE_FRAME,
@@ -174,6 +175,9 @@ function toActor(
     animState: 'idle',
     animMs: 0,
     dead: false,
+    lungeT: 1,
+    lungeDirX: 0,
+    lungeDirY: 0,
   };
 }
 
@@ -206,8 +210,6 @@ export interface BattleSession {
   manualCells(): Array<{ x: number; y: number }>;
   /** 特/轻/绝可用性（置灰判定；A1 Q9 轻功内力 10 冷却 0） */
   skillBtnStates(): { te: boolean; qing: boolean; jue: boolean; teSkill?: SkillDef; jueSkill?: SkillDef };
-  /** 战斗朝向随机（§1b.1，仅渲染层翻转；逻辑固定我 y=10 敌 y=1） */
-  readonly facingFlip: boolean;
   /** 取走待播 fx 队列（渲染层消费后清空） */
   drainFx(): Array<{ kind: 'skill' | 'basic'; targetId: string; skillId?: string; grade: number; radius: number }>;
 }
@@ -220,7 +222,6 @@ export function createBattleSession(pool: NpcConfig[], seed: number, mode: Battl
   const actors: BattleActor[] = [player, ...buildEnemies(pool, player.shizhan, rng)];
   const events: BattleUiEvent[] = [];
   const manual: EngineManualState = { stage: 0, idleSec: 0 };
-  const facingFlip = rng() < 0.5; // §1b.1 战斗朝向随机（我方上/下）——仅渲染层翻转，逻辑固定 y=10/y=1
   /** 全员面向各自最近敌（L 环二轮：出场即面向对手） */
   const faceFoes = (): void => {
     for (const a of actors) {
@@ -253,10 +254,19 @@ export function createBattleSession(pool: NpcConfig[], seed: number, mode: Battl
   /** 出手：引擎同源结算 + 事件 + 动画置位；quiet=试探性普攻（blocked 不记事件，避免自动走位决策污染事件流） */
   function attackWith(actor: BattleActor, target: BattleActor, skill: SkillDef | null, quiet = false): ActionOutcome {
     const outcome = resolveAction(actor as ActionActor, target, skill, rng);
-    // 演出动画：技能=04→05（蓄力在 fx 段推进）；普攻=06 单帧；blocked 无动作
+    // 演出动画（F2c §8b.3/§8c 原文落实）：技能 = 04 蓄力 → 0.1s 后转 05 挥出（两帧序列，不钉一帧）；
+    // 普攻 = 06 单帧 + 前冲半格 lerp（朝目标）+ 回位 + 武器光弧（fx 模板）；blocked 无动作
     if (outcome.kind !== 'blocked') {
-      actor.animState = skill ? 'strike' : 'basic';
+      actor.animState = skill ? 'charge' : 'basic';
       actor.animMs = 0;
+      if (!skill) {
+        actor.lungeT = 0;
+        const dx = target.renderX - actor.renderX;
+        const dy = target.renderY - actor.renderY;
+        const len = Math.hypot(dx, dy) || 1;
+        actor.lungeDirX = dx / len;
+        actor.lungeDirY = dy / len;
+      }
       pendingFx.push({
         kind: skill ? 'skill' : 'basic',
         targetId: target.id,
@@ -417,8 +427,21 @@ export function createBattleSession(pool: NpcConfig[], seed: number, mode: Battl
       // 其余棋子照常行动：行动条/演出动画用 dt 继续推进）
       if (!pendingManual) timeSec += dt;
 
-      // 演出动画推进（移动 lerp / 跳跃 / 帧动画；渲染层读同一状态）
+      // 演出动画推进（移动 lerp / 跳跃 / 帧动画 / 出招两帧序列 / 普攻前冲；渲染层读同一状态）
       for (const a of actors) {
+        if (a.animState === 'charge' && a.animMs >= FX.chargeSec * 1000) {
+          a.animState = 'strike'; // 04 → 05（§8b.3 出招组播报）
+          a.animMs = 0;
+        } else if (a.animState === 'strike' && a.animMs >= FX.strikeSec * 1000) {
+          a.animState = 'idle'; // 挥出收势
+          a.animMs = 0;
+        } else if (a.animState === 'basic' && a.animMs >= FX.basicTotalSec * 1000) {
+          a.animState = 'idle';
+          a.animMs = 0;
+        }
+        if (a.lungeT < 1) {
+          a.lungeT = Math.min(1, a.lungeT + dt / FX.basicTotalSec); // 前冲+回位双程
+        }
         if (a.moveT >= 1 && !a.dead) {
           // 待机棋子持续面向最近敌（L 环二轮 Leo 定「面向对手」；移动中保持移动方向 §8b.1）
           const foes = actors.filter((f) => f.side !== a.side && !f.dead);
@@ -569,7 +592,6 @@ export function createBattleSession(pool: NpcConfig[], seed: number, mode: Battl
       const range = moveRange(pendingManual.skills) * (manualChoice === 'qinggong' ? MOVE.qinggongRangeFactor : 1);
       return reachableCells(pendingManual.pos.x, pendingManual.pos.y, range, occupiedPos());
     },
-    facingFlip,
     drainFx() {
       const out = pendingFx.slice();
       pendingFx.length = 0;

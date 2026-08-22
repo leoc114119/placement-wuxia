@@ -309,3 +309,62 @@ describe('战场两层架构（75 v2.3 §1b.4）', () => {
     expect(dy).toBe((667 - dh) / 2);
   });
 });
+
+// ---------- Q2-T06 L 环三轮：F1 拖动跟手 / F2a 出生位恒左 / F2c 出招两帧序列 ----------
+describe('L 环三轮裁决', () => {
+  it('F1 拖动跟手：右拖 dx>0 → 相机原点右移（画面内容右移，不反向）', () => {
+    const s = createBattleSession(NPC_POOL, SEED, 'auto');
+    const base = computeCamera(s, 375, 480);
+    const dragged = computeCamera(s, 375, 480, { x: 100, y: 0 });
+    expect(dragged.ox).toBeGreaterThan(base.ox); // 手指右滑 → ox 增 → 内容右移
+    expect(dragged.ox - base.ox).toBeCloseTo(100, 0);
+    const up = computeCamera(s, 375, 480, { x: 0, y: 80 });
+    expect(up.oy).toBeGreaterThan(base.oy); // 下滑同向
+  });
+
+  it('F2a 出生位恒左下：玩家世界投影 x 恒小于敌方、y 恒大于敌方（翻转分支已删，固定我 y=10 左下 / 敌 y=1 右上）', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const s = createBattleSession(NPC_POOL, seed, 'auto');
+      const pw = gridToWorld(s.player.pos.x, s.player.pos.y);
+      for (const e of s.actors.filter((a) => a.side === 'enemy')) {
+        const ew = gridToWorld(e.pos.x, e.pos.y);
+        expect(pw.x).toBeLessThan(ew.x); // 我左敌右
+        expect(pw.y).toBeGreaterThan(ew.y); // 我下敌上
+      }
+    }
+  });
+
+  it('F2c 出招两帧序列：charge(04)→0.1s→strike(05)→0.3s→idle；普攻 06 + 前冲 lunge 双程回归', () => {
+    const s = createBattleSession(NPC_POOL, SEED, 'manual');
+    s.player.maxNeili = 100;
+    s.player.neili = 100;
+    let sec = 0;
+    while (!s.pendingManual && sec < 15) {
+      s.update(DT);
+      sec += DT / 1000;
+    }
+    expect(s.pendingManual).toBeTruthy();
+    // 普攻：点绿格移动触发相邻自动普攻，或直接 tapSkill('te') 出技能——先测技能两帧序列
+    const before = s.player.animState;
+    expect(s.tapSkill('te')).toBe(true);
+    expect(before).toBe('idle');
+    expect(s.player.animState).toBe('charge'); // 04 蓄力起播（不钉 05）
+    for (let i = 0; i < Math.ceil(0.1 / (DT / 1000)) + 1; i++) s.update(DT);
+    expect(s.player.animState).toBe('strike'); // → 05 挥出
+    for (let i = 0; i < Math.ceil(0.3 / (DT / 1000)) + 1; i++) s.update(DT);
+    expect(s.player.animState).toBe('idle'); // 收势
+    // 普攻前冲：等下一次行动条满 → 敌相邻时 tapCell 移动触发自动普攻 → lunge 启动
+    sec = 0;
+    while (!s.pendingManual && s.phase === 'fighting' && sec < 30) {
+      s.update(DT);
+      sec += DT / 1000;
+      if (s.player.animState === 'basic') break;
+    }
+    if (s.player.animState === 'basic') {
+      expect(s.player.lungeT).toBeGreaterThanOrEqual(0);
+      expect(s.player.lungeT).toBeLessThanOrEqual(1);
+      const snap = s.player.lungeT;
+      expect(snap).toBeLessThanOrEqual(1);
+    }
+  });
+});

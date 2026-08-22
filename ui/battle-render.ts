@@ -84,20 +84,19 @@ export interface Camera {
   oy: number;
 }
 
-/** 格 → 世界（战斗朝向随机：flip 时渲染层 y 翻转，逻辑坐标不变，§1b.1） */
-function projectGrid(session: BattleSession, x: number, y: number): { x: number; y: number } {
-  return session.facingFlip ? gridToWorld(x, BOARD_ROWS - 1 - y) : gridToWorld(x, y);
+/** 格 → 世界（F2a：战斗朝向随机已后置至 PVP——75 v2.4 删除翻转分支，固定我方 y=10 屏幕左下/敌方 y=1 右上） */
+function projectGrid(_session: BattleSession, x: number, y: number): { x: number; y: number } {
+  return gridToWorld(x, y);
 }
 
-/** 屏幕点 → 逻辑格（触摸反变换；相机 + 朝向翻转双还原） */
+/** 屏幕点 → 逻辑格（触摸反变换；相机还原） */
 export function screenToBattleGrid(
-  session: BattleSession,
+  _session: BattleSession,
   cam: Camera,
   sx: number,
   sy: number,
 ): { x: number; y: number } {
-  const g = worldToGrid(sx - cam.ox, sy - cam.oy);
-  return session.facingFlip ? { x: g.x, y: BOARD_ROWS - 1 - g.y } : g;
+  return worldToGrid(sx - cam.ox, sy - cam.oy);
 }
 
 /** 棋盘世界包围盒（含 pad）；相机中心 = 主角世界位，clamp 后原点 = 屏中心 - 相机中心 */
@@ -109,8 +108,9 @@ export function computeCamera(
 ): Camera {
   const hero = session.player;
   const heroW = projectGrid(session, hero.renderX, hero.renderY);
-  let cx = heroW.x + dragOffset.x;
-  let cy = heroW.y + dragOffset.y;
+  // F1 拖动跟手：手指右滑 dx>0 → 画面内容右移 → 屏幕原点 ox 增 → 相机中心 cx 减（dragOffset 为手指累计位移）
+  let cx = heroW.x - dragOffset.x;
+  let cy = heroW.y - dragOffset.y;
   // 棋盘（台面）世界包围盒——与朝向翻转无关的常量式（flip 是对称 y 翻转，极值不变；
   // 按角点公式取格会在 flip 下角互换错位——clamp 用例坐实后修正）
   void projectGrid;
@@ -296,6 +296,14 @@ function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, asset
     let sy = s.y;
     if (a.isJump && a.moveT < 1) {
       sy -= Math.sin(a.moveT * Math.PI) * MOVE.qinggongArcTiles * (TILE_HALF_H * 2); // 抛物线
+    }
+    if (a.lungeT < 1) {
+      // 普攻前冲半格 + 回位（§8c 10b.3：sin 双程，峰值 0.5 格；格向量按等距投影换算屏幕增量）
+      const k = Math.sin(a.lungeT * Math.PI) * 0.5;
+      const gx = a.lungeDirX * k;
+      const gy = a.lungeDirY * k;
+      s = { x: s.x + (gx - gy) * TILE_HALF_W, y: s.y + (gx + gy) * TILE_HALF_H };
+      sy = s.y;
     }
     // 脚下阵营菱形光圈（§8b.2：我淡金/敌朱砂）
     ctx.save();

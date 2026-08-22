@@ -213,6 +213,10 @@ export interface BattleActor extends CombatantInput {
   animState: BattleAnimState; // 帧组播报硬规则：walk=01~03 / 出招 04→05 / 普攻 06
   animMs: number; // 当前动画态累计
   dead: boolean; // 阵亡变灰
+  /** 普攻前冲（§8c 10b.3：半格 lerp + 回位；0~1 双程，>=1 结束） */
+  lungeT: number;
+  lungeDirX: number; // 前冲方向（朝目标单位，格向量归一）
+  lungeDirY: number;
 }
 
 /** 演出层事件流（同 seed + 同操作序列 → 全等；node 断言口径） */

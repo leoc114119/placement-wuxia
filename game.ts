@@ -323,14 +323,12 @@ function main(): void {
   raf(loop);
 }
 
-// fx 世界坐标（朝向随机还原；与 battle-render 的 projectGrid 同式——TILE_HALF 常量同源 config/battle）
-function worldXOf(session: BattleSession, gx: number, gy: number): number {
-  const y = session.facingFlip ? 12 - 1 - gy : gy;
-  return (gx - y) * TILE_HALF_W;
+// fx 世界坐标（F2a：翻转分支已删；与 battle-render 的 projectGrid 同式——TILE_HALF 常量同源 config/battle）
+function worldXOf(_session: BattleSession, gx: number, gy: number): number {
+  return (gx - gy) * TILE_HALF_W;
 }
-function worldYOf(session: BattleSession, gx: number, gy: number): number {
-  const y = session.facingFlip ? 12 - 1 - gy : gy;
-  return (gx + y) * TILE_HALF_H;
+function worldYOf(_session: BattleSession, gx: number, gy: number): number {
+  return (gx + gy) * TILE_HALF_H;
 }
 
 main();

@@ -39,7 +39,7 @@ export const PLATFORM = {
 
 // ===== 棋子比例（§8b.4：renderH = tileVisualH × spriteHeightPerTile × bossScale；按主体占比反推画布绘制高） =====
 export const SPRITE_HEIGHT_PER_TILE = {
-  humanoid: 1.2, // 人形直立（主角/山贼；L 环可调区间 1.1~1.35）
+  humanoid: 1.35, // F4a L 环三轮：1.2→1.35（偏小不清晰；区间上限同步放宽 1.1~1.45）
   wolf: 0.8, // 四足狼形（区间 0.75~0.85）
 } as const;
 export const BOSS_SCALE = 1.3; // 狼王 ×（狼基线 0.8×1.3≈1.05）
@@ -70,7 +70,9 @@ export const FX = {
   fadeSec: 0.12, // 收尾消散
   shakeSec: 0.15, // 绝学/Boss 出招全屏微震时长
   shakeAmpPx: 5, // 震幅（幅度小）
-  basicLungeSec: 0.16, // 普攻半格前冲 + 回位（各半）
+  basicLungeSec: 0.16, // 普攻半格前冲 + 回位（各半）——basicTotalSec 的构成基准
+  strikeSec: 0.3, // 出招 05 挥出帧持续（04 蓄力 = chargeSec 0.1）
+  basicTotalSec: 0.32, // 普攻 06 单帧 + 前冲回位全程（两段 basicLungeSec）
 } as const;
 
 // ===== 帧映射（硬规则：出招 04→05 两帧、普攻 06 单帧+代码动效、移动 01~03 循环、禁 05→06 直切） =====
