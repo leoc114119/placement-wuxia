@@ -33,6 +33,16 @@ interface WxSystemInfo {
   pixelRatio: number;
 }
 
+/** 微信胶囊按钮矩形（逻辑 px；Q3-R2 状态栏锚顶依据） */
+interface WxMenuButtonRect {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+}
+
 declare const wx: {
   createCanvas(): WxCanvas;
   createImage(): WxImage;
@@ -41,5 +51,6 @@ declare const wx: {
   onTouchEnd(callback: (e: WxTouchEvent) => void): void;
   onTouchCancel(callback: (e: WxTouchEvent) => void): void;
   getSystemInfoSync(): WxSystemInfo;
+  getMenuButtonBoundingClientRect(): WxMenuButtonRect;
 };
 

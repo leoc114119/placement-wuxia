@@ -4,13 +4,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   HERO_WALK_SPEED,
   HERO_FRAME,
-  SCENE_BUTTONS,
-  SCENE_LABEL,
+  STATUS_FALLBACK_RATIO,
+  TAB_BAR_H_RATIO,
   WALK_ZONE,
 } from '../config/numbers';
 import {
   bindTapInput,
   clampTarget,
+  computeSceneLayout,
   createSceneSystem,
   facingToward,
   hitSceneButton,
@@ -18,6 +19,7 @@ import {
   stepAvatar,
   walkFrame,
 } from '../systems/scene';
+import { render } from '../ui/render';
 import { START_SCENE } from '../config/scenes';
 import type { PlayerAvatar } from '../types';
 
@@ -104,19 +106,20 @@ describe('walkFrame', () => {
   });
 });
 
-// ---------- 用例组 5：按钮布局与命中优先级（需求表 #5/#8） ----------
+// ---------- 用例组 5：按钮布局与命中优先级（需求表 #5/#8；布局随三段式锚定，Q3-R2） ----------
 describe('按钮命中', () => {
-  it('三按钮等距布局，行中心 y≈0.82（Q3：Tab 栏 0.92 之上）', () => {
+  it('三按钮等距、行中心贴场景窗底上方（fallback 锚定）', () => {
     const layout = layoutSceneButtons(SIZE);
     expect(layout).toHaveLength(3);
-    expect(layout[0].cy / SIZE.height).toBeCloseTo(0.82, 2); // Q3 DoD：0.82±0.01
-    const cy = SCENE_BUTTONS.yRatio * SIZE.height;
-    for (const b of layout) expect(b.cy).toBeCloseTo(cy);
     const gapPx = layout[1].cx - layout[0].cx;
     expect(layout[2].cx - layout[1].cx).toBeCloseTo(gapPx); // 等距
     expect(layout[1].cx).toBeCloseTo(SIZE.width / 2); // 居中
-    expect(SCENE_LABEL.y).toBeGreaterThan(0.105); // Q3 DoD：标签中心 0.115±0.01
-    expect(SCENE_LABEL.y).toBeLessThan(0.125);
+    const l = computeSceneLayout(SIZE);
+    for (const b of layout) {
+      expect(b.cy).toBeCloseTo(l.buttonCy, 5);
+      expect(b.cy + b.r).toBeLessThan(l.tabBarTop); // 恒在场景窗口内（Q3-R2 需求 #5）
+      expect(b.cy - b.r).toBeGreaterThan(l.statusBarBottom);
+    }
   });
 
   it('点按钮圈内命中、圈外不命中；点按钮不触发移动（UI > 地面）', () => {
@@ -174,7 +177,7 @@ describe('wx mock 状态机模拟', () => {
     const frames = new Set<number>();
     for (let i = 0; i < 24; i++) {
       sys.update(1000 / 60);
-      frames.add(sys.view({ bg: null, heroFrames: [] }).heroFrameIdx);
+      frames.add(sys.view({ bg: null, heroFrames: [], buttonIcons: [] }).heroFrameIdx);
     }
     expect(Math.max(...frames)).toBeLessThanOrEqual(HERO_FRAME.walkEnd);
     expect(Math.min(...frames)).toBeGreaterThanOrEqual(HERO_FRAME.walkStart);
@@ -184,7 +187,7 @@ describe('wx mock 状态机模拟', () => {
     expect(sys.avatar.state).toBe('idle');
     expect(sys.avatar.moving).toBe(false);
     expect(sys.avatar.x).toBeCloseTo(0.76, 3);
-    expect(sys.view({ bg: null, heroFrames: [] }).heroFrameIdx).toBe(HERO_FRAME.idle); // 待机用 00 帧
+    expect(sys.view({ bg: null, heroFrames: [], buttonIcons: [] }).heroFrameIdx).toBe(HERO_FRAME.idle); // 待机用 00 帧
 
     // ④ 到达后点中间按钮：不移动，占位 log 被打出
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -200,5 +203,90 @@ describe('wx mock 状态机模拟', () => {
     expect(sys.avatar.targetY).toBeCloseTo(WALK_ZONE.yMin, 3);
     expect(sys.avatar.state).toBe('walk');
     expect(sys.avatar.direction).toBe('left');
+  });
+});
+
+// ---------- 用例组 7：Q3-R2 三段式锚定布局（DoD：两档分辨率断言） ----------
+describe('三段式布局 computeSceneLayout', () => {
+  it('375×667 与 375×812（无胶囊 fallback）：SCENE_RECT 边界正确，标签/按钮随锚点移动', () => {
+    for (const size of [
+      { width: 375, height: 667 },
+      { width: 375, height: 812 },
+    ]) {
+      const l = computeSceneLayout(size);
+      // ① SCENE_RECT 上下边界：状态栏底 → screenH - TAB_BAR_H
+      expect(l.statusBarBottom).toBeCloseTo(STATUS_FALLBACK_RATIO * size.height, 5);
+      expect(l.tabBarTop).toBeCloseTo(size.height - TAB_BAR_H_RATIO * size.height, 5);
+      expect(l.sceneRect.y).toBeCloseTo(l.statusBarBottom, 5);
+      expect(l.sceneRect.y + l.sceneRect.height).toBeCloseTo(l.tabBarTop, 5);
+      expect(l.sceneRect.x).toBe(0);
+      expect(l.sceneRect.width).toBe(size.width);
+      // ② 标签 = 状态栏底 + 0.03H；按钮行 = 场景窗底 - r - 0.02H，都在场景窗口内
+      expect(l.labelCy).toBeCloseTo(l.statusBarBottom + 0.03 * size.height, 5);
+      expect(l.buttonCy).toBeCloseTo(l.tabBarTop - l.buttonR - 0.02 * size.height, 5);
+      expect(l.labelCy).toBeGreaterThan(l.statusBarBottom);
+      expect(l.buttonCy + l.buttonR).toBeLessThan(l.tabBarTop);
+    }
+    // 两档对比：屏更高时锚点间距拉开（标签/按钮绝对 y 随 screenH 移动，比例不锁死）
+    const s667 = computeSceneLayout({ width: 375, height: 667 });
+    const s812 = computeSceneLayout({ width: 375, height: 812 });
+    expect(s812.sceneRect.height).toBeGreaterThan(s667.sceneRect.height);
+    expect(s812.labelCy).toBeGreaterThan(s667.labelCy);
+    expect(s812.buttonCy).toBeGreaterThan(s667.buttonCy);
+  });
+
+  it('真机胶囊下沿（statusBarBottomPx）优先于 fallback，异常大值夹到半屏', () => {
+    const size = { width: 375, height: 667 };
+    const l = computeSceneLayout({ ...size, statusBarBottomPx: 84 });
+    expect(l.statusBarBottom).toBe(84);
+    expect(l.sceneRect.y).toBe(84);
+    expect(l.labelCy).toBeCloseTo(84 + 0.03 * 667, 5);
+    const weird = computeSceneLayout({ ...size, statusBarBottomPx: 600 }); // 防御：胶囊异常
+    expect(weird.statusBarBottom).toBeLessThanOrEqual(667 / 2);
+  });
+
+  it('渲染绘制区域 = SCENE_RECT：背景 drawImage 为窗口内 cover 居中裁切（ctx 录制断言）', () => {
+    // 录制型 ctx mock：捕获 drawImage/rect 调用，其余 no-op
+    const calls: Record<string, unknown[][]> = {};
+    const ctx = new Proxy(
+      {},
+      {
+        get: (_t, prop: string) => {
+          if (prop === 'measureText') return () => ({ width: 80 });
+          if (prop === 'canvas') return undefined;
+          return (...args: unknown[]) => {
+            (calls[prop] ??= []).push(args);
+          };
+        },
+        set: () => true, // fillStyle/font 等赋值 no-op
+      },
+    ) as unknown as CanvasRenderingContext2D;
+
+    const size = { width: 375, height: 667 };
+    const bgImg = { src: 'mock', width: 1440, height: 2560 } as WxImage;
+    const avatar: PlayerAvatar = {
+      x: 0.5, y: 0.72, speed: 0.4, moving: false,
+      targetX: 0.5, targetY: 0.72, state: 'idle', direction: 'left',
+    };
+    render(
+      { ctx, width: size.width, height: size.height, dt: 16 },
+      { scene: START_SCENE, avatar, heroFrameIdx: 0, assets: { bg: bgImg, heroFrames: [], buttonIcons: [] }, bobMs: 0 },
+      0,
+    );
+
+    const l = computeSceneLayout(size);
+    // 裁剪矩形 = SCENE_RECT
+    expect(calls.rect?.[0]).toEqual([0, l.sceneRect.y, l.sceneRect.width, l.sceneRect.height]);
+    // 背景 drawImage：SCENE_RECT 内 cover（scale=max(375/1440, 556.945/2560) → 375×666.7 居中）
+    const scale = Math.max(l.sceneRect.width / bgImg.width, l.sceneRect.height / bgImg.height);
+    const dw = bgImg.width * scale;
+    const dh = bgImg.height * scale;
+    const [, dx, dy, ddw, ddh] = calls.drawImage[0] as [unknown, number, number, number, number];
+    expect(dx).toBeCloseTo(l.sceneRect.x + (l.sceneRect.width - dw) / 2, 3);
+    expect(dy).toBeCloseTo(l.sceneRect.y + (l.sceneRect.height - dh) / 2, 3);
+    expect(ddw).toBeCloseTo(dw, 3);
+    expect(ddh).toBeCloseTo(dh, 3);
+    // 全屏宣纸底先画（状态栏/Tab 预留区同色）
+    expect(calls.fillRect?.[0]).toEqual([0, 0, size.width, size.height]);
   });
 });

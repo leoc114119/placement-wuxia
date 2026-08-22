@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>放置武侠 · 真代码渲染预览（Q3-R2 自适应布局）</title>
+<style>
+  body { margin: 0; background: #2f3336; font-family: -apple-system, sans-serif; display: flex; gap: 24px; padding: 16px; }
+  #stage { position: relative; flex: none; }
+  canvas { display: block; background: #F8F4EA; box-shadow: 0 6px 24px rgba(0,0,0,.45); cursor: pointer; }
+  .guide { position: absolute; left: 0; right: 0; border-top: 1.5px dashed rgba(226,87,76,.85); pointer-events: none; }
+  .guide .tag { position: absolute; left: 4px; top: 2px; font-size: 10px; color: #E2574C; background: rgba(248,244,234,.85); padding: 1px 4px; border-radius: 3px; white-space: nowrap; }
+  #panel { color: #d8d4c8; font-size: 12px; line-height: 1.7; max-width: 320px; }
+  #panel h3 { margin: 0 0 6px; font-size: 13px; color: #F8F4EA; }
+  #panel code { color: #D4AF37; }
+  label { cursor: pointer; user-select: none; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="game"></canvas></div>
+<div id="panel">
+  <h3>真代码渲染预览（加载 dist 产物）</h3>
+  <div>URL 参数：<code>?w=375&amp;h=812&amp;capsule=64</code></div>
+  <div>w/h = 逻辑分辨率；capsule = 模拟微信胶囊 bottom（逻辑 px），缺省 64，<code>capsule=0</code> 走 fallback 比例</div>
+  <div>点击画布 = 触发移动（走 dist/game.js 真实触摸链路）</div>
+  <div style="margin-top:8px"><label><input type="checkbox" id="guides" checked> 显示锚定参考线（页面侧诊断，非游戏代码）</label></div>
+  <div id="layoutInfo" style="margin-top:8px;color:#9fb59f"></div>
+</div>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var W = Math.max(200, Math.min(900, +q.get('w') || 375));
+  var H = Math.max(300, Math.min(1600, +q.get('h') || 667));
+  var CAPSULE = +q.get('capsule');
+  if (isNaN(CAPSULE)) CAPSULE = 64;
+
+  var canvas = document.getElementById('game');
+  canvas.width = W; canvas.height = H;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+
+  // ---- wx shim：浏览器跑微信小游戏 dist 产物 ----
+  function shimImage() {
+    var img = new Image();
+    var raw = '';
+    Object.defineProperty(img, 'src', {
+      get: function () { return raw; },
+      set: function (v) {
+        raw = String(v);
+        // dist 以项目根相对路径引用素材，页面在 preview/ 下 → 前缀回到根
+        img.setAttribute('src', raw.indexOf('assets/') === 0 ? '../' + raw : raw);
+      },
+      configurable: true,
+    });
+    return img;
+  }
+  window.wx = {
+    createCanvas: function () { return canvas; },
+    createImage: shimImage,
+    onTouchStart: function () {}, onTouchMove: function () {}, onTouchCancel: function () {},
+    onTouchEnd: function (cb) {
+      canvas.addEventListener('pointerup', function (e) {
+        var r = canvas.getBoundingClientRect();
+        cb({ touches: [], changedTouches: [{ identifier: 1, clientX: e.clientX - r.left, clientY: e.clientY - r.top }] });
+      });
+    },
+    getSystemInfoSync: function () { return { windowWidth: W, windowHeight: H, pixelRatio: 1 }; },
+    getMenuButtonBoundingClientRect: function () {
+      if (!(CAPSULE > 0)) { throw new Error('capsule disabled (fallback)'); }
+      return { top: CAPSULE - 32, left: W - 106, right: W - 16, bottom: CAPSULE, width: 90, height: 32 };
+    },
+  };
+
+  // ---- CommonJS 微加载器：依赖序预取 dist 产物后同步 require ----
+  var FILES = [
+    'dist/types.js', 'dist/config/numbers.js', 'dist/config/scenes.js', 'dist/net/cloud.js',
+    'dist/systems/battle.js', 'dist/systems/growth.js', 'dist/systems/map.js',
+    'dist/systems/scene.js', 'dist/ui/assets.js', 'dist/ui/render.js', 'dist/game.js',
+  ];
+  var registry = {};
+  function resolvePath(from, p) {
+    if (p.indexOf('.') !== 0) return p.replace(/\.js$/, '');
+    var parts = from.split('/').slice(0, -1).concat(p.split('/'));
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var s = parts[i];
+      if (s === '.' || s === '') continue;
+      if (s === '..') out.pop(); else out.push(s);
+    }
+    return out.join('/').replace(/\.js$/, '');
+  }
+  function makeRequire(from) {
+    return function (p) {
+      var key = resolvePath(from, p);
+      if (!registry[key]) throw new Error('module not preloaded: ' + key + ' (from ' + from + ')');
+      return registry[key].exports;
+    };
+  }
+  Promise.all(FILES.map(function (f) {
+    return fetch('../' + f).then(function (r) {
+      if (!r.ok) throw new Error('fetch fail ' + f + ' ' + r.status);
+      return r.text();
+    }).then(function (src) {
+      var mod = { exports: {} };
+      registry[f.replace(/\.js$/, '')] = mod;
+      try {
+        new Function('exports', 'require', 'module', src)(mod.exports, makeRequire(f), mod);
+      } catch (err) {
+        console.error('[loader]', f, err);
+      }
+    });
+  })).then(function () {
+    drawGuides();
+  }).catch(function (err) {
+    console.error('[preview] boot fail:', err);
+  });
+
+  // ---- 锚定参考线（页面侧诊断：调用真实 computeSceneLayout） ----
+  function drawGuides() {
+    var stage = document.getElementById('stage');
+    stage.querySelectorAll('.guide').forEach(function (el) { el.remove(); });
+    if (!document.getElementById('guides').checked) { info(''); return; }
+    var scene = registry['dist/systems/scene'] && registry['dist/systems/scene'].exports;
+    if (!scene) return;
+    var sb = CAPSULE > 0 ? Math.round((CAPSULE + 8) * (W / W)) : 0;
+    var l = scene.computeSceneLayout({ width: W, height: H, statusBarBottomPx: sb });
+    [
+      { top: l.statusBarBottom, text: '状态栏底 y=' + Math.round(l.statusBarBottom) + '（锚顶）' },
+      { top: l.tabBarTop, text: 'Tab 栏顶 y=' + Math.round(l.tabBarTop) + '（锚底 8%H）' },
+    ].forEach(function (g) {
+      var el = document.createElement('div');
+      el.className = 'guide';
+      el.style.top = g.top + 'px';
+      el.innerHTML = '<span class="tag">' + g.text + '</span>';
+      stage.appendChild(el);
+    });
+    info('SCENE_RECT: y ' + Math.round(l.sceneRect.y) + ' → ' + Math.round(l.sceneRect.y + l.sceneRect.height) +
+      '（高 ' + Math.round(l.sceneRect.height) + '）<br>标签中心 y=' + Math.round(l.labelCy) +
+      ' · 按钮行中心 y=' + Math.round(l.buttonCy) + ' r=' + Math.round(l.buttonR));
+  }
+  function info(html) { document.getElementById('layoutInfo').innerHTML = html; }
+  document.getElementById('guides').addEventListener('change', drawGuides);
+})();
+</script>
+</body>
+</html>

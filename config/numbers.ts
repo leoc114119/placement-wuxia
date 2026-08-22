@@ -58,31 +58,45 @@ export const HERO_FRAME = {
 /** hero 帧素材路径（实际文件为 hero_0X_transparent.png 透明版；白底 hero_0X.png 不用） */
 export const heroFrameSrc = (i: number): string => `assets/ui/frames/hero/hero_0${i}_transparent.png`;
 
-/** 场景名标签（左上角小胶囊：墨底淡金描边，需求表 #6；y=0.115 为胶囊中心，Q3-T03：下移至人物状态栏下沿之下，预留胶囊/状态栏区） */
+// ============ Q3-T03-R2 三段式锚定布局（Leo 08-22 定调：定稿图 9:16 仅风格参考，几何自适应） ============
+// 状态栏锚顶 / Tab 栏锚底 / 场景窗口居中；全部边缘锚定，禁绝对屏幕比例常量。
+// 背景绘制 = SCENE_RECT 内 cover 居中裁切（R2 起，替代全屏铺满/BG_FIT_CONTAIN 方案）。
+
+/** 状态栏下沿 = 胶囊 bottom + 此余量（逻辑 px） */
+export const MENU_BOTTOM_MARGIN_PX = 8;
+
+/** 无胶囊环境（测试/node）fallback：状态栏高 = 0.085 × screenH */
+export const STATUS_FALLBACK_RATIO = 0.085;
+
+/** Tab 栏高 = 0.08 × screenH（锚底，本单仅预留区不实现内容） */
+export const TAB_BAR_H_RATIO = 0.08;
+
+/** 地图标签中心 = 状态栏底 + 0.03 × screenH */
+export const SCENE_LABEL_OFFSET_RATIO = 0.03;
+
+/** 按钮行中心 = 场景窗底 − 按钮半径 − 0.02 × screenH（贴 Tab 栏上方，恒在场景窗口内） */
+export const BUTTON_ROW_GAP_RATIO = 0.02;
+
+/** 场景名标签（左上角小胶囊：墨底淡金描边，需求表 #6；y 由三段式布局推导，不再用绝对比例） */
 export const SCENE_LABEL = {
   x: 0.05,
-  y: 0.115,
   heightRatio: 0.045,
   fontRatio: 0.022,
   padXRatio: 0.018,
   radiusRatio: 0.012,
 } as const;
 
-/** 底部三按钮（圆形朱砂描边，图标大文字小，需求表 #8；yRatio=0.82 为按钮行中心，Q3-T03：上移至四 Tab 栏上沿 0.92 之上、场景面板内） */
+/** 底部三按钮（圆形朱砂描边，图标大文字小，需求表 #8；行中心 y 由三段式布局推导） */
 export const SCENE_BUTTONS = {
-  yRatio: 0.82,
   radiusRatio: 0.085, // 相对屏宽
   gap: 0.31, // 相邻按钮中心间距（占宽比，三钮等距）
-  iconFontR: 0.72, // 图标字号 = r × 系数
+  iconSizeR: 1.0, // 图标边长 = r × 系数（透明 PNG drawImage）
   labelFontR: 0.34, // 小文字字号 = r × 系数
 } as const;
 
-/** 底部三按钮定义（id/图标字/小文字；点击仅占位 log，需求表 #8） */
-export const SCENE_BUTTON_DEFS: ReadonlyArray<{ id: 'biguan' | 'guaji' | 'boss'; icon: string; label: string }> = [
-  { id: 'biguan', icon: '闭', label: '闭关修炼' },
-  { id: 'guaji', icon: '挂', label: '挂机' },
-  { id: 'boss', icon: '战', label: '挑战Boss' },
+/** 底部三按钮定义（图标=透明 PNG，Q3-R2 接线；点击仅占位 log，需求表 #8） */
+export const SCENE_BUTTON_DEFS: ReadonlyArray<{ id: 'biguan' | 'guaji' | 'boss'; iconSrc: string; label: string }> = [
+  { id: 'biguan', iconSrc: 'assets/ui/icons/btn_biguan.png', label: '闭关修炼' },
+  { id: 'guaji', iconSrc: 'assets/ui/icons/btn_guaji.png', label: '挂机' },
+  { id: 'boss', iconSrc: 'assets/ui/icons/btn_tiaozhan.png', label: '挑战Boss' },
 ];
-
-// L环反馈：场景完整显示（contain 居中，宣纸底色补边），替代 cover 裁切
-export const BG_FIT_CONTAIN = true;

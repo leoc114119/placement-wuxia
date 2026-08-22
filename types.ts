@@ -144,21 +144,22 @@ export interface SceneConfig {
   unlockPractice: number; // 进入实战要求（0=新手）
 }
 
-/** 底部圆形按钮（代码绘制，需求表 #8） */
+/** 底部圆形按钮（代码绘制，需求表 #8；图标 = 透明 PNG，Q3-T03-R2 接线） */
 export interface SceneButton {
   id: 'biguan' | 'guaji' | 'boss';
-  icon: string; // 大图标字
-  label: string; // 小文字
+  iconSrc: string; // 图标素材路径（drawImage 绘制）
+  label: string; // 小文字（代码绘制）
 }
 
 /** 场景图片资源（加载失败为 null → 渲染降级，需求表 #9） */
 export interface SceneAssets {
   bg: WxImage | null;
   heroFrames: Array<WxImage | null>; // 索引=帧号（仅预载 00~04：idle 1 + walk 4）
+  buttonIcons: Array<WxImage | null>; // 与 SCENE_BUTTON_DEFS 同序，缺图跳过图标只画文字
 }
 
 /** 空资源（加载完成前的初始态） */
-export const EMPTY_SCENE_ASSETS: SceneAssets = { bg: null, heroFrames: [] };
+export const EMPTY_SCENE_ASSETS: SceneAssets = { bg: null, heroFrames: [], buttonIcons: [] };
 
 /** 渲染层场景视图（渲染层只读，AGENTS.md「UI 只展示」） */
 export interface SceneView {

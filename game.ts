@@ -5,7 +5,7 @@ import { loadSceneAssets } from './ui/assets';
 import { battle } from './systems/battle';
 import { growth } from './systems/growth';
 import { map as mapSystem } from './systems/map';
-import { bindTapInput, createSceneSystem } from './systems/scene';
+import { bindTapInput, createSceneSystem, getStatusBarBottomPx } from './systems/scene';
 import { callCloud } from './net/cloud';
 import { EMPTY_SCENE_ASSETS, type SceneAssets } from './types';
 
@@ -20,12 +20,18 @@ function main(): void {
   const ctx = canvas.getContext('2d');
 
   // T03 场景系统：预载资源（失败降级不阻塞），绑定点击（UI 浮层 > 地面）
+  // Q3-R2：真机胶囊下沿（物理 px，一次性取值）；无胶囊环境返回 0 → 布局走 fallback 比例
   const scene = createSceneSystem();
+  const statusBarBottom = getStatusBarBottomPx(canvas.width);
   let assets: SceneAssets = EMPTY_SCENE_ASSETS;
   void loadSceneAssets(scene.scene).then((a) => {
     assets = a;
   });
-  bindTapInput(scene, () => ({ width: canvas.width, height: canvas.height }));
+  bindTapInput(scene, () => ({
+    width: canvas.width,
+    height: canvas.height,
+    statusBarBottomPx: statusBarBottom,
+  }));
 
   // 主循环兼容层：真机=canvas.requestAnimationFrame；开发者工具=全局 RAF；兜底 setTimeout
   const raf: (cb: () => void) => void =
@@ -46,7 +52,7 @@ function main(): void {
     frames++;
 
     scene.update(dt); // T03 L环热修：主循环漏调 update → 点击只换方向不移动
-    render({ ctx, width: canvas.width, height: canvas.height, dt }, scene.view(assets));
+    render({ ctx, width: canvas.width, height: canvas.height, dt }, scene.view(assets), statusBarBottom);
 
     if (now - lastFpsLog >= FPS_LOG_INTERVAL_MS) {
       console.log(`[fps] ${(frames * 1000 / (now - lastFpsLog)).toFixed(1)}`);

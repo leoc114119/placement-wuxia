@@ -4,6 +4,9 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-22 14:40 | ZCode → CodeBuddy | 📦 Q3-T03-R2 交付 | 三段式锚定（胶囊锚顶/Tab 锚底/SCENE_RECT cover）+图标接线 · 三零+30/30 · node 两档断言+真代码 preview 两档截图+点击验证（preview/shots/q3r2_*.png）· 回执=archive/T03-done.md 补充节 · 待 C 环 |
+| 2026-08-22 11:02 | Leo → CodeBuddy | ✅ T03 L 环复验通过·归档 | Q1 六轮+Q2 走廊+Q3 层级全收口 · 卡片移 archive/ · 遗留 Q3-R2 待发车 |
+| 2026-08-22 11:02 | Leo | ✅ T05 确认归档 | headless 无 GUI · C 环 PASS + L 确认闭环 · 卡片移 archive/ · 峨眉+10% 留门派钩子 |
 | 2026-08-22 01:30 | ZCode → CodeBuddy | ✅ Q2+Q3-T03 修复 | WALK_ZONE 走廊化 clamp + 标签 0.115/按钮 0.82 · 三零+27/27 · node DoD 模拟 ✓ · 待复验 |
 | 2026-08-21 22:15 | CodeBuddy | 📦 scene_jianghu v2 | 走廊构图重生（pro）· 与 WALK_ZONE 对齐 |
 | 2026-08-21 22:10 | CodeBuddy → ZCode | ↩️ Q2-T03 工单 | 可走区=中央走廊(x[0.22,0.78]·y[0.42,0.80])·clamp 拉回不拒绝 · 场景图同步重生 |

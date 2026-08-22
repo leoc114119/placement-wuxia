@@ -2,11 +2,16 @@
 // 依据：modules/02-场景系统.md §1.1/§2.2/§3（T03 需求表 #3/#4/#5/#6/#8）
 import {
   ARRIVE_EPS,
+  BUTTON_ROW_GAP_RATIO,
   HERO_FRAME,
   HERO_START,
   HERO_WALK_SPEED,
+  MENU_BOTTOM_MARGIN_PX,
   SCENE_BUTTONS,
   SCENE_BUTTON_DEFS,
+  SCENE_LABEL_OFFSET_RATIO,
+  STATUS_FALLBACK_RATIO,
+  TAB_BAR_H_RATIO,
   WALK_ZONE,
 } from '../config/numbers';
 import { START_SCENE } from '../config/scenes';
@@ -20,10 +25,56 @@ import type {
   TouchPoint,
 } from '../types';
 
-/** 画布尺寸（逻辑 px 与 0~1 坐标换算用） */
+/** 画布尺寸（逻辑 px 与 0~1 坐标换算用；statusBarBottomPx>0 = 真机胶囊下沿已换算值） */
 export interface ViewSize {
   width: number;
   height: number;
+  statusBarBottomPx?: number;
+}
+
+// ---------- 三段式锚定布局（Q3-T03-R2：渲染与命中共用同一布局来源） ----------
+
+/** 三段式布局产物（全部 canvas 物理px；状态栏锚顶 / Tab 栏锚底 / 场景窗口居中） */
+export interface SceneLayout {
+  statusBarBottom: number; // 状态栏区下沿
+  tabBarTop: number; // Tab 栏区上沿（贴屏幕底）
+  sceneRect: { x: number; y: number; width: number; height: number }; // 场景窗口（背景 cover 裁切区）
+  labelCy: number; // 地图标签胶囊中心 y
+  buttonCy: number; // 三按钮行中心 y
+  buttonR: number; // 按钮半径
+}
+
+/** 布局唯一真源：胶囊下沿优先（传入值已含余量），否则 fallback 比例；胶囊异常大防御性夹到半屏 */
+export function computeSceneLayout(size: ViewSize): SceneLayout {
+  const w = size.width;
+  const h = size.height;
+  const provided = size.statusBarBottomPx ?? 0;
+  const statusBarBottom =
+    provided > 0 ? Math.min(provided, h / 2) : STATUS_FALLBACK_RATIO * h;
+  const tabBarTop = h - TAB_BAR_H_RATIO * h;
+  const buttonR = SCENE_BUTTONS.radiusRatio * w;
+  return {
+    statusBarBottom,
+    tabBarTop,
+    sceneRect: { x: 0, y: statusBarBottom, width: w, height: tabBarTop - statusBarBottom },
+    labelCy: statusBarBottom + SCENE_LABEL_OFFSET_RATIO * h,
+    buttonCy: tabBarTop - buttonR - BUTTON_ROW_GAP_RATIO * h,
+    buttonR,
+  };
+}
+
+/** 真机状态栏下沿（canvas 物理 px）：胶囊 bottom + 余量，按 dpr 换算；无胶囊环境返回 0（布局走 fallback） */
+export function getStatusBarBottomPx(canvasWidth: number): number {
+  try {
+    const mb = wx.getMenuButtonBoundingClientRect();
+    const si = wx.getSystemInfoSync();
+    if (mb && mb.bottom > 0 && si.windowWidth > 0) {
+      return Math.round((mb.bottom + MENU_BOTTOM_MARGIN_PX) * (canvasWidth / si.windowWidth));
+    }
+  } catch (err) {
+    console.warn('[scene] 胶囊矩形不可用，状态栏走 fallback 比例', err);
+  }
+  return 0;
 }
 
 // ---------- 纯函数（node 可测，需求表 #10） ----------
@@ -69,13 +120,12 @@ export interface ButtonLayout {
 }
 
 export function layoutSceneButtons(size: ViewSize): ButtonLayout[] {
-  const r = SCENE_BUTTONS.radiusRatio * size.width;
-  const cy = SCENE_BUTTONS.yRatio * size.height;
+  const layout = computeSceneLayout(size);
   return SCENE_BUTTON_DEFS.map((b, i) => ({
     button: b,
     cx: (0.5 + (i - 1) * SCENE_BUTTONS.gap) * size.width,
-    cy,
-    r,
+    cy: layout.buttonCy,
+    r: layout.buttonR,
   }));
 }
 

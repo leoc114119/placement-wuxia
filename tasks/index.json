@@ -1,6 +1,24 @@
 {
- "updated": "2026-08-22 01:30",
+ "updated": "2026-08-22 02:40",
  "events": [
+  {
+   "t": "08-22 02:40",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "📦 Q3-R2 交付",
+   "detail": "三段式锚定+图标接线 · 30/30 · 两档截图 ✓ · 待 C 环"
+  },
+  {
+   "t": "08-22 11:02",
+   "dir": "Leo",
+   "ev": "✅ T03 L环复验通过·归档",
+   "detail": "Q1~Q3 全收口 · 卡片移 archive · 遗留 Q3-R2 待发车"
+  },
+  {
+   "t": "08-22 11:02",
+   "dir": "Leo",
+   "ev": "✅ T05 确认归档",
+   "detail": "headless 无 GUI · 三环闭环 · 峨眉+10% 留门派钩子"
+  },
   {
    "t": "08-22 01:30",
    "dir": "ZCode → CodeBuddy",
@@ -167,19 +185,19 @@
   {
    "id": "T05",
    "title": "战斗核心 headless",
-   "status": "C环PASS·待Leo确认",
+   "status": "done-archived",
    "owner": "ZCode",
-   "col": "review",
-   "summary": "14/14 用例绿 + 三零错误 · headless 无 GUI，Leo 确认即归档",
+   "col": "archive",
+   "summary": "已验收归档（08-22，三环全绿：14/14 用例 + Leo 确认）· 峨眉+10% 留门派钩子",
    "thread": "threads/T05.md"
   },
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "Q2/Q3已修复-待复验",
+   "status": "Q3-R2已交付-待C环",
    "owner": "ZCode",
    "col": "review",
-   "summary": "WALK_ZONE 走廊化 + 标签/按钮层级修正 · 三零+27/27 · 待复验",
+   "summary": "UI 自适应三段式锚定 · 30/30 · 真代码 preview 两档截图 · 待 C 环",
    "thread": "threads/T03.md"
   },
   {

@@ -1,39 +1,40 @@
 // 渲染层：只读数据、画出来（AGENTS.md 架构原则）
-// T03 分层渲染：L0 背景（cover 裁切）→ L1 主角（脚底锚点/朝向翻转）→ L2 UI 浮层（需求表 #1~#8）
-import {
-  BG_FIT_CONTAIN,
-  CLEAR_COLOR,
-  HERO_HEIGHT_RATIO,
-  PALETTE,
-  SCENE_BUTTONS,
-  SCENE_LABEL,
-} from '../config/numbers';
-import { layoutSceneButtons } from '../systems/scene';
+// 分层：全屏宣纸底 → L0 背景（SCENE_RECT 内 cover 裁切，Q3-R2）→ L1 主角 → L2 UI 浮层（锚定布局）
+import { CLEAR_COLOR, HERO_HEIGHT_RATIO, PALETTE, SCENE_BUTTONS, SCENE_LABEL } from '../config/numbers';
+import { computeSceneLayout, layoutSceneButtons, type SceneLayout } from '../systems/scene';
 import type { FrameContext, PlayerAvatar, SceneConfig, SceneView } from '../types';
 
-/** 每帧渲染入口（view 由场景系统提供，渲染层只读） */
-export function render(frame: FrameContext, view: SceneView | null): void {
+/**
+ * 每帧渲染入口（view 由场景系统提供，渲染层只读）。
+ * statusBarBottomPx：真机胶囊下沿（canvas 物理 px），0/缺省 = 无胶囊走 fallback 比例。
+ */
+export function render(frame: FrameContext, view: SceneView | null, statusBarBottomPx = 0): void {
   const { ctx, width, height } = frame;
-  // L0 背景：缺图降级宣纸纯色（加载器已打日志，需求表 #9）
+  // 全屏宣纸底（含状态栏/Tab 预留区，Q3-R2）
   ctx.fillStyle = CLEAR_COLOR;
   ctx.fillRect(0, 0, width, height);
   if (!view) return;
 
-  if (view.assets.bg) drawCover(ctx, view.assets.bg, width, height);
+  const layout = computeSceneLayout({ width, height, statusBarBottomPx });
+  if (view.assets.bg) drawSceneBg(ctx, view.assets.bg, layout);
   drawHero(ctx, width, height, view);
-  drawSceneLabel(ctx, width, height, view.scene);
-  drawButtons(ctx, width, height);
+  drawSceneLabel(ctx, width, height, layout, view.scene);
+  drawButtons(ctx, width, height, layout, view);
   // 助战入口 MVP 隐藏，不渲染（需求表 #7 / R-03）
 }
 
-/** 铺底：BG_FIT_CONTAIN=true 完整显示居中（宣纸底补边）；否则 cover 裁切 */
-function drawCover(ctx: CanvasRenderingContext2D, img: WxImage, w: number, h: number): void {
-  const scale = BG_FIT_CONTAIN
-    ? Math.min(w / img.width, h / img.height)
-    : Math.max(w / img.width, h / img.height);
+/** L0 背景：SCENE_RECT 内 cover 居中裁切（短边撑满窗口、长边居中裁；不拉伸，Q3-R2 需求 #3） */
+function drawSceneBg(ctx: CanvasRenderingContext2D, img: WxImage, layout: SceneLayout): void {
+  const r = layout.sceneRect;
+  const scale = Math.max(r.width / img.width, r.height / img.height);
   const dw = img.width * scale;
   const dh = img.height * scale;
-  ctx.drawImage(img as unknown as CanvasImageSource, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(r.x, r.y, r.width, r.height);
+  ctx.clip();
+  ctx.drawImage(img as unknown as CanvasImageSource, r.x + (r.width - dw) / 2, r.y + (r.height - dh) / 2, dw, dh);
+  ctx.restore();
 }
 
 /** L1 主角：脚底锚点 = 逻辑坐标像素点；朝向右时水平翻转（素材默认面左，需求表 #2/#4） */
@@ -65,15 +66,21 @@ function drawHero(ctx: CanvasRenderingContext2D, w: number, h: number, view: Sce
 
 const HERO_FALLBACK_BOB_PERIOD = 320; // 降级颠簸周期（毫秒）
 
-/** L2 场景名标签：左上角小胶囊，墨底淡金描边（需求表 #6） */
-function drawSceneLabel(ctx: CanvasRenderingContext2D, w: number, h: number, scene: SceneConfig): void {
+/** L2 场景名标签：状态栏下胶囊（墨底淡金描边，需求表 #6；中心 y 由三段式布局锚定，Q3-R2） */
+function drawSceneLabel(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  layout: SceneLayout,
+  scene: SceneConfig,
+): void {
   const fontPx = Math.round(SCENE_LABEL.fontRatio * h);
   ctx.font = `${fontPx}px sans-serif`;
   const textW = ctx.measureText(scene.name).width;
   const padX = SCENE_LABEL.padXRatio * w;
   const boxH = SCENE_LABEL.heightRatio * h;
   const x = SCENE_LABEL.x * w;
-  const y = SCENE_LABEL.y * h - boxH / 2;
+  const y = layout.labelCy - boxH / 2;
   const boxW = textW + padX * 2;
 
   ctx.fillStyle = PALETTE.ink;
@@ -90,9 +97,15 @@ function drawSceneLabel(ctx: CanvasRenderingContext2D, w: number, h: number, sce
   ctx.fillText(scene.name, x + padX, y + boxH / 2);
 }
 
-/** L2 底部三按钮：圆形朱砂描边，图标大文字小（需求表 #8，点击判定在 systems/scene） */
-function drawButtons(ctx: CanvasRenderingContext2D, w: number, h: number): void {
-  for (const b of layoutSceneButtons({ width: w, height: h })) {
+/** L2 底部三按钮：圆形朱砂描边 + 图标 PNG + 小文字（需求表 #8；行中心由布局锚定贴 Tab 栏上方） */
+function drawButtons(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  layout: SceneLayout,
+  view: SceneView,
+): void {
+  layoutSceneButtons({ width: w, height: h }).forEach((b, i) => {
     ctx.beginPath();
     ctx.arc(b.cx, b.cy, b.r, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(248, 244, 234, 0.92)'; // 宣纸底（微透，压得住背景）
@@ -101,14 +114,24 @@ function drawButtons(ctx: CanvasRenderingContext2D, w: number, h: number): void 
     ctx.lineWidth = Math.max(2, b.r * 0.07);
     ctx.stroke();
 
+    const icon = view.assets.buttonIcons[i] ?? null;
+    if (icon) {
+      const side = b.r * SCENE_BUTTONS.iconSizeR;
+      ctx.drawImage(
+        icon as unknown as CanvasImageSource,
+        b.cx - side / 2,
+        b.cy - b.r * 0.22 - side / 2,
+        side,
+        side,
+      );
+    } // 缺图降级：跳过图标只画文字（加载器已打日志）
+
     ctx.fillStyle = PALETTE.ink;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `${Math.round(b.r * SCENE_BUTTONS.iconFontR)}px sans-serif`;
-    ctx.fillText(b.button.icon, b.cx, b.cy - b.r * 0.18);
     ctx.font = `${Math.round(b.r * SCENE_BUTTONS.labelFontR)}px sans-serif`;
     ctx.fillText(b.button.label, b.cx, b.cy + b.r * 0.45);
-  }
+  });
 }
 
 /** 圆角矩形路径（不用 ctx.roundRect，兼容旧基础库） */
