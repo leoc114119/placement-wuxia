@@ -378,6 +378,6 @@ describe('Q3-T06 战斗帧源', () => {
     expect(battleFrameSrc('npc-boss-lang', 7)).toContain('/battle/spr_boss_lang/');
     expect(heroFrameSrc(0)).not.toContain('battle'); // 江湖 hero 大表不动
     for (const n of NPC_POOL) expect(n.appearance.sprite).not.toContain('battle'); // 江湖 NPC 前缀不动
-    expect(BATTLE_FRAME.idle).toBe(7);
+    expect(BATTLE_FRAME.idle).toBe(3); // ⑧帧素材跑偏暂回退 03（重出后切回 7）
   });
 });
