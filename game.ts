@@ -164,8 +164,14 @@ function main(): void {
   }
 
   // 调试双入口注册（A1 Q12）
+  // 主挂载点 = globalThis（console 直呼 __enterBattle(42) 可见；wx 原生对象挂属性在工具 console 上下文取不到——08-22 实测 not a function）
+  (globalThis as Record<string, unknown>).__enterBattle = enterBattle;
   type WxWithDebug = typeof wx & { __enterBattle?: (seed?: number) => void };
-  (wx as WxWithDebug).__enterBattle = enterBattle;
+  try {
+    (wx as WxWithDebug).__enterBattle = enterBattle;
+  } catch (err) {
+    console.warn('[battle] wx.__enterBattle 挂载失败（基础库限制），请用 __enterBattle(42)', err);
+  }
   rebindJianghuTap(); // 初始绑定江湖触摸（进战斗时解绑、退出时重绑）
   const dbg = (globalThis as Record<string, unknown>).__BATTLE_DEBUG__;
   if (dbg && typeof dbg === 'object' && (dbg as { battle?: number }).battle) {
