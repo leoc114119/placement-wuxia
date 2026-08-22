@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """mxai img2img 通用脚本（放置武侠）
-用法: python3 mxai_img2img.py <input.png> <out.png> [--prompt-file p.txt] [--model slug] [--aspect 9:16]
-参考图用法（角色形象类，风格锚 = assets/ui/ref_char_style_v1.png）:
-  把 ref_char_style_v1.png 放入 input_images，prompt 描述新角色的造型差异
+用法: python3 mxai_img2img.py <input.png> <out.png> [--prompt-file p.txt | --prompt "..."] [--model slug] [--aspect 9:16]
+不传 prompt 参数时回退到内置 PROMPT（角色形象类，风格锚 = assets/ui/ref_char_style_v1.png 的原始用法）
 """
 import base64, json, os, sys, time, urllib.request
 
@@ -38,9 +37,26 @@ def req(method, path, body=None, timeout=90):
 
 
 def main():
-    if len(sys.argv) != 3:
-        print(__doc__); sys.exit(1)
-    src, out = sys.argv[1], sys.argv[2]
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("input")
+    ap.add_argument("out")
+    ap.add_argument("--prompt", default=None, help="内联 prompt；与 --prompt-file 二选一")
+    ap.add_argument("--prompt-file", dest="prompt_file", default=None)
+    ap.add_argument("--model", default="seedream-5.0-pro")
+    ap.add_argument("--aspect", default="9:16")
+    ap.add_argument("--resolution", default="2K")
+    a = ap.parse_args()
+
+    if a.prompt_file:
+        with open(a.prompt_file, encoding="utf-8") as f:
+            prompt = f.read().strip()
+    elif a.prompt:
+        prompt = a.prompt
+    else:
+        prompt = PROMPT
+
+    src, out = a.input, a.out
     if not KEY:
         print("ERR: MX_AI_API_KEY 未设置"); sys.exit(1)
 
@@ -48,10 +64,10 @@ def main():
         b64 = base64.b64encode(f.read()).decode()
 
     st, r = req("POST", "/mcp/api/generate/image", {
-        "prompt": PROMPT,
-        "model": "seedream-5.0-pro",
-        "aspect_ratio": "9:16",
-        "resolution": "2K",
+        "prompt": prompt,
+        "model": a.model,
+        "aspect_ratio": a.aspect,
+        "resolution": a.resolution,
         "input_images": [f"data:image/png;base64,{b64}"],
     })
     if st != 200 or not r.get("serial_no"):
