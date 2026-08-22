@@ -2,11 +2,12 @@
 // 运行：npm run test:battle（vitest 全量，既有 38 用例不回归）
 import { describe, expect, it } from 'vitest';
 import { BAR, BOARD_COLS, BOARD_ROWS } from '../config/battle';
+import { heroFrameSrc } from '../config/numbers';
 import { NPC_POOL } from '../config/npcs';
 import type { SkillDef } from '../types';
 import { fillRate, skillRange } from '../systems/battle-core';
 import { computeCamera, renderBattle } from '../ui/battle-render';
-import { CAMERA, TILE_HALF_H, TILE_HALF_W } from '../config/battle';
+import { BATTLE_FRAME, CAMERA, TILE_HALF_H, TILE_HALF_W, battleFrameSrc } from '../config/battle';
 import {
   battleWalkFrame,
   createBattleSession,
@@ -366,5 +367,17 @@ describe('L 环三轮裁决', () => {
       const snap = s.player.lungeT;
       expect(snap).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+// ---------- Q3-T06：战斗帧源切换小表 + idle ⑧ 接线 ----------
+describe('Q3-T06 战斗帧源', () => {
+  it('战斗加载路径含 /battle/ 小表；江湖帧源不受影响；idle=7（⑧侧身待机）', () => {
+    expect(battleFrameSrc('hero', 0)).toContain('/battle/hero/');
+    expect(battleFrameSrc('npc-shanzei', 4)).toContain('/battle/spr_shanzei/');
+    expect(battleFrameSrc('npc-boss-lang', 7)).toContain('/battle/spr_boss_lang/');
+    expect(heroFrameSrc(0)).not.toContain('battle'); // 江湖 hero 大表不动
+    for (const n of NPC_POOL) expect(n.appearance.sprite).not.toContain('battle'); // 江湖 NPC 前缀不动
+    expect(BATTLE_FRAME.idle).toBe(7);
   });
 });

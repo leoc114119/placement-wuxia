@@ -1,5 +1,6 @@
 // 图片资源加载：wx.createImage 预载，失败置 null + 日志（不崩，需求表 #9）
 import { HERO_FRAME, NPC_FRAME, SCENE_BUTTON_DEFS, heroFrameSrc } from '../config/numbers';
+import { battleFrameSrc } from '../config/battle';
 import type { BattleAssets } from './battle-render';
 import { NPC_POOL } from '../config/npcs';
 import type { NpcFrameAssets, SceneAssets, SceneConfig } from '../types';
@@ -62,19 +63,16 @@ export async function loadNpcFrames(): Promise<Map<string, NpcFrameAssets>> {
 /** 战斗资源预载（T06）：战场背景 + hero/NPC/Boss 帧表 00~06（出招组 04→05 / 普攻 06） */
 export async function loadBattleAssets(): Promise<BattleAssets> {
   const BATTLE_FRAME_COUNT = 7; // 00~06
-  const kinds: Array<{ key: string; prefix: string }> = [
-    { key: 'hero', prefix: 'assets/ui/frames/hero/hero' },
-    ...NPC_POOL.map((n) => ({ key: n.id, prefix: n.appearance.sprite })),
-    { key: 'npc-boss-lang', prefix: 'assets/ui/frames/spr_boss_lang/spr_boss_lang' },
-  ];
+  // Q3-T06：帧源切 battle/ 小表（128×256，等比下采样清晰度修复）；江湖大表不动
+  const kinds: Array<string> = ['hero', ...NPC_POOL.map((n) => n.id), 'npc-boss-lang'];
   const framesByKind = new Map<string, Array<WxImage | null>>();
   await Promise.all(
     kinds.map(async (k) => {
       const jobs: Array<Promise<WxImage | null>> = [];
       for (let i = 0; i < BATTLE_FRAME_COUNT; i++) {
-        jobs.push(loadImage(`${k.prefix}_0${i}_transparent.png`));
+        jobs.push(loadImage(battleFrameSrc(k, i)));
       }
-      framesByKind.set(k.key, await Promise.all(jobs));
+      framesByKind.set(k, await Promise.all(jobs));
     }),
   );
   const bg = await loadImage('assets/ui/scene_battle.png');

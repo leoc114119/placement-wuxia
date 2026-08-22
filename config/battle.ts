@@ -94,8 +94,7 @@ export const FX = {
 
 // ===== 帧映射（硬规则：出招 04→05 两帧、普攻 06 单帧+代码动效、移动 01~03 循环、禁 05→06 直切） =====
 export const BATTLE_FRAME = {
-  idle: 3, // L 环三轮：战斗待机用侧身收拢站姿帧（03）——00 正面立绘水平翻转无效（翻了仍是正脸），
-            // 战场待机应侧向对手；03 为双腿收拢过渡帧，静态显示最接近立正站姿。江湖场景 idle 仍用 00（正面合理）
+  idle: 7, // Q3-T06：d2 帧表⑧=专用侧身待机帧（此前借用 03 收拢过渡帧；江湖 idle 仍 00 正面合理）
   walkStart: 1,
   walkEnd: 3,
   charge: 4, // 出招预备（蓄力段）
@@ -143,6 +142,15 @@ export const SPEED_FACTOR = { normal: 1, fast: 2 } as const;
 export const RESULT_OVERLAY = {
   fadeInSec: 0.3,
 } as const;
+
+/** 战斗帧源构建器（Q3-T06）：battle/ 小表 128×256（等比下采样，清晰度修复 F4b 收尾）。
+ * kind = 'hero' | NPC configId（npc-shanzei/npc-lang/npc-boss-lang）→ 目录名映射；
+ * 江湖场景 heroFrameSrc / NPC appearance.sprite 前缀不动（大表）。 */
+export function battleFrameSrc(kind: string, i: number): string {
+  // kind：'hero' | 'npc-shanzei' | 'npc-lang' | 'npc-boss-lang' → battle/ 目录名（npc- 前缀换 spr_，连字符转下划线）
+  const dir = kind === 'hero' ? 'hero' : 'spr_' + kind.replace('npc-', '').replace(/-/g, '_');
+  return `assets/ui/frames/battle/${dir}/${dir}_0${i}_transparent.png`;
+}
 
 // ===== 调试入口（A1 Q12：preview ?battle=1&seed=N + console wx.__enterBattle(seed)） =====
 export const DEBUG_ENTRY = {
