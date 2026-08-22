@@ -49,6 +49,7 @@ declare const wx: {
   onTouchStart(callback: (e: WxTouchEvent) => void): void;
   onTouchMove(callback: (e: WxTouchEvent) => void): void;
   onTouchEnd(callback: (e: WxTouchEvent) => void): void;
+  offTouchEnd?(callback: (e: WxTouchEvent) => void): void;
   onTouchCancel(callback: (e: WxTouchEvent) => void): void;
   getSystemInfoSync(): WxSystemInfo;
   getMenuButtonBoundingClientRect(): WxMenuButtonRect;

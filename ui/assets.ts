@@ -57,3 +57,29 @@ export async function loadNpcFrames(): Promise<Map<string, NpcFrameAssets>> {
   }
   return map;
 }
+
+/** 战斗资源预载（T06）：战场背景 + hero/NPC/Boss 帧表 00~06（出招组 04→05 / 普攻 06） */
+export async function loadBattleAssets(): Promise<{ bg: WxImage | null; framesByKind: Map<string, Array<WxImage | null>> }> {
+  const BATTLE_FRAME_COUNT = 7; // 00~06
+  const kinds: Array<{ key: string; prefix: string }> = [
+    { key: 'hero', prefix: 'assets/ui/frames/hero/hero' },
+    ...NPC_POOL.map((n) => ({ key: n.id, prefix: n.appearance.sprite })),
+    { key: 'npc-boss-lang', prefix: 'assets/ui/frames/spr_boss_lang/spr_boss_lang' },
+  ];
+  const framesByKind = new Map<string, Array<WxImage | null>>();
+  await Promise.all(
+    kinds.map(async (k) => {
+      const jobs: Array<Promise<WxImage | null>> = [];
+      for (let i = 0; i < BATTLE_FRAME_COUNT; i++) {
+        jobs.push(loadImage(`${k.prefix}_0${i}_transparent.png`));
+      }
+      framesByKind.set(k.key, await Promise.all(jobs));
+    }),
+  );
+  const bg = await loadImage('assets/ui/scene_battle.png');
+  for (const [k, fs] of framesByKind) {
+    const ok = fs.filter((f) => f !== null).length;
+    console.log(`[assets] 战斗帧表 ${k}: ${ok}/${BATTLE_FRAME_COUNT}`);
+  }
+  return { bg, framesByKind };
+}

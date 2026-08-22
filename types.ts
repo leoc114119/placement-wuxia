@@ -190,6 +190,59 @@ export interface NpcView {
   frameIdx: number; // 当前帧号
 }
 
+// ============ T06 战斗界面演出类型（75 v2.1 + A1-T06 v2 裁决） ============
+
+export type BattleFacing = 'left' | 'right';
+export type BattleAnimState = 'idle' | 'walk' | 'charge' | 'strike' | 'basic';
+export type BattlePhase = 'fighting' | 'won' | 'lost' | 'timeout' | 'fled';
+
+/** 演出层战斗单位：结算字段与引擎 CombatantInput 同源 + 冷却/行动条/朝向/动画态 */
+export interface BattleActor extends CombatantInput {
+  cooldowns: Map<string, number>; // skillId → 剩余冷却（resolveAction 副作用契约）
+  bar: number; // 行动条 0~100（fillRate 引擎公式填充）
+  facing: BattleFacing; // billboard 左右翻转（移动水平分量定，dx≈0 防抖）
+  configId?: string; // NPC 帧表引用（玩家侧空 → hero 帧表）
+  bodyKind: 'hero' | 'humanoid' | 'wolf'; // §8b.4 体型档
+  isBoss: boolean; // Boss 叠 BOSS_SCALE + 朱砂大字
+  renderX: number; // 渲染逻辑格（lerp 追 pos；移动表现）
+  renderY: number;
+  moveT: number; // 移动动画进度 0~1（<1 = 移动中；walk 帧）
+  moveFromX: number;
+  moveFromY: number;
+  isJump: boolean; // 轻功抛物线（vs 普通贴地 lerp）
+  animState: BattleAnimState; // 帧组播报硬规则：walk=01~03 / 出招 04→05 / 普攻 06
+  animMs: number; // 当前动画态累计
+  dead: boolean; // 阵亡变灰
+}
+
+/** 演出层事件流（同 seed + 同操作序列 → 全等；node 断言口径） */
+export interface BattleUiEvent {
+  t: number; // 逻辑时钟（秒，含加速倍率）
+  type:
+    | 'bar-max' // 行动条满（进入决策）
+    | 'move' // 移动（二选一的移动段）
+    | 'skill' | 'basic' | 'miss' | 'fallback' | 'blocked' // 出招族（resolveAction 同源）
+    | 'death'
+    | 'trust' | 'switch-auto' // 手动托管双阈值
+    | 'win' | 'lose' | 'timeout-hp' // 胜负
+    | 'flee'; // 逃跑（零结算）
+  actorId?: string;
+  targetId?: string;
+  skillId?: string;
+  damage?: number;
+  crit?: boolean;
+  toX?: number;
+  toY?: number;
+}
+
+/** 演出层对局结果（结算占位口径：胜负+统计；奖励/疗伤文案占位待 T07） */
+export interface BattleUiResult {
+  phase: Exclude<BattlePhase, 'fighting'>;
+  durationSec: number;
+  finalHp: { player: number; enemy: number };
+  events: BattleUiEvent[];
+}
+
 /** 渲染层场景视图（渲染层只读，AGENTS.md「UI 只展示」） */
 export interface SceneView {
   scene: SceneConfig;

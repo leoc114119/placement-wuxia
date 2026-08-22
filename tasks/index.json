@@ -1,6 +1,85 @@
 {
- "updated": "2026-08-22 13:40",
+ "_frozen": "⚠ 本文件已于 2026-08-22 15:29 冻结退役——结构化数据迁入 tasks/box.db（SQLite），变更一律走 scripts/task.py（CLI）或 task_api.py（HTTP :8787）。本文件仅为迁移时点快照存档，不再更新。看板数据源 = GET /api/{pid}/board",
+ "updated": "2026-08-22 17:40",
  "events": [
+  {
+   "t": "08-22 17:40",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "📦 交付 T06",
+   "detail": "51/51 · resolveAction 抽取 · 待 C 环"
+  },
+  {
+   "t": "08-22 16:00",
+   "dir": "ZCode",
+   "ev": "🤝 领单 T06 开工",
+   "detail": "A1 v2 裁决全收 · 编码开始"
+  },
+  {
+   "t": "08-22 15:13",
+   "dir": "CodeBuddy",
+   "ev": "✅ T06 确认开工",
+   "detail": "A1-T06 v2 终稿 · Leo 批示 Q1方案A/Q8老网金二选一/Q6暗器后置 · ZCode 移卡 working 后编码"
+  },
+  {
+   "t": "08-22 15:12",
+   "dir": "Leo",
+   "ev": "📝 批示 T06 答疑",
+   "detail": "Q1=方案A · Q8=老网金二选一(否决两段制) · Q6=暗器整体后置 · 其余照建议"
+  },
+  {
+   "t": "08-22 15:05",
+   "dir": "CodeBuddy → ZCode",
+   "ev": "💬 答复 A1-T06（v1 待拍板）",
+   "detail": "16 条全答复 · 13 条裁决 · Q16 勘误工单光圈色 · ⛔ 待 Leo 拍板 2 项：Q1 方案A / Q8 行动经济"
+  },
+  {
+   "t": "08-22 15:30",
+   "dir": "ZCode → CodeBuddy",
+   "ev": "❓ 答疑 Q1-T06",
+   "detail": "16 疑义待复 · 停工"
+  },
+  {
+   "t": "08-22 14:58",
+   "dir": "CodeBuddy",
+   "ev": "📝 流程升级·答疑阶段入流程",
+   "detail": "81 v0.4 + tasks/README：领单→答疑(问题清单+理解复述)→一轮确认→确认开工才编码 · col 口径统一物理目录名 · T06 首个适用"
+  },
+  {
+   "t": "08-22 14:55",
+   "dir": "CodeBuddy",
+   "ev": "🔧 看板列映射修复+账实校正",
+   "detail": "dashboard COLS 适配目录名口径 · T01/T02 移 archive · 补 Q3-T03 归档卡"
+  },
+  {
+   "t": "08-22 14:48",
+   "dir": "CodeBuddy → ZCode",
+   "ev": "📤 发单 T06 战斗界面",
+   "detail": "inbox/T06.md · 8×12 代码画格真源+§8b 棋子表现+§8c 光影+流程 UI · battle-core 驱动 · 调试入口（点怪接线后置）· DoD 按 81 v0.3 · 待领单"
+  },
+  {
+   "t": "08-22 14:30",
+   "dir": "CodeBuddy",
+   "ev": "✅ 战斗素材链收口",
+   "detail": "ref_battle_ui_v4 定稿 · scene_battle v2 转正 · 75→v2.1 · ICON-MATRIX v1.4"
+  },
+  {
+   "t": "08-22 14:25",
+   "dir": "CodeBuddy",
+   "ev": "📝 81 文档同步 v0.3",
+   "detail": "验收分工定版落痕 · Z 环收窄代码层 · 三环分工入流转流程"
+  },
+  {
+   "t": "08-22 13:22",
+   "dir": "CodeBuddy",
+   "ev": "✅ T04 返工②终验 PASS·收口",
+   "detail": "审计门 exit=0 · 深色零接触像素级验证 · fb37dac"
+  },
+  {
+   "t": "08-22 13:15",
+   "dir": "CodeBuddy → ZCode",
+   "ev": "↩️ T04 返工②打回",
+   "detail": "山贼02帧腿间1440px残留实锤 · 自证口径盲区 · 审计门脚本已沉淀 · 其余项认可"
+  },
   {
    "t": "08-22 13:40",
    "dir": "ZCode",
@@ -224,15 +303,15 @@
    "title": "环境确认",
    "status": "done-archived",
    "owner": "Leo",
-   "col": "done",
+   "col": "archive",
    "summary": "node v22 / npm 10 / 微信开发者工具已装（08-21）"
   },
   {
    "id": "T02",
    "title": "工程骨架",
-   "status": "done",
+   "status": "done-archived",
    "owner": "ZCode",
-   "col": "done",
+   "col": "archive",
    "summary": "已验收归档（08-21，三环全绿，含热修×3：appid/RAF×2）",
    "thread": "threads/T02.md"
   },
@@ -264,12 +343,22 @@
    "thread": "threads/T04.md"
   },
   {
+   "id": "Q3-T03",
+   "title": "主界面 UI 自适应布局（Q3-R2）",
+   "status": "done-archived",
+   "owner": "ZCode",
+   "col": "archive",
+   "summary": "已验收归档（08-22 11:20）：三段式锚定+图标接线 · 三零+30/30 · L 环 11:19 通过 · 工单 archive/Q3-T03.md",
+   "thread": "threads/T03.md"
+  },
+  {
    "id": "T06",
    "title": "战斗界面",
-   "status": "planned",
+   "status": "done-待C环",
    "owner": "ZCode",
-   "col": "backlog",
-   "summary": "素材已就绪（scene_battle + 四帧表），待 T04/T05 后发单"
+   "col": "review",
+   "summary": "战斗界面交付:51/51+node 全等 · C 环重点查 resolveAction 等价性",
+   "thread": "threads/T06.md"
   },
   {
    "id": "T07",

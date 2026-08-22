@@ -8,14 +8,24 @@ export interface NpcAppearance {
   nameColor: string; // 名字标签色：普通怪淡金 / Boss 朱砂（战斗接线时消费）
 }
 
-/** NPC 配置骨架（战斗数值字段按 场景与NPC配置.md §3 留空位） */
+/** NPC 配置骨架（T06 战斗区接线：battleNums 供 battle-ui 组装 CombatantInput；数值=场景配置文档初稿口径，64 定稿回填） */
 export interface NpcConfig {
   id: 'npc-shanzei' | 'npc-lang';
   type: 'mob' | 'boss';
   name: string;
   appearance: NpcAppearance;
-  heightRatio: number; // 渲染高度占屏比（山贼 0.21 对齐主角 / 野狼 0.15，modules/03 §3 比例锚定）
-  // ---- 战斗数值（T04 不消费，接线时补）：hp/attack/defense/speed/aggro/aggroRange/skills/dropTable ----
+  heightRatio: number; // 江湖场景渲染高度占屏比（山贼 0.21 对齐主角 / 野狼 0.15，modules/03 §3 比例锚定）
+  /** 战斗数值（T06 接线；hp/atk/def 取自 场景与NPC配置.md §3 初稿，jimin/danshi 为演出组装占位——敌方低机敏便于命中） */
+  battleNums: {
+    hp: number;
+    atk: number;
+    def: number;
+    jimin: number;
+    danshi: number;
+    shizhan: number;
+  };
+  /** 战斗棋子体型（75 §8b.4：humanoid / wolf → SPRITE_HEIGHT_PER_TILE；boss 叠 BOSS_SCALE） */
+  bodyKind: 'humanoid' | 'wolf';
 }
 
 /** 青牛山下 NPC 池（SceneConfig.npcs 声明引用；等权抽取） */
@@ -26,7 +36,8 @@ export const NPC_POOL: NpcConfig[] = [
     name: '山贼喽啰',
     appearance: { sprite: 'assets/ui/frames/spr_shanzei/spr_shanzei', nameColor: '#D4AF37' },
     heightRatio: 0.21,
-    // hp: 300, attack: 30, defense: 15, speed: 100, aggro: 'active', aggroRange: 0.15（接线时补）
+    battleNums: { hp: 300, atk: 30, def: 15, jimin: 15, danshi: 5, shizhan: 0 }, // 配置文档 §3：300/30/15
+    bodyKind: 'humanoid',
   },
   {
     id: 'npc-lang',
@@ -34,6 +45,7 @@ export const NPC_POOL: NpcConfig[] = [
     name: '野狼',
     appearance: { sprite: 'assets/ui/frames/spr_lang/spr_lang', nameColor: '#D4AF37' },
     heightRatio: 0.15,
-    // hp: 250, attack: 25, defense: 10, speed: 120, aggro: 'active', aggroRange: 0.15（接线时补）
+    battleNums: { hp: 250, atk: 25, def: 10, jimin: 15, danshi: 5, shizhan: 0 }, // 配置文档 §3：250/25/10
+    bodyKind: 'wolf',
   },
 ];

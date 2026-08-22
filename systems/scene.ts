@@ -213,24 +213,27 @@ export function createSceneSystem(scene: SceneConfig = START_SCENE): SceneSystem
 /** 触摸钩子（缺省用 wx 真实实现；单测可注入 mock） */
 export interface TouchHooks {
   onTouchEnd(callback: (e: WxTouchEvent) => void): void;
+  offTouchEnd?(callback: (e: WxTouchEvent) => void): void;
   getSystemInfo(): WxSystemInfo;
 }
 
 const wxTouchHooks: TouchHooks = {
   onTouchEnd: (cb) => wx.onTouchEnd(cb),
+  offTouchEnd: (cb) => wx.offTouchEnd?.(cb), // 环境不支持时静默（解绑为纯增量，T06）
   getSystemInfo: () => wx.getSystemInfoSync(),
 };
 
 /**
  * 绑定点击：用 touchend 触发（抬起才算点，避免滑动误触）。
  * 坐标换算：client 逻辑 px × (canvas 物理px / window 逻辑px) → canvas px → 0~1。
+ * 返回解绑函数（T06：进战斗界面时屏蔽江湖触摸；纯增量返回值，绑定逻辑零变更）。
  */
 export function bindTapInput(
   system: SceneSystem,
   size: () => ViewSize,
   hooks: TouchHooks = wxTouchHooks,
-): void {
-  hooks.onTouchEnd((e) => {
+): () => void {
+  const handler = (e: WxTouchEvent) => {
     const t = e.changedTouches && e.changedTouches[0];
     if (!t) return;
     const { width, height } = size();
@@ -247,5 +250,7 @@ export function bindTapInput(
     }
     const res = system.tap({ x: px / width, y: py / height }, { width, height });
     if (res.type === 'button') console.log(`[scene] 按钮点击占位：${res.id}`);
-  });
+  };
+  hooks.onTouchEnd(handler);
+  return () => hooks.offTouchEnd?.(handler);
 }

@@ -22,6 +22,7 @@
   <div>URL 参数：<code>?w=375&amp;h=812&amp;capsule=64</code></div>
   <div>w/h = 逻辑分辨率；capsule = 模拟微信胶囊 bottom（逻辑 px），缺省 64，<code>capsule=0</code> 走 fallback 比例</div>
   <div>点击画布 = 触发移动（走 dist/game.js 真实触摸链路）</div>
+  <div>战斗调试：<code>?battle=1&seed=42</code> 或 console <code>wx.__enterBattle(42)</code>（A1 Q12 双入口）</div>
   <div style="margin-top:8px"><label><input type="checkbox" id="guides" checked> 显示锚定参考线（页面侧诊断，非游戏代码）</label></div>
   <div id="layoutInfo" style="margin-top:8px;color:#9fb59f"></div>
 </div>
@@ -30,6 +31,10 @@
   var q = new URLSearchParams(location.search);
   var W = Math.max(200, Math.min(900, +q.get('w') || 375));
   var H = Math.max(300, Math.min(1600, +q.get('h') || 667));
+  var BATTLE = q.get('battle');
+  if (BATTLE) {
+    globalThis.__BATTLE_DEBUG__ = { battle: 1, seed: +q.get('seed') || undefined };
+  }
   var CAPSULE = +q.get('capsule');
   if (isNaN(CAPSULE)) CAPSULE = 64;
 
@@ -76,9 +81,10 @@
 
   // ---- CommonJS 微加载器：依赖序预取 dist 产物后同步 require ----
   var FILES = [
-    'dist/types.js', 'dist/config/numbers.js', 'dist/config/npcs.js', 'dist/config/scenes.js', 'dist/net/cloud.js',
-    'dist/systems/battle.js', 'dist/systems/growth.js', 'dist/systems/map.js',
-    'dist/systems/scene.js', 'dist/systems/npc.js', 'dist/ui/assets.js', 'dist/ui/render.js', 'dist/game.js',
+    'dist/types.js', 'dist/config/numbers.js', 'dist/config/npcs.js', 'dist/config/scenes.js', 'dist/config/battle.js', 'dist/net/cloud.js',
+    'dist/systems/battle.js', 'dist/systems/battle-core.js', 'dist/systems/growth.js', 'dist/systems/map.js',
+    'dist/systems/scene.js', 'dist/systems/npc.js', 'dist/systems/battle-ui.js',
+    'dist/ui/assets.js', 'dist/ui/render.js', 'dist/ui/battle-render.js', 'dist/game.js',
   ];
   var registry = {};
   function resolvePath(from, p) {

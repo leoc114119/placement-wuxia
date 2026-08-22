@@ -184,9 +184,10 @@ interface Runner extends CombatantInput {
 }
 
 // ---------- 出手结算（F-01/F-03/F-04） ----------
+// 参数类型放宽到 CombatantInput（resolveAction 导出供演出层同源调用；Runner 结构兼容，零行为变更）
 function resolveDamage(
-  actor: Runner,
-  target: Runner,
+  actor: CombatantInput,
+  target: CombatantInput,
   gradeFactor: number,
   rng: Rng,
 ): { damage: number; crit: boolean; missed: boolean } {
@@ -199,6 +200,76 @@ function resolveDamage(
   const base = Math.max(actor.atk - target.def, 1); // 破防下限 1（✅）
   const damage = Math.floor(base * gradeFactor * (crit ? CRIT_MULT : 1));
   return { damage, crit, missed: false };
+}
+
+// ---------- 单次出手结算（A1-T06 v2 方案 A 抽取导出，行为零变更） ----------
+// 原 act() 内「命中(F-04)+伤害(F-01)+结算应用」段的零变更搬运：act() 本体改为调用本函数。
+// 演出层（battle-ui）手动/自动出招同源走此处，数值唯一真值不分叉；rng 参数注入保确定性。
+// 副作用契约：skill≠null 时扣 actor.neili 并写 actor.cooldowns；命中时写 target.hp。
+
+/** 出手结算入参的 actor 形态（CombatantInput + 冷却表；演出层 Runner 自行组装） */
+export type ActionActor = CombatantInput & { cooldowns: Map<string, number> };
+
+/** 单次出手结果（logs 为本次出手的全部日志体，顺序与引擎原行为一致；round/t 由调用方补） */
+export interface ActionOutcome {
+  kind: 'skill' | 'basic' | 'miss' | 'fallback' | 'blocked';
+  damage: number;
+  crit: boolean;
+  logs: Array<Omit<BattleLog, 'round' | 't'>>;
+}
+
+/** 单次出手结算：skill=null 走普攻（射程不足返回 blocked，不消耗不结算） */
+export function resolveAction(
+  actor: ActionActor,
+  target: CombatantInput,
+  skill: SkillDef | null,
+  rng: Rng,
+): ActionOutcome {
+  const mkLog = (over: Partial<Omit<BattleLog, 'round' | 't'>>): Omit<BattleLog, 'round' | 't'> => ({
+    actorId: actor.id,
+    actorSide: actor.side,
+    action: 'basic',
+    targetId: target.id,
+    damage: 0,
+    crit: false,
+    ...over,
+  });
+
+  if (skill) {
+    actor.neili -= skill.neiliCost;
+    if (skill.cooldownTurns > 0) actor.cooldowns.set(skill.id, skill.cooldownTurns);
+  } else if (manhattan(actor.pos, target.pos) > basicRange(actor)) {
+    // 射程外：本次行动无法出手（MVP 静止站位语义，F-06 移动后置）
+    return {
+      kind: 'blocked',
+      damage: 0,
+      crit: false,
+      logs: [mkLog({ action: 'blocked', note: '目标超出射程' })],
+    };
+  } else if (actor.skills.length > 0) {
+    // 有武功但均不可出（内力/冷却/匹配）→ 普攻兜底（提示性日志，随后紧跟实际结算）
+    const fallbackLogs: Array<Omit<BattleLog, 'round' | 't'>> = [
+      mkLog({ action: 'fallback', note: '武功不可出，普攻兜底' }),
+    ];
+    const r = resolveDamage(actor, target, 1.0, rng); // 此分支 skill=null，普攻无品阶加成
+    target.hp = Math.max(0, target.hp - r.damage);
+    if (r.missed) {
+      return { kind: 'miss', damage: 0, crit: false, logs: [...fallbackLogs, mkLog({ action: 'miss', note: '未命中/被闪避' })] };
+    }
+    return { kind: 'basic', damage: r.damage, crit: r.crit, logs: [...fallbackLogs, mkLog({ action: 'basic', damage: r.damage, crit: r.crit })] };
+  }
+
+  const r = resolveDamage(actor, target, skill ? skill.grade : 1.0, rng);
+  target.hp = Math.max(0, target.hp - r.damage);
+  if (r.missed) {
+    return { kind: 'miss', damage: 0, crit: false, logs: [mkLog({ action: 'miss', skillId: skill?.id, note: '未命中/被闪避' })] };
+  }
+  return {
+    kind: skill ? 'skill' : 'basic',
+    damage: r.damage,
+    crit: r.crit,
+    logs: [mkLog({ action: skill ? 'skill' : 'basic', skillId: skill?.id, damage: r.damage, crit: r.crit })],
+  };
 }
 
 // ---------- 主入口：runBattleHeadless ----------
@@ -264,60 +335,10 @@ export function runBattleHeadless(config: BattleConfig): BattleResult {
       });
     }
 
-    const grade = chosen ? chosen.grade : 1.0; // 普攻无品阶加成
+    // 结算段（A1-T06 v2 方案 A：零变更搬运至导出函数 resolveAction，act 只补 round/t）
     const finalTarget = target ?? nearest();
-    if (chosen) {
-      actor.neili -= chosen.neiliCost;
-      if (chosen.cooldownTurns > 0) actor.cooldowns.set(chosen.id, chosen.cooldownTurns);
-    } else if (dist(finalTarget) > basicRange(actor)) {
-      // 射程外：本次行动无法出手（MVP 静止站位，F-06 移动后置）
-      log({
-        actorId: actor.id,
-        actorSide: actor.side,
-        action: 'blocked',
-        targetId: finalTarget.id,
-        damage: 0,
-        crit: false,
-        note: '目标超出射程',
-      });
-      return;
-    } else if (actor.skills.length > 0) {
-      // 有武功但均不可出（内力/冷却/匹配）→ 普攻兜底
-      log({
-        actorId: actor.id,
-        actorSide: actor.side,
-        action: 'fallback',
-        targetId: finalTarget.id,
-        damage: 0,
-        crit: false,
-        note: '武功不可出，普攻兜底',
-      });
-    }
-
-    const r = resolveDamage(actor, finalTarget, grade, rng);
-    finalTarget.hp = Math.max(0, finalTarget.hp - r.damage);
-    if (r.missed) {
-      log({
-        actorId: actor.id,
-        actorSide: actor.side,
-        action: 'miss',
-        skillId: chosen?.id,
-        targetId: finalTarget.id,
-        damage: 0,
-        crit: false,
-        note: '未命中/被闪避',
-      });
-    } else {
-      log({
-        actorId: actor.id,
-        actorSide: actor.side,
-        action: chosen ? 'skill' : 'basic',
-        skillId: chosen?.id,
-        targetId: finalTarget.id,
-        damage: r.damage,
-        crit: r.crit,
-      });
-    }
+    const outcome = resolveAction(actor, finalTarget, chosen, rng);
+    for (const l of outcome.logs) logs.push({ round, t: +t.toFixed(2), ...l });
   }
 
   // ---------- 主循环（离散步进至 90s 防死循环，F-05） ----------
