@@ -36,6 +36,11 @@
   var canvas = document.getElementById('game');
   canvas.width = W; canvas.height = H;
   canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  // 页签隐藏时浏览器会暂停原生 RAF（截图会拿到冻结帧）→ shim 用 setTimeout 驱动，与可见性解耦
+  canvas.requestAnimationFrame = function (cb) {
+    setTimeout(function () { cb(Date.now()); }, 16);
+    return 0;
+  };
 
   // ---- wx shim：浏览器跑微信小游戏 dist 产物 ----
   function shimImage() {
@@ -71,9 +76,9 @@
 
   // ---- CommonJS 微加载器：依赖序预取 dist 产物后同步 require ----
   var FILES = [
-    'dist/types.js', 'dist/config/numbers.js', 'dist/config/scenes.js', 'dist/net/cloud.js',
+    'dist/types.js', 'dist/config/numbers.js', 'dist/config/npcs.js', 'dist/config/scenes.js', 'dist/net/cloud.js',
     'dist/systems/battle.js', 'dist/systems/growth.js', 'dist/systems/map.js',
-    'dist/systems/scene.js', 'dist/ui/assets.js', 'dist/ui/render.js', 'dist/game.js',
+    'dist/systems/scene.js', 'dist/systems/npc.js', 'dist/ui/assets.js', 'dist/ui/render.js', 'dist/game.js',
   ];
   var registry = {};
   function resolvePath(from, p) {
@@ -105,6 +110,8 @@
         new Function('exports', 'require', 'module', src)(mod.exports, makeRequire(f), mod);
       } catch (err) {
         console.error('[loader]', f, err);
+        window.__bootErrs = window.__bootErrs || [];
+        window.__bootErrs.push('[loader] ' + f + ': ' + (err && err.message || err));
       }
     });
   })).then(function () {
@@ -134,7 +141,12 @@
     });
     info('SCENE_RECT: y ' + Math.round(l.sceneRect.y) + ' → ' + Math.round(l.sceneRect.y + l.sceneRect.height) +
       '（高 ' + Math.round(l.sceneRect.height) + '）<br>标签中心 y=' + Math.round(l.labelCy) +
-      ' · 按钮行中心 y=' + Math.round(l.buttonCy) + ' r=' + Math.round(l.buttonR));
+      ' · 按钮行中心 y=' + Math.round(l.buttonCy) + ' r=' + Math.round(l.buttonR) +
+      '<br><span id="bootErrs"></span>');
+    var errs = document.getElementById('bootErrs');
+    if (errs && window.__bootErrs && window.__bootErrs.length) {
+      errs.innerHTML = '<span style="color:#E2574C">' + window.__bootErrs.join('<br>') + '</span>';
+    }
   }
   function info(html) { document.getElementById('layoutInfo').innerHTML = html; }
   document.getElementById('guides').addEventListener('change', drawGuides);

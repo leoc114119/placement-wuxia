@@ -1,14 +1,21 @@
 // 渲染层：只读数据、画出来（AGENTS.md 架构原则）
-// 分层：全屏宣纸底 → L0 背景（SCENE_RECT 内 cover 裁切，Q3-R2）→ L1 主角 → L2 UI 浮层（锚定布局）
-import { CLEAR_COLOR, HERO_HEIGHT_RATIO, PALETTE, SCENE_BUTTONS, SCENE_LABEL } from '../config/numbers';
+// 分层：全屏宣纸底 → L0 背景（SCENE_RECT 内 cover 裁切）→ L1 角色（主角+NPC 按 y 排序 z-order，T04）→ L2 UI 浮层（锚定布局）
+import { CLEAR_COLOR, HERO_HEIGHT_RATIO, NPC_LABEL, PALETTE, SCENE_BUTTONS, SCENE_LABEL } from '../config/numbers';
+import type { NpcConfig } from '../config/npcs';
 import { computeSceneLayout, layoutSceneButtons, type SceneLayout } from '../systems/scene';
-import type { FrameContext, PlayerAvatar, SceneConfig, SceneView } from '../types';
+import type { FrameContext, NpcFrameAssets, NpcView, PlayerAvatar, SceneConfig, SceneView } from '../types';
 
-/**
- * 每帧渲染入口（view 由场景系统提供，渲染层只读）。
+/** 每帧渲染入口（view 由场景系统提供，渲染层只读）。
  * statusBarBottomPx：真机胶囊下沿（canvas 物理 px），0/缺省 = 无胶囊走 fallback 比例。
- */
-export function render(frame: FrameContext, view: SceneView | null, statusBarBottomPx = 0): void {
+ * npcViews/npcConfigs/npcFrames：T04 NPC 氛围层（缺省空 = 无 NPC）。 */
+export function render(
+  frame: FrameContext,
+  view: SceneView | null,
+  statusBarBottomPx = 0,
+  npcViews: NpcView[] = [],
+  npcConfigs: Map<string, NpcConfig> = new Map(),
+  npcFrames: Map<string, NpcFrameAssets> = new Map(),
+): void {
   const { ctx, width, height } = frame;
   // 全屏宣纸底（含状态栏/Tab 预留区，Q3-R2）
   ctx.fillStyle = CLEAR_COLOR;
@@ -17,7 +24,18 @@ export function render(frame: FrameContext, view: SceneView | null, statusBarBot
 
   const layout = computeSceneLayout({ width, height, statusBarBottomPx });
   if (view.assets.bg) drawSceneBg(ctx, view.assets.bg, layout);
-  drawHero(ctx, width, height, view);
+
+  // L1 角色统一按 y 排序 z-order（远→近；NPC 与主角同规则互相遮挡）
+  const heroDraw = {
+    y: view.avatar.y,
+    draw: () => drawHero(ctx, width, height, view),
+  };
+  const npcDraws = npcViews.map((nv) => ({
+    y: nv.avatar.y,
+    draw: () => drawNpc(ctx, width, height, nv, npcConfigs.get(nv.avatar.configId), npcFrames.get(nv.avatar.configId)?.frames),
+  }));
+  [...npcDraws, heroDraw].sort((a, b) => a.y - b.y).forEach((d) => d.draw());
+
   drawSceneLabel(ctx, width, height, layout, view.scene);
   drawButtons(ctx, width, height, layout, view);
   // 助战入口 MVP 隐藏，不渲染（需求表 #7 / R-03）
@@ -65,6 +83,52 @@ function drawHero(ctx: CanvasRenderingContext2D, w: number, h: number, view: Sce
 }
 
 const HERO_FALLBACK_BOB_PERIOD = 320; // 降级颠簸周期（毫秒）
+
+/** L1 NPC：帧表绘制 + 头顶名字标签（脚底锚点贴地、朝向翻转复用主角规则、比例走 config，T04） */
+function drawNpc(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  nv: NpcView,
+  config: NpcConfig | undefined,
+  frames: Array<WxImage | null> | undefined,
+): void {
+  if (!config) return;
+  const a = nv.avatar;
+  const img = frames?.[nv.frameIdx] ?? null;
+  const footX = a.x * w;
+  const footY = a.y * h;
+  const dh = config.heightRatio * h;
+
+  let topY = footY - dh; // 标签定位兜底（无图时也正确）
+  if (img) {
+    const dw = dh * (img.width / img.height);
+    topY = footY - dh;
+    ctx.save();
+    ctx.translate(footX, footY);
+    if (a.direction === 'right') ctx.scale(-1, 1); // 素材默认面左 → 朝右翻转（同主角）
+    ctx.drawImage(img as unknown as CanvasImageSource, -dw / 2, -dh, dw, dh);
+    ctx.restore();
+  }
+
+  // 名字标签：头顶墨底胶囊淡金小字（与场景名标签同风格；血条不做）
+  const fontPx = Math.max(9, Math.round(NPC_LABEL.fontRatio * h));
+  ctx.font = `${fontPx}px sans-serif`;
+  const textW = ctx.measureText(config.name).width;
+  const padX = NPC_LABEL.padXRatio * w;
+  const boxH = NPC_LABEL.heightRatio * h;
+  const boxW = textW + padX * 2;
+  const bx = footX - boxW / 2;
+  const by = topY - NPC_LABEL.offsetY * h - boxH / 2;
+
+  ctx.fillStyle = PALETTE.ink;
+  roundedRect(ctx, bx, by, boxW, boxH, fontPx * 0.5);
+  ctx.fill();
+  ctx.fillStyle = PALETTE.gold;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(config.name, footX, by + boxH / 2 + fontPx * 0.05);
+}
 
 /** L2 场景名标签：状态栏下胶囊（墨底淡金描边，需求表 #6；中心 y 由三段式布局锚定，Q3-R2） */
 function drawSceneLabel(

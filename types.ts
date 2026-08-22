@@ -161,6 +161,35 @@ export interface SceneAssets {
 /** 空资源（加载完成前的初始态） */
 export const EMPTY_SCENE_ASSETS: SceneAssets = { bg: null, heroFrames: [], buttonIcons: [] };
 
+// ============ T04 NPC 氛围版类型（modules/03 v1.2 §2.0/§2.1；纯氛围无战斗交互） ============
+
+/** 场景内一只 NPC（渲染与 wander 状态机共享的运行时状态） */
+export interface NpcAvatar {
+  configId: string; // 引用 NpcConfig.id（npc-shanzei / npc-lang）
+  x: number; // 逻辑坐标（脚底锚点，恒在 WALK_ZONE 内）
+  y: number;
+  homeX: number; // 散布出生点（wander 选点圆心）
+  homeY: number;
+  targetX: number;
+  targetY: number;
+  moving: boolean;
+  state: 'idle' | 'walk';
+  direction: Facing; // 朝向翻转复用主角逻辑
+  wanderTimerSec: number; // idle 剩余停留时间（3~5s 随机）
+  walkMs: number; // walk 动画累计（与主角同口径 01~03 循环）
+}
+
+/** NPC 帧图资源（每种 NPC 一组：索引=帧号 00~03） */
+export interface NpcFrameAssets {
+  frames: Array<WxImage | null>;
+}
+
+/** 渲染层 NPC 视图（只读快照） */
+export interface NpcView {
+  avatar: NpcAvatar;
+  frameIdx: number; // 当前帧号
+}
+
 /** 渲染层场景视图（渲染层只读，AGENTS.md「UI 只展示」） */
 export interface SceneView {
   scene: SceneConfig;

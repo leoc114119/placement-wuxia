@@ -6,6 +6,10 @@ import { battle } from './systems/battle';
 import { growth } from './systems/growth';
 import { map as mapSystem } from './systems/map';
 import { bindTapInput, createSceneSystem, getStatusBarBottomPx } from './systems/scene';
+import { createNpcSystem } from './systems/npc';
+import { NPC_POOL } from './config/npcs';
+import { loadNpcFrames } from './ui/assets';
+import type { NpcFrameAssets } from './types';
 import { callCloud } from './net/cloud';
 import { EMPTY_SCENE_ASSETS, type SceneAssets } from './types';
 
@@ -33,6 +37,14 @@ function main(): void {
     statusBarBottomPx: statusBarBottom,
   }));
 
+  // T04 NPC 氛围层：预载池帧表 + 首次散布（进场景重刷同口径：启动首帧即首次进入）
+  const npcSystem = createNpcSystem(NPC_POOL);
+  const npcFrames = new Map<string, NpcFrameAssets>();
+  void loadNpcFrames().then((m) => {
+    for (const [k, v] of m) npcFrames.set(k, v);
+    npcSystem.respawn(scene.avatar.x, scene.avatar.y); // 帧就绪后首刷（时间熵种子）
+  });
+
   // 主循环兼容层：真机=canvas.requestAnimationFrame；开发者工具=全局 RAF；兜底 setTimeout
   const raf: (cb: () => void) => void =
     typeof canvas.requestAnimationFrame === 'function'
@@ -52,7 +64,15 @@ function main(): void {
     frames++;
 
     scene.update(dt); // T03 L环热修：主循环漏调 update → 点击只换方向不移动
-    render({ ctx, width: canvas.width, height: canvas.height, dt }, scene.view(assets), statusBarBottom);
+    npcSystem.update(dt, scene.avatar.speed); // T04：NPC wander（速度=主角×0.6，系统内算）
+    render(
+      { ctx, width: canvas.width, height: canvas.height, dt },
+      scene.view(assets),
+      statusBarBottom,
+      npcSystem.view(npcFrames),
+      new Map(NPC_POOL.map((c) => [c.id, c])),
+      npcFrames,
+    );
 
     if (now - lastFpsLog >= FPS_LOG_INTERVAL_MS) {
       console.log(`[fps] ${(frames * 1000 / (now - lastFpsLog)).toFixed(1)}`);

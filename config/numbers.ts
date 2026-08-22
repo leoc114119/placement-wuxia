@@ -100,3 +100,40 @@ export const SCENE_BUTTON_DEFS: ReadonlyArray<{ id: 'biguan' | 'guaji' | 'boss';
   { id: 'guaji', iconSrc: 'assets/ui/icons/btn_guaji.png', label: '挂机' },
   { id: 'boss', iconSrc: 'assets/ui/icons/btn_tiaozhan.png', label: '挑战Boss' },
 ];
+
+// ============ T04 NPC 氛围版（modules/03 v1.2 §2.0/§2.1/§3；纯氛围，无战斗交互） ============
+
+/** 每次进江湖场景重刷的 NPC 数量范围（均匀随机含两端） */
+export const NPC_COUNT_RANGE = [2, 4] as const;
+
+/** 散布分散约束（逻辑坐标距离） */
+export const NPC_SPACING = {
+  mutual: 0.18, // NPC 两两间距 ≥
+  fromHero: 0.15, // 距主角出生点 ≥
+  maxRetriesPerPoint: 20, // 单点放置重试上限
+} as const;
+
+/** 随机走动（wander）参数 */
+export const NPC_WANDER = {
+  idleMinSec: 3, // idle 停留下限
+  idleMaxSec: 5, // idle 停留上限
+  radius: 0.15, // 目标点选点半径（当前点附近）
+  speedFactor: 0.6, // 移动速度 = 主角速度 × 此系数
+  walkFrameMs: 160, // walk 单帧时长（与主角同口径）
+} as const;
+
+/** NPC walk 帧映射（与主角同口径：00 idle / 01~03 walk 循环；04+ 战斗帧本单不用） */
+export const NPC_FRAME = {
+  idle: 0,
+  walkStart: 1,
+  walkEnd: 3,
+  preloadCount: 4,
+} as const;
+
+/** NPC 名字标签（头顶墨底胶囊小字；血条不做） */
+export const NPC_LABEL = {
+  fontRatio: 0.016, // 字号相对屏高
+  offsetY: 0.028, // 胶囊中心相对立绘顶部的偏移（占屏高）
+  padXRatio: 0.012, // 水平内边距（占屏宽）
+  heightRatio: 0.03, // 胶囊高（占屏高）
+} as const;

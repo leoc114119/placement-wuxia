@@ -1,6 +1,60 @@
 {
- "updated": "2026-08-22 02:40",
+ "updated": "2026-08-22 13:40",
  "events": [
+  {
+   "t": "08-22 13:40",
+   "dir": "ZCode",
+   "ev": "↩️↪️ T04 归档后返工完成",
+   "detail": "腿间残留+rngFor 实例隔离 · 38/38 · ZCode git 待提交"
+  },
+  {
+   "t": "08-22 13:00",
+   "dir": "Leo → ZCode",
+   "ev": "↩️ T04 归档后返工",
+   "detail": "山贼 walk 帧腿间残留（hero 同病）· ZCode 修复中 · 解法参考已附 threads/T04"
+  },
+  {
+   "t": "08-22 12:58",
+   "dir": "CodeBuddy",
+   "ev": "🔬✅ C环 T04 PASS·归档",
+   "detail": "代码审查口径 · 三零+37/37+禁区干净 · 截图项豁免 · rngFor 备注 T06 前修 · git 提交待示下"
+  },
+  {
+   "t": "08-22 12:47",
+   "dir": "Leo",
+   "ev": "✅ L环通过 T04",
+   "detail": "真实 GUI 目验 · 验收改代码层审查口径"
+  },
+  {
+   "t": "08-22 15:05",
+   "dir": "ZCode",
+   "ev": "🤝 领单 T04",
+   "detail": "working/T04.md · NPC 氛围版开工"
+  },
+  {
+   "t": "08-22 11:36",
+   "dir": "CodeBuddy → ZCode",
+   "ev": "📤 发单 T04",
+   "detail": "NPC 氛围版 · 随机散布+随机走动 · 战斗后置 · 素材就绪"
+  },
+  {
+   "t": "08-22 11:35",
+   "dir": "CodeBuddy",
+   "ev": "📦 设计文档同步",
+   "detail": "modules/03 v1.2 + modules/02 v1.4 · Leo 拍板 A1/B1/C随机"
+  },
+  {
+   "t": "08-22 11:20",
+   "dir": "CodeBuddy",
+   "ev": "🔬✅ C环 Q3-R2 PASS·归档",
+   "detail": "三零+30/30+禁区未动+截图目验 · T03 全链收口 · UI 细节留打磨轮"
+  },
+  {
+   "t": "08-22 11:19",
+   "dir": "Leo",
+   "ev": "✅ L环通过 Q3-R2",
+   "detail": "UI 细节后面再细调 · 布局与功能验收过"
+  },
   {
    "t": "08-22 02:40",
    "dir": "ZCode → CodeBuddy",
@@ -194,19 +248,20 @@
   {
    "id": "T03",
    "title": "场景系统",
-   "status": "Q3-R2已交付-待C环",
+   "status": "done-archived",
    "owner": "ZCode",
-   "col": "review",
-   "summary": "UI 自适应三段式锚定 · 30/30 · 真代码 preview 两档截图 · 待 C 环",
+   "col": "archive",
+   "summary": "已验收归档（08-22，主卡+Q1六轮+Q2走廊+Q3-R2自适应全链收口，30/30）· UI 细节留打磨轮",
    "thread": "threads/T03.md"
   },
   {
    "id": "T04",
    "title": "NPC 系统",
-   "status": "planned",
+   "status": "已归档+返工已修",
    "owner": "ZCode",
-   "col": "backlog",
-   "summary": "素材已就绪（山贼/野狼帧），待 T03 后发单"
+   "col": "archive",
+   "summary": "氛围版交付归档 · 返工×2（腿间清除/rngFor 隔离）已修 · 38/38",
+   "thread": "threads/T04.md"
   },
   {
    "id": "T06",
