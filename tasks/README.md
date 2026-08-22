@@ -45,6 +45,7 @@ tasks/
 4. **DoD 交付**：ZCode 完成任务 → 任务卡移 `done/` + 写 `done/Txx-done.md` 回执（勾选 DoD + 架构决策说明 + 文件清单）→ 等 CodeBuddy 工程验收（C 环）→ Leo 终验（L 环）。
 5. **不动箱外**：任务卡与线程之外的沟通不生效；口头/会话里的承诺要落到文件才算数。
 6. **Leo 可见**：所有文件 Leo 随时可读可插话；dashboard.html（根目录）是只读看板入口。
+7. **一任务一提交（Leo 2026-08-22 定）**：任何任务完成即 `git commit` + `git push origin main`——ZCode 交付（📦 回执）与 CodeBuddy 素材/文档/基建任务收口均适用；commit message 前缀任务号（如 `T06：`/`Q4-T06：`），**禁止跨任务攒批、禁止完成后滞留未提交**。git 远程与冷备见 `docs/` 基建记录。
 
 ## 事件类型（LOG.md 与 threads 使用）
 
