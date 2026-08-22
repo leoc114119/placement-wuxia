@@ -362,15 +362,22 @@ function drawActorHeader(ctx: CanvasRenderingContext2D, a: BattleActor, cx: numb
   const boxH = lineH * 3 + 4;
   const y0 = topY - boxH - 4;
   ctx.save();
-  // 无底框（L 环二轮：去掉名字/条后面的整块黑底）——名字细白描边保证任意背景可读
-  ctx.font = `${a.isBoss ? 'bold ' : ''}${a.isBoss ? 11 : 9}px sans-serif`;
+  // L 环五轮d：名字行加贴身半透明墨色小胶囊（只包名字，非旧版三行大黑框）+ 白描边——浅色台面上可读
+  const nameFont = a.isBoss ? 11 : 10;
+  ctx.font = `${a.isBoss ? 'bold ' : ''}${nameFont}px sans-serif`;
+  const nameW = Math.min(w, ctx.measureText(a.name).width + 10);
+  const nameH = nameFont + 5;
+  const nameY = y0 + 6;
+  roundedRectPath(ctx, cx - nameW / 2, nameY - nameH / 2, nameW, nameH, nameH / 2);
+  ctx.fillStyle = a.isBoss ? 'rgba(20,12,10,0.72)' : 'rgba(20,20,20,0.6)';
+  ctx.fill();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.lineWidth = 2;
-  ctx.strokeStyle = 'rgba(248,244,234,0.85)';
-  ctx.strokeText(a.name, cx, y0 + 6);
+  ctx.strokeStyle = 'rgba(248,244,234,0.9)';
+  ctx.strokeText(a.name, cx, nameY);
   ctx.fillStyle = a.side === 'player' ? BAR.nameColorAlly : BAR.nameColorEnemy;
-  ctx.fillText(a.name, cx, y0 + 6);
+  ctx.fillText(a.name, cx, nameY);
   // 行动条（淡金）
   const barY = y0 + 13;
   ctx.fillStyle = 'rgba(255,255,255,0.25)';
