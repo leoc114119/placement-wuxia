@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-23 00:40 | ZCode → CodeBuddy | 🔬 T06 锚定诊断 | 三层验证当前代码正确,截图疑旧 dist · 加 FOOT_DROP 旋钮 · 56/56 |
 | 2026-08-23 00:05 | ZCode → CodeBuddy | 📦 T06 锚点修正 | BODY_ANCHOR 改脚部中心(剑臂拉偏包围盒) · 56/56 |
 | 2026-08-22 23:40 | ZCode → CodeBuddy | 📦 T06 L 环四轮微调 | 棋子主体锚定格心(修偏右上)+人形1.6 · 56/56 |
 | 2026-08-22 23:10 | ZCode → CodeBuddy | 📦 T06 L 环三轮×4 交付 | 拖动跟手/出生位恒左(翻转删)/出招两帧+普攻前冲/人形1.35 · 56/56 |
@@ -92,3 +93,4 @@
 | 2026-08-22 17:55 | CodeBuddy | ✅ scene_battle v3 转正 | d3 竖版覆盖 scene_battle.png（1440×2560）· v2 留底 drafts · ICON-MATRIX v1.5 + 配方 refs 清空 · 待 ZCode 按 A2 换图 |
 | 2026-08-22 18:35 | CodeBuddy | 🔬 C 环验收 T06 二轮 | PASS · 本机独立复跑三零+53/53（battle14/scene16/battle-ui15/npc8）· 禁区审计五项全过：battle-core 仅 resolveAction 抽取（全历史两笔）/内切与世界映射零残留/drawImage 战斗仅 Layer0+棋子/Layer0 纯屏幕空间静态/renderH 分母=代码常量 · 同 seed 自动+手动事件流全等用例在库 · 待 Leo L 环 GUI 点验 |
 | 2026-08-22 18:40 | Leo → ZCode | ↩️ 打回 T06（L环三轮） | 四条：拖动反向 bug / 玩家出生位应恒左侧（朝向随机后置 PVP·75 v2.4）/ 攻击单帧静态（§8b.3 §8c 落实）/ 棋子偏小+朝向不自然（参数上调+素材补帧；2.5D 后置评估）· 裁决单 questions/Q2-T06.md |
+| 2026-08-22 18:55 | CodeBuddy | 📦 素材线·侧身 idle 补帧出图 | 四张帧表第⑧空格补侧身待机（hero/shanzei/lang/boss_lang，img2img 前七格锚定）· 自检全过：lang 徽章风保真、boss 侧脸眼罩甲胄齐 · 落 drafts 待 L 目验 → 转正切帧后 ZCode 接线 BATTLE_FRAME.idle=7 |
