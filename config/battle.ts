@@ -52,21 +52,22 @@ export interface BodyCalib {
   ratio: number;
 }
 export const BODY_CALIB: Record<'hero' | 'humanoid' | 'wolf' | 'boss', { ground: BodyCalib; attack: BodyCalib }> = {
+  // ground = 00~03（旧构图格）/ attack = 04~07（d2 重画格：攻击三连+待机，狼构图形变主体悬画布上半）
   hero: {
-    ground: { cx: 0.527, bottom: 0.983, ratio: 0.982 },
-    attack: { cx: 0.527, bottom: 0.947, ratio: 0.923 },
+    ground: { cx: 0.533, bottom: 0.988, ratio: 0.983 },
+    attack: { cx: 0.521, bottom: 0.951, ratio: 0.929 },
   },
   humanoid: {
-    ground: { cx: 0.571, bottom: 0.958, ratio: 0.954 },
-    attack: { cx: 0.46, bottom: 0.943, ratio: 0.86 },
+    ground: { cx: 0.554, bottom: 0.966, ratio: 0.955 },
+    attack: { cx: 0.505, bottom: 0.94, ratio: 0.87 },
   },
   wolf: {
-    ground: { cx: 0.495, bottom: 0.961, ratio: 0.51 },
-    attack: { cx: 0.521, bottom: 0.593, ratio: 0.492 },
+    ground: { cx: 0.505, bottom: 0.961, ratio: 0.512 },
+    attack: { cx: 0.505, bottom: 0.593, ratio: 0.489 },
   },
   boss: {
-    ground: { cx: 0.482, bottom: 0.861, ratio: 0.638 },
-    attack: { cx: 0.6, bottom: 0.781, ratio: 0.61 },
+    ground: { cx: 0.481, bottom: 0.861, ratio: 0.638 },
+    attack: { cx: 0.572, bottom: 0.782, ratio: 0.613 },
   },
 };
 

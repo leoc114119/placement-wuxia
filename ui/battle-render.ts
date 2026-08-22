@@ -289,7 +289,7 @@ export function actorRenderH(a: BattleActor): number {
 /** 帧画布标定（d2 全表重画后按帧组：ground=00~03+⑦ / attack=④~⑥ 攻击组——狼新帧主体悬画布上半，分组防吊飞） */
 function bodyCalib(a: BattleActor, frameIdx: number): BodyCalib {
   const kind = a.isBoss ? 'boss' : !a.configId ? 'hero' : a.bodyKind === 'wolf' ? 'wolf' : 'humanoid';
-  const grp = frameIdx >= BATTLE_FRAME.charge && frameIdx <= BATTLE_FRAME.basic ? 'attack' : 'ground';
+  const grp = frameIdx >= BATTLE_FRAME.charge ? 'attack' : 'ground'; // ≥④ 全为 d2 重画格
   return BODY_CALIB[kind][grp];
 }
 
