@@ -3,6 +3,7 @@
 import {
   BAR,
   BODY_ANCHOR,
+  FOOT_DROP,
   PLATFORM,
   BODY_HEIGHT_RATIO,
   BOARD_COLS,
@@ -331,8 +332,14 @@ function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, asset
       const anchor = bodyAnchor(a);
       ctx.translate(s.x, sy);
       if (a.facing === 'right') ctx.scale(-1, 1); // 素材默认面左（§8b.1）
-      // 主体中心 x = 格心、主体底缘 = 格心（L 环四轮锚定，修正偏右上）
-      ctx.drawImage(img as unknown as CanvasImageSource, -anchor.cx * dw, -anchor.bottom * dh, dw, dh);
+      // 主体中心 x = 格心、主体底缘 = 格心 + FOOT_DROP 微调（L 环四轮锚定）
+      ctx.drawImage(
+        img as unknown as CanvasImageSource,
+        -anchor.cx * dw,
+        -anchor.bottom * dh + FOOT_DROP * TILE_HALF_H * 2,
+        dw,
+        dh,
+      );
     } else {
       // 无帧降级：墨色胶囊
       const dw = dh * 0.38;
