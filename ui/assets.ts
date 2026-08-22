@@ -1,6 +1,6 @@
 // 图片资源加载：wx.createImage 预载，失败置 null + 日志（不崩，需求表 #9）
 import { HERO_FRAME, NPC_FRAME, SCENE_BUTTON_DEFS, heroFrameSrc } from '../config/numbers';
-import { battleFrameSrc } from '../config/battle';
+import { BATTLE_FRAME, battleFrameSrc } from '../config/battle';
 import type { BattleAssets } from './battle-render';
 import { NPC_POOL } from '../config/npcs';
 import type { NpcFrameAssets, SceneAssets, SceneConfig } from '../types';
@@ -62,8 +62,9 @@ export async function loadNpcFrames(): Promise<Map<string, NpcFrameAssets>> {
 
 /** 战斗资源预载（T06）：战场背景 + hero/NPC/Boss 帧表 00~06（出招组 04→05 / 普攻 06） */
 export async function loadBattleAssets(): Promise<BattleAssets> {
-  const BATTLE_FRAME_COUNT = 7; // 00~06
   // Q3-T06：帧源切 battle/ 小表（128×256，等比下采样清晰度修复）；江湖大表不动
+  // Q4-T06：帧数派生（max(idle, basic)+1）——硬编码 7 导致 frames[7]=undefined 命中墨椭圆降级的根因修复
+  const BATTLE_FRAME_COUNT = Math.max(BATTLE_FRAME.idle, BATTLE_FRAME.basic) + 1;
   const kinds: Array<string> = ['hero', ...NPC_POOL.map((n) => n.id), 'npc-boss-lang'];
   const framesByKind = new Map<string, Array<WxImage | null>>();
   await Promise.all(

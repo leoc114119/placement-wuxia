@@ -7,6 +7,7 @@ import { NPC_POOL } from '../config/npcs';
 import type { SkillDef } from '../types';
 import { fillRate, skillRange } from '../systems/battle-core';
 import { computeCamera, renderBattle } from '../ui/battle-render';
+import { loadBattleAssets } from '../ui/assets';
 import { BATTLE_FRAME, CAMERA, TILE_HALF_H, TILE_HALF_W, battleFrameSrc } from '../config/battle';
 import {
   battleWalkFrame,
@@ -378,6 +379,49 @@ describe('Q3-T06 战斗帧源', () => {
     expect(battleFrameSrc('npc-boss-lang', 7)).toContain('/battle/spr_boss_lang/');
     expect(heroFrameSrc(0)).not.toContain('battle'); // 江湖 hero 大表不动
     for (const n of NPC_POOL) expect(n.appearance.sprite).not.toContain('battle'); // 江湖 NPC 前缀不动
-    expect(BATTLE_FRAME.idle).toBe(3); // ⑧帧素材跑偏暂回退 03（重出后切回 7）
+    expect(BATTLE_FRAME.idle).toBe(7); // Q4：加载器已补第 8 帧，⑧侧身待机生效
+  });
+});
+
+// ---------- Q4-T06：战斗帧加载器补帧（黑椭圆根因修复防回归） ----------
+describe('Q4-T06 加载器补帧', () => {
+  it('loadBattleAssets 每 kind 加载 8 帧（=max(idle,basic)+1）且 idle 帧非空——防 frames[7]=undefined 墨椭圆回归', async () => {
+    const loaded: string[] = [];
+    const g = globalThis as Record<string, unknown>;
+    const prevWx = g.wx;
+    g.wx = {
+      createImage() {
+        const img = { src: '', width: 128, height: 256, onload: null as null | (() => void), onerror: null };
+        setTimeout(() => {
+          loaded.push(img.src);
+          img.onload?.();
+        }, 0);
+        return img;
+      },
+    };
+    try {
+      const assets = await loadBattleAssets();
+      const expectedKinds = 4; // hero + 山贼 + 野狼 + 狼王
+      expect(assets.framesByKind.size).toBe(expectedKinds);
+      for (const [kind, frames] of assets.framesByKind) {
+        expect(frames.length).toBe(8); // 00~07 全八帧（Q4 修复：原硬编码 7）
+        expect(frames.every((f) => f !== null)).toBe(true);
+        expect(frames[BATTLE_FRAME.idle]).not.toBeNull(); // ⑧ 侧身待机已加载
+        void kind;
+      }
+      expect(loaded.length).toBe(expectedKinds * 8 + 1); // +1 = scene_battle 背景
+      expect(loaded.filter((src) => src.includes('/battle/')).length).toBe(expectedKinds * 8); // 帧全走小表（背景除外）
+    } finally {
+      if (prevWx === undefined) delete g.wx;
+      else g.wx = prevWx;
+    }
+  });
+
+  it('渲染层 idle 帧=7 生效：待机棋子取帧索引 7（node 断言）', () => {
+    const s = createBattleSession(NPC_POOL, SEED, 'auto');
+    // actorFrameIdx 为渲染层内部——经 animState=idle + BATTLE_FRAME.idle 常量链路断言
+    expect(BATTLE_FRAME.idle).toBe(7);
+    expect(s.player.animState).toBe('idle');
+    expect(s.actors.every((a) => a.animState === 'idle')).toBe(true); // 开局全员待机
   });
 });
