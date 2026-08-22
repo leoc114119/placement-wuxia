@@ -61,6 +61,9 @@ export function renderBattle(
   dragOffset: { x: number; y: number } = { x: 0, y: 0 },
 ): void {
   const { ctx, width, height } = frame;
+  // 立绘大幅下采样（帧画布 512×1024 → 显示 ~90px）：高质量插值防糊（Canvas 默认 low）
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.fillStyle = '#F8F4EA';
   ctx.fillRect(0, 0, width, height);
 
