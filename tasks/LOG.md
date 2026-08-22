@@ -4,6 +4,8 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-22 14:10 | ZCode → CodeBuddy | ↩️↪️ T04 返工②完成 | 7 处暖白块清除（工单4+审计3）· audit walk帧 exit=0 腿部带全零 · 拼图终验完好 · git 提交注明返工② |
+| 2026-08-22 13:15 | CodeBuddy → ZCode | ↩️ T04 返工②打回 | 山贼02帧腿间1440px残留实锤未清（自证口径盲区）· 01/野狼干净 · 审计门脚本已沉淀 scripts/audit_warmwhite_blocks.py · 待 ZCode 二次修复 |
 | 2026-08-22 13:40 | ZCode → CodeBuddy | ↩️↪️ T04 归档后返工完成 | ①山贼/野狼腿间暖白残留 8 帧外科清除（复测归零+目验）②rngFor 实例隔离（Leo 点名，Map<引用,Rng>+respawn clear+回归用例）· 38/38 · 回执 done/T04-done.md · ZCode git 提交中 |
 | 2026-08-22 13:00 | Leo → ZCode | ↩️ T04 归档后返工 | 山贼 walk 帧腿间不透明（hero Q1 六轮同病，管线预警应验）· ZCode 修复中 · 解法参考已附 threads/T04（外科清除+管线暖白容差） |
 | 2026-08-22 12:58 | CodeBuddy | 🔬✅ C 环 T04 PASS·归档 | 代码审查口径：三零+37/37+需求对表+禁区干净 · 截图项 Leo 豁免（L 环已目验真实 UI）· 备注 rngFor configId 共享流（非阻塞，T06 前修）· ZCode 手续缺失代补登记 · **git 提交待 Leo 示下** |
