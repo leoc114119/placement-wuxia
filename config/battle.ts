@@ -8,7 +8,7 @@ export const ENEMY_ROW_Y = 1; // P2-5 敌方布阵行
 
 /** 菱形格边长（TS）——两层架构代码常量（75 v2.3 §1b.4：几何唯一真源=代码，背景零几何契约）。
  * 初值 77（棋盘世界轮廓 20·THW≈1333 × 20·THH≈770，拖动查看全场）；L 环可调。 */
-export const TILE_SIZE = 77;
+export const TILE_SIZE = 54; // L 环二轮：77→54（格子过大不精致，Leo 08-22 定）
 /** THW = TS·cos30°，THH = TS·sin30°（75 §1b.1 定式） */
 export const TILE_HALF_W = TILE_SIZE * 0.866;
 export const TILE_HALF_H = TILE_SIZE * 0.5;
@@ -32,8 +32,9 @@ export const PLATFORM = {
   /** 厚度侧沿（悬浮台侧立面，下缘两条边向下挤出） */
   side: 'rgba(74, 90, 62, 0.95)',
   sideDepth: 18, // 侧沿厚度（px）
-  /** 格线 */
-  grid: 'rgba(43, 43, 43, 0.30)',
+  /** 格线（L 环二轮：调淡调细，棋盘精致化） */
+  grid: 'rgba(43, 43, 43, 0.20)',
+  gridWidth: 1,
 } as const;
 
 // ===== 棋子比例（§8b.4：renderH = tileVisualH × spriteHeightPerTile × bossScale；按主体占比反推画布绘制高） =====
@@ -121,6 +122,13 @@ export const SPEED_FACTOR = { normal: 1, fast: 2 } as const;
 // ===== 结算遮罩 / 占位（A1 Q5：胜负遮罩+战报统计，奖励与疗伤占位文案） =====
 export const RESULT_OVERLAY = {
   fadeInSec: 0.3,
+} as const;
+
+// ===== UI 素材（L 环二轮实装：btn_primary 胶囊钮 / panel_dialog 面板，基准稿 ref_battle_ui_v4 口径） =====
+export const BATTLE_UI_ASSETS = {
+  btn: 'assets/ui/buttons/btn_primary_normal.png',
+  btnPressed: 'assets/ui/buttons/btn_primary_pressed.png',
+  panel: 'assets/ui/panels/panel_dialog.png',
 } as const;
 
 // ===== 调试入口（A1 Q12：preview ?battle=1&seed=N + console wx.__enterBattle(seed)） =====

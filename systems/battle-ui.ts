@@ -112,6 +112,21 @@ export function facingByDx(cur: Facing, dx: number): Facing {
   return cur;
 }
 
+/** 面向目标（L 环二轮 Leo 定「面向对手」）：按等距投影水平分量 wx=(x-y) 判左右——
+ * 自身 wx 大于目标 → 目标在屏左 → 面左；小于 → 面右；相等保持（防抖，§8b.1 口径） */
+export function facingTowardsGrid(
+  cur: Facing,
+  selfX: number,
+  selfY: number,
+  targetX: number,
+  targetY: number,
+): Facing {
+  const d = (selfX - selfY) - (targetX - targetY);
+  if (d > 1e-6) return 'left';
+  if (d < -1e-6) return 'right';
+  return cur;
+}
+
 /** 战斗内 walk 帧号（01~03 循环，硬规则） */
 export function battleWalkFrame(elapsedMs: number): number {
   const span = BATTLE_FRAME.walkEnd - BATTLE_FRAME.walkStart + 1;
@@ -206,6 +221,20 @@ export function createBattleSession(pool: NpcConfig[], seed: number, mode: Battl
   const events: BattleUiEvent[] = [];
   const manual: EngineManualState = { stage: 0, idleSec: 0 };
   const facingFlip = rng() < 0.5; // §1b.1 战斗朝向随机（我方上/下）——仅渲染层翻转，逻辑固定 y=10/y=1
+  /** 全员面向各自最近敌（L 环二轮：出场即面向对手） */
+  const faceFoes = (): void => {
+    for (const a of actors) {
+      if (a.dead) continue;
+      const foes = actors.filter((f) => f.side !== a.side && !f.dead);
+      if (foes.length === 0) continue;
+      foes.sort(
+        (b, c) =>
+          manhattanDist(a.pos.x, a.pos.y, b.pos.x, b.pos.y) - manhattanDist(a.pos.x, a.pos.y, c.pos.x, c.pos.y),
+      );
+      a.facing = facingTowardsGrid(a.facing, a.pos.x, a.pos.y, foes[0].pos.x, foes[0].pos.y);
+    }
+  };
+  faceFoes();
   let phase: BattlePhase = 'fighting';
   let timeSec = 0;
   let curMode = mode;
@@ -390,6 +419,18 @@ export function createBattleSession(pool: NpcConfig[], seed: number, mode: Battl
 
       // 演出动画推进（移动 lerp / 跳跃 / 帧动画；渲染层读同一状态）
       for (const a of actors) {
+        if (a.moveT >= 1 && !a.dead) {
+          // 待机棋子持续面向最近敌（L 环二轮 Leo 定「面向对手」；移动中保持移动方向 §8b.1）
+          const foes = actors.filter((f) => f.side !== a.side && !f.dead);
+          if (foes.length > 0) {
+            foes.sort(
+              (b, c) =>
+                manhattanDist(a.pos.x, a.pos.y, b.pos.x, b.pos.y) -
+                manhattanDist(a.pos.x, a.pos.y, c.pos.x, c.pos.y),
+            );
+            a.facing = facingTowardsGrid(a.facing, a.pos.x, a.pos.y, foes[0].pos.x, foes[0].pos.y);
+          }
+        }
         if (a.moveT < 1) {
           a.moveT = Math.min(1, a.moveT + dt / MOVE.lerpSec);
           const k = a.moveT;

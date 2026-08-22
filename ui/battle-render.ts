@@ -22,10 +22,12 @@ import { PALETTE } from '../config/numbers';
 import { battleWalkFrame, gridToWorld, worldToGrid, type BattleSession } from '../systems/battle-ui';
 import type { BattleActor, FrameContext } from '../types';
 
-/** 战斗帧图资源（hero + NPC 池；由 game.ts 预载注入） */
+/** 战斗帧图资源（hero + NPC 池 + UI 素材；由 game.ts 预载注入） */
 export interface BattleAssets {
   bg: WxImage | null;
   framesByKind: Map<string, Array<WxImage | null>>; // key：configId 或 'hero'
+  /** UI 素材（L 环二轮实装：胶囊钮/面板；缺图降级纯代码绘制） */
+  ui?: { btn: WxImage | null; panel: WxImage | null };
 }
 
 /** 演出特效实例（§8c 四段时序；battle-ui 结算时入队由渲染推进） */
@@ -71,9 +73,9 @@ export function renderBattle(
   drawManualCells(ctx, session, cam);
   drawFxs(ctx, fxBook, cam, frame.dt);
   drawActors(ctx, session, assets, cam);
-  drawTopPanel(ctx, session, width, height, statusBarBottomPx);
-  drawCornerButtons(ctx, session, width, height, L);
-  drawSkillButtons(ctx, session, width, height, cam, L);
+  drawTopPanel(ctx, session, assets, width, height, statusBarBottomPx);
+  drawCornerButtons(ctx, session, width, height, L, assets);
+  drawSkillButtons(ctx, session, width, height, cam, L, assets);
   drawOverlay(ctx, session, width, height, L);
 }
 
@@ -143,6 +145,31 @@ function diamondPath(ctx: CanvasRenderingContext2D, sx: number, sy: number): voi
 
 // ---------- L0 背景 + 格子 ----------
 
+/** 三段式贴图（L 环二轮 UI 实装）：左右端盖保持素材比例、中段横向拉伸——
+ * 胶囊钮/长条面板拉宽不变形（端盖圆角/纹样保真）。缺图返回 false 走代码绘制降级。 */
+function drawCapsule(
+  ctx: CanvasRenderingContext2D,
+  img: WxImage | null | undefined,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): boolean {
+  if (!img || img.width === 0) return false;
+  const capW = Math.min(h, w / 2); // 端盖宽 = 高（素材 2:1 全高）
+  const srcCap = img.width / 4;
+  ctx.drawImage(img as unknown as CanvasImageSource, 0, 0, srcCap, img.height, x, y, capW, h);
+  if (w - capW * 2 > 0.5) {
+    ctx.drawImage(
+      img as unknown as CanvasImageSource,
+      srcCap, 0, img.width - srcCap * 2, img.height,
+      x + capW, y, w - capW * 2, h,
+    );
+  }
+  ctx.drawImage(img as unknown as CanvasImageSource, img.width - srcCap, 0, srcCap, img.height, x + w - capW, y, capW, h);
+  return true;
+}
+
 /** Layer0 环境层（75 v2.3 §1b.4）：屏幕空间静态 cover——不随拖动/相机平移（只拖棋盘不动景）。
  * v3 环境图 9:16 无台面（零几何契约）；缺图降级宣纸底。 */
 function drawEnvLayer(ctx: CanvasRenderingContext2D, assets: BattleAssets, w: number, h: number): void {
@@ -202,8 +229,8 @@ function drawPlatform(ctx: CanvasRenderingContext2D, session: BattleSession, cam
 
 function drawGrid(ctx: CanvasRenderingContext2D, session: BattleSession, cam: Camera): void {
   ctx.save();
-  ctx.strokeStyle = 'rgba(43, 43, 43, 0.28)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = PLATFORM.grid;
+  ctx.lineWidth = PLATFORM.gridWidth;
   for (let y = 0; y < BOARD_ROWS; y++) {
     for (let x = 0; x < BOARD_COLS; x++) {
       const w0 = projectGrid(session, x, y);
@@ -318,12 +345,13 @@ function drawActorHeader(ctx: CanvasRenderingContext2D, a: BattleActor, cx: numb
   const boxH = lineH * 3 + 4;
   const y0 = topY - boxH - 4;
   ctx.save();
-  ctx.fillStyle = 'rgba(20,20,20,0.45)';
-  ctx.fillRect(cx - w / 2, y0, w, boxH);
-  // 名字（我竹青/敌朱砂；Boss 加大加粗）
+  // 无底框（L 环二轮：去掉名字/条后面的整块黑底）——名字细白描边保证任意背景可读
   ctx.font = `${a.isBoss ? 'bold ' : ''}${a.isBoss ? 11 : 9}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(248,244,234,0.85)';
+  ctx.strokeText(a.name, cx, y0 + 6);
   ctx.fillStyle = a.side === 'player' ? BAR.nameColorAlly : BAR.nameColorEnemy;
   ctx.fillText(a.name, cx, y0 + 6);
   // 行动条（淡金）
@@ -391,6 +419,7 @@ function drawFxs(ctx: CanvasRenderingContext2D, fxBook: FxInstance[], cam: Camer
 function drawTopPanel(
   ctx: CanvasRenderingContext2D,
   session: BattleSession,
+  assets: BattleAssets,
   w: number,
   h: number,
   statusBarBottomPx: number,
@@ -401,8 +430,11 @@ function drawTopPanel(
   const pad = TOP_PANEL.padRatio * w;
   const av = TOP_PANEL.avatarRatio * w;
   ctx.save();
-  ctx.fillStyle = 'rgba(43,43,43,0.82)';
-  ctx.fillRect(pad, y, w - pad * 2, panelH);
+  // 面板底 = panel_dialog 三段式（L 环二轮 UI 实装；缺图降级半透明墨底）
+  if (!drawCapsule(ctx, assets.ui?.panel, pad, y, w - pad * 2, panelH)) {
+    ctx.fillStyle = 'rgba(43,43,43,0.82)';
+    ctx.fillRect(pad, y, w - pad * 2, panelH);
+  }
   // 头像（圆形 + 等级角标；用 hero 帧表 00 若有）
   const cy = y + panelH / 2;
   ctx.beginPath();
@@ -471,16 +503,25 @@ function drawCornerButtons(
   w: number,
   h: number,
   L: BattleLayoutInfo,
+  assets: BattleAssets,
 ): void {
   for (const b of cornerButtonLayout(w, h)) {
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(b.cx, b.cy, b.r, 0, Math.PI * 2);
-    ctx.fillStyle = b.id === 'exit' ? 'rgba(226,87,76,0.85)' : 'rgba(248,244,234,0.85)';
-    ctx.fill();
-    ctx.strokeStyle = '#2B2B2B';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    const bw = b.r * 2.4; // 胶囊宽（基准稿 2:1 口径略收窄）
+    let usedImg = false;
+    if (b.id !== 'exit') {
+      usedImg = drawCapsule(ctx, assets.ui?.btn, b.cx - bw / 2, b.cy - b.r, bw, b.r * 2);
+    }
+    if (!usedImg) {
+      // 降级纯代码（退出钮恒用朱砂胶囊样式区分逃跑）
+      ctx.beginPath();
+      ctx.ellipse(b.cx, b.cy, bw / 2, b.r, 0, 0, Math.PI * 2);
+      ctx.fillStyle = b.id === 'exit' ? 'rgba(226,87,76,0.9)' : 'rgba(248,244,234,0.9)';
+      ctx.fill();
+      ctx.strokeStyle = '#2B2B2B';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
     ctx.fillStyle = b.id === 'exit' ? '#F8F4EA' : '#2B2B2B';
     ctx.font = `${Math.round(b.r * ROUND_BTN.iconFontR)}px sans-serif`;
     ctx.textAlign = 'center';
@@ -501,6 +542,7 @@ function drawSkillButtons(
   h: number,
   cam: Camera,
   L: BattleLayoutInfo,
+  assets: BattleAssets,
 ): void {
   const hero = session.pendingManual;
   if (!hero) return;
@@ -518,13 +560,18 @@ function drawSkillButtons(
   defs.forEach((d, i) => {
     const cx = s.x - totalW / 2 + r + i * (r * 2 + SKILL_BTN.gapRatio * w);
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = d.on ? 'rgba(248,244,234,0.92)' : 'rgba(200,200,200,0.55)'; // 置灰（内力不足/冷却）
-    ctx.fill();
-    ctx.strokeStyle = d.on ? '#E2574C' : '#9a9a9a';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    const bw = r * 2.2;
+    let usedImg = false;
+    if (d.on) usedImg = drawCapsule(ctx, assets.ui?.btn, cx - bw / 2, cy - r, bw, r * 2);
+    if (!usedImg) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = d.on ? 'rgba(248,244,234,0.92)' : 'rgba(200,200,200,0.55)'; // 置灰（内力不足/冷却）
+      ctx.fill();
+      ctx.strokeStyle = d.on ? '#E2574C' : '#9a9a9a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
     ctx.fillStyle = d.on ? '#2B2B2B' : '#777';
     ctx.font = `bold ${Math.round(r * 0.8)}px sans-serif`;
     ctx.textAlign = 'center';

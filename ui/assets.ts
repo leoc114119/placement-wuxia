@@ -1,5 +1,7 @@
 // 图片资源加载：wx.createImage 预载，失败置 null + 日志（不崩，需求表 #9）
 import { HERO_FRAME, NPC_FRAME, SCENE_BUTTON_DEFS, heroFrameSrc } from '../config/numbers';
+import { BATTLE_UI_ASSETS } from '../config/battle';
+import type { BattleAssets } from './battle-render';
 import { NPC_POOL } from '../config/npcs';
 import type { NpcFrameAssets, SceneAssets, SceneConfig } from '../types';
 
@@ -59,7 +61,7 @@ export async function loadNpcFrames(): Promise<Map<string, NpcFrameAssets>> {
 }
 
 /** 战斗资源预载（T06）：战场背景 + hero/NPC/Boss 帧表 00~06（出招组 04→05 / 普攻 06） */
-export async function loadBattleAssets(): Promise<{ bg: WxImage | null; framesByKind: Map<string, Array<WxImage | null>> }> {
+export async function loadBattleAssets(): Promise<BattleAssets> {
   const BATTLE_FRAME_COUNT = 7; // 00~06
   const kinds: Array<{ key: string; prefix: string }> = [
     { key: 'hero', prefix: 'assets/ui/frames/hero/hero' },
@@ -77,9 +79,14 @@ export async function loadBattleAssets(): Promise<{ bg: WxImage | null; framesBy
     }),
   );
   const bg = await loadImage('assets/ui/scene_battle.png');
+  const [btn, panel] = await Promise.all([
+    loadImage(BATTLE_UI_ASSETS.btn),
+    loadImage(BATTLE_UI_ASSETS.panel),
+  ]);
   for (const [k, fs] of framesByKind) {
     const ok = fs.filter((f) => f !== null).length;
     console.log(`[assets] 战斗帧表 ${k}: ${ok}/${BATTLE_FRAME_COUNT}`);
   }
-  return { bg, framesByKind };
+  console.log(`[assets] 战斗UI素材: btn=${btn ? 'ok' : 'fail'} panel=${panel ? 'ok' : 'fail'}`);
+  return { bg, framesByKind, ui: { btn, panel } };
 }

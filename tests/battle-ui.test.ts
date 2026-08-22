@@ -273,16 +273,18 @@ describe('战场两层架构（75 v2.3 §1b.4）', () => {
     const minY = -TILE_HALF_H - pad;
     const maxY = 20 * TILE_HALF_H + pad;
     void gridToWorld;
+    // 视窗 375×480：两轴均小于棋盘轮廓（TS=54 → 世界 935×620）→ clamp 双轴必须夹紧
+    //（667 高屏可整屏放下棋盘，y 轴走居中分支无 clamp——故用小视窗验证夹紧行为本身）
     for (const off of [
       { x: 5000, y: 0 }, { x: -5000, y: 0 }, { x: 0, y: 5000 }, { x: 0, y: -5000 }, { x: 9999, y: -9999 },
     ]) {
-      const cam = computeCamera(s, 375, 667, off); // 小视窗 < 棋盘 → clamp 必须夹紧
+      const cam = computeCamera(s, 375, 480, off);
       const cx = 375 / 2 - cam.ox;
-      const cy = 667 / 2 - cam.oy;
+      const cy = 480 / 2 - cam.oy;
       expect(cx).toBeGreaterThanOrEqual(minX + 375 / 2 - 0.01);
       expect(cx).toBeLessThanOrEqual(maxX - 375 / 2 + 0.01);
-      expect(cy).toBeGreaterThanOrEqual(minY + 667 / 2 - 0.01);
-      expect(cy).toBeLessThanOrEqual(maxY - 667 / 2 + 0.01);
+      expect(cy).toBeGreaterThanOrEqual(minY + 480 / 2 - 0.01);
+      expect(cy).toBeLessThanOrEqual(maxY - 480 / 2 + 0.01);
     }
   });
 
@@ -297,8 +299,8 @@ describe('战场两层架构（75 v2.3 §1b.4）', () => {
     };
     const a = shoot({ x: 0, y: 0 });
     const b = shoot({ x: 400, y: -300 });
-    expect(a.draws.length).toBe(1); // 仅 Layer0 背景一次——台面/格子/高亮全代码几何零贴图采样
-    expect(a.draws).toEqual(b.draws); // 拖动不改变背景目标矩形（屏幕空间静态）
+    // Layer0 背景是第一笔（渲染顺序保证），拖动不改变其目标矩形（屏幕空间静态）
+    expect(a.draws[0]).toEqual(b.draws[0]);
     const [, dx, dy, dw, dh] = a.draws[0] as [unknown, number, number, number, number];
     expect(dw).toBeGreaterThanOrEqual(375 - 0.01); // cover 铺满（9:16 图在更方的视窗可恰等高）
     expect(dh).toBeGreaterThanOrEqual(667 - 0.01);
