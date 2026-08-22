@@ -31,9 +31,12 @@ from multiprocessing import Pool
 from PIL import Image
 
 
-def _is_white_point(r, g, b, mn_thresh=190, chroma_thresh=35):
-    mn, mx = min(r, g, b), max(r, g, b)
-    return mn > mn_thresh and (mx - mn) < chroma_thresh
+def _is_white_point(r, g, b, lum_thresh=190, chroma_thresh=30):
+    """视觉白点：亮度>190 且 彩度<30。
+    亮灰过渡(192,192,176: lum191/彩度16)命中；肤色(240,200,180: lum210/彩度60)与
+    高彩度衣物豁免——彩度是肤色/衣料的天然分界。"""
+    lum = 0.299 * r + 0.587 * g + 0.114 * b
+    return lum > lum_thresh and (max(r, g, b) - min(r, g, b)) < chroma_thresh
 
 
 def _find_protected(raw, w, h, min_size=2000):
