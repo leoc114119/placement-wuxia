@@ -252,6 +252,7 @@ describe('战场两层架构（75 v2.3 §1b.4）', () => {
       {
         get: (_t, prop: string) => {
           if (prop === 'measureText') return () => ({ width: 80 });
+          if (prop === 'createLinearGradient') return () => ({ addColorStop: () => {} });
           if (prop === 'canvas') return undefined;
           return (...args: unknown[]) => {
             calls[prop] = (calls[prop] ?? 0) + 1;
@@ -299,8 +300,8 @@ describe('战场两层架构（75 v2.3 §1b.4）', () => {
     };
     const a = shoot({ x: 0, y: 0 });
     const b = shoot({ x: 400, y: -300 });
-    // Layer0 背景是第一笔（渲染顺序保证），拖动不改变其目标矩形（屏幕空间静态）
-    expect(a.draws[0]).toEqual(b.draws[0]);
+    expect(a.draws.length).toBe(1); // UI 全代码绘制（看板口径）——全屏仅 Layer0 背景一次贴图
+    expect(a.draws[0]).toEqual(b.draws[0]); // 拖动不改变背景目标矩形（屏幕空间静态）
     const [, dx, dy, dw, dh] = a.draws[0] as [unknown, number, number, number, number];
     expect(dw).toBeGreaterThanOrEqual(375 - 0.01); // cover 铺满（9:16 图在更方的视窗可恰等高）
     expect(dh).toBeGreaterThanOrEqual(667 - 0.01);

@@ -26,8 +26,6 @@ import type { BattleActor, FrameContext } from '../types';
 export interface BattleAssets {
   bg: WxImage | null;
   framesByKind: Map<string, Array<WxImage | null>>; // key：configId 或 'hero'
-  /** UI 素材（L 环二轮实装：胶囊钮/面板；缺图降级纯代码绘制） */
-  ui?: { btn: WxImage | null; panel: WxImage | null };
 }
 
 /** 演出特效实例（§8c 四段时序；battle-ui 结算时入队由渲染推进） */
@@ -73,9 +71,9 @@ export function renderBattle(
   drawManualCells(ctx, session, cam);
   drawFxs(ctx, fxBook, cam, frame.dt);
   drawActors(ctx, session, assets, cam);
-  drawTopPanel(ctx, session, assets, width, height, statusBarBottomPx);
-  drawCornerButtons(ctx, session, width, height, L, assets);
-  drawSkillButtons(ctx, session, width, height, cam, L, assets);
+  drawTopPanel(ctx, session, width, height, statusBarBottomPx);
+  drawCornerButtons(ctx, session, width, height, L);
+  drawSkillButtons(ctx, session, width, height, cam, L);
   drawOverlay(ctx, session, width, height, L);
 }
 
@@ -145,29 +143,23 @@ function diamondPath(ctx: CanvasRenderingContext2D, sx: number, sy: number): voi
 
 // ---------- L0 背景 + 格子 ----------
 
-/** 三段式贴图（L 环二轮 UI 实装）：左右端盖保持素材比例、中段横向拉伸——
- * 胶囊钮/长条面板拉宽不变形（端盖圆角/纹样保真）。缺图返回 false 走代码绘制降级。 */
-function drawCapsule(
+/** 圆角矩形路径（不用 ctx.roundRect，兼容旧基础库） */
+function roundedRectPath(
   ctx: CanvasRenderingContext2D,
-  img: WxImage | null | undefined,
   x: number,
   y: number,
   w: number,
   h: number,
-): boolean {
-  if (!img || img.width === 0) return false;
-  const capW = Math.min(h, w / 2); // 端盖宽 = 高（素材 2:1 全高）
-  const srcCap = img.width / 4;
-  ctx.drawImage(img as unknown as CanvasImageSource, 0, 0, srcCap, img.height, x, y, capW, h);
-  if (w - capW * 2 > 0.5) {
-    ctx.drawImage(
-      img as unknown as CanvasImageSource,
-      srcCap, 0, img.width - srcCap * 2, img.height,
-      x + capW, y, w - capW * 2, h,
-    );
-  }
-  ctx.drawImage(img as unknown as CanvasImageSource, img.width - srcCap, 0, srcCap, img.height, x + w - capW, y, capW, h);
-  return true;
+  r: number,
+): void {
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
 }
 
 /** Layer0 环境层（75 v2.3 §1b.4）：屏幕空间静态 cover——不随拖动/相机平移（只拖棋盘不动景）。
@@ -419,56 +411,78 @@ function drawFxs(ctx: CanvasRenderingContext2D, fxBook: FxInstance[], cam: Camer
 function drawTopPanel(
   ctx: CanvasRenderingContext2D,
   session: BattleSession,
-  assets: BattleAssets,
   w: number,
   h: number,
   statusBarBottomPx: number,
 ): void {
+  // 照 preview/battle-preview.html .topbar（规格配套看板，Leo 指认正确 UI 稿）：
+  // 半屏宽木质渐变底 + 墨描边 + 顶部内高光 + 左内侧淡金条 + 金边圆头像 + 朱砂血条 + 黛蓝内力条（A1 Q2）
   const p = session.player;
-  const panelH = TOP_PANEL.heightRatio * h;
+  const panelW = w * 0.5; // 看板口径：width 50%
+  const panelH = Math.max(44, h * 0.075); // 看板 50px/667 ≈ 7.5%
+  const x = w * 0.021;
   const y = statusBarBottomPx + TOP_PANEL.padRatio * h;
-  const pad = TOP_PANEL.padRatio * w;
-  const av = TOP_PANEL.avatarRatio * w;
+  const r = 10;
   ctx.save();
-  // 面板底 = panel_dialog 三段式（L 环二轮 UI 实装；缺图降级半透明墨底）
-  if (!drawCapsule(ctx, assets.ui?.panel, pad, y, w - pad * 2, panelH)) {
-    ctx.fillStyle = 'rgba(43,43,43,0.82)';
-    ctx.fillRect(pad, y, w - pad * 2, panelH);
-  }
-  // 头像（圆形 + 等级角标；用 hero 帧表 00 若有）
-  const cy = y + panelH / 2;
+  // 木质渐变底
+  const grad = ctx.createLinearGradient(0, y, 0, y + panelH);
+  grad.addColorStop(0, '#8B6F47');
+  grad.addColorStop(1, '#6B4E2D');
   ctx.beginPath();
-  ctx.arc(pad + av / 2 + panelH * 0.1, cy, av / 2, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(248,244,234,0.15)';
+  roundedRectPath(ctx, x, y, panelW, panelH, r);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = '#2B2B2B';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // 顶部内高光 + 左内侧淡金条
+  ctx.beginPath();
+  roundedRectPath(ctx, x + 2, y + 2, panelW - 4, panelH * 0.42, r * 0.7);
+  ctx.fillStyle = 'rgba(255,255,255,0.14)';
+  ctx.fill();
+  ctx.fillStyle = 'rgba(212,175,55,0.35)';
+  ctx.fillRect(x + 3, y + 6, 2, panelH - 12);
+  // 金边圆头像
+  const av = panelH * 0.62;
+  const acx = x + 10 + av / 2;
+  const acy = y + panelH / 2;
+  ctx.beginPath();
+  ctx.arc(acx, acy, av / 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#5a4a38';
   ctx.fill();
   ctx.strokeStyle = BAR.actionBarColor;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.stroke();
   ctx.fillStyle = '#F8F4EA';
-  ctx.font = '10px sans-serif';
+  ctx.font = `bold ${Math.round(av * 0.5)}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('侠', pad + av / 2 + panelH * 0.1, cy);
-  // 名字 + 双条（朱砂血 / 黛蓝内力——A1 Q2）
-  const barX = pad + av + panelH * 0.35;
-  const barW = w - pad * 2 - av - panelH * 0.6;
+  ctx.fillText('侠', acx, acy + 0.5);
+  // 名字 + Lv
+  const textX = x + 14 + av;
   ctx.textAlign = 'left';
-  ctx.font = 'bold 12px sans-serif';
+  ctx.font = 'bold 11px sans-serif';
   ctx.fillStyle = '#F8F4EA';
-  ctx.fillText(`${p.name} Lv.8`, barX, y + panelH * 0.24);
-  const bar = (yy: number, ratio: number, color: string, label: string) => {
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.fillRect(barX, yy, barW, panelH * 0.14);
-    ctx.fillStyle = color;
-    ctx.fillRect(barX, yy, barW * Math.max(0, Math.min(1, ratio)), panelH * 0.14);
+  ctx.fillText(`${p.name} Lv.8`, textX, y + panelH * 0.26);
+  // 双条（朱砂血 / 黛蓝内力——A1 Q2；看板旧版竹青已被 75 v2.1 蓝色口径取代）
+  const barW = panelW - (textX - x) - 10;
+  const bar = (yy: number, ratio: number, c1: string, c2: string, label: string) => {
+    ctx.fillStyle = 'rgba(43,43,43,0.5)';
+    roundedRectPath(ctx, textX, yy, barW, panelH * 0.14, 2);
+    ctx.fill();
+    const g2 = ctx.createLinearGradient(textX, 0, textX + barW, 0);
+    g2.addColorStop(0, c1);
+    g2.addColorStop(1, c2);
+    ctx.fillStyle = g2;
+    roundedRectPath(ctx, textX, yy, barW * Math.max(0, Math.min(1, ratio)), panelH * 0.14, 2);
+    ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.font = '9px sans-serif';
-    ctx.fillText(label, barX + 4, yy + panelH * 0.07);
+    ctx.font = '8px sans-serif';
+    ctx.fillText(label, textX + 3, yy + panelH * 0.07 + 0.5);
   };
-  bar(y + panelH * 0.36, p.hp / p.maxHp, BAR.hpBarColor, `${p.hp}/${p.maxHp}`);
-  bar(y + panelH * 0.62, p.maxNeili > 0 ? p.neili / p.maxNeili : 0, BAR.mpBarColor, `${p.neili}/${p.maxNeili}`);
+  bar(y + panelH * 0.36, p.hp / p.maxHp, '#C94A40', '#E2574C', `${p.hp}/${p.maxHp}`);
+  bar(y + panelH * 0.62, p.maxNeili > 0 ? p.neili / p.maxNeili : 0, '#3E6480', '#4A7A9B', `${p.neili}/${p.maxNeili}`);
   ctx.restore();
-  
 }
 
 /** 圆钮布局（左下/右下竖排；特轻绝同规格——代码统一常量） */
@@ -503,33 +517,34 @@ function drawCornerButtons(
   w: number,
   h: number,
   L: BattleLayoutInfo,
-  assets: BattleAssets,
 ): void {
+  // 照 preview/battle-preview.html .float-btns：正圆形、墨色半透明底、1.5px 淡金描边、宣纸色字；
+  // 激活态（自动模式/2×）与退出 = 朱砂（看板 .on 口径）
   for (const b of cornerButtonLayout(w, h)) {
     ctx.save();
-    const bw = b.r * 2.4; // 胶囊宽（基准稿 2:1 口径略收窄）
-    let usedImg = false;
-    if (b.id !== 'exit') {
-      usedImg = drawCapsule(ctx, assets.ui?.btn, b.cx - bw / 2, b.cy - b.r, bw, b.r * 2);
+    let label = b.label;
+    let active = false;
+    if (b.id === 'mode') {
+      label = session.mode === 'auto' ? '自' : '手';
+      active = session.mode === 'auto';
     }
-    if (!usedImg) {
-      // 降级纯代码（退出钮恒用朱砂胶囊样式区分逃跑）
-      ctx.beginPath();
-      ctx.ellipse(b.cx, b.cy, bw / 2, b.r, 0, 0, Math.PI * 2);
-      ctx.fillStyle = b.id === 'exit' ? 'rgba(226,87,76,0.9)' : 'rgba(248,244,234,0.9)';
-      ctx.fill();
-      ctx.strokeStyle = '#2B2B2B';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+    if (b.id === 'speed') {
+      label = session.speed === 2 ? '2×' : '1×';
+      active = session.speed === 2;
     }
-    ctx.fillStyle = b.id === 'exit' ? '#F8F4EA' : '#2B2B2B';
-    ctx.font = `${Math.round(b.r * ROUND_BTN.iconFontR)}px sans-serif`;
+    if (b.id === 'exit') active = true;
+    ctx.beginPath();
+    ctx.arc(b.cx, b.cy, b.r, 0, Math.PI * 2);
+    ctx.fillStyle = active ? 'rgba(226,87,76,0.92)' : 'rgba(43,43,43,0.8)';
+    ctx.fill();
+    ctx.strokeStyle = active ? 'rgba(226,87,76,0.95)' : 'rgba(212,175,55,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#F8F4EA';
+    ctx.font = `bold ${Math.round(b.r * ROUND_BTN.iconFontR)}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    let label = b.label;
-    if (b.id === 'mode') label = session.mode === 'auto' ? '自' : '手';
-    if (b.id === 'speed') label = session.speed === 2 ? '2×' : '1×';
-    ctx.fillText(label, b.cx, b.cy);
+    ctx.fillText(label, b.cx, b.cy + 0.5);
     ctx.restore();
     L.btnHits.push({ id: b.id, cx: b.cx, cy: b.cy, r: b.r });
   }
@@ -542,15 +557,14 @@ function drawSkillButtons(
   h: number,
   cam: Camera,
   L: BattleLayoutInfo,
-  assets: BattleAssets,
 ): void {
   const hero = session.pendingManual;
   if (!hero) return;
   const st = session.skillBtnStates();
   const rw = projectGrid(session, hero.renderX, hero.renderY);
-  const s = worldToScreen(cam, rw.x, rw.y);
+  const sc = worldToScreen(cam, rw.x, rw.y);
   const r = ROUND_BTN.radiusRatio * w;
-  const cy = s.y - actorRenderH(hero) - SKILL_BTN.aboveActorPx - r;
+  const cy = sc.y - actorRenderH(hero) - SKILL_BTN.aboveActorPx - r;
   const defs: Array<{ id: string; label: string; on: boolean }> = [
     { id: 'te', label: '特', on: st.te },
     { id: 'qing', label: '轻', on: st.qing },
@@ -558,25 +572,21 @@ function drawSkillButtons(
   ];
   const totalW = defs.length * (r * 2 + SKILL_BTN.gapRatio * w) - SKILL_BTN.gapRatio * w;
   defs.forEach((d, i) => {
-    const cx = s.x - totalW / 2 + r + i * (r * 2 + SKILL_BTN.gapRatio * w);
+    const cx = sc.x - totalW / 2 + r + i * (r * 2 + SKILL_BTN.gapRatio * w);
     ctx.save();
-    const bw = r * 2.2;
-    let usedImg = false;
-    if (d.on) usedImg = drawCapsule(ctx, assets.ui?.btn, cx - bw / 2, cy - r, bw, r * 2);
-    if (!usedImg) {
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fillStyle = d.on ? 'rgba(248,244,234,0.92)' : 'rgba(200,200,200,0.55)'; // 置灰（内力不足/冷却）
-      ctx.fill();
-      ctx.strokeStyle = d.on ? '#E2574C' : '#9a9a9a';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-    ctx.fillStyle = d.on ? '#2B2B2B' : '#777';
-    ctx.font = `bold ${Math.round(r * 0.8)}px sans-serif`;
+    ctx.globalAlpha = d.on ? 1 : 0.45; // 置灰（内力不足/冷却）
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(43,43,43,0.8)';
+    ctx.fill();
+    ctx.strokeStyle = d.on ? '#D4AF37' : 'rgba(212,175,55,0.4)'; // 看板 .skill-btn：淡金描边
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.round(r * 0.7)}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(d.label, cx, cy);
+    ctx.fillText(d.label, cx, cy + 0.5);
     ctx.restore();
     L.btnHits.push({ id: d.id, cx, cy, r });
   });

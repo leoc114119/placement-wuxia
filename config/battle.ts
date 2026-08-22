@@ -124,13 +124,6 @@ export const RESULT_OVERLAY = {
   fadeInSec: 0.3,
 } as const;
 
-// ===== UI 素材（L 环二轮实装：btn_primary 胶囊钮 / panel_dialog 面板，基准稿 ref_battle_ui_v4 口径） =====
-export const BATTLE_UI_ASSETS = {
-  btn: 'assets/ui/buttons/btn_primary_normal.png',
-  btnPressed: 'assets/ui/buttons/btn_primary_pressed.png',
-  panel: 'assets/ui/panels/panel_dialog.png',
-} as const;
-
 // ===== 调试入口（A1 Q12：preview ?battle=1&seed=N + console wx.__enterBattle(seed)） =====
 export const DEBUG_ENTRY = {
   queryFlag: '__BATTLE_DEBUG__' as const, // globalThis 标记（preview 页设置后再加载 game.js）

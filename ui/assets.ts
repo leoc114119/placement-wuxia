@@ -1,6 +1,5 @@
 // 图片资源加载：wx.createImage 预载，失败置 null + 日志（不崩，需求表 #9）
 import { HERO_FRAME, NPC_FRAME, SCENE_BUTTON_DEFS, heroFrameSrc } from '../config/numbers';
-import { BATTLE_UI_ASSETS } from '../config/battle';
 import type { BattleAssets } from './battle-render';
 import { NPC_POOL } from '../config/npcs';
 import type { NpcFrameAssets, SceneAssets, SceneConfig } from '../types';
@@ -79,14 +78,9 @@ export async function loadBattleAssets(): Promise<BattleAssets> {
     }),
   );
   const bg = await loadImage('assets/ui/scene_battle.png');
-  const [btn, panel] = await Promise.all([
-    loadImage(BATTLE_UI_ASSETS.btn),
-    loadImage(BATTLE_UI_ASSETS.panel),
-  ]);
   for (const [k, fs] of framesByKind) {
     const ok = fs.filter((f) => f !== null).length;
     console.log(`[assets] 战斗帧表 ${k}: ${ok}/${BATTLE_FRAME_COUNT}`);
   }
-  console.log(`[assets] 战斗UI素材: btn=${btn ? 'ok' : 'fail'} panel=${panel ? 'ok' : 'fail'}`);
-  return { bg, framesByKind, ui: { btn, panel } };
+  return { bg, framesByKind };
 }
