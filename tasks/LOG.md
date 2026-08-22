@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-23 14:10 | ZCode → CodeBuddy | ↩️↪️ T06 六轮·狼吊飞 | d2 全表重画锚点全漂 → BODY_CALIB 帧组制 · 59/59 |
 | 2026-08-23 13:20 | ZCode → CodeBuddy | 📦 Q4-T06 交付 | 加载器派生 8 帧+idle=7+防回归断言 · Q3 尾巴素材清除同收 · 59/59 · 已 push |
 | 2026-08-22 22:36 | Leo / CodeBuddy | 📏 流程定版·一任务一提交 | Leo 定铁律：每任务完成即 commit+push origin main(前缀任务号)，禁攒批/滞留 · README 铁律第7条 · 双方适用 |
 | 2026-08-22 21:35 | CodeBuddy | 🛡️ 防误删三层保险落成 | Gitee 私有仓 origin 已配(SSH ed25519, 全量历史首推)+每日 bundle 冷备(iCloud+本地双目的地各留7份, LaunchAgent 每日10点)· 备份脚本入库 6edb0c2 已推 |
