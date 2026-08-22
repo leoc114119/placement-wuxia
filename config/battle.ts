@@ -6,24 +6,44 @@ export const BOARD_ROWS = 12;
 export const PLAYER_ROW_Y = 10; // P2-5 我方布阵行
 export const ENEMY_ROW_Y = 1; // P2-5 敌方布阵行
 
-/** 菱形格边长（TS，逻辑 px 基准；L 环可调对齐 scene_battle 台面） */
-export const TILE_SIZE = 44;
+/** 菱形格边长（TS）。08-22 L 环对齐定值：scene_battle 台面顶面菱形水平对角线实测 ≈1330px（左 40~右 1379，
+ * 像素扫描+视觉双证据），棋盘 8×12 投影轮廓对角线 = 20·THW → THW=66.5 → TS≈77。
+ * 台面垂直对角线 920px（上 880~下 1800，1960 起为侧立面）比例 1.446 ≠ 等距 1.732（素材带透视俯角）——
+ * 按宽对齐内切：左右压线重合，上下居中留边（20·THH=770 < 920）。比例根治待素材管线出标准 2:1 台面。 */
+export const TILE_SIZE = 77;
 /** THW = TS·cos30°，THH = TS·sin30°（75 §1b.1 定式） */
 export const TILE_HALF_W = TILE_SIZE * 0.866;
 export const TILE_HALF_H = TILE_SIZE * 0.5;
 
-/** 镜头跟随（§1b.2）：以主角为中心平移，视窗不出棋盘世界包围盒；无缩放 */
+/** 镜头跟随（§1b.2）：以主角为中心平移 + 手动拖动偏移（L 环 08-22 加）；视窗不出棋盘世界包围盒；无缩放 */
 export const CAMERA = {
   /** 棋盘世界四周留白（px）——视窗 clamp 时允许压到的边距 */
   worldPad: 40,
+  /** 拖动生效判定：位移超过此值（物理 px）视为拖镜头而非点按 */
+  dragThresholdPx: 8,
 } as const;
 
-// ===== 棋子比例（§8b.4：renderH = tileVisualH × spriteHeightPerTile × bossScale） =====
+/** 战场背景世界锚点：scene_battle.png 原始像素 1:1 贴入世界系，
+ * 素材该点（台面顶面菱形中心，像素实测）对齐棋盘世界中心（格(3.5,5.5) 投影点）。 */
+export const BG_PLATFORM = {
+  anchorX: 720,
+  anchorY: 1340,
+} as const;
+
+// ===== 棋子比例（§8b.4：renderH = tileVisualH × spriteHeightPerTile × bossScale；按主体占比反推画布绘制高） =====
 export const SPRITE_HEIGHT_PER_TILE = {
   humanoid: 1.2, // 人形直立（主角/山贼；L 环可调区间 1.1~1.35）
   wolf: 0.8, // 四足狼形（区间 0.75~0.85）
 } as const;
 export const BOSS_SCALE = 1.3; // 狼王 ×（狼基线 0.8×1.3≈1.05）
+/** 帧画布主体高度占比（alpha 包围盒实测 08-22；§8b.4 禁止按画布直放——画布高=renderH/占比，
+ * 狼画布近半空白，直放会显著矮于规格高度） */
+export const BODY_HEIGHT_RATIO = {
+  hero: 0.972,
+  humanoid: 0.833, // 山贼帧表
+  wolf: 0.533, // 野狼帧表
+  boss: 0.983, // 狼王帧表
+} as const;
 
 // ===== 移动表现（§8b.3 + A1 Q8 老网金二选一） =====
 export const MOVE = {

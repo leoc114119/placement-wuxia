@@ -47,7 +47,9 @@ declare const wx: {
   createCanvas(): WxCanvas;
   createImage(): WxImage;
   onTouchStart(callback: (e: WxTouchEvent) => void): void;
+  offTouchStart?(callback: (e: WxTouchEvent) => void): void;
   onTouchMove(callback: (e: WxTouchEvent) => void): void;
+  offTouchMove?(callback: (e: WxTouchEvent) => void): void;
   onTouchEnd(callback: (e: WxTouchEvent) => void): void;
   offTouchEnd?(callback: (e: WxTouchEvent) => void): void;
   onTouchCancel(callback: (e: WxTouchEvent) => void): void;

@@ -2,6 +2,8 @@
 // UI 全代码绘制（ref_battle_ui_v4 仅风格基准）；格子由代码绘制叠加 scene_battle（背景无格线，唯一几何真源）
 import {
   BAR,
+  BG_PLATFORM,
+  BODY_HEIGHT_RATIO,
   BOARD_COLS,
   BOARD_ROWS,
   BOSS_SCALE,
@@ -54,15 +56,16 @@ export function renderBattle(
   fxBook: FxInstance[],
   statusBarBottomPx = 0,
   layoutInfo?: BattleLayoutInfo,
+  dragOffset: { x: number; y: number } = { x: 0, y: 0 },
 ): void {
   const { ctx, width, height } = frame;
   ctx.fillStyle = '#F8F4EA';
   ctx.fillRect(0, 0, width, height);
 
   // 相机：以主角渲染位置为中心，视窗不出棋盘世界包围盒（§1b.2；无缩放）
-  const cam = computeCamera(session, width, height);
+  const cam = computeCamera(session, width, height, dragOffset);
   const L = layoutInfo ?? { btnHits: [], overlayText: null, panel: null };
-  drawBoardBg(ctx, assets, cam, width, height);
+  drawBoardBg(ctx, assets, cam);
   drawGrid(ctx, session, cam);
   drawManualCells(ctx, session, cam);
   drawFxs(ctx, fxBook, cam, frame.dt);
@@ -97,11 +100,16 @@ export function screenToBattleGrid(
 }
 
 /** 棋盘世界包围盒（含 pad）；相机中心 = 主角世界位，clamp 后原点 = 屏中心 - 相机中心 */
-export function computeCamera(session: BattleSession, width: number, height: number): Camera {
+export function computeCamera(
+  session: BattleSession,
+  width: number,
+  height: number,
+  dragOffset: { x: number; y: number } = { x: 0, y: 0 },
+): Camera {
   const hero = session.player;
   const heroW = projectGrid(session, hero.renderX, hero.renderY);
-  let cx = heroW.x;
-  let cy = heroW.y;
+  let cx = heroW.x + dragOffset.x;
+  let cy = heroW.y + dragOffset.y;
   // 棋盘包围盒（0..COLS-1 / 0..ROWS-1 格中心的世界范围 + 半格 + pad）
   const minX = projectGrid(session, BOARD_COLS - 1, 0).x - TILE_HALF_W - CAMERA.worldPad;
   const maxX = projectGrid(session, 0, BOARD_ROWS - 1).x + TILE_HALF_W + CAMERA.worldPad;
@@ -132,17 +140,15 @@ function diamondPath(ctx: CanvasRenderingContext2D, sx: number, sy: number): voi
 
 // ---------- L0 背景 + 格子 ----------
 
-function drawBoardBg(ctx: CanvasRenderingContext2D, assets: BattleAssets, cam: Camera, w: number, h: number): void {
+function drawBoardBg(ctx: CanvasRenderingContext2D, assets: BattleAssets, cam: Camera): void {
   const img = assets.bg;
   if (!img) return; // 缺图降级宣纸底（加载器已打日志）
-  // 背景以棋盘世界中心为锚做 cover（随相机平移，营造 2.5D 场景延伸）
-  const boardCenterWorldX = 0;
-  const boardCenterWorldY = ((BOARD_COLS - 1) + (BOARD_ROWS - 1)) / 2 * TILE_HALF_H; // 中心对称，flip 不变
-  const scale = Math.max((w * 1.4) / img.width, (h * 1.4) / img.height);
-  const dw = img.width * scale;
-  const dh = img.height * scale;
-  const c = worldToScreen(cam, boardCenterWorldX, boardCenterWorldY);
-  ctx.drawImage(img as unknown as CanvasImageSource, c.x - dw / 2, c.y - dh / 2, dw, dh);
+  // 素材原始像素 1:1 贴入世界系：BG_PLATFORM 锚点（台面顶面中心，像素实测）对齐棋盘菱形中心
+  // （格 (3.5, 5.5) 投影点）——代码格叠素材台面重合的几何基础（L 环 08-22 对齐）
+  const centerX = ((BOARD_COLS - 1) / 2 - (BOARD_ROWS - 1) / 2) * TILE_HALF_W;
+  const centerY = ((BOARD_COLS - 1) / 2 + (BOARD_ROWS - 1) / 2) * TILE_HALF_H;
+  const topLeft = worldToScreen(cam, centerX - BG_PLATFORM.anchorX, centerY - BG_PLATFORM.anchorY);
+  ctx.drawImage(img as unknown as CanvasImageSource, topLeft.x, topLeft.y, img.width, img.height);
 }
 
 function drawGrid(ctx: CanvasRenderingContext2D, session: BattleSession, cam: Camera): void {
@@ -199,11 +205,19 @@ function actorFrameIdx(a: BattleActor): number {
   }
 }
 
-/** renderH = tileVisualH × spriteHeightPerTile × bossScale（§8b.4；tileVisualH = 2·THH） */
+/** renderH = tileVisualH × spriteHeightPerTile × bossScale（§8b.4；tileVisualH = 2·THH = 格边长）
+ * ——此为角色主体目标高度；画布绘制高 = renderH ÷ 主体占比（帧画布含空白，狼近半空白，直放会显著偏矮） */
 export function actorRenderH(a: BattleActor): number {
   const tileVisualH = 2 * TILE_HALF_H;
   const per = a.bodyKind === 'wolf' ? SPRITE_HEIGHT_PER_TILE.wolf : SPRITE_HEIGHT_PER_TILE.humanoid;
   return tileVisualH * per * (a.isBoss ? BOSS_SCALE : 1);
+}
+
+/** 帧画布主体占比（hero/山贼/狼/狼王；alpha 包围盒实测，L 环 08-22 对齐） */
+function bodyRatio(a: BattleActor): number {
+  if (a.isBoss) return BODY_HEIGHT_RATIO.boss;
+  if (!a.configId) return BODY_HEIGHT_RATIO.hero;
+  return a.bodyKind === 'wolf' ? BODY_HEIGHT_RATIO.wolf : BODY_HEIGHT_RATIO.humanoid;
 }
 
 function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, assets: BattleAssets, cam: Camera): void {
@@ -225,7 +239,7 @@ function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, asset
     // billboard 立绘（竖直；朝向翻转；阵亡变灰半透明）
     const frames = actorFrames(assets, a);
     const img = frames?.[actorFrameIdx(a)] ?? null;
-    const dh = actorRenderH(a);
+    const dh = actorRenderH(a) / bodyRatio(a); // 画布高（含空白）；主体高 = actorRenderH
     ctx.save();
     if (a.dead) ctx.globalAlpha = 0.45;
     if (img) {

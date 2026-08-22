@@ -57,6 +57,8 @@ function main(): void {
   let battleAssetsLoading = false;
   const fxBook = createFxBook();
   let battleLayout: BattleLayoutInfo = { btnHits: [], overlayText: null, panel: null };
+  // 战斗镜头手动拖动偏移（L 环 08-22：画面可拖动；clamp 在 computeCamera 内统一处理）
+  const camDrag = { x: 0, y: 0 };
   const jianghuTapSize = () => ({
     width: canvas.width,
     height: canvas.height,
@@ -75,6 +77,8 @@ function main(): void {
     if (mode === 'battle') return;
     const s = seed ?? (Date.now() & 0x7fffffff);
     mode = 'battle';
+    camDrag.x = 0;
+    camDrag.y = 0;
     unbindJianghuTap();
     battleSession = createBattleSession(NPC_POOL, s, 'auto');
     console.log(`[battle] 进入战斗（调试入口）seed=${s} 敌方=${battleSession.actors.length - 1}`);
@@ -98,23 +102,58 @@ function main(): void {
 
   function bindBattleTap(): void {
     unbindBattleTap = () => {};
-    const handler = (e: WxTouchEvent) => {
-      const session = battleSession;
-      if (!session) return;
-      const t = e.changedTouches && e.changedTouches[0];
-      if (!t) return;
-      // client 逻辑 px → canvas 物理 px（同 bindTapInput 换算）
-      let px = t.clientX;
-      let py = t.clientY;
+    let startX = 0;
+    let startY = 0;
+    let dragging = false;
+    let moved = false;
+    let lastX = 0;
+    let lastY = 0;
+    const toCanvasPx = (clientX: number, clientY: number): { x: number; y: number } => {
+      let px = clientX;
+      let py = clientY;
       try {
         const si = wx.getSystemInfoSync();
         if (si.windowWidth > 0 && si.windowHeight > 0) {
-          px = (t.clientX / si.windowWidth) * canvas.width;
-          py = (t.clientY / si.windowHeight) * canvas.height;
+          px = (clientX / si.windowWidth) * canvas.width;
+          py = (clientY / si.windowHeight) * canvas.height;
         }
       } catch {
         /* 1:1 兜底 */
       }
+      return { x: px, y: py };
+    };
+    const onStart = (e: WxTouchEvent): void => {
+      const t = e.touches && e.touches[0];
+      if (!t) return;
+      const p = toCanvasPx(t.clientX, t.clientY);
+      startX = lastX = p.x;
+      startY = lastY = p.y;
+      dragging = false;
+      moved = false;
+    };
+    const onMove = (e: WxTouchEvent): void => {
+      const t = e.touches && e.touches[0];
+      if (!t) return;
+      const p = toCanvasPx(t.clientX, t.clientY);
+      const dxTotal = p.x - startX;
+      const dyTotal = p.y - startY;
+      if (!dragging && Math.hypot(dxTotal, dyTotal) > 8) dragging = true; // 超阈值=拖镜头非点按
+      if (dragging) {
+        camDrag.x += p.x - lastX;
+        camDrag.y += p.y - lastY;
+        moved = true;
+      }
+      lastX = p.x;
+      lastY = p.y;
+    };
+    const onEnd = (e: WxTouchEvent): void => {
+      const session = battleSession;
+      if (!session) return;
+      const t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      const p = toCanvasPx(t.clientX, t.clientY);
+      if (dragging) return; // 拖动结束不触发点按
+      void moved;
 
       // 结束遮罩：点击任意处返回江湖（胜/负/逃跑后）
       if (session.phase !== 'fighting') {
@@ -123,7 +162,7 @@ function main(): void {
       }
       // ① 圆钮/特轻绝命中优先（UI > 格子）
       for (const b of battleLayout.btnHits) {
-        if ((px - b.cx) ** 2 + (py - b.cy) ** 2 <= b.r ** 2) {
+        if ((p.x - b.cx) ** 2 + (p.y - b.cy) ** 2 <= b.r ** 2) {
           if (b.id === 'exit') {
             session.flee(); // 逃跑：无损失无结算直接回场景（§3/§6）
             return;
@@ -154,13 +193,19 @@ function main(): void {
           }
         }
       }
-      // ② 格子（手动模式绿格/金格；朝向随机 + 相机双还原）
-      const cam = computeCamera(session, canvas.width, canvas.height);
-      const g = screenToBattleGrid(session, cam, px, py);
+      // ② 格子（手动模式绿格/金格；朝向随机 + 相机（含拖动偏移）双还原）
+      const cam = computeCamera(session, canvas.width, canvas.height, camDrag);
+      const g = screenToBattleGrid(session, cam, p.x, p.y);
       session.tapCell(g.x, g.y);
     };
-    wx.onTouchEnd(handler);
-    unbindBattleTap = () => wx.offTouchEnd?.(handler);
+    wx.onTouchStart(onStart);
+    wx.onTouchMove(onMove);
+    wx.onTouchEnd(onEnd);
+    unbindBattleTap = () => {
+      wx.offTouchStart?.(onStart);
+      wx.offTouchMove?.(onMove);
+      wx.offTouchEnd?.(onEnd);
+    };
   }
 
   // 调试入口（A1 Q12 + 工单 #8 隐藏按钮口径）
@@ -252,6 +297,7 @@ function main(): void {
         fxBook,
         statusBarBottom,
         battleLayout,
+        camDrag,
       );
     } else {
       scene.update(dt); // T03 L环热修：主循环漏调 update → 点击只换方向不移动
