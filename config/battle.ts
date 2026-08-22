@@ -43,18 +43,33 @@ export const SPRITE_HEIGHT_PER_TILE = {
   wolf: 0.8, // 四足狼形（区间 0.75~0.85）
 } as const;
 export const BOSS_SCALE = 1.3; // 狼王 ×（狼基线 0.8×1.3≈1.05）
-/** 帧画布主体高度占比（素材出厂标定后固化为 config 常量，A2 #3 终态采纳；§8b 分母铁律管的是
- * renderH 的 tileVisualH=2·THH——本表只做画布空白换算，非运行时量测） */
-export const BODY_HEIGHT_RATIO = {
-  hero: 0.972,
-  humanoid: 0.833, // 山贼帧表
-  wolf: 0.533, // 野狼帧表
-  boss: 0.983, // 狼王帧表
-} as const;
+/** 帧画布主体标定（d2 全表重画后按帧组重测，08-23）：ground = 00~03+⑦ 地面组 / attack = ④~⑥ 攻击组。
+ * ratio = 主体高度占画布比（画布绘制高 = renderH ÷ ratio）；cx = 脚部中心（底部 12% 带中点均值）；
+ * bottom = 主体底缘占比。野狼 d2 攻击/待机帧主体悬于画布上半（底缘 0.593）——单组锚点会吊飞，故分组。 */
+export interface BodyCalib {
+  cx: number;
+  bottom: number;
+  ratio: number;
+}
+export const BODY_CALIB: Record<'hero' | 'humanoid' | 'wolf' | 'boss', { ground: BodyCalib; attack: BodyCalib }> = {
+  hero: {
+    ground: { cx: 0.527, bottom: 0.983, ratio: 0.982 },
+    attack: { cx: 0.527, bottom: 0.947, ratio: 0.923 },
+  },
+  humanoid: {
+    ground: { cx: 0.571, bottom: 0.958, ratio: 0.954 },
+    attack: { cx: 0.46, bottom: 0.943, ratio: 0.86 },
+  },
+  wolf: {
+    ground: { cx: 0.495, bottom: 0.961, ratio: 0.51 },
+    attack: { cx: 0.521, bottom: 0.593, ratio: 0.492 },
+  },
+  boss: {
+    ground: { cx: 0.482, bottom: 0.861, ratio: 0.638 },
+    attack: { cx: 0.6, bottom: 0.781, ratio: 0.61 },
+  },
+};
 
-/** 帧画布主体锚点（L 环四轮：主体中心 x 比例 / 主体底缘 y 比例，00~03 帧包围盒均值标定）——
- * 立绘以「主体中心 x = 格心、主体底缘 = 格心」精确落位（画布默认 -dw/2,-dh 假设 0.5/1.0，
- * 实测 0.488/0.96~0.99，底部空白把脚悬空、中心偏差使主体显偏右上） */
 /** 脚点垂直微调（格视觉高 2·THH 的比例；正=下移）。
  * =0.2（L 环五轮 Leo 定：0.25 微过冲，回收 0.05）：等距菱形格的几何格心在视觉上偏格后缘（上半），
  * 角色站格心显悬空——整体下压 1/4 格高做视觉补偿，脚踩视觉格心。观感仍偏继续调此数。 */

@@ -2,10 +2,10 @@
 // UI 全代码绘制（ref_battle_ui_v4 仅风格基准）；格子由代码绘制叠加 scene_battle（背景无格线，唯一几何真源）
 import {
   BAR,
-  BODY_ANCHOR,
+  BODY_CALIB,
+  type BodyCalib,
   FOOT_DROP,
   PLATFORM,
-  BODY_HEIGHT_RATIO,
   BOARD_COLS,
   BOARD_ROWS,
   BOSS_SCALE,
@@ -286,18 +286,11 @@ export function actorRenderH(a: BattleActor): number {
   return tileVisualH * per * (a.isBoss ? BOSS_SCALE : 1);
 }
 
-/** 帧画布主体占比（hero/山贼/狼/狼王；alpha 包围盒实测，L 环 08-22 对齐） */
-function bodyRatio(a: BattleActor): number {
-  if (a.isBoss) return BODY_HEIGHT_RATIO.boss;
-  if (!a.configId) return BODY_HEIGHT_RATIO.hero;
-  return a.bodyKind === 'wolf' ? BODY_HEIGHT_RATIO.wolf : BODY_HEIGHT_RATIO.humanoid;
-}
-
-/** 帧画布主体锚点（L 环四轮：主体中心 x / 底缘 y，精确落格心） */
-function bodyAnchor(a: BattleActor): { cx: number; bottom: number } {
-  if (a.isBoss) return BODY_ANCHOR.boss;
-  if (!a.configId) return BODY_ANCHOR.hero;
-  return a.bodyKind === 'wolf' ? BODY_ANCHOR.wolf : BODY_ANCHOR.humanoid;
+/** 帧画布标定（d2 全表重画后按帧组：ground=00~03+⑦ / attack=④~⑥ 攻击组——狼新帧主体悬画布上半，分组防吊飞） */
+function bodyCalib(a: BattleActor, frameIdx: number): BodyCalib {
+  const kind = a.isBoss ? 'boss' : !a.configId ? 'hero' : a.bodyKind === 'wolf' ? 'wolf' : 'humanoid';
+  const grp = frameIdx >= BATTLE_FRAME.charge && frameIdx <= BATTLE_FRAME.basic ? 'attack' : 'ground';
+  return BODY_CALIB[kind][grp];
 }
 
 function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, assets: BattleAssets, cam: Camera): void {
@@ -326,20 +319,21 @@ function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, asset
 
     // billboard 立绘（竖直；朝向翻转；阵亡变灰半透明）
     const frames = actorFrames(assets, a);
-    const img = frames?.[actorFrameIdx(a)] ?? null;
-    const dh = actorRenderH(a) / bodyRatio(a); // 画布高（含空白）；主体高 = actorRenderH
+    const frameIdx = actorFrameIdx(a);
+    const img = frames?.[frameIdx] ?? null;
+    const calib = bodyCalib(a, frameIdx);
+    const dh = actorRenderH(a) / calib.ratio; // 画布高（含空白）；主体高 = actorRenderH
     ctx.save();
     if (a.dead) ctx.globalAlpha = 0.45;
     if (img) {
       const dw = dh * (img.width / img.height);
-      const anchor = bodyAnchor(a);
       ctx.translate(s.x, sy);
       if (a.facing === 'right') ctx.scale(-1, 1); // 素材默认面左（§8b.1）
-      // 主体中心 x = 格心、主体底缘 = 格心 + FOOT_DROP 微调（L 环四轮锚定）
+      // 主体中心 x = 格心、主体底缘 = 格心 + FOOT_DROP 微调（按帧组标定）
       ctx.drawImage(
         img as unknown as CanvasImageSource,
-        -anchor.cx * dw,
-        -anchor.bottom * dh + FOOT_DROP * TILE_HALF_H * 2,
+        -calib.cx * dw,
+        -calib.bottom * dh + FOOT_DROP * TILE_HALF_H * 2,
         dw,
         dh,
       );
@@ -353,44 +347,8 @@ function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, asset
     }
     ctx.restore();
     drawActorHeader(ctx, a, s.x, sy - dh);
-    s = { x: 0, y: 0 };
-    void s;
   }
 }
-
-/** 头顶三行（§1c）：名字（config 色）+ 淡金行动条 + 朱砂血条 */
-function drawActorHeader(ctx: CanvasRenderingContext2D, a: BattleActor, cx: number, topY: number): void {
-  const w = 56;
-  const lineH = 5;
-  const boxH = lineH * 3 + 4;
-  const y0 = topY - boxH - 4;
-  ctx.save();
-  // L 环五轮e（Leo 定）：无底框，大字号 + 浓白描边保证可读
-  const nameFont = a.isBoss ? 14 : 13;
-  ctx.font = `${a.isBoss ? 'bold ' : ''}${nameFont}px sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = 'rgba(248,244,234,0.95)';
-  ctx.strokeText(a.name, cx, y0 + 7);
-  ctx.fillStyle = a.side === 'player' ? BAR.nameColorAlly : BAR.nameColorEnemy;
-  ctx.fillText(a.name, cx, y0 + 7);
-  // 行动条（淡金）
-  const barY = y0 + 13;
-  ctx.fillStyle = 'rgba(255,255,255,0.25)';
-  ctx.fillRect(cx - w / 2 + 3, barY, w - 6, 3);
-  ctx.fillStyle = BAR.actionBarColor;
-  ctx.fillRect(cx - w / 2 + 3, barY, (w - 6) * Math.min(1, a.bar / BAR.max), 3);
-  // 血条（朱砂）
-  const hpY = y0 + 18;
-  ctx.fillStyle = 'rgba(255,255,255,0.25)';
-  ctx.fillRect(cx - w / 2 + 3, hpY, w - 6, 3);
-  ctx.fillStyle = BAR.hpBarColor;
-  ctx.fillRect(cx - w / 2 + 3, hpY, (w - 6) * Math.max(0, a.hp / a.maxHp), 3);
-  ctx.restore();
-}
-
-// ---------- fx（§8c 四段时序；纯代码几何/渐变） ----------
 
 function drawFxs(ctx: CanvasRenderingContext2D, fxBook: FxInstance[], cam: Camera, dtMs: number): void {
   for (let i = fxBook.length - 1; i >= 0; i--) {
@@ -436,6 +394,37 @@ function drawFxs(ctx: CanvasRenderingContext2D, fxBook: FxInstance[], cam: Camer
 }
 
 // ---------- UI：顶栏三件套 / 圆钮 / 特轻绝 / 遮罩 ----------
+
+/** 头顶三行（§1c）：名字（config 色）+ 淡金行动条 + 朱砂血条（L 环五轮e：无底框大字白描边） */
+function drawActorHeader(ctx: CanvasRenderingContext2D, a: BattleActor, cx: number, topY: number): void {
+  const w = 56;
+  const lineH = 5;
+  const boxH = lineH * 3 + 4;
+  const y0 = topY - boxH - 4;
+  ctx.save();
+  const nameFont = a.isBoss ? 14 : 13;
+  ctx.font = `${a.isBoss ? 'bold ' : ''}${nameFont}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(248,244,234,0.95)';
+  ctx.strokeText(a.name, cx, y0 + 7);
+  ctx.fillStyle = a.side === 'player' ? BAR.nameColorAlly : BAR.nameColorEnemy;
+  ctx.fillText(a.name, cx, y0 + 7);
+  // 行动条（淡金）
+  const barY = y0 + 16;
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.fillRect(cx - w / 2 + 3, barY, w - 6, 3);
+  ctx.fillStyle = BAR.actionBarColor;
+  ctx.fillRect(cx - w / 2 + 3, barY, (w - 6) * Math.min(1, a.bar / BAR.max), 3);
+  // 血条（朱砂）
+  const hpY = y0 + 21;
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.fillRect(cx - w / 2 + 3, hpY, w - 6, 3);
+  ctx.fillStyle = BAR.hpBarColor;
+  ctx.fillRect(cx - w / 2 + 3, hpY, (w - 6) * Math.max(0, a.hp / a.maxHp), 3);
+  ctx.restore();
+}
 
 function drawTopPanel(
   ctx: CanvasRenderingContext2D,
