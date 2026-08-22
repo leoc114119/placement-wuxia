@@ -163,8 +163,39 @@ function main(): void {
     unbindBattleTap = () => wx.offTouchEnd?.(handler);
   }
 
-  // 调试双入口注册（A1 Q12）
-  // 主挂载点 = globalThis（console 直呼 __enterBattle(42) 可见；wx 原生对象挂属性在工具 console 上下文取不到——08-22 实测 not a function）
+  // 调试入口（A1 Q12 + 工单 #8 隐藏按钮口径）
+  // 隐藏长按：按住屏幕顶部状态栏预留区（y < 12% 屏高）约 1.2s → 进战斗（时间熵 seed）。
+  // console 直呼实测不可用：开发者工具调试上下文与 game 运行上下文 realm 隔离，
+  // wx/globalThis 挂载属性（node 冒烟验证成功）在工具 console 均取不到——UI 入口兜底。
+  let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  wx.onTouchStart((e) => {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    const si = (() => {
+      try {
+        return wx.getSystemInfoSync();
+      } catch {
+        return null;
+      }
+    })();
+    const logicalY = si && si.windowHeight > 0 ? (t.clientY / si.windowHeight) : t.clientY / canvas.height;
+    if (logicalY < 0.12) {
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        console.log('[battle] 长按调试入口触发');
+        enterBattle();
+      }, 1200);
+    }
+  });
+  const cancelLongPress = (): void => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  };
+  wx.onTouchEnd(cancelLongPress);
+  wx.onTouchCancel(cancelLongPress);
+  // console 入口挂载保留（非工具环境/未来 realm 打通时可用）
   (globalThis as Record<string, unknown>).__enterBattle = enterBattle;
   type WxWithDebug = typeof wx & { __enterBattle?: (seed?: number) => void };
   try {
