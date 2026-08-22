@@ -39,7 +39,7 @@ export const PLATFORM = {
 
 // ===== 棋子比例（§8b.4：renderH = tileVisualH × spriteHeightPerTile × bossScale；按主体占比反推画布绘制高） =====
 export const SPRITE_HEIGHT_PER_TILE = {
-  humanoid: 1.35, // F4a L 环三轮：1.2→1.35（偏小不清晰；区间上限同步放宽 1.1~1.45）
+  humanoid: 1.6, // L 环四轮：1.2→1.35→1.6（Leo 定，观感不够再调）
   wolf: 0.8, // 四足狼形（区间 0.75~0.85）
 } as const;
 export const BOSS_SCALE = 1.3; // 狼王 ×（狼基线 0.8×1.3≈1.05）
@@ -50,6 +50,16 @@ export const BODY_HEIGHT_RATIO = {
   humanoid: 0.833, // 山贼帧表
   wolf: 0.533, // 野狼帧表
   boss: 0.983, // 狼王帧表
+} as const;
+
+/** 帧画布主体锚点（L 环四轮：主体中心 x 比例 / 主体底缘 y 比例，00~03 帧包围盒均值标定）——
+ * 立绘以「主体中心 x = 格心、主体底缘 = 格心」精确落位（画布默认 -dw/2,-dh 假设 0.5/1.0，
+ * 实测 0.488/0.96~0.99，底部空白把脚悬空、中心偏差使主体显偏右上） */
+export const BODY_ANCHOR = {
+  hero: { cx: 0.488, bottom: 0.986 },
+  humanoid: { cx: 0.488, bottom: 0.963 }, // 山贼
+  wolf: { cx: 0.49, bottom: 0.961 }, // 野狼
+  boss: { cx: 0.489, bottom: 0.977 }, // 狼王
 } as const;
 
 // ===== 移动表现（§8b.3 + A1 Q8 老网金二选一） =====

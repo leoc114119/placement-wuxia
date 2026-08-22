@@ -2,6 +2,7 @@
 // UI 全代码绘制（ref_battle_ui_v4 仅风格基准）；格子由代码绘制叠加 scene_battle（背景无格线，唯一几何真源）
 import {
   BAR,
+  BODY_ANCHOR,
   PLATFORM,
   BODY_HEIGHT_RATIO,
   BOARD_COLS,
@@ -288,6 +289,13 @@ function bodyRatio(a: BattleActor): number {
   return a.bodyKind === 'wolf' ? BODY_HEIGHT_RATIO.wolf : BODY_HEIGHT_RATIO.humanoid;
 }
 
+/** 帧画布主体锚点（L 环四轮：主体中心 x / 底缘 y，精确落格心） */
+function bodyAnchor(a: BattleActor): { cx: number; bottom: number } {
+  if (a.isBoss) return BODY_ANCHOR.boss;
+  if (!a.configId) return BODY_ANCHOR.hero;
+  return a.bodyKind === 'wolf' ? BODY_ANCHOR.wolf : BODY_ANCHOR.humanoid;
+}
+
 function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, assets: BattleAssets, cam: Camera): void {
   const sorted = session.actors.slice().sort((a, b) => a.renderY - b.renderY); // z-order 按 y 升序
   for (const a of sorted) {
@@ -320,9 +328,11 @@ function drawActors(ctx: CanvasRenderingContext2D, session: BattleSession, asset
     if (a.dead) ctx.globalAlpha = 0.45;
     if (img) {
       const dw = dh * (img.width / img.height);
+      const anchor = bodyAnchor(a);
       ctx.translate(s.x, sy);
       if (a.facing === 'right') ctx.scale(-1, 1); // 素材默认面左（§8b.1）
-      ctx.drawImage(img as unknown as CanvasImageSource, -dw / 2, -dh, dw, dh);
+      // 主体中心 x = 格心、主体底缘 = 格心（L 环四轮锚定，修正偏右上）
+      ctx.drawImage(img as unknown as CanvasImageSource, -anchor.cx * dw, -anchor.bottom * dh, dw, dh);
     } else {
       // 无帧降级：墨色胶囊
       const dw = dh * 0.38;
