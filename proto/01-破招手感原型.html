@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>破招手感原型 v0.1</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;background:#0e1116;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;}
+  #c{display:block;width:100%;height:100%;touch-action:none;}
+  #hint{position:fixed;left:0;right:0;bottom:12px;text-align:center;color:#4d5866;font-size:11px;line-height:1.7;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hint">点屏幕 / 空格 = 破招　·　A = 开关按钮（A/B 对照）　·　R = 重置计数</div>
+
+<script>
+/* ============================================================
+   可调参数 —— 手感全在这里，改完刷新即可
+   ============================================================ */
+const CFG = {
+  withButton  : true,   // false = A组对照组（纯自动，无按钮）
+  idleMs      : 1500,   // 敌人空闲
+  telegraphMs : 1200,   // 起手 = 可破窗口
+  perfectFrac : 0.28,   // 起手最后 28% = Perfect
+  recoverMs   : 600,    // 出招后收招
+  missCdMs    : 500,    // 按错的冷却
+  enemyDmg    : 12,     // 漏破挨多少打
+  playerAtkMs : 900,    // 玩家自动攻击间隔
+  playerDmg   : 6,
+  brkGood     : 14,     // Good 破招伤害
+  brkPerfect  : 30,     // Perfect 破招伤害
+  comboBonus  : 0.06,   // 每层连击 +6% 伤害
+  hitstopGood : 60,     // 顿帧 ms（Good）
+  hitstopPerf : 110,    // 顿帧 ms（Perfect）
+  regen       : 1.6,    // 玩家每秒回血
+  maxHp       : 100,
+  enemyHp     : 260,
+};
+
+/* ==================== 状态 ==================== */
+let phase='idle', phaseT=0;
+let playerHp=CFG.maxHp, enemyHp=CFG.enemyHp;
+let combo=0, maxCombo=0, swings=0, breaks=0, kills=0, elapsed=0;
+let cd=0, freezeMs=0, shakeT=0, shakeMag=0, stagger=0, flash=0, playerAtkT=0;
+let nums=[];
+
+/* ==================== 画布 ==================== */
+const c=document.getElementById('c'), ctx=c.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  W=window.innerWidth; H=window.innerHeight;
+  c.width=W*DPR; c.height=H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize',resize); resize();
+const unit = ()=> Math.min(W,H)*0.055;
+const px   = ()=> W*0.26;
+const ex   = ()=> W*0.74;
+const gy   = ()=> H*0.58;
+
+/* ==================== 音效 ==================== */
+let AC=null;
+function ac(){
+  if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function tone(freq,dur,type,gain,delay){
+  try{
+    const a=ac(), t0=a.currentTime+(delay||0);
+    const o=a.createOscillator(), g=a.createGain();
+    o.type=type||'square'; o.frequency.setValueAtTime(freq,t0);
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.linearRampToValueAtTime(gain==null?0.18:gain,t0+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0008,t0+dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }catch(e){}
+}
+const sfxPerfect=()=>{ tone(1046,.09,'square',.16,0); tone(1568,.16,'square',.13,.045); tone(2093,.13,'triangle',.08,.05); };
+const sfxGood   =()=>{ tone(740,.10,'square',.13); };
+const sfxMiss   =()=>{ tone(120,.14,'sawtooth',.09); };
+const sfxHurt   =()=>{ tone(90,.22,'sawtooth',.16); };
+const sfxKill   =()=>{ tone(523,.10,'triangle',.14,0); tone(784,.10,'triangle',.14,.08); tone(1046,.24,'triangle',.12,.16); };
+
+/* ==================== 小工具 ==================== */
+const freeze = ms => freezeMs=Math.max(freezeMs,ms);
+const shake  = (m,ms)=>{ shakeMag=Math.max(shakeMag,m); shakeT=Math.max(shakeT,ms); };
+const popNum = (x,y,t,col)=> nums.push({x,y,t,text:t,color:col,life:0,vy:-46});
+function roundRect(x,y,w,h,r){
+  ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+
+/* ==================== 核心：破招 ==================== */
+function tryBreak(){
+  if(!CFG.withButton) return;
+  swings++;
+  if(cd>0){ sfxMiss(); return; }
+
+  if(phase==='telegraph'){
+    const p=phaseT/CFG.telegraphMs;
+    const perfect = p >= (1-CFG.perfectFrac);
+    breaks++;
+    combo += perfect?2:1;
+    if(combo>maxCombo) maxCombo=combo;
+
+    const dmg=(perfect?CFG.brkPerfect:CFG.brkGood)*(1+combo*CFG.comboBonus);
+    enemyHp-=dmg;
+    popNum(ex(), gy()-unit()*2.2, '+'+Math.round(dmg), perfect?'#ffd94a':'#eaf2ff');
+
+    freeze(perfect?CFG.hitstopPerf:CFG.hitstopGood);   // ← 打击感的命根子
+    shake(perfect?7:3.5, perfect?150:95);
+    flash = perfect?0.5:0.25;
+    perfect?sfxPerfect():sfxGood();
+
+    phase='recover'; phaseT=0; stagger=240;            // 打断敌人，免掉这一击
+    if(enemyHp<=0){ enemyHp=CFG.enemyHp; kills++; sfxKill(); shake(9,220); }
+  }else{
+    cd=CFG.missCdMs; combo=0; sfxMiss();               // 按错时机
+  }
+}
+
+/* ==================== 更新 ==================== */
+function update(dt){
+  elapsed+=dt;
+  if(cd>0) cd-=dt;
+  if(stagger>0) stagger-=dt;
+  if(flash>0) flash=Math.max(0,flash-dt/220);
+  if(shakeT>0){ shakeT-=dt; if(shakeT<=0) shakeMag=0; }
+
+  playerAtkT+=dt;                                       // 玩家自动攻击
+  if(playerAtkT>=CFG.playerAtkMs){
+    playerAtkT=0; enemyHp-=CFG.playerDmg;
+    popNum(ex(), gy()-unit()*2.2, String(CFG.playerDmg), '#8fa3b8');
+    if(enemyHp<=0){ enemyHp=CFG.enemyHp; kills++; sfxKill(); shake(9,220); }
+  }
+  if(playerHp<CFG.maxHp) playerHp=Math.min(CFG.maxHp, playerHp+CFG.regen*dt/1000);
+
+  phaseT+=dt;                                           // 敌人状态机
+  if(phase==='idle' && phaseT>=CFG.idleMs){ phase='telegraph'; phaseT=0; }
+  else if(phase==='telegraph' && phaseT>=CFG.telegraphMs){
+    phase='recover'; phaseT=0;
+    playerHp-=CFG.enemyDmg; combo=0;                    // 漏破 = 挨打 + 断连
+    sfxHurt(); shake(5,160); flash=0.18;
+    popNum(px(), gy()-unit()*2.2, '-'+CFG.enemyDmg, '#ff6b6b');
+    if(playerHp<=0) playerHp=CFG.maxHp;
+  }
+  else if(phase==='recover' && phaseT>=CFG.recoverMs){ phase='idle'; phaseT=0; }
+
+  for(let i=nums.length-1;i>=0;i--){                    // 飘字
+    const n=nums[i]; n.life+=dt; n.y+=n.vy*dt/1000; n.vy+=130*dt/1000;
+    if(n.life>900) nums.splice(i,1);
+  }
+}
+
+/* ==================== 绘制 ==================== */
+function drawFighter(x,y,color,isEnemy){
+  const s=unit();
+  ctx.save(); ctx.translate(x,y);
+  ctx.fillStyle='rgba(0,0,0,.35)';
+  ctx.beginPath(); ctx.ellipse(0,34,s*.9,s*.24,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=color;
+  roundRect(-s*.42,-s*1.5,s*.84,s*1.6,s*.22); ctx.fill();
+  ctx.beginPath(); ctx.arc(0,-s*1.78,s*.36,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=Math.max(2,s*.11); ctx.lineCap='round';
+  const d=isEnemy?-1:1;
+  ctx.beginPath(); ctx.moveTo(d*s*.4,-s*.95); ctx.lineTo(d*s*1.15,-s*1.15); ctx.stroke();
+  ctx.restore();
+}
+
+function drawRing(){
+  if(phase!=='telegraph') return;
+  const p=phaseT/CFG.telegraphMs;
+  const rMax=Math.min(W,H)*.085, rMin=rMax*.30;
+  const rr=rMax+(rMin-rMax)*p;
+  const pStart=1-CFG.perfectFrac;
+  const rPerf=rMax+(rMin-rMax)*pStart;
+  const cx=ex(), cy=gy()-unit()*2.7;
+  const inP = p>=pStart;
+
+  ctx.lineWidth=Math.max(2,rMax*.05);
+  ctx.strokeStyle='rgba(143,211,255,.22)';               // 外圈（起手开始）
+  ctx.beginPath(); ctx.arc(cx,cy,rMax,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='rgba(255,217,74,.22)';                // Perfect 判定圈（静态引导）
+  ctx.beginPath(); ctx.arc(cx,cy,rPerf,0,Math.PI*2); ctx.stroke();
+
+  ctx.strokeStyle=inP?'#ffd94a':'#8fd3ff';               // 收缩环
+  ctx.lineWidth=Math.max(3,rMax*(inP?.13:.08));
+  ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.stroke();
+  if(inP){ ctx.fillStyle='rgba(255,217,74,.10)'; ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.fill(); }
+}
+
+function bar(x,y,w,h,f,color,label){
+  ctx.fillStyle='#171d27'; roundRect(x,y,w,h,h/2); ctx.fill();
+  ctx.fillStyle=color; roundRect(x,y,Math.max(0,w*f),h,h/2); ctx.fill();
+  ctx.fillStyle='#8b98a8'; ctx.font='11px -apple-system,sans-serif'; ctx.textAlign='left';
+  ctx.fillText(label,x,y-6);
+}
+
+function render(){
+  ctx.save();
+  if(shakeT>0) ctx.translate((Math.random()-.5)*2*shakeMag,(Math.random()-.5)*2*shakeMag);
+
+  ctx.fillStyle='#0e1116'; ctx.fillRect(-30,-30,W+60,H+60);
+  if(flash>0){ ctx.fillStyle='rgba(255,255,255,'+(flash*.28)+')'; ctx.fillRect(-30,-30,W+60,H+60); }
+
+  ctx.strokeStyle='#1c2230'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,gy()+34); ctx.lineTo(W,gy()+34); ctx.stroke();
+
+  drawFighter(px(), gy(), '#5aa9ff', false);
+  drawFighter(ex()+(stagger>0?14:0), gy(), '#ff6b6b', true);
+  drawRing();
+
+  const bw=W*.30, bh=9;
+  bar(24, 26, bw, bh, playerHp/CFG.maxHp, '#5aa9ff', '你');
+  bar(W-24-bw, 26, bw, bh, enemyHp/CFG.enemyHp, '#ff6b6b', '敌');
+
+  if(combo>0){
+    const s=1+Math.min(combo,20)*.02;
+    ctx.save(); ctx.translate(W/2,H*.22); ctx.scale(s,s); ctx.textAlign='center';
+    ctx.fillStyle=combo>=8?'#ffd94a':'#eaf2ff';
+    ctx.font='bold 40px -apple-system,sans-serif'; ctx.fillText(combo+'',0,0);
+    ctx.fillStyle='#6b7787'; ctx.font='12px -apple-system,sans-serif'; ctx.fillText('连击',0,20);
+    ctx.restore();
+  }
+
+  ctx.textAlign='center';
+  for(const n of nums){
+    ctx.globalAlpha=Math.max(0,1-n.life/900);
+    ctx.fillStyle=n.color; ctx.font='bold '+Math.round(Math.min(W,H)*.036)+'px -apple-system,sans-serif';
+    ctx.fillText(n.text,n.x,n.y);
+  }
+  ctx.globalAlpha=1;
+
+  const rate=swings?Math.round(breaks/swings*100):0;
+  const m=Math.floor(elapsed/60000), ss=String(Math.floor(elapsed%60000/1000)).padStart(2,'0');
+  ctx.fillStyle='#4d5866'; ctx.font='12px -apple-system,sans-serif'; ctx.textAlign='center';
+  ctx.fillText((CFG.withButton?'B组 · 有破招':'A组 · 纯自动')+
+    '　|　'+m+':'+ss+'　|　破中率 '+rate+'%　|　最高连击 '+maxCombo+'　|　击败 '+kills, W/2, H-46);
+
+  ctx.restore();
+}
+
+/* ==================== 主循环 ==================== */
+let last=performance.now();
+function frame(now){
+  let dt=now-last; last=now;
+  if(dt>100) dt=100;
+  if(freezeMs>0){ freezeMs-=dt; dt=0; }                  // 顿帧
+  update(dt); render();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ==================== 输入 ==================== */
+let lastTap=0;
+function onTap(e){
+  const t=performance.now(); if(t-lastTap<120) return; lastTap=t;
+  e.preventDefault(); ac(); tryBreak();
+}
+c.addEventListener('touchstart',onTap,{passive:false});
+c.addEventListener('mousedown',onTap);
+window.addEventListener('keydown',e=>{
+  if(e.code==='Space'){ e.preventDefault(); ac(); tryBreak(); }
+  else if(e.key==='a'||e.key==='A'){ CFG.withButton=!CFG.withButton; combo=0; }
+  else if(e.key==='r'||e.key==='R'){ swings=breaks=maxCombo=kills=0; elapsed=0; combo=0; }
+});
+</script>
+</body>
+</html>

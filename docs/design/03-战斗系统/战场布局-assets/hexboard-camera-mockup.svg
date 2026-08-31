@@ -1,0 +1,297 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="880" viewBox="0 0 900 880" font-family="PingFang SC, Hiragino Sans GB, sans-serif">
+<rect width="900" height="880" fill="#edf2f7"/>
+<text x="450" y="18" text-anchor="middle" font-size="14" fill="#4a5568">统一格子 s=31 · 视口≈7×7（红虚线）· 格子尺寸与地图尺寸解耦 · 黑框=右上角小地图</text>
+<text x="212" y="40" text-anchor="middle" font-size="19" font-weight="bold" fill="#1a202c">常规战役 8×8</text>
+<rect x="25" y="50" width="375" height="667" rx="24" fill="#ffffff" stroke="#2d3748" stroke-width="3"/>
+<rect x="28" y="53" width="369" height="110" rx="10" fill="#4a5568"/>
+<text x="41" y="83" font-size="13" fill="#e2e8f0">第 2 回合 · 行动点 6/8</text>
+<clipPath id="board1"><rect x="41" y="163" width="343" height="427"/></clipPath>
+<rect x="28" y="584" width="369" height="130" rx="10" fill="#2d3748"/>
+<rect x="41" y="596" width="52" height="52" rx="8" fill="#718096"/>
+<text x="103" y="616" font-size="13" fill="#e2e8f0">剑士 · HP 24/30</text>
+<text x="103" y="636" font-size="11" fill="#a0aec0">移动 3 · 攻击 5</text>
+<rect x="41.0" y="656" width="79.8" height="38" rx="8" fill="#4299e1"/>
+<text x="80.9" y="680" text-anchor="middle" font-size="14" fill="#ffffff">移动</text>
+<rect x="128.8" y="656" width="79.8" height="38" rx="8" fill="#4299e1"/>
+<text x="168.6" y="680" text-anchor="middle" font-size="14" fill="#ffffff">攻击</text>
+<rect x="216.5" y="656" width="79.8" height="38" rx="8" fill="#4299e1"/>
+<text x="256.4" y="680" text-anchor="middle" font-size="14" fill="#ffffff">技能</text>
+<rect x="304.2" y="656" width="79.8" height="38" rx="8" fill="#4299e1"/>
+<text x="344.1" y="680" text-anchor="middle" font-size="14" fill="#ffffff">待命</text>
+<g clip-path="url(#board1)">
+<polygon points="80.0,188.6 64.9,162.4 34.7,162.4 19.6,188.6 34.6,214.7 64.9,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="126.5,215.4 111.4,189.3 81.2,189.3 66.0,215.4 81.1,241.6 111.4,241.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="172.9,188.6 157.8,162.4 127.7,162.4 112.5,188.6 127.6,214.7 157.8,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="219.4,215.4 204.3,189.3 174.2,189.3 159.1,215.4 174.1,241.6 204.3,241.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="265.9,188.6 250.8,162.4 220.7,162.4 205.6,188.6 220.6,214.7 250.8,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="312.4,215.4 297.4,189.3 267.1,189.3 252.1,215.4 267.1,241.6 297.4,241.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="358.9,188.6 343.9,162.4 313.6,162.4 298.6,188.6 313.6,214.7 343.9,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="405.4,215.4 390.4,189.3 360.1,189.3 345.1,215.4 360.1,241.6 390.4,241.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="80.0,242.3 64.9,216.1 34.7,216.1 19.6,242.3 34.6,268.4 64.9,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="126.5,269.1 111.4,243.0 81.2,243.0 66.0,269.1 81.1,295.3 111.4,295.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="172.9,242.3 157.8,216.1 127.7,216.1 112.5,242.3 127.6,268.4 157.8,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="219.4,269.1 204.3,243.0 174.2,243.0 159.1,269.1 174.1,295.3 204.3,295.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="265.9,242.3 250.8,216.1 220.7,216.1 205.6,242.3 220.6,268.4 250.8,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="312.4,269.1 297.4,243.0 267.1,243.0 252.1,269.1 267.1,295.3 297.4,295.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="358.9,242.3 343.9,216.1 313.6,216.1 298.6,242.3 313.6,268.4 343.9,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="405.4,269.1 390.4,243.0 360.1,243.0 345.1,269.1 360.1,295.3 390.4,295.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="80.0,296.0 64.9,269.8 34.7,269.8 19.6,296.0 34.6,322.1 64.9,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="126.5,322.8 111.4,296.7 81.2,296.7 66.0,322.8 81.1,349.0 111.4,349.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="172.9,296.0 157.8,269.8 127.7,269.8 112.5,296.0 127.6,322.1 157.8,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="219.4,322.8 204.3,296.7 174.2,296.7 159.1,322.8 174.1,349.0 204.3,349.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="265.9,296.0 250.8,269.8 220.7,269.8 205.6,296.0 220.6,322.1 250.8,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="312.4,322.8 297.4,296.7 267.1,296.7 252.1,322.8 267.1,349.0 297.4,349.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="358.9,296.0 343.9,269.8 313.6,269.8 298.6,296.0 313.6,322.1 343.9,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="405.4,322.8 390.4,296.7 360.1,296.7 345.1,322.8 360.1,349.0 390.4,349.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="80.0,349.7 64.9,323.5 34.7,323.5 19.6,349.7 34.6,375.8 64.9,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="126.5,376.5 111.4,350.3 81.2,350.3 66.0,376.5 81.1,402.7 111.4,402.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="172.9,349.7 157.8,323.5 127.7,323.5 112.5,349.7 127.6,375.8 157.8,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="219.4,376.5 204.3,350.3 174.2,350.3 159.1,376.5 174.1,402.7 204.3,402.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="265.9,349.7 250.8,323.5 220.7,323.5 205.6,349.7 220.6,375.8 250.8,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="312.4,376.5 297.4,350.3 267.1,350.3 252.1,376.5 267.1,402.7 297.4,402.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="358.9,349.7 343.9,323.5 313.6,323.5 298.6,349.7 313.6,375.8 343.9,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="405.4,376.5 390.4,350.3 360.1,350.3 345.1,376.5 360.1,402.7 390.4,402.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="80.0,403.3 64.9,377.2 34.7,377.2 19.6,403.3 34.6,429.5 64.9,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="126.5,430.2 111.4,404.0 81.2,404.0 66.0,430.2 81.1,456.3 111.4,456.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="172.9,403.3 157.8,377.2 127.7,377.2 112.5,403.3 127.6,429.5 157.8,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="219.4,430.2 204.3,404.0 174.2,404.0 159.1,430.2 174.1,456.3 204.3,456.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="265.9,403.3 250.8,377.2 220.7,377.2 205.6,403.3 220.6,429.5 250.8,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="312.4,430.2 297.4,404.0 267.1,404.0 252.1,430.2 267.1,456.3 297.4,456.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="358.9,403.3 343.9,377.2 313.6,377.2 298.6,403.3 313.6,429.5 343.9,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="405.4,430.2 390.4,404.0 360.1,404.0 345.1,430.2 360.1,456.3 390.4,456.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="80.0,457.0 64.9,430.9 34.7,430.9 19.6,457.0 34.6,483.2 64.9,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="126.5,483.9 111.4,457.7 81.2,457.7 66.0,483.9 81.1,510.0 111.4,510.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="172.9,457.0 157.8,430.9 127.7,430.9 112.5,457.0 127.6,483.2 157.8,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="219.4,483.9 204.3,457.7 174.2,457.7 159.1,483.9 174.1,510.0 204.3,510.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="265.9,457.0 250.8,430.9 220.7,430.9 205.6,457.0 220.6,483.2 250.8,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="312.4,483.9 297.4,457.7 267.1,457.7 252.1,483.9 267.1,510.0 297.4,510.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="358.9,457.0 343.9,430.9 313.6,430.9 298.6,457.0 313.6,483.2 343.9,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="405.4,483.9 390.4,457.7 360.1,457.7 345.1,483.9 360.1,510.0 390.4,510.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="80.0,510.7 64.9,484.6 34.7,484.6 19.6,510.7 34.6,536.9 64.9,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="126.5,537.6 111.4,511.4 81.2,511.4 66.0,537.6 81.1,563.7 111.4,563.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="172.9,510.7 157.8,484.6 127.7,484.6 112.5,510.7 127.6,536.9 157.8,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="219.4,537.6 204.3,511.4 174.2,511.4 159.1,537.6 174.1,563.7 204.3,563.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="265.9,510.7 250.8,484.6 220.7,484.6 205.6,510.7 220.6,536.9 250.8,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="312.4,537.6 297.4,511.4 267.1,511.4 252.1,537.6 267.1,563.7 297.4,563.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="358.9,510.7 343.9,484.6 313.6,484.6 298.6,510.7 313.6,536.9 343.9,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="405.4,537.6 390.4,511.4 360.1,511.4 345.1,537.6 360.1,563.7 390.4,563.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="80.0,564.4 64.9,538.3 34.7,538.3 19.6,564.4 34.6,590.6 64.9,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="126.5,591.3 111.4,565.1 81.2,565.1 66.0,591.3 81.1,617.4 111.4,617.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="172.9,564.4 157.8,538.3 127.7,538.3 112.5,564.4 127.6,590.6 157.8,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="219.4,591.3 204.3,565.1 174.2,565.1 159.1,591.3 174.1,617.4 204.3,617.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="265.9,564.4 250.8,538.3 220.7,538.3 205.6,564.4 220.6,590.6 250.8,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="312.4,591.3 297.4,565.1 267.1,565.1 252.1,591.3 267.1,617.4 297.4,617.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="358.9,564.4 343.9,538.3 313.6,538.3 298.6,564.4 313.6,590.6 343.9,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="405.4,591.3 390.4,565.1 360.1,565.1 345.1,591.3 360.1,617.4 390.4,617.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<ellipse cx="49.75" cy="272" rx="18" ry="6" fill="#c53030" opacity="0.55"/>
+<ellipse cx="49.75" cy="251" rx="13" ry="21" fill="#e53e3e" stroke="#c53030" stroke-width="1.5"/>
+<circle cx="49.75" cy="221" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 39 220 A 11 11 0 0 1 61 220" fill="#c53030"/>
+<text x="49.75" y="254" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">弓</text>
+<ellipse cx="189.25" cy="298" rx="18" ry="6" fill="#c53030" opacity="0.55"/>
+<ellipse cx="189.25" cy="277" rx="13" ry="21" fill="#e53e3e" stroke="#c53030" stroke-width="1.5"/>
+<circle cx="189.25" cy="248" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 178 247 A 11 11 0 0 1 200 247" fill="#c53030"/>
+<text x="189.25" y="281" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">盾</text>
+<ellipse cx="282.25" cy="298" rx="18" ry="6" fill="#c53030" opacity="0.55"/>
+<ellipse cx="282.25" cy="277" rx="13" ry="21" fill="#e53e3e" stroke="#c53030" stroke-width="1.5"/>
+<circle cx="282.25" cy="248" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 271 247 A 11 11 0 0 1 293 247" fill="#c53030"/>
+<text x="282.25" y="281" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">枪</text>
+<ellipse cx="142.75" cy="540" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="142.75" cy="519" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="142.75" cy="490" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 132 488 A 11 11 0 0 1 154 488" fill="#2b6cb0"/>
+<text x="142.75" y="523" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">剑</text>
+<ellipse cx="235.75" cy="540" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="235.75" cy="519" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="235.75" cy="490" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 225 488 A 11 11 0 0 1 247 488" fill="#2b6cb0"/>
+<text x="235.75" y="523" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">剑</text>
+<ellipse cx="96.25" cy="621" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="96.25" cy="600" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="96.25" cy="570" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 85 569 A 11 11 0 0 1 107 569" fill="#2b6cb0"/>
+<text x="96.25" y="603" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">弓</text>
+<ellipse cx="189.25" cy="621" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="189.25" cy="600" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="189.25" cy="570" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 178 569 A 11 11 0 0 1 200 569" fill="#2b6cb0"/>
+<text x="189.25" y="603" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">牧</text>
+<ellipse cx="282.25" cy="621" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="282.25" cy="600" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="282.25" cy="570" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 271 569 A 11 11 0 0 1 293 569" fill="#2b6cb0"/>
+<text x="282.25" y="603" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">法</text>
+</g>
+<rect x="47" y="189" width="331" height="376" fill="none" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="7,5" rx="10"/>
+<text x="667" y="40" text-anchor="middle" font-size="19" font-weight="bold" fill="#1a202c">大战役 16×16</text>
+<rect x="480" y="50" width="375" height="667" rx="24" fill="#ffffff" stroke="#2d3748" stroke-width="3"/>
+<rect x="483" y="53" width="369" height="110" rx="10" fill="#4a5568"/>
+<text x="496" y="83" font-size="13" fill="#e2e8f0">第 2 回合 · 行动点 6/8</text>
+<clipPath id="board2"><rect x="496" y="163" width="343" height="427"/></clipPath>
+<rect x="483" y="584" width="369" height="130" rx="10" fill="#2d3748"/>
+<rect x="496" y="596" width="52" height="52" rx="8" fill="#718096"/>
+<text x="558" y="616" font-size="13" fill="#e2e8f0">剑士 · HP 24/30</text>
+<text x="558" y="636" font-size="11" fill="#a0aec0">移动 3 · 攻击 5</text>
+<rect x="496.0" y="656" width="79.8" height="38" rx="8" fill="#4299e1"/>
+<text x="535.9" y="680" text-anchor="middle" font-size="14" fill="#ffffff">移动</text>
+<rect x="583.8" y="656" width="79.8" height="38" rx="8" fill="#4299e1"/>
+<text x="623.6" y="680" text-anchor="middle" font-size="14" fill="#ffffff">攻击</text>
+<rect x="671.5" y="656" width="79.8" height="38" rx="8" fill="#4299e1"/>
+<text x="711.4" y="680" text-anchor="middle" font-size="14" fill="#ffffff">技能</text>
+<rect x="759.2" y="656" width="79.8" height="38" rx="8" fill="#4299e1"/>
+<text x="799.1" y="680" text-anchor="middle" font-size="14" fill="#ffffff">待命</text>
+<g clip-path="url(#board2)">
+<polygon points="535.0,188.6 519.9,162.4 489.6,162.4 474.6,188.6 489.6,214.7 519.9,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,215.4 566.4,189.3 536.1,189.3 521.0,215.4 536.1,241.6 566.4,241.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,188.6 612.9,162.4 582.6,162.4 567.5,188.6 582.6,214.7 612.9,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,215.4 659.4,189.3 629.1,189.3 614.0,215.4 629.1,241.6 659.4,241.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,188.6 705.9,162.4 675.6,162.4 660.5,188.6 675.6,214.7 705.9,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,215.4 752.4,189.3 722.1,189.3 707.0,215.4 722.1,241.6 752.4,241.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,188.6 798.9,162.4 768.6,162.4 753.5,188.6 768.6,214.7 798.9,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,215.4 845.4,189.3 815.1,189.3 800.0,215.4 815.1,241.6 845.4,241.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,188.6 891.9,162.4 861.6,162.4 846.5,188.6 861.6,214.7 891.9,214.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="535.0,242.3 519.9,216.1 489.6,216.1 474.6,242.3 489.6,268.4 519.9,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,269.1 566.4,243.0 536.1,243.0 521.0,269.1 536.1,295.3 566.4,295.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,242.3 612.9,216.1 582.6,216.1 567.5,242.3 582.6,268.4 612.9,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,269.1 659.4,243.0 629.1,243.0 614.0,269.1 629.1,295.3 659.4,295.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,242.3 705.9,216.1 675.6,216.1 660.5,242.3 675.6,268.4 705.9,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,269.1 752.4,243.0 722.1,243.0 707.0,269.1 722.1,295.3 752.4,295.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,242.3 798.9,216.1 768.6,216.1 753.5,242.3 768.6,268.4 798.9,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,269.1 845.4,243.0 815.1,243.0 800.0,269.1 815.1,295.3 845.4,295.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,242.3 891.9,216.1 861.6,216.1 846.5,242.3 861.6,268.4 891.9,268.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="535.0,296.0 519.9,269.8 489.6,269.8 474.6,296.0 489.6,322.1 519.9,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,322.8 566.4,296.7 536.1,296.7 521.0,322.8 536.1,349.0 566.4,349.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,296.0 612.9,269.8 582.6,269.8 567.5,296.0 582.6,322.1 612.9,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,322.8 659.4,296.7 629.1,296.7 614.0,322.8 629.1,349.0 659.4,349.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,296.0 705.9,269.8 675.6,269.8 660.5,296.0 675.6,322.1 705.9,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,322.8 752.4,296.7 722.1,296.7 707.0,322.8 722.1,349.0 752.4,349.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,296.0 798.9,269.8 768.6,269.8 753.5,296.0 768.6,322.1 798.9,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,322.8 845.4,296.7 815.1,296.7 800.0,322.8 815.1,349.0 845.4,349.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,296.0 891.9,269.8 861.6,269.8 846.5,296.0 861.6,322.1 891.9,322.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="535.0,349.7 519.9,323.5 489.6,323.5 474.6,349.7 489.6,375.8 519.9,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,376.5 566.4,350.3 536.1,350.3 521.0,376.5 536.1,402.7 566.4,402.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,349.7 612.9,323.5 582.6,323.5 567.5,349.7 582.6,375.8 612.9,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,376.5 659.4,350.3 629.1,350.3 614.0,376.5 629.1,402.7 659.4,402.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,349.7 705.9,323.5 675.6,323.5 660.5,349.7 675.6,375.8 705.9,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,376.5 752.4,350.3 722.1,350.3 707.0,376.5 722.1,402.7 752.4,402.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,349.7 798.9,323.5 768.6,323.5 753.5,349.7 768.6,375.8 798.9,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,376.5 845.4,350.3 815.1,350.3 800.0,376.5 815.1,402.7 845.4,402.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,349.7 891.9,323.5 861.6,323.5 846.5,349.7 861.6,375.8 891.9,375.8" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="535.0,403.3 519.9,377.2 489.6,377.2 474.6,403.3 489.6,429.5 519.9,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,430.2 566.4,404.0 536.1,404.0 521.0,430.2 536.1,456.3 566.4,456.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,403.3 612.9,377.2 582.6,377.2 567.5,403.3 582.6,429.5 612.9,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,430.2 659.4,404.0 629.1,404.0 614.0,430.2 629.1,456.3 659.4,456.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,403.3 705.9,377.2 675.6,377.2 660.5,403.3 675.6,429.5 705.9,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,430.2 752.4,404.0 722.1,404.0 707.0,430.2 722.1,456.3 752.4,456.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,403.3 798.9,377.2 768.6,377.2 753.5,403.3 768.6,429.5 798.9,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,430.2 845.4,404.0 815.1,404.0 800.0,430.2 815.1,456.3 845.4,456.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,403.3 891.9,377.2 861.6,377.2 846.5,403.3 861.6,429.5 891.9,429.5" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="535.0,457.0 519.9,430.9 489.6,430.9 474.6,457.0 489.6,483.2 519.9,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,483.9 566.4,457.7 536.1,457.7 521.0,483.9 536.1,510.0 566.4,510.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,457.0 612.9,430.9 582.6,430.9 567.5,457.0 582.6,483.2 612.9,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,483.9 659.4,457.7 629.1,457.7 614.0,483.9 629.1,510.0 659.4,510.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,457.0 705.9,430.9 675.6,430.9 660.5,457.0 675.6,483.2 705.9,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,483.9 752.4,457.7 722.1,457.7 707.0,483.9 722.1,510.0 752.4,510.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,457.0 798.9,430.9 768.6,430.9 753.5,457.0 768.6,483.2 798.9,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,483.9 845.4,457.7 815.1,457.7 800.0,483.9 815.1,510.0 845.4,510.0" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,457.0 891.9,430.9 861.6,430.9 846.5,457.0 861.6,483.2 891.9,483.2" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="535.0,510.7 519.9,484.6 489.6,484.6 474.6,510.7 489.6,536.9 519.9,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,537.6 566.4,511.4 536.1,511.4 521.0,537.6 536.1,563.7 566.4,563.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,510.7 612.9,484.6 582.6,484.6 567.5,510.7 582.6,536.9 612.9,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,537.6 659.4,511.4 629.1,511.4 614.0,537.6 629.1,563.7 659.4,563.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,510.7 705.9,484.6 675.6,484.6 660.5,510.7 675.6,536.9 705.9,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,537.6 752.4,511.4 722.1,511.4 707.0,537.6 722.1,563.7 752.4,563.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,510.7 798.9,484.6 768.6,484.6 753.5,510.7 768.6,536.9 798.9,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,537.6 845.4,511.4 815.1,511.4 800.0,537.6 815.1,563.7 845.4,563.7" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,510.7 891.9,484.6 861.6,484.6 846.5,510.7 861.6,536.9 891.9,536.9" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="535.0,564.4 519.9,538.3 489.6,538.3 474.6,564.4 489.6,590.6 519.9,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,591.3 566.4,565.1 536.1,565.1 521.0,591.3 536.1,617.4 566.4,617.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,564.4 612.9,538.3 582.6,538.3 567.5,564.4 582.6,590.6 612.9,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,591.3 659.4,565.1 629.1,565.1 614.0,591.3 629.1,617.4 659.4,617.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,564.4 705.9,538.3 675.6,538.3 660.5,564.4 675.6,590.6 705.9,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,591.3 752.4,565.1 722.1,565.1 707.0,591.3 722.1,617.4 752.4,617.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,564.4 798.9,538.3 768.6,538.3 753.5,564.4 768.6,590.6 798.9,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,591.3 845.4,565.1 815.1,565.1 800.0,591.3 815.1,617.4 845.4,617.4" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,564.4 891.9,538.3 861.6,538.3 846.5,564.4 861.6,590.6 891.9,590.6" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="535.0,618.1 519.9,592.0 489.6,592.0 474.6,618.1 489.6,644.3 519.9,644.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="581.5,645.0 566.4,618.8 536.1,618.8 521.0,645.0 536.1,671.1 566.4,671.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="628.0,618.1 612.9,592.0 582.6,592.0 567.5,618.1 582.6,644.3 612.9,644.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="674.5,645.0 659.4,618.8 629.1,618.8 614.0,645.0 629.1,671.1 659.4,671.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="721.0,618.1 705.9,592.0 675.6,592.0 660.5,618.1 675.6,644.3 705.9,644.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="767.5,645.0 752.4,618.8 722.1,618.8 707.0,645.0 722.1,671.1 752.4,671.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="814.0,618.1 798.9,592.0 768.6,592.0 753.5,618.1 768.6,644.3 798.9,644.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="860.5,645.0 845.4,618.8 815.1,618.8 800.0,645.0 815.1,671.1 845.4,671.1" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<polygon points="907.0,618.1 891.9,592.0 861.6,592.0 846.5,618.1 861.6,644.3 891.9,644.3" fill="#c6f6d5" stroke="#2f855a" stroke-width="1.2"/>
+<ellipse cx="644.25" cy="352" rx="18" ry="6" fill="#c53030" opacity="0.55"/>
+<ellipse cx="644.25" cy="331" rx="13" ry="21" fill="#e53e3e" stroke="#c53030" stroke-width="1.5"/>
+<circle cx="644.25" cy="302" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 633 300 A 11 11 0 0 1 655 300" fill="#c53030"/>
+<text x="644.25" y="335" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">盾</text>
+<ellipse cx="1109.25" cy="352" rx="18" ry="6" fill="#c53030" opacity="0.55"/>
+<ellipse cx="1109.25" cy="331" rx="13" ry="21" fill="#e53e3e" stroke="#c53030" stroke-width="1.5"/>
+<circle cx="1109.25" cy="302" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 1098 300 A 11 11 0 0 1 1120 300" fill="#c53030"/>
+<text x="1109.25" y="335" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">盾</text>
+<ellipse cx="597.75" cy="379" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="597.75" cy="358" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="597.75" cy="329" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 587 327 A 11 11 0 0 1 609 327" fill="#2b6cb0"/>
+<text x="597.75" y="362" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">剑</text>
+<ellipse cx="690.75" cy="379" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="690.75" cy="358" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="690.75" cy="329" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 680 327 A 11 11 0 0 1 702 327" fill="#2b6cb0"/>
+<text x="690.75" y="362" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">牧</text>
+<ellipse cx="737.25" cy="406" rx="18" ry="6" fill="#c53030" opacity="0.55"/>
+<ellipse cx="737.25" cy="385" rx="13" ry="21" fill="#e53e3e" stroke="#c53030" stroke-width="1.5"/>
+<circle cx="737.25" cy="356" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 726 354 A 11 11 0 0 1 748 354" fill="#c53030"/>
+<text x="737.25" y="388" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">枪</text>
+<ellipse cx="644.25" cy="459" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="644.25" cy="439" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="644.25" cy="409" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 633 408 A 11 11 0 0 1 655 408" fill="#2b6cb0"/>
+<text x="644.25" y="442" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">弓</text>
+<ellipse cx="969.75" cy="755" rx="18" ry="6" fill="#c53030" opacity="0.55"/>
+<ellipse cx="969.75" cy="734" rx="13" ry="21" fill="#e53e3e" stroke="#c53030" stroke-width="1.5"/>
+<circle cx="969.75" cy="705" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 959 703 A 11 11 0 0 1 981 703" fill="#c53030"/>
+<text x="969.75" y="737" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">弓</text>
+<ellipse cx="1062.75" cy="808" rx="18" ry="6" fill="#c53030" opacity="0.55"/>
+<ellipse cx="1062.75" cy="788" rx="13" ry="21" fill="#e53e3e" stroke="#c53030" stroke-width="1.5"/>
+<circle cx="1062.75" cy="758" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 1052 757 A 11 11 0 0 1 1074 757" fill="#c53030"/>
+<text x="1062.75" y="791" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">法</text>
+<ellipse cx="504.75" cy="916" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="504.75" cy="895" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="504.75" cy="866" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 494 864 A 11 11 0 0 1 516 864" fill="#2b6cb0"/>
+<text x="504.75" y="898" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">枪</text>
+<ellipse cx="551.25" cy="996" rx="18" ry="6" fill="#2b6cb0" opacity="0.55"/>
+<ellipse cx="551.25" cy="975" rx="13" ry="21" fill="#4299e1" stroke="#2b6cb0" stroke-width="1.5"/>
+<circle cx="551.25" cy="946" r="11" fill="#f6ad55" stroke="#9c4221" stroke-width="1.2"/>
+<path d="M 540 945 A 11 11 0 0 1 562 945" fill="#2b6cb0"/>
+<text x="551.25" y="979" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">剑</text>
+</g>
+<rect x="502" y="189" width="331" height="376" fill="none" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="7,5" rx="10"/>
+<rect x="739.0" y="167" width="96" height="96" rx="6" fill="#1a202c" opacity="0.75"/>
+<circle cx="756" cy="190" r="2.4" fill="#63b3ed"/>
+<circle cx="762" cy="195" r="2.4" fill="#63b3ed"/>
+<circle cx="767" cy="190" r="2.4" fill="#63b3ed"/>
+<circle cx="762" cy="184" r="2.4" fill="#fc8181"/>
+<circle cx="772" cy="190" r="2.4" fill="#fc8181"/>
+<circle cx="800" cy="228" r="2.4" fill="#fc8181"/>
+<circle cx="811" cy="234" r="2.4" fill="#fc8181"/>
+<circle cx="745" cy="244" r="2.4" fill="#63b3ed"/>
+<circle cx="750" cy="250" r="2.4" fill="#63b3ed"/>
+<circle cx="816" cy="184" r="2.4" fill="#fc8181"/>
+<rect x="745" y="174" width="38" height="37" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+<text x="212" y="755" text-anchor="middle" font-size="14" fill="#e53e3e">8×8：超出视口仅 1 格，几乎全景，镜头基本静止</text>
+<text x="667" y="755" text-anchor="middle" font-size="14" fill="#e53e3e">16×16：镜头跟随行动单位，右上小地图 + 边缘箭头报点</text>
+<rect x="25" y="775" width="850" height="92" rx="10" fill="#ffffff" stroke="#cbd5e0"/>
+<text x="40" y="800" font-size="13" fill="#2d3748">相机规则：① 回合开始自动居中行动单位 ② 空白处拖动平移（与点选按位移阈值区分）③ 双指缩放两档：7×7 战术档 / 全图概览档</text>
+<text x="40" y="822" font-size="13" fill="#2d3748">视野外信息：屏幕边缘红色箭头提示场外敌人；点小地图跳转；选中远程单位时若射程越出视野，自动平移镜头到射程边缘</text>
+<text x="40" y="844" font-size="13" fill="#2d3748">注意：地图变大后 5v5 会显空旷 —— 建议单位数随地图配置（8×8→5v5，12×12→8v8，16×16→12v12），进 GDD 时定</text>
+</svg>
