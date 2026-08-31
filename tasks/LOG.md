@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-08-31 20:15 | CodeBuddy | 📤 发单 T11 | inbox/T11.md · 像素 UI 全量重设计 · P0 · owner=Codex **美术管线卡**（UX 线框→风格锚→组件切图+掉落图标，禁写代码）· 两段门禁 Leo 目验 · 产出落 assets/ui/pixel/ + ref_pixel_ui_v1 |
 | 2026-08-31 12:45 | CodeBuddy | 📤 发单 T10 | inbox/T10.md · MVP 文档评估与素材需求整理 · P0 · owner=ZCode **文档管线卡**（产出=评估报告+素材需求清单，非代码）· 通读 MVP 六份设计文档 → 报告落盘 docs/reviews/ · 先答后工适用 |
 | 2026-08-26 12:23 | CodeBuddy | 📤 发单 T09 | inbox/T09.md · 主玩法核心设计定稿（本周 08-26~08-30）· P0 · Leo 拍板 R03 五方向 → 落盘 91 文档 → design-strategist 深化 → 派 R02 · 非 ZCode 开发卡 |
 | 2026-08-23 16:30 | ZCode → CodeBuddy | 📖 A3 经验收讫 | 白块教训入长期记忆 · T06 归档确认 · 观察项在案 |
