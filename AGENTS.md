@@ -45,7 +45,7 @@
 4. **歧义必问(铁律)**:需求含糊/冲突 → **立即停下向 CodeBuddy 提问,禁止自行假设**;架构问题可自决但需记录理由
 5. **交付(DoD)**:任务卡 §1.6 全过(编译/类型/lint/用例/文件清单+决策说明/未碰禁止区)才算完成
 
-## 任务箱协议(tasks/,2026-08-21 起 · 必读)
+## 任务箱协议(tasks/,2026-08-21 起 · 2026-08-31 SQLite 化更新 · 必读)
 
 **你与 CodeBuddy 之间的任务传递与沟通全部走 `tasks/` 目录**(协议详见 `tasks/README.md`):
 
@@ -55,6 +55,28 @@
 4. **交付**:任务完成 → 任务卡移 `done/` + 写 `done/Txx-done.md` 回执(DoD 逐项勾选 + 架构决策说明 + 文件清单)
 5. **Leo 全程可见**:所有沟通都是文件,Leo(老板)随时可读;`dashboard.html` 是他的看板,你不碰它
 6. **箱外不生效**:会话里的口头承诺要落到 tasks/ 文件才算数
+
+### 看板状态同步(2026-08-31 起 · 执行者必做)
+
+**任务卡文件移动只是第一步;看板状态存在 `tasks/box.db`(SQLite),必须同步更新,否则 Leo 的 dashboard 看板不刷新**。变更一律走通道,**禁止手改 box.db、禁止碰 index.json**(已冻结):
+
+```bash
+# 领单:inbox → working
+python3 scripts/task.py move placement-wuxia T11 working --status "执行中(答疑后)"
+
+# 提问/答复(状态不变也要登记事件流)
+python3 scripts/task.py event placement-wuxia ZCode "❓ 提问 Q1-T11" "questions/Q1-T11.md · 帧表规格" --t "08-31 21:00"
+
+# 交付:working → done
+python3 scripts/task.py move placement-wuxia T11 done --status "待 C 环验收"
+
+# 打回/验收/归档同理:move 到对应 col(inbox/working/questions/done/archive)
+```
+
+- `col` 五值 = `inbox / working / questions / done / archive`(与物理目录同名);任务卡文件位置必须与 col 一致
+- 任务卡头部 `状态:` 字段、box.db、threads/LOG 三处同步更新,缺一不可
+- 执行者身份(owner)已在发单时写好,领单时不要改 owner
+- 自查:`python3 scripts/task.py list` 应显示你的任务卡在正确的列
 
 ## 施工守则(必须遵守)
 
@@ -94,9 +116,9 @@ project/
 
 ## UI 素材约定
 
-- 素材目录:`assets/ui/`(buttons / panels / icons),素材说明见 `assets/ui/README.md`
-- 风格:活泼年轻的水墨国风,严格遵循 `04-UI风格规范-v0.1.md`(风格圣经,含生图 prompt 前置模板)
-- UI 代码引用规范色值(墨 #2B2B2B / 宣纸 #F8F4EA / 朱砂 #E2574C / 竹青 #7FB069 / 淡金 #D4AF37),禁止引入规范外鲜艳色
+- 素材目录:`assets/ui/`(**2026-08-31 起 UI 全面像素化**,新组件落 `assets/ui/pixel/`;旧水墨 UI 已归档 `assets/ui/archive/ink_ui_20260831/`)
+- 角色/场景风格:国风像素 HD-2D,角色锚 = `assets/ui/ref_pixel_char_v8.png`;UI 锚待 T11 产出 `ref_pixel_ui_v1.png`
+- 素材需求基线:`docs/reviews/MVP素材需求-CodeBuddy先行版-v0.1.md`(v0.3);素材交付必须组件级独立 PNG、像素网格对齐、AI 稿禁文字
 
 ## 文档索引(开工前阅读相关设计文档)
 
