@@ -107,6 +107,8 @@ tasks/
 
 col 五值（= 物理目录名，2026-08-22 定版口径）：`inbox / working / questions / done / archive`（backlog=未发单）。dashboard 按同口径渲染。
 
+> ⚠ **thread 字段口径（2026-08-31 定）**：`thread` 必须是**相对 tasks/ 的路径**（如 `threads/T10.md`），不带 `tasks/` 前缀——看板按「tasks/ + thread」拼接取文件，写了全路径会变成 `tasks/tasks/...` 导致线程加载失败（T09/T10 曾踩）。
+
 **注意**：线程行必须是单行文本；需要长篇说明时写入对应目录的文件（如 questions/Qn-T02.md），线程和 LOG 里只放一行摘要+文件指针。
 
 ## 看板(Leo 的 oversight 入口)
