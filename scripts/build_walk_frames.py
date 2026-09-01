@@ -38,6 +38,33 @@ HEIGHT_CLAMP = (246, 266)  # 头归一时全身高允许范围
 LOOP = [0, 1, 0, 2]     # 站→迈A→站→迈B
 
 
+def detect_enclosed_white(cut, min_px=400):
+    """检测封闭白残留（泛洪盲区：被轮廓包围、与边缘不连通的背景白）。
+    只报告不自动清除（白衣/白裤为合法近白），命中项需人工外科。返回 [(px, bbox)]"""
+    W, H = cut.size
+    px = cut.load()
+    visited = [[False] * W for _ in range(H)]
+    out = []
+    for y in range(H):
+        for x in range(W):
+            p = px[x, y]
+            if p[3] > 200 and min(p[0], p[1], p[2]) > 225 and not visited[y][x]:
+                stack = [(x, y)]; visited[y][x] = True
+                xs = [x]; ys = [y]; n = 0
+                while stack:
+                    cx, cy = stack.pop(); n += 1
+                    for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                        nx, ny = cx+dx, cy+dy
+                        if 0 <= nx < W and 0 <= ny < H and not visited[ny][nx]:
+                            q = px[nx, ny]
+                            if q[3] > 200 and min(q[0], q[1], q[2]) > 225:
+                                visited[ny][nx] = True
+                                stack.append((nx, ny)); xs.append(nx); ys.append(ny)
+                if n >= min_px:
+                    out.append((n, (min(xs), min(ys), max(xs), max(ys))))
+    return out
+
+
 def flood_cut(im):
     """边缘泛洪抠图：从四角+四边中点播种，连通近白区域 → 全透明。
     返回 RGBA。轮廓封闭的内部白色（白衣）不受影响。"""
@@ -184,6 +211,8 @@ def process_dir(root, direction):
         cut.save(os.path.join(root, "cut", f"{name}.png"))
         cuts[name] = cut
         heads[name] = measure_head(cut, mode)
+        for n_px, bbox in detect_enclosed_white(cut):
+            issues_all.append(f"{direction}/{name}: 封闭白残留 {n_px}px bbox={bbox}（泛洪盲区，需外科清除）")
     target = heads[names[0]]
     if not target:
         return None, [f"{direction}: stand 帧头代理测量为 0，无法归一"], {}
