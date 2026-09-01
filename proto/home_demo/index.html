@@ -7,6 +7,8 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { width:100%; height:100%; background:#000; overflow:hidden; font-family:"PingFang SC","Microsoft YaHei",sans-serif; touch-action:none; user-select:none; }
+  /* 禁原生图片拖拽：按住轻微移动会触发 dragstart，场景图半透明快照跟随鼠标（"整个家的虚影"根因） */
+  img { -webkit-user-drag:none; user-select:none; -webkit-touch-callout:none; }
   #stage { position:relative; width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; }
 
   /* 场景舞台：等距图居中，保持比例 */
@@ -89,9 +91,9 @@
 <body>
 <div id="stage">
   <div id="sceneWrap">
-    <img id="scene" src="scene_web.jpg" alt="scene">
+    <img id="scene" src="scene_web.jpg" alt="scene" draggable="false">
     <div id="shadow"></div>
-    <img id="hero" src="frames_v2/idle_down.png?v=v7" alt="hero">
+    <img id="hero" src="frames_v2/idle_down.png?v=v8" alt="hero" draggable="false">
 
     <!-- ① 顶部栏 -->
     <div class="ui" id="topbar">
@@ -228,6 +230,7 @@ DECODE_READY.then(()=>{ refreshRect(); requestAnimationFrame(loop); });
 
 /* ===== 点击/触摸移动 ===== */
 const wrap = document.getElementById('sceneWrap');
+document.addEventListener('dragstart', e => e.preventDefault());  // 双保险：全局掐断拖拽
 function onPoint(e){
   if(e.target.closest('.ui') || e.target.closest('#modal')) return;  // UI 区域不触发移动
   const r = wrap.getBoundingClientRect();
