@@ -14,7 +14,7 @@
   #scene { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; image-rendering:auto; }
 
   /* 主角 */
-  #hero { position:absolute; height:15.7%; left:50%; top:55%; transform:translate(-50%,-90%); pointer-events:none;
+  #hero { position:absolute; height:19.6%; left:50%; top:55%; transform:translate(-50%,-92%); pointer-events:none;
          image-rendering:auto; z-index:5; }
   #shadow { position:absolute; width:5.5%; aspect-ratio:2.2/1; background:radial-gradient(ellipse, #00000088, transparent 68%); transform:translate(-50%,-50%); z-index:4; pointer-events:none; }
 
@@ -91,7 +91,7 @@
   <div id="sceneWrap">
     <img id="scene" src="scene_web.jpg" alt="scene">
     <div id="shadow"></div>
-    <img id="hero" src="frames/down_0.png?v=v4" alt="hero">
+    <img id="hero" src="frames_v2/idle_down.png?v=v7" alt="hero">
 
     <!-- ① 顶部栏 -->
     <div class="ui" id="topbar">
@@ -148,14 +148,14 @@
 
 <script>
 /* ===== 素材帧 ===== */
-const V = 'v6'; // 资源版本号（防浏览器缓存）
+const V = 'v7'; // 资源版本号（防浏览器缓存）· v7=正式管线逐姿势帧（walk_v2）
 const FRAMES = {
-  down: { seq:[0,2,4,6].map(i=>`frames/down_${i}.png?v=${V}`) },
-  up:   { seq:[0,2,4,6].map(i=>`frames/up_${i}.png?v=${V}`) },
-  left: { seq:[0,2,4,6].map(i=>`frames/left_${i}.png?v=${V}`) },
-  right:{ seq:[0,2,4,6].map(i=>`frames/right_${i}.png?v=${V}`) },  // right=left的静态镜像帧
+  down: { seq:[0,1,2,3].map(i=>`frames_v2/walk_down_${i}.png?v=${V}`) },
+  up:   { seq:[0,1,2,3].map(i=>`frames_v2/walk_up_${i}.png?v=${V}`) },
+  left: { seq:[0,1,2,3].map(i=>`frames_v2/walk_left_${i}.png?v=${V}`) },
+  right:{ seq:[0,1,2,3].map(i=>`frames_v2/walk_right_${i}.png?v=${V}`) },
 };
-const IDLE = { down:`frames/idle_down.png?v=${V}`, left:`frames/idle_left.png?v=${V}`, right:`frames/idle_right.png?v=${V}`, up:`frames/idle_up.png?v=${V}` };
+const IDLE = { down:`frames_v2/idle_down.png?v=${V}`, left:`frames_v2/idle_left.png?v=${V}`, right:`frames_v2/idle_right.png?v=${V}`, up:`frames_v2/idle_up.png?v=${V}` };
 let flipNow = false;
 const hero = document.getElementById('hero');
 const shadowEl = document.getElementById('shadow');
@@ -196,7 +196,7 @@ function loop(t){
   // 影子随 bob 微缩（跳跃感的投影呼应）
   hero.style.left = (pos.x*100)+'%';
   hero.style.top  = (pos.y*100 - bob*0.06)+'%';
-  hero.style.height = '15.7%';  // 以高度定尺：画布等高，人物比例恒定（15.5%宽方案废弃）
+  hero.style.height = '19.6%';  // 高度定尺：新帧人物占画布80%（256/320），19.6%×0.8≈15.7%屏高不变
   shadowEl.style.left = (pos.x*100)+'%';
   shadowEl.style.top  = (pos.y*100)+'%';
 
@@ -210,7 +210,7 @@ function loop(t){
     flipNow = false;
     hero.src = IDLE[dir];
   }
-  hero.style.transform = 'translate(-50%,-90%)' + (flipNow ? ' scaleX(-1)' : '');
+  hero.style.transform = 'translate(-50%,-92%)' + (flipNow ? ' scaleX(-1)' : '');  // 脚底=画布93.75%，-92%≈原脚底落点
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
