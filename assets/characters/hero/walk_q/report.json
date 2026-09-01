@@ -1,0 +1,157 @@
+{
+ "down": {
+  "down_stand": {
+   "raw_bbox": [
+    0,
+    0,
+    641,
+    1040
+   ],
+   "scale": 0.2399,
+   "char_h_norm": 249,
+   "char_w_norm": 154,
+   "head_mode": "skin",
+   "head_norm_px": 107.9,
+   "centroid_x_local": 73.5,
+   "paste": [
+    46,
+    51
+   ],
+   "head_raw_px": 450,
+   "head_delta_pct": 0.0,
+   "bbox": [
+    46,
+    51,
+    200,
+    300
+   ],
+   "char_h": 249,
+   "opaque_ratio": 0.2785,
+   "centroid_x": 119.5,
+   "feet_y": 300
+  },
+  "down_stepA": {
+   "raw_bbox": [
+    312,
+    53,
+    944,
+    1151
+   ],
+   "scale": 0.2332,
+   "char_h_norm": 256,
+   "char_w_norm": 147,
+   "head_mode": "skin",
+   "head_norm_px": 107.9,
+   "centroid_x_local": 71.6,
+   "paste": [
+    48,
+    44
+   ],
+   "head_raw_px": 463,
+   "head_delta_pct": 2.9,
+   "bbox": [
+    48,
+    44,
+    195,
+    300
+   ],
+   "char_h": 256,
+   "opaque_ratio": 0.2497,
+   "centroid_x": 119.5,
+   "feet_y": 300
+  },
+  "down_stepB": {
+   "raw_bbox": [
+    241,
+    20,
+    783,
+    936
+   ],
+   "scale": 0.2819,
+   "char_h_norm": 258,
+   "char_w_norm": 153,
+   "head_mode": "skin",
+   "head_norm_px": 107.9,
+   "centroid_x_local": 72.1,
+   "paste": [
+    48,
+    42
+   ],
+   "head_raw_px": 383,
+   "head_delta_pct": -14.9,
+   "bbox": [
+    48,
+    42,
+    201,
+    300
+   ],
+   "char_h": 258,
+   "opaque_ratio": 0.2749,
+   "centroid_x": 120.1,
+   "feet_y": 300
+  },
+  "_head_consistency_pct": 0.0
+ },
+ "final": {
+  "walk_down_0": {
+   "bbox": [
+    46,
+    51,
+    200,
+    300
+   ],
+   "char_h": 249,
+   "opaque_ratio": 0.2785,
+   "centroid_x": 119.5,
+   "feet_y": 300
+  },
+  "walk_down_1": {
+   "bbox": [
+    48,
+    44,
+    195,
+    300
+   ],
+   "char_h": 256,
+   "opaque_ratio": 0.2497,
+   "centroid_x": 119.5,
+   "feet_y": 300
+  },
+  "walk_down_2": {
+   "bbox": [
+    46,
+    51,
+    200,
+    300
+   ],
+   "char_h": 249,
+   "opaque_ratio": 0.2785,
+   "centroid_x": 119.5,
+   "feet_y": 300
+  },
+  "walk_down_3": {
+   "bbox": [
+    48,
+    42,
+    201,
+    300
+   ],
+   "char_h": 258,
+   "opaque_ratio": 0.2749,
+   "centroid_x": 120.1,
+   "feet_y": 300
+  },
+  "idle_down": {
+   "bbox": [
+    46,
+    51,
+    200,
+    300
+   ],
+   "char_h": 249,
+   "opaque_ratio": 0.2785,
+   "centroid_x": 119.5,
+   "feet_y": 300
+  }
+ }
+}
