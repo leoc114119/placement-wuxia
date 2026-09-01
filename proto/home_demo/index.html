@@ -31,12 +31,12 @@
 
 
   /* ② 左下场景互动（中国结木牌串 · 2026-09-01） */
-  #sceneBtns { left:0.8%; top:15%; bottom:auto; width:14%; display:block; }
+  #sceneBtns { left:0.8%; top:14.9%; bottom:auto; width:12.5%; display:block; }
   #plaqueImg { width:100%; display:block; }
   .plaqueLabel { position:absolute; left:50%; transform:translate(-50%,-50%); width:82%; height:11.5%;
-    display:flex; align-items:center; justify-content:center; color:#ffe9b8; cursor:pointer;
-    font-size:clamp(10px,1.75vh,16px); letter-spacing:.18em; text-indent:.18em; text-shadow:0 1px 3px #000, 0 0 6px #0006; }
-  .plaqueLabel:active { color:#fff; transform:translate(-50%,-50%) scale(.96); }
+    display:flex; align-items:center; justify-content:center; color:#4a2c14; cursor:pointer;
+    font-size:clamp(10px,2vh,17px); letter-spacing:.14em; text-indent:.14em; font-weight:600; }
+  .plaqueLabel:active { color:#7a4a1e; transform:translate(-50%,-50%) scale(.96); }
 
   /* ④ 右下任务区（半透明绢帛框体+箭靶标题 · 2026-09-01） */
   #questBox { right:0.8%; bottom:11.5%; width:24%; }
@@ -50,11 +50,14 @@
   .quest em { font-style:normal; color:#a33; }
   .quest .go { display:inline-block; margin-top:2px; font-size:.85em; color:#2a6e3e; }
 
-  /* ⑤ 底部导航（image2 精致稿底图 · 2026-09-01） */
-  #tabbar { bottom:0; left:0; right:0; height:auto; display:block; padding:0; background:none; }
-  #tabbarImg { width:100%; display:block; }
-  .tabZone { position:absolute; top:6%; bottom:16%; cursor:pointer; border-radius:10px; }
-  .tabZone:active { background:#e8c56a22; }
+  /* ⑤ 底部导航（铃兰式：菱形细框+淡金图标+下方小字 · 2026-09-01） */
+  #tabbar { bottom:0; left:0; right:0; height:9.2%; background:linear-gradient(#00000000,#000000b8 45%,#000000d8); display:flex; align-items:stretch; padding:0 1.5%; gap:1%; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:2%; cursor:pointer; }
+  .diamond { width:clamp(34px,6.4vh,56px); aspect-ratio:1; transform:rotate(45deg); border:1px solid #d4af3760; border-radius:8px;
+             background:#00000066; display:flex; align-items:center; justify-content:center; margin-bottom:6%; }
+  .diamond img { transform:rotate(-45deg); width:72%; height:72%; object-fit:contain; }
+  .tab b { color:#d9c896; font-weight:400; font-size:clamp(9px,1.75vh,14px); letter-spacing:.1em; text-shadow:0 1px 3px #000; margin-bottom:3%; }
+  .tab:active .diamond { border-color:#e8c56a; }
 
   /* 弹窗（绢帛卷轴风） */
   #modal { position:absolute; inset:0; z-index:50; background:#000a; display:none; align-items:center; justify-content:center; }
@@ -92,10 +95,10 @@
 
     <!-- ② 左侧场景驱动按钮（家：闭关/打木人/打坐） -->
     <div class="ui" id="sceneBtns">
-      <img id="plaqueImg" src="icons/lantern_chain.png" alt="">
-      <div class="plaqueLabel" data-act="biguan" style="top:21.1%">闭关</div>
-      <div class="plaqueLabel" data-act="muren" style="top:44%">木人</div>
-      <div class="plaqueLabel" data-act="dazuo" style="top:70.6%">打坐</div>
+      <img id="plaqueImg" src="icons/lantern_v3.png" alt="">
+      <div class="plaqueLabel" data-act="biguan" style="top:26.4%">闭关</div>
+      <div class="plaqueLabel" data-act="muren" style="top:48%">木人</div>
+      <div class="plaqueLabel" data-act="dazuo" style="top:69.6%">打坐</div>
     </div>
 
     <!-- ④ 右下任务区（半透明绢帛+箭靶） -->
@@ -108,14 +111,14 @@
       </div>
     </div>
 
-    <!-- ⑤ 底部导航（精致稿底图+点击区） -->
+    <!-- ⑤ 底部导航（铃兰式） -->
     <div class="ui" id="tabbar">
-      <img id="tabbarImg" src="icons/tabbar_v1.png" alt="">
-      <div class="tabZone" data-t="角色" style="left:13%; width:11%"></div>
-      <div class="tabZone" data-t="装备" style="left:29.4%; width:11%"></div>
-      <div class="tabZone" data-t="江湖历练" style="left:45.8%; width:11%"></div>
-      <div class="tabZone" data-t="武学" style="left:62.2%; width:11%"></div>
-      <div class="tabZone" data-t="聊天" style="left:78.6%; width:11%"></div>
+      <div class="tab" data-t="角色"><i class="diamond"><img src="icons/tab_juese.png"></i><b>角色</b></div>
+      <div class="tab" data-t="装备"><i class="diamond"><img src="icons/tab_zhuangbei.png"></i><b>装备</b></div>
+      <div class="tab" data-t="江湖历练"><i class="diamond"><img src="icons/tab_jianghu.png"></i><b>江湖历练</b></div>
+      <div class="tab" data-t="武学"><i class="diamond"><img src="icons/tab_wuxue.png"></i><b>武学</b></div>
+      <div class="tab" data-t="聊天"><i class="diamond"><img src="icons/tab_liaotian.png"></i><b>聊天</b></div>
+    </div>
     </div>
     </div>
 
@@ -276,9 +279,9 @@ function closeModal(){ document.getElementById('modal').classList.remove('show')
 function startAct(){ closeModal(); toast('演示版：机制未接入'); }
 
 /* ===== 底部 Tab ===== */
-document.querySelectorAll('.tabZone').forEach(t=>{
+document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=>{
-    document.querySelectorAll('.tabZone').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
     t.classList.add('on');
     toast(t.dataset.t + '（演示占位）');
   });
