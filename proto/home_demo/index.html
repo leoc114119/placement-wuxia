@@ -51,20 +51,27 @@
   .quest .go { display:inline-block; margin-top:2px; font-size:.85em; color:#2a6e3e; }
 
   /* ⑤ 底部导航（铃兰式：菱形细框+淡金图标+下方小字 · 2026-09-01） */
-  #tabbar { bottom:0; left:0; right:0; height:9.2%; background:linear-gradient(#00000000,#000000b8 45%,#000000d8); display:flex; align-items:stretch; padding:0 1.5%; gap:1%; }
+  #tabbar { bottom:0; left:0; right:0; height:9.2%; background:linear-gradient(#00000000,#00000088 45%,#000000a8); display:flex; align-items:stretch; padding:0 1.5%; gap:1%; }
+  #tabbar::before { content:""; position:absolute; top:0; left:0; right:0; height:1px; background:#d4af3726; pointer-events:none; }
   .tab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:2%; cursor:pointer; }
   .diamond { width:clamp(34px,6.4vh,56px); aspect-ratio:1; transform:rotate(45deg); border:1px solid #d4af3760; border-radius:8px;
              background:#00000066; display:flex; align-items:center; justify-content:center; margin-bottom:6%; }
-  .diamond img { transform:rotate(-45deg); width:72%; height:72%; object-fit:contain; }
+  .diamond img { transform:rotate(-45deg); width:72%; height:72%; object-fit:contain; opacity:.55; }
+  .tab.on .diamond img { opacity:1; }
   .tab b { color:#d9c896; font-weight:400; font-size:clamp(9px,1.75vh,14px); letter-spacing:.1em; text-shadow:0 1px 3px #000; margin-bottom:3%; }
   .tab:active .diamond { border-color:#e8c56a; }
+  .tab.on .diamond { border-color:#e8c56a; background:#d4af3722; }
+  .tab.on b { color:#ffe9b8; }
 
   /* 弹窗（绢帛卷轴风） */
   #modal { position:absolute; inset:0; z-index:50; background:#000a; display:none; align-items:center; justify-content:center; }
-  #modal.show { display:flex; }
+  #modal.show { display:flex; animation:modalFade .2s ease-out; }
+  #modal.show #sheet { animation:sheetRise .2s ease-out; }
+  @keyframes modalFade { from { opacity:0; } to { opacity:1; } }
+  @keyframes sheetRise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
   #sheet { width:78%; max-width:420px; background:linear-gradient(178deg,#efe4c8,#e2d2ac 60%,#d8c49a); border-radius:12px; position:relative;
-           box-shadow:0 0 0 1px #000, 0 0 0 3px #8a6a35, 0 0 0 4px #000, 0 12px 40px #000c; padding:7% 8%; color:#3a2c18; }
-  #sheet::before, #sheet::after { content:""; position:absolute; top:-10px; bottom:-10px; width:14px; background:linear-gradient(90deg,#4a3категор20,#6b4a2a 40%,#8a6a40 60%,#3a281a); border-radius:7px; box-shadow:0 0 0 1px #000, inset 0 0 6px #0008; }
+           box-shadow:0 0 0 1px #d4af3766, 0 10px 32px #0009; padding:7% 8%; color:#3a2c18; }
+  #sheet::before, #sheet::after { content:""; position:absolute; top:-10px; bottom:-10px; width:14px; background:linear-gradient(90deg,#4a3a20,#6b4a2a 40%,#8a6a40 60%,#3a281a); border-radius:7px; box-shadow:0 0 0 1px #000, inset 0 0 6px #0008; }
   #sheet::before { left:-16px; } #sheet::after { right:-16px; }
   #sheet h3 { text-align:center; letter-spacing:.5em; text-indent:.5em; color:#5a3a10; font-size:clamp(16px,4.5vw,22px); margin-bottom:4%; }
   #sheet .sub { text-align:center; font-size:clamp(10px,2.6vw,13px); color:#7a6238; margin-bottom:5%; }
@@ -73,7 +80,7 @@
   #sheet button { flex:1; padding:10px 0; border:none; border-radius:8px; font-size:clamp(12px,3.2vw,15px); cursor:pointer; letter-spacing:.2em; text-indent:.2em; }
   #sheet .ok { background:linear-gradient(#7a5a2e,#5a3e1c); color:#ffe9b8; box-shadow:inset 0 1px 0 #ffffff44, 0 2px 4px #0008; }
   #sheet .no { background:#c9bfa4; color:#5a4c30; }
-  #closeX { position:absolute; top:-12px; right:-12px; width:34px; height:34px; border-radius:50%; border:1px solid #8a6a35; background:#241a10; color:#ffe9b8; font-size:16px; cursor:pointer; box-shadow:0 0 0 1px #000; }
+  #closeX { position:absolute; top:-12px; right:-12px; width:34px; height:34px; border-radius:50%; border:1px solid #d4af3766; background:#241a10; color:#ffe9b8; font-size:16px; cursor:pointer; }
 
   /* toast */
   #toast { position:absolute; left:50%; top:14%; transform:translateX(-50%); background:#000c; color:#ffe9b8; border:1px solid #8a6a35;
