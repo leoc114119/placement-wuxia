@@ -148,7 +148,7 @@
 
 <script>
 /* ===== 素材帧 ===== */
-const V = 'v7'; // 资源版本号（防浏览器缓存）· v7=正式管线逐姿势帧（walk_v2）
+const V = 'v8'; // 资源版本号（防浏览器缓存）· v8=头归一+去边修复帧
 const FRAMES = {
   down: { seq:[0,1,2,3].map(i=>`frames_v2/walk_down_${i}.png?v=${V}`) },
   up:   { seq:[0,1,2,3].map(i=>`frames_v2/walk_up_${i}.png?v=${V}`) },
@@ -156,6 +156,15 @@ const FRAMES = {
   right:{ seq:[0,1,2,3].map(i=>`frames_v2/walk_right_${i}.png?v=${V}`) },
 };
 const IDLE = { down:`frames_v2/idle_down.png?v=${V}`, left:`frames_v2/idle_left.png?v=${V}`, right:`frames_v2/idle_right.png?v=${V}`, up:`frames_v2/idle_up.png?v=${V}` };
+
+/* 帧预解码：全部帧 decode 完才开播，消除换帧解码期闪烁/虚影（L 环反馈②防御） */
+const ALL_URLS = [...Object.values(FRAMES).flatMap(F=>F.seq), ...Object.values(IDLE)];
+const DECODE_READY = Promise.all(ALL_URLS.map(u=>{ const im=new Image(); im.src=u; return im.decode().catch(()=>{}); }));
+
+/* 画布几何：整数像素定位（亚像素层抖动会呈"虚影"），resize 时刷新 */
+let wrapRect = null;
+function refreshRect(){ wrapRect = document.getElementById('sceneWrap').getBoundingClientRect(); }
+window.addEventListener('resize', refreshRect);
 let flipNow = false;
 const hero = document.getElementById('hero');
 const shadowEl = document.getElementById('shadow');
@@ -194,11 +203,13 @@ function loop(t){
   const bob = 0; // AI帧自带步伐感，不再叠加程序bob（防抖动叠加）
 
   // 影子随 bob 微缩（跳跃感的投影呼应）
-  hero.style.left = (pos.x*100)+'%';
-  hero.style.top  = (pos.y*100 - bob*0.06)+'%';
-  hero.style.height = '19.6%';  // 高度定尺：新帧人物占画布80%（256/320），19.6%×0.8≈15.7%屏高不变
-  shadowEl.style.left = (pos.x*100)+'%';
-  shadowEl.style.top  = (pos.y*100)+'%';
+  const R = wrapRect || (refreshRect(), wrapRect);
+  const pxX = Math.round(pos.x*R.width), pxY = Math.round(pos.y*R.height);
+  hero.style.left = pxX+'px';
+  hero.style.top  = Math.round(pos.y*R.height - bob*0.06*R.height)+'px';
+  hero.style.height = Math.round(R.height*0.196)+'px';  // 高度定尺：新帧人物占画布80%，0.196×0.8≈15.7%屏高不变
+  shadowEl.style.left = pxX+'px';
+  shadowEl.style.top  = pxY+'px';
 
   // 动画：移动=4帧循环；静止=独立idle帧（站立双脚并拢）
   if(moving){
@@ -213,7 +224,7 @@ function loop(t){
   hero.style.transform = 'translate(-50%,-92%)' + (flipNow ? ' scaleX(-1)' : '');  // 脚底=画布93.75%，-92%≈原脚底落点
   requestAnimationFrame(loop);
 }
-requestAnimationFrame(loop);
+DECODE_READY.then(()=>{ refreshRect(); requestAnimationFrame(loop); });
 
 /* ===== 点击/触摸移动 ===== */
 const wrap = document.getElementById('sceneWrap');
