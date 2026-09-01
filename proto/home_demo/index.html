@@ -23,32 +23,18 @@
   /* ===== UI 覆盖层 ===== */
   .ui { position:absolute; z-index:10; }
 
-  /* ① 顶部栏（两行式：行1=我是谁+我在哪+胶囊预留 · 行2=货币带）Leo 2026-09-01 布局 */
-  #topbar { top:0; left:0; right:0; height:13.5%; background:linear-gradient(#000d,#000a 70%,transparent); display:flex; flex-direction:column; padding:1.2% 2.5% 0; gap:1%; }
-  #tbRow1 { flex:1.6; display:flex; align-items:center; gap:2.2%; min-height:0; }
-  #tbRow2 { flex:1; display:flex; align-items:center; justify-content:flex-end; gap:3.5%; padding-right:1%; min-height:0; }
-  #avatarWrap { display:flex; flex-direction:column; align-items:center; gap:7px; }
-  #avatar { width:clamp(38px,7.4vh,64px); aspect-ratio:1; border-radius:50%; border:2px solid #D4AF37; background:#3a2f22;
-            display:flex; align-items:center; justify-content:center; font-size:clamp(12px,2.6vh,20px); color:#e8d9b0; }
-  #ageTag { font-size:clamp(8px,1.7vh,12px); color:#e8d9b0; background:#241a10cc; border:1px solid #7a5c2e88; border-radius:6px; padding:1px 6px; white-space:nowrap; text-shadow:0 1px 2px #000; }
-  #statWrap { display:flex; flex-direction:column; gap:5%; width:clamp(90px,17vh,150px); }
-  #pname { color:#ffe9a8; font-size:clamp(11px,2.3vh,16px); letter-spacing:.1em; text-shadow:0 1px 2px #000; line-height:1.1; }
-  .bar { height:clamp(6px,1.4vh,11px); background:#1c1410; border:1px solid #7a5c2e; border-radius:4px; overflow:hidden; }
-  .bar i { display:block; height:100%; border-radius:3px; }
-  .bar.hp i { width:86%; background:linear-gradient(#c8403a,#8e2a26); }
-  .bar.mp i { width:35%; background:linear-gradient(#3a7bc8,#26568e); }
-  #tbRow1 .spacer { margin-left:auto; }  /* 场景标识移出顶栏后，用空撑开胶囊右聚 */
-  /* 时辰牌：竖排鎏金小木牌（网金口径保留） */
-  #scPlate { color:#ffe9b8; background:linear-gradient(160deg,#5a3a22,#3d2716 55%,#2c1c0f);
-             border:1px solid #8a6a35; border-radius:6px; padding:4px 12px; font-size:clamp(10px,2vh,15px); letter-spacing:.2em;
-             box-shadow:inset 0 0 8px #00000066, 0 1px 4px #000a; text-shadow:0 1px 2px #000; position:relative; }
-  #scPlate::before { content:""; position:absolute; width:4px; height:4px; background:radial-gradient(#e8c56a,#8a6a35); border-radius:50%; left:6px; top:50%; transform:translateY(-50%); }
-  /* 微信胶囊预留（真机右上固定，此处仅占位示意） */
-  #wxSeat { margin-left:.5%; display:flex; align-items:center; gap:8px; background:#00000066; border:1px solid #ffffff22; border-radius:16px; padding:4px 10px; color:#ffffff99; font-size:clamp(10px,2vh,14px); }
-  /* 货币带：图标+数字 */
-  .curr { display:flex; align-items:center; gap:5px; color:#ffe9a8; font-size:clamp(10px,2.1vh,15px); text-shadow:0 1px 2px #000;
-          background:#241a10cc; border:1px solid #7a5c2e55; border-radius:12px; padding:2px 10px 2px 4px; }
-  .curr img { height:clamp(18px,3.6vh,28px); aspect-ratio:1; object-fit:contain; }
+  /* ① 顶部栏（A2 定稿底图 + 代码叠字 · 2026-09-01） */
+  #topbar { top:0; left:0; right:0; height:auto; display:block; padding:0; background:none; }
+  #tbBase { width:100%; display:block; }
+  #tbOverlay { position:absolute; inset:0; }
+  .ot { position:absolute; transform:translate(-50%,-50%); color:#ffd98c; text-shadow:0 2px 3px #000, 0 0 6px #0008; white-space:nowrap; }
+  #oName { left:26.5%; top:12%; font-size:clamp(12px,2.6vh,19px); letter-spacing:.15em; color:#ffe9a8; font-weight:600; }
+  #oAge { left:13.4%; top:84%; font-size:clamp(8px,1.7vh,13px); color:#e8d9b0; }
+  #oShichen { left:69.6%; top:37.3%; font-size:clamp(10px,2.1vh,16px); letter-spacing:.3em; text-indent:.3em; }
+  .oCurr { font-size:clamp(10px,2vh,15px); color:#ffe9a8; }
+  #oC1 { left:55%; top:83.5%; } #oC2 { left:70.7%; top:83.5%; } #oC3 { left:86.2%; top:83.5%; }
+  #oDots { left:80.8%; top:37.5%; color:#eee; font-size:clamp(9px,1.8vh,14px); letter-spacing:3px; }
+
 
   /* ② 左侧场景驱动按钮（竖排鎏金木牌） */
   #sceneBtns { left:1.5%; top:22%; display:flex; flex-direction:column; gap:10px; }
@@ -106,26 +92,17 @@
     <div id="shadow"></div>
     <img id="hero" src="frames_v2/idle_down.png?v=v8" alt="hero" draggable="false">
 
-    <!-- ① 顶部栏（两行式 · Leo 2026-09-01 布局） -->
+    <!-- ① 顶部栏（A2 底图 + 代码叠字） -->
     <div class="ui" id="topbar">
-      <div id="tbRow1">
-        <div id="avatarWrap">
-          <div id="avatar">侠</div>
-          <div id="ageTag">8岁 1月</div>
-        </div>
-        <div id="statWrap">
-          <div id="pname">小虾米</div>
-          <div class="bar hp"><i></i></div>
-          <div class="bar mp"><i></i></div>
-        </div>
-        <span class="spacer"></span>
-        <div id="scPlate">辰时</div>
-        <div id="wxSeat"><span>•••</span><span>◎</span></div>
-      </div>
-      <div id="tbRow2">
-        <span class="curr"><img src="icons/icon_shizhan.png" alt="实战">8888</span>
-        <span class="curr"><img src="icons/icon_xuedian.png" alt="学点">8888</span>
-        <span class="curr"><img src="icons/icon_yinliang.png" alt="银两">8888</span>
+      <img id="tbBase" src="img_preview/topbar_v4_crop.png" alt="">
+      <div id="tbOverlay">
+        <div class="ot" id="oName">小虾米</div>
+        <div class="ot" id="oAge">8岁 1月</div>
+        <div class="ot" id="oShichen">辰时</div>
+        <div class="ot oCurr" id="oC1">8888</div>
+        <div class="ot oCurr" id="oC2">8888</div>
+        <div class="ot oCurr" id="oC3">8888</div>
+        <div class="ot" id="oDots">•••</div>
       </div>
     </div>
 
