@@ -31,12 +31,12 @@
 
 
   /* ② 左下场景互动（中国结木牌串 · 2026-09-01） */
-  #sceneBtns { left:0.8%; top:14.9%; bottom:auto; width:12.5%; display:block; }
+  #sceneBtns { left:0.8%; top:14.9%; bottom:auto; width:16%; display:block; }
   #plaqueImg { width:100%; display:block; }
   .plaqueLabel { position:absolute; left:50%; transform:translate(-50%,-50%); width:82%; height:11.5%;
-    display:flex; align-items:center; justify-content:center; color:#4a2c14; cursor:pointer;
-    font-size:clamp(10px,2vh,17px); letter-spacing:.14em; text-indent:.14em; font-weight:600; }
-  .plaqueLabel:active { color:#7a4a1e; transform:translate(-50%,-50%) scale(.96); }
+    display:flex; align-items:center; justify-content:center; color:#ffe9b8; cursor:pointer;
+    font-size:clamp(10px,1.75vh,16px); letter-spacing:.18em; text-indent:.18em; text-shadow:0 1px 3px #000, 0 0 6px #0006; }
+  .plaqueLabel:active { color:#fff; transform:translate(-50%,-50%) scale(.96); }
 
   /* ④ 右下任务区（半透明绢帛框体+箭靶标题 · 2026-09-01） */
   #questBox { right:0.8%; bottom:11.5%; width:24%; }
@@ -95,10 +95,10 @@
 
     <!-- ② 左侧场景驱动按钮（家：闭关/打木人/打坐） -->
     <div class="ui" id="sceneBtns">
-      <img id="plaqueImg" src="icons/lantern_v3.png" alt="">
-      <div class="plaqueLabel" data-act="biguan" style="top:26.4%">闭关</div>
-      <div class="plaqueLabel" data-act="muren" style="top:48%">木人</div>
-      <div class="plaqueLabel" data-act="dazuo" style="top:69.6%">打坐</div>
+      <img id="plaqueImg" src="icons/plaque_chain.png" alt="">
+      <div class="plaqueLabel" data-act="biguan" style="top:38%">闭关</div>
+      <div class="plaqueLabel" data-act="muren" style="top:56.7%">木人</div>
+      <div class="plaqueLabel" data-act="dazuo" style="top:75.1%">打坐</div>
     </div>
 
     <!-- ④ 右下任务区（半透明绢帛+箭靶） -->
