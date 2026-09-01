@@ -43,9 +43,10 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--prompt", default=None, help="内联 prompt；与 --prompt-file 二选一")
     ap.add_argument("--prompt-file", dest="prompt_file", default=None)
-    ap.add_argument("--model", default="seedream-5.0-pro")
+    ap.add_argument("--model", default="gpt-image-2",
+                    help="默认 gpt-image-2 标准版 1K（2分/张，Leo 2026-09-01 成本口径）；按需 --model seedream-5.0-pro")
     ap.add_argument("--aspect", default="9:16")
-    ap.add_argument("--resolution", default="2K")
+    ap.add_argument("--resolution", default="1K")
     a = ap.parse_args()
 
     if a.prompt_file:

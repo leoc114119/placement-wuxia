@@ -27,9 +27,10 @@ def req(method, path, body=None, timeout=60):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--prompt", required=True)
-    ap.add_argument("--model", default="seedream-5.0-pro")
+    ap.add_argument("--model", default="gpt-image-2",
+                    help="默认 gpt-image-2 标准版 1K（2分/张，Leo 2026-09-01 成本口径）；场景大图按需 --model seedream-5.0-pro")
     ap.add_argument("--aspect", default="9:16")
-    ap.add_argument("--resolution", default="2K")
+    ap.add_argument("--resolution", default="1K")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
