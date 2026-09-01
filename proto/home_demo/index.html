@@ -228,10 +228,10 @@ function drawTopbar() {
     if (ls) c.letterSpacing = '0px';
     c.shadowBlur = 0; c.shadowOffsetY = 0;
   }
-  txt(TOPBAR_DATA.name, 505, 90, 'bold 72px "PingFang SC","Microsoft YaHei"', gold, 'left');
-  txt(TOPBAR_DATA.age, 348, 522, 'bold 48px "PingFang SC","Microsoft YaHei"', dim);
-  txt(TOPBAR_DATA.shichen, 1777, 237, 'bold 58px "PingFang SC","Microsoft YaHei"', gold, 'center', '14px');
-  TOPBAR_DATA.curr.forEach((t,i)=> txt(t, [1385,1805,2258][i], 510, 'bold 54px "PingFang SC","Microsoft YaHei"', gold));
+  txt(TOPBAR_DATA.name, 584, 88, 'bold 72px "PingFang SC","Microsoft YaHei"', gold, 'left');   // 左缘对齐气血红条(584)
+  txt(TOPBAR_DATA.age, 362, 550, 'bold 48px "PingFang SC","Microsoft YaHei"', dim);            // 挂牌内区几何中心
+  txt(TOPBAR_DATA.shichen, 1807, 268, 'bold 58px "PingFang SC","Microsoft YaHei"', gold, 'center', '14px'); // 辰时牌内区中心(含字距补偿+7)
+  TOPBAR_DATA.curr.forEach((t,i)=> txt(t, [1380,1822,2288][i], 510, 'bold 54px "PingFang SC","Microsoft YaHei"', gold)); // 三芯片几何中心
   txt('•••', 2130, 228, 'bold 64px "PingFang SC"', '#e8e8e8', 'center', '6px');
 }
 drawTopbar();
