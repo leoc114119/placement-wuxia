@@ -94,8 +94,12 @@ export const SCENE_BUTTONS = {
   labelFontR: 0.34, // 小文字字号 = r × 系数
 } as const;
 
-// 场景驱动按钮定义已随 08-31 美术像素化重构移除（旧 btn_* 图标目录已归档致断链，美术审计 2026-09-02）；
-// 新口径=家场景「闭关/木人/打坐」木牌文字按钮，待家场景工程化卡按 UI框架与导航 §0.2/§0.5 重立
+/** 底部三按钮定义（图标=透明 PNG，Q3-R2 接线；点击仅占位 log，需求表 #8） */
+export const SCENE_BUTTON_DEFS: ReadonlyArray<{ id: 'biguan' | 'guaji' | 'boss'; iconSrc: string; label: string }> = [
+  { id: 'biguan', iconSrc: 'assets/ui/icons/btn_biguan.png', label: '闭关修炼' },
+  { id: 'guaji', iconSrc: 'assets/ui/icons/btn_guaji.png', label: '挂机' },
+  { id: 'boss', iconSrc: 'assets/ui/icons/btn_tiaozhan.png', label: '挑战Boss' },
+];
 
 // ============ T04 NPC 氛围版（modules/03 v1.2 §2.0/§2.1/§3；纯氛围，无战斗交互） ============
 
