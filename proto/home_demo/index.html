@@ -23,17 +23,11 @@
   /* ===== UI 覆盖层 ===== */
   .ui { position:absolute; z-index:10; }
 
-  /* ① 顶部栏（A2 定稿底图 + 代码叠字 · 2026-09-01） */
+  /* ① 顶部栏（A2 定稿底图 + canvas 叠字，同 2560×674 像素系坐标锁死 · 2026-09-01） */
   #topbar { top:0; left:0; right:0; height:auto; display:block; padding:0; background:none; }
-  #tbBase { width:100%; display:block; }
-  #tbOverlay { position:absolute; inset:0; }
-  .ot { position:absolute; transform:translate(-50%,-50%); color:#ffd98c; text-shadow:0 2px 3px #000, 0 0 6px #0008; white-space:nowrap; }
-  #oName { left:26.5%; top:12%; font-size:clamp(12px,2.6vh,19px); letter-spacing:.15em; color:#ffe9a8; font-weight:600; }
-  #oAge { left:13.4%; top:84%; font-size:clamp(8px,1.7vh,13px); color:#e8d9b0; }
-  #oShichen { left:69.6%; top:37.3%; font-size:clamp(10px,2.1vh,16px); letter-spacing:.3em; text-indent:.3em; }
-  .oCurr { font-size:clamp(10px,2vh,15px); color:#ffe9a8; }
-  #oC1 { left:55%; top:83.5%; } #oC2 { left:70.7%; top:83.5%; } #oC3 { left:86.2%; top:83.5%; }
-  #oDots { left:80.8%; top:37.5%; color:#eee; font-size:clamp(9px,1.8vh,14px); letter-spacing:3px; }
+  #tbBase, #tbText { width:100%; display:block; }
+  #tbText { position:absolute; inset:0; }
+
 
 
   /* ② 左侧场景驱动按钮（竖排鎏金木牌） */
@@ -95,15 +89,7 @@
     <!-- ① 顶部栏（A2 底图 + 代码叠字） -->
     <div class="ui" id="topbar">
       <img id="tbBase" src="img_preview/topbar_v4_crop.png" alt="">
-      <div id="tbOverlay">
-        <div class="ot" id="oName">小虾米</div>
-        <div class="ot" id="oAge">8岁 1月</div>
-        <div class="ot" id="oShichen">辰时</div>
-        <div class="ot oCurr" id="oC1">8888</div>
-        <div class="ot oCurr" id="oC2">8888</div>
-        <div class="ot oCurr" id="oC3">8888</div>
-        <div class="ot" id="oDots">•••</div>
-      </div>
+      <canvas id="tbText" width="2560" height="674"></canvas>
     </div>
 
     <!-- ② 左侧场景驱动按钮（家：闭关/打木人/打坐） -->
@@ -226,6 +212,29 @@ function loop(t){
   requestAnimationFrame(loop);
 }
 DECODE_READY.then(()=>{ refreshRect(); requestAnimationFrame(loop); });
+
+/* ===== 顶部栏文字（canvas 叠加，坐标=底图像素系 2560×674）===== */
+const TOPBAR_DATA = { name:'小虾米', age:'8岁 1月', shichen:'辰时', curr:['8888','8888','8888'] };
+function drawTopbar() {
+  const c = document.getElementById('tbText').getContext('2d');
+  c.clearRect(0, 0, 2560, 674);
+  c.textBaseline = 'middle';
+  const gold = '#ffe9a8', dim = '#e8d9b0';
+  function txt(t, x, y, font, color, align='center', ls=0) {
+    c.font = font; c.fillStyle = color; c.textAlign = align;
+    c.shadowColor = '#000'; c.shadowBlur = 12; c.shadowOffsetY = 4;
+    if (ls) c.letterSpacing = ls;
+    c.fillText(t, x, y);
+    if (ls) c.letterSpacing = '0px';
+    c.shadowBlur = 0; c.shadowOffsetY = 0;
+  }
+  txt(TOPBAR_DATA.name, 505, 90, 'bold 72px "PingFang SC","Microsoft YaHei"', gold, 'left');
+  txt(TOPBAR_DATA.age, 348, 522, 'bold 48px "PingFang SC","Microsoft YaHei"', dim);
+  txt(TOPBAR_DATA.shichen, 1777, 237, 'bold 58px "PingFang SC","Microsoft YaHei"', gold, 'center', '14px');
+  TOPBAR_DATA.curr.forEach((t,i)=> txt(t, [1385,1805,2258][i], 510, 'bold 54px "PingFang SC","Microsoft YaHei"', gold));
+  txt('•••', 2130, 228, 'bold 64px "PingFang SC"', '#e8e8e8', 'center', '6px');
+}
+drawTopbar();
 
 /* ===== 点击/触摸移动 ===== */
 const wrap = document.getElementById('sceneWrap');
