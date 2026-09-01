@@ -30,30 +30,31 @@
 
 
 
-  /* ② 左侧场景驱动按钮（竖排鎏金木牌） */
-  #sceneBtns { left:1.5%; top:22%; display:flex; flex-direction:column; gap:10px; }
-  .woodBtn { writing-mode:vertical-rl; letter-spacing:.35em; padding:12px 7px; color:#ffe9b8; cursor:pointer;
-             background:linear-gradient(160deg,#5a3a22,#3d2716 55%,#2c1c0f); border:1px solid #8a6a35; border-radius:8px;
-             box-shadow:inset 0 0 0 1px #00000088, inset 0 0 12px #00000066, 0 2px 6px #000a, 0 0 0 1px #000;
-             font-size:clamp(12px,3vw,17px); text-shadow:0 1px 2px #000; position:relative; transition:transform .08s; }
-  .woodBtn::before, .woodBtn::after { content:""; position:absolute; width:6px; height:6px; background:radial-gradient(#e8c56a,#8a6a35); border-radius:50%; left:50%; transform:translateX(-50%); }
-  .woodBtn::before { top:3px; } .woodBtn::after { bottom:3px; }
-  .woodBtn:active { transform:scale(.94); }
-  .woodBtn small { writing-mode:horizontal-tb; letter-spacing:0; font-size:9px; color:#c9b078; display:block; text-align:center; margin-top:8px; }
+  /* ② 左下场景互动（中国结木牌串 · 2026-09-01） */
+  #sceneBtns { left:0.8%; bottom:11.5%; width:14.5%; display:block; }
+  #plaqueImg { width:100%; display:block; }
+  .plaqueLabel { position:absolute; left:50%; transform:translate(-50%,-50%); width:84%; height:9.4%;
+    display:flex; align-items:center; justify-content:center; color:#ffe9b8; cursor:pointer;
+    font-size:clamp(10px,1.75vh,16px); letter-spacing:.18em; text-indent:.18em; text-shadow:0 1px 3px #000, 0 0 6px #0006; }
+  .plaqueLabel:active { color:#fff; transform:translate(-50%,-50%) scale(.96); }
 
-  /* ④ 右侧任务区 */
-  #questBox { right:1.5%; top:22%; width:24%; background:linear-gradient(175deg,#efe4c8f2,#dcc9a0ee); border:1px solid #8a6a35; border-radius:10px;
-              box-shadow:inset 0 0 0 1px #fff8, 0 0 0 1px #000, 0 3px 10px #000a; padding:8px; color:#3a2c18; }
-  #questBox h4 { font-size:clamp(10px,2.4vw,14px); color:#6b4a1c; border-bottom:1px dashed #b49a68; padding-bottom:4px; margin-bottom:6px; letter-spacing:.15em; }
-  .quest { font-size:clamp(9px,2.1vw,13px); line-height:1.45; margin-bottom:6px; cursor:pointer; background:#fff6; border:1px solid #b49a6866; border-radius:6px; padding:5px 6px; }
-  .quest:active { background:#ffe9b8; }
+  /* ④ 右下任务区（半透明绢帛框体+箭靶标题 · 2026-09-01） */
+  #questBox { right:0.8%; bottom:11.5%; width:24%; }
+  #qbBg { width:100%; display:block; opacity:.88; }
+  .qbTitle { position:absolute; left:46%; top:12.3%; transform:translate(-50%,-50%); color:#6b4a1c;
+             font-size:clamp(11px,2vh,16px); letter-spacing:.3em; text-indent:.3em; font-weight:600; }
+  #qbItems { position:absolute; left:9%; right:9%; top:23.5%; bottom:4.5%; display:flex; flex-direction:column; gap:2.5%; }
+  .quest { font-size:clamp(8px,1.55vh,13px); line-height:1.45; cursor:pointer; color:#4a3a20;
+           background:#fff8; border:1px solid #b49a6866; border-radius:8px; padding:1.5% 5%; }
+  .quest:active { background:#ffe9b8aa; }
   .quest em { font-style:normal; color:#a33; }
   .quest .go { display:inline-block; margin-top:2px; font-size:.85em; color:#2a6e3e; }
 
   /* ⑤ 底部五 Tab */
   #tabbar { bottom:0; left:0; right:0; height:9.5%; background:linear-gradient(transparent,#0009 25%,#000d); display:flex; align-items:stretch; padding:0 2%; gap:2%; }
-  .tab { flex:1; display:flex; align-items:center; justify-content:center; color:#d9c896; font-size:clamp(11px,2.9vw,18px); cursor:pointer;
-         letter-spacing:.12em; text-shadow:0 1px 3px #000; border-radius:8px 8px 0 0; position:relative; }
+  .tab { flex:1; margin:0 3px; display:flex; align-items:center; justify-content:center; color:#d9c896; font-size:clamp(11px,2.9vw,18px); cursor:pointer;
+         letter-spacing:.12em; text-shadow:0 1px 3px #000; border-radius:10px; position:relative;
+         border:1px solid #d4af374d; background-color:#00000042; background-size:auto 74%; background-position:center 62%; background-repeat:no-repeat; }
   .tab:active { color:#ffe9b8; background:#5a3a2233; }
   .tab.on { color:#ffe9b8; }
   .tab.on::after { content:""; position:absolute; left:22%; right:22%; bottom:8%; height:3px; background:linear-gradient(90deg,transparent,#e8c56a,transparent); border-radius:2px; }
@@ -94,25 +95,29 @@
 
     <!-- ② 左侧场景驱动按钮（家：闭关/打木人/打坐） -->
     <div class="ui" id="sceneBtns">
-      <div class="woodBtn" data-act="biguan">闭关</div>
-      <div class="woodBtn" data-act="muren">木人</div>
-      <div class="woodBtn" data-act="dazuo">打坐</div>
+      <img id="plaqueImg" src="icons/plaque_chain.png" alt="">
+      <div class="plaqueLabel" data-act="biguan" style="top:44%">闭关</div>
+      <div class="plaqueLabel" data-act="muren" style="top:61.2%">木人</div>
+      <div class="plaqueLabel" data-act="dazuo" style="top:77.9%">打坐</div>
     </div>
 
-    <!-- ④ 右侧任务区 -->
+    <!-- ④ 右下任务区（半透明绢帛+箭靶） -->
     <div class="ui" id="questBox">
-      <h4>任 务</h4>
-      <div class="quest" onclick="toast('自动寻路：演示版暂未接入')">初入江湖 · 拜访铁匠<em>（未完成）</em><br><span class="go">▸ 点击自动寻路</span></div>
-      <div class="quest" onclick="toast('自动寻路：演示版暂未接入')">打扫屋子<em>（进行中）</em><br><span class="go">▸ 点击自动寻路</span></div>
+      <img id="qbBg" src="icons/quest_panel.png" alt="">
+      <div class="qbTitle">任务</div>
+      <div id="qbItems">
+        <div class="quest" onclick="toast('自动寻路：演示版暂未接入')">初入江湖 · 拜访铁匠<em>（未完成）</em><br><span class="go">▸ 点击自动寻路</span></div>
+        <div class="quest" onclick="toast('自动寻路：演示版暂未接入')">打扫屋子<em>（进行中）</em><br><span class="go">▸ 点击自动寻路</span></div>
+      </div>
     </div>
 
     <!-- ⑤ 底部五 Tab -->
     <div class="ui" id="tabbar">
-      <div class="tab" data-t="角色">角色</div>
-      <div class="tab" data-t="装备">装备</div>
-      <div class="tab" data-t="江湖历练">江湖历练</div>
-      <div class="tab" data-t="武学">武学</div>
-      <div class="tab" data-t="聊天">聊天</div>
+      <div class="tab" data-t="角色" style="background-image:url(icons/tab_juese.png)">角色</div>
+      <div class="tab" data-t="装备" style="background-image:url(icons/tab_zhuangbei.png)">装备</div>
+      <div class="tab" data-t="江湖历练" style="background-image:url(icons/tab_jianghu.png)">江湖历练</div>
+      <div class="tab" data-t="武学" style="background-image:url(icons/tab_wuxue.png)">武学</div>
+      <div class="tab" data-t="聊天" style="background-image:url(icons/tab_liaotian.png)">聊天</div>
     </div>
 
     <!-- 绢帛弹窗 -->
@@ -258,7 +263,7 @@ const ACTS = {
   muren:{ title:'打木人', sub:'练武 · 消耗体力', body:'与木人桩切磋，快速获得武学熟练度与少量实战经验。（正式版木人巷每日限次高额学点）' },
   dazuo:{ title:'打 坐', sub:'调息 · 治疗伤势', body:'静坐调息恢复气血内力，兼修心性。受伤状态下的主要治疗手段。（演示占位）' },
 };
-document.querySelectorAll('.woodBtn').forEach(b=>{
+document.querySelectorAll('.plaqueLabel').forEach(b=>{
   b.addEventListener('click', ()=>{
     const a = ACTS[b.dataset.act];
     document.getElementById('mTitle').textContent = a.title;
