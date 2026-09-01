@@ -26,8 +26,8 @@
   /* ① 顶部栏（两行式：行1=我是谁+我在哪+胶囊预留 · 行2=货币带）Leo 2026-09-01 布局 */
   #topbar { top:0; left:0; right:0; height:13.5%; background:linear-gradient(#000d,#000a 70%,transparent); display:flex; flex-direction:column; padding:1.2% 2.5% 0; gap:1%; }
   #tbRow1 { flex:1.6; display:flex; align-items:center; gap:2.2%; min-height:0; }
-  #tbRow2 { flex:1; display:flex; align-items:center; gap:4%; padding-left:1%; min-height:0; }
-  #avatarWrap { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  #tbRow2 { flex:1; display:flex; align-items:center; justify-content:flex-end; gap:3.5%; padding-right:1%; min-height:0; }
+  #avatarWrap { display:flex; flex-direction:column; align-items:center; gap:7px; }
   #avatar { width:clamp(38px,7.4vh,64px); aspect-ratio:1; border-radius:50%; border:2px solid #D4AF37; background:#3a2f22;
             display:flex; align-items:center; justify-content:center; font-size:clamp(12px,2.6vh,20px); color:#e8d9b0; }
   #ageTag { font-size:clamp(8px,1.7vh,12px); color:#e8d9b0; background:#241a10cc; border:1px solid #7a5c2e88; border-radius:6px; padding:1px 6px; white-space:nowrap; text-shadow:0 1px 2px #000; }
@@ -37,13 +37,12 @@
   .bar i { display:block; height:100%; border-radius:3px; }
   .bar.hp i { width:86%; background:linear-gradient(#c8403a,#8e2a26); }
   .bar.mp i { width:35%; background:linear-gradient(#3a7bc8,#26568e); }
-  #locPill { margin-left:auto; color:#f0e2b6; background:#241a10cc; border:1px solid #7a5c2e88; border-radius:14px;
-             padding:3px 10px; font-size:clamp(9px,2vh,14px); white-space:nowrap; text-shadow:0 1px 2px #000; }
+  #tbRow1 .spacer { margin-left:auto; }  /* 场景标识移出顶栏后，用空撑开胶囊右聚 */
   /* 时辰牌：竖排鎏金小木牌（网金口径保留） */
-  #scPlate { writing-mode:vertical-rl; letter-spacing:.15em; color:#ffe9b8; background:linear-gradient(160deg,#5a3a22,#3d2716 55%,#2c1c0f);
-             border:1px solid #8a6a35; border-radius:6px; padding:6px 4px; font-size:clamp(9px,1.9vh,14px);
+  #scPlate { color:#ffe9b8; background:linear-gradient(160deg,#5a3a22,#3d2716 55%,#2c1c0f);
+             border:1px solid #8a6a35; border-radius:6px; padding:4px 12px; font-size:clamp(10px,2vh,15px); letter-spacing:.2em;
              box-shadow:inset 0 0 8px #00000066, 0 1px 4px #000a; text-shadow:0 1px 2px #000; position:relative; }
-  #scPlate::before { content:""; position:absolute; width:4px; height:4px; background:radial-gradient(#e8c56a,#8a6a35); border-radius:50%; left:50%; transform:translateX(-50%); top:2px; }
+  #scPlate::before { content:""; position:absolute; width:4px; height:4px; background:radial-gradient(#e8c56a,#8a6a35); border-radius:50%; left:6px; top:50%; transform:translateY(-50%); }
   /* 微信胶囊预留（真机右上固定，此处仅占位示意） */
   #wxSeat { margin-left:.5%; display:flex; align-items:center; gap:8px; background:#00000066; border:1px solid #ffffff22; border-radius:16px; padding:4px 10px; color:#ffffff99; font-size:clamp(10px,2vh,14px); }
   /* 货币带：图标+数字 */
@@ -119,7 +118,7 @@
           <div class="bar hp"><i></i></div>
           <div class="bar mp"><i></i></div>
         </div>
-        <div id="locPill">📍 家中</div>
+        <span class="spacer"></span>
         <div id="scPlate">辰时</div>
         <div id="wxSeat"><span>•••</span><span>◎</span></div>
       </div>
