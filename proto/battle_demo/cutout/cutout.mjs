@@ -11,7 +11,7 @@
 import { decodePng, encodePng } from './png_codec.mjs';
 
 function parseArgs(argv) {
-  const opts = { tol: 34, holeTol: 26, feather: 1, minIsland: 24, maxThin: 0, padBottom: 0 };
+  const opts = { tol: 34, holeTol: 26, feather: 1, minIsland: 24, maxThin: 0, padBottom: 0, warmProtect: false };
   const pos = [];
   for (const a of argv) {
     if (a.startsWith('--tol=')) opts.tol = Number(a.slice(6));
@@ -20,6 +20,7 @@ function parseArgs(argv) {
     else if (a.startsWith('--min-island=')) opts.minIsland = Number(a.slice(12));
     else if (a.startsWith('--max-thin=')) opts.maxThin = Number(a.slice(11));
     else if (a.startsWith('--pad-bottom=')) opts.padBottom = Number(a.slice(13));
+    else if (a === '--warm-protect') opts.warmProtect = true;
     else pos.push(a);
   }
   return { pos, opts };
@@ -61,7 +62,7 @@ const dist2 = (rgba, i, j) => {
   return dr * dr + dg * dg + db * db;
 };
 
-export function cutout(input, { tol, holeTol, feather, minIsland, maxThin, padBottom }) {
+export function cutout(input, { tol, holeTol, feather, minIsland, maxThin, padBottom, warmProtect }) {
   const { width, height, rgba } = padBottomImg(input, padBottom);
   const n = width * height;
   const isBg = new Uint8Array(n); // 1=背景
@@ -97,7 +98,9 @@ export function cutout(input, { tol, holeTol, feather, minIsland, maxThin, padBo
     if (cy > 0) neighbors.push(cur - width);
     if (cy < height - 1) neighbors.push(cur + width);
     for (const nb of neighbors) {
-      if (!isBg[nb] && dist2(rgba, cur * 4, nb * 4) < tol2) push(nb);
+      if (isBg[nb]) continue;
+      if (warmProtect && rgba[nb * 4] > rgba[nb * 4 + 1] + 12) continue; // 暖色（R>G+12）永不算背景：护木面/金字/红穗
+      if (dist2(rgba, cur * 4, nb * 4) < tol2) push(nb);
     }
   }
 

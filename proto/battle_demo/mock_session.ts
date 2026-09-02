@@ -23,10 +23,10 @@ interface MockActor extends SnapshotActor {
 
 /** 演示技能表（占位数值；真值=SkillDef×battle-core） */
 const SKILL_DEFS: ReadonlyArray<{ id: string; label: string; cost: number; cd: number; mul: number; range: number }> = [
-  { id: 'te', label: '特', cost: 20, cd: 2, mul: 1.6, range: 2 },
+  { id: 'te', label: '特', cost: 20, cd: 2, mul: 1.6, range: 3 },
   { id: 'jue', label: '绝', cost: 35, cd: 5, mul: 2.4, range: 2 },
   { id: 'qing', label: '轻', cost: 15, cd: 3, mul: 0, range: 0 },
-  { id: 'du', label: '毒', cost: 10, cd: 1, mul: 1.2, range: 3 },
+  { id: 'du', label: '毒', cost: 10, cd: 1, mul: 1.2, range: 4 },
 ];
 
 // ===== 局部 hex 数学（与 systems/hex 同式；mock 演出用，不 import battle 侧文件） =====
@@ -81,11 +81,11 @@ export function createMockSession(seed = 42): MockSession {
   function spawn(): void {
     const randCell = (c0: number, c1: number, r0: number, r1: number): HexPos =>
       offAxial(c0 + Math.floor(rng() * (c1 - c0 + 1)), r0 + Math.floor(rng() * (r1 - r0 + 1)));
-    // O3：我方左下区 / 敌方右上区随机出生（seed 可复现），无部署 UI
-    const heroPos = randCell(4, 7, 9, 11);
-    const e1 = randCell(8, 11, 4, 6);
-    let e2 = randCell(8, 11, 4, 6);
-    if (sameCell(e1, e2)) e2 = offAxial(10, 5);
+    // O3：我方左下区 / 敌方右上区随机出生（seed 可复现），无部署 UI；出生间距保证首回合内有攻击目标
+    const heroPos = randCell(5, 7, 8, 10);
+    const e1 = randCell(7, 9, 5, 7);
+    let e2 = randCell(7, 9, 5, 7);
+    if (sameCell(e1, e2)) e2 = offAxial(9, 6);
     actors = [
       {
         id: 'hero', side: 'player', name: '小虾米', pos: heroPos, renderPos: { ...heroPos },

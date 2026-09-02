@@ -57,3 +57,12 @@ declare const wx: {
   getMenuButtonBoundingClientRect(): WxMenuButtonRect;
 };
 
+
+// ============ T16：测试用 node 模块最小声明（vitest 运行时可用；小游戏运行时禁用） ============
+declare module 'node:fs' {
+  export function readFileSync(path: string, encoding: string): string;
+}
+declare module 'node:path' {
+  export function join(...parts: string[]): string;
+  export function resolve(...parts: string[]): string;
+}

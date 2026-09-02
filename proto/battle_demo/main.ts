@@ -2,7 +2,7 @@
 // ① 帧预解码（全部 decode 完才开播，防换帧闪烁）② 整数像素定位（渲染模块内 Math.round）
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
 // 数据源=mock 快照（T15 完成后对切真 session，本文件仅换数据源）。
-import { BATTLE_HEX_RES } from '../../config/battle-hex';
+import { BATTLE_HEX_RES, hexToWorld } from '../../config/battle-hex';
 import { createBattleInput } from '../../ui/battle-input';
 import {
   createView,
@@ -34,9 +34,11 @@ function toast(msg: string): void {
 }
 
 // ===== 资源加载（版本号防缓存 + 帧预解码，失败降级 null 不崩） =====
+// config 路径=小游戏包根相对（生产唯一真值）；file:// 预览页位于 proto/battle_demo/，需回退到仓库根
+const FILE_PREFIX = location.protocol === 'file:' ? '../../' : '';
 function loadImg(url: string): Promise<HTMLImageElement | null> {
   const im = new Image();
-  im.src = url;
+  im.src = FILE_PREFIX + url;
   return im.decode().then(() => im).catch(() => null);
 }
 
@@ -119,6 +121,32 @@ canvas.addEventListener('pointerup', (e) => {
   input.up(view, snap as MockBattleSnapshot, p.x, p.y, W, H);
 });
 document.addEventListener('dragstart', (e) => e.preventDefault());
+
+// ===== 调试挂载（preview 目验/自动化驱动用；正式接入不含此段） =====
+interface CssPoint {
+  x: number;
+  y: number;
+}
+function logicalToCss(x: number, y: number): CssPoint {
+  const r = canvas.getBoundingClientRect();
+  return { x: r.left + (x / W) * r.width, y: r.top + (y / H) * r.height };
+}
+(window as unknown as Record<string, unknown>).__demo = {
+  session,
+  view,
+  W,
+  H,
+  /** 格 → 页面坐标（自动化点击用） */
+  cellCss(q: number, r: number): CssPoint {
+    const w = hexToWorld(q, r);
+    return logicalToCss(w.x - view.camera.x + W / 2, w.y - view.camera.y + H / 2);
+  },
+  /** 弧形技能钮 → 页面坐标 */
+  btnCss(id: string): CssPoint | null {
+    const b = view.layout.skillBtns.find((x) => x.id === id);
+    return b ? logicalToCss(b.x, b.y) : null;
+  },
+};
 
 // ===== 主循环 =====
 let last = performance.now();

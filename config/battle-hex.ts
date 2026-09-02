@@ -110,9 +110,9 @@ export const ARC_BTNS = {
   labels: ['特', '绝', '轻', '毒'],
   headWidthRatio: 0.3, // 头宽 ≈ 棋子渲染宽 × 本系数
   diameterPerHead: 1.8, // 钮直径 ≈ 头宽 × 1.8（v8）
-  arcRadiusPerHead: 2.1, // 弧排布半径（×头宽）：四钮在头顶上方浅弧展开
-  angleFromDeg: 205, // 弧起始角（度，屏幕坐标系：180=正左、270=正上）
-  angleToDeg: 335, // 弧终止角
+  arcRadiusPerHead: 3.0, // 弧排布半径（×头宽）：四钮在头顶上方浅弧展开（间距>钮径防重叠）
+  angleFromDeg: 195, // 弧起始角（度，屏幕坐标系：180=正左、270=正上）
+  angleToDeg: 345, // 弧终止角
   popSec: 0.18, // 弹出动画时长
   colorBg: '#241a10',
   colorRim: '#d4af37',
@@ -168,10 +168,10 @@ export const CTRL_BUTTONS: ReadonlyArray<{ y: number; h: number; action: 'mode' 
   { y: 319, h: 127, action: 'flee' }, // 逃跑
 ];
 
-/** plaque_l_alpha.png 两块木牌标签热区（牌面占比，供点击反馈；文字已烘焙在切图内） */
+/** plaque_l_alpha.png（310×680）两块木牌标签热区（牌面占比标定 2026-09-02；文字已烘焙在切图内） */
 export const PLAQUE_BUTTONS: ReadonlyArray<{ yRatio: number; hRatio: number; label: string }> = [
-  { yRatio: 0.24, hRatio: 0.17, label: '装备' },
-  { yRatio: 0.5, hRatio: 0.17, label: '武功' },
+  { yRatio: 0.26, hRatio: 0.21, label: '装备' },
+  { yRatio: 0.55, hRatio: 0.21, label: '武功' },
 ];
 
 // ===== 素材路径表（资源外置铁律：路径唯一出处=本表；版本号防缓存，preview 换图 bump） =====

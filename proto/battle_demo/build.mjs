@@ -84,12 +84,11 @@ parts.push('    if (!m) throw new Error("module not found: " + spec + " (from " 
 parts.push('    if (m.exp === null) { m.exp = { exports: {} }; m.fn(function (s) { return __req(id, s); }, m.exp, m.exp.exports); }');
 parts.push('    return m.exp.exports;');
 parts.push('  }');
-parts.push('  var __exports = {};');
 for (const key of order) {
   const varName = '__mod_' + key.replace(/[^a-z0-9]/gi, '_');
   parts.push(`  var ${varName} = ${JSON.stringify(seen.get(key))};`);
   parts.push(`  // ---- ${key} ----`);
-  parts.push(`  __def(${JSON.stringify(key)}, new Function("require", "module", "exports", "var exports = module.exports;", ${varName}));`);
+  parts.push(`  __def(${JSON.stringify(key)}, new Function("require", "module", "exports", ${varName}));`);
 }
 parts.push('  __req("proto/battle_demo/main", "./main"); // 入口');
 parts.push('})();');
