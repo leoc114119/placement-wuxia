@@ -210,10 +210,10 @@ describe('[MV-2] 轻功跳跃态：金格=纯距离半径、可穿越', () => {
     expect(s.snapshot().selectedSkill).toBeNull(); // SEL-3
   });
 
-  it('[BASE-6 勘误收编] 去 sticky：跳→选中清除回落普通移动（金格消失绿格回归）→重新激活→再跳', () => {
-    // Leo 拍板（规格 sticky 勘误条目）：跳跃行动提交后 selection 无条件清除，
-    // 即便（假设性）bar≥100 也不保持跳跃态——连跳=重新点轻功钮。
-    // 封顶口径下跳后 bar 必 0；「任何 bar 状态必清」由 commitTurn 无条件 clearSelection
+  it('[SEL-3/SEL-4 回归规格本义] 轻功无 sticky：跳→选中清除回落普通移动→重新激活→再跳（连跳=重新点钮）', () => {
+    // 规格本义（SEL-3「提交行动瞬间→选中清除」/SEL-4「条<100 退出输入态」/BASE-6 无连放）
+    // ——T18 重写版即按此实现，无 bar≥100 保持分支；连跳=重新点轻功钮。
+    // 封顶口径下跳后 bar 必 0；「无条件清」由 commitTurn 无条件 clearSelection
     // 保证（结构断言病灶①已锁 bar=0 显式清零）。
     const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
       unit({ id: 'e0', side: 'enemy', hp: 999999 }),
@@ -221,16 +221,22 @@ describe('[MV-2] 轻功跳跃态：金格=纯距离半径、可穿越', () => {
     for (let hop = 1; hop <= 2; hop++) {
       for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
       expect(s.snapshot().pendingInput).toBe(true);
+      // 绿格回归断言（首轮=初始态；次轮=跳后条重置重积满，输入态恢复且为普通移动高亮）
+      if (hop === 2) {
+        expect(s.snapshot().moveKind).toBe('walk');
+        expect(s.snapshot().moveCells.length).toBeGreaterThan(0);
+      }
       // 重新激活（连跳=重新点轻功钮，金格重新点亮）
       expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
       expect(s.snapshot().moveKind).toBe('jump');
       expect(s.snapshot().moveCells.length).toBeGreaterThan(0);
       const to = s.snapshot().moveCells[0];
       expect(s.submit({ type: 'move', to })).toBe(true);
-      // 提交后无条件回落普通移动：选中清除、金格消失、绿格回归
+      // 提交后无条件回落普通移动：选中清除（任何 bar 状态）、金格消失
+      // （非输入态下高亮不显示——绿格回归断言于下一轮输入态恢复时）
       expect(s.snapshot().selectedSkill).toBeNull();
       expect(s.snapshot().moveKind).toBe('walk');
-      expect(s.snapshot().moveCells.length).toBeGreaterThan(0); // 绿格回归（普通可达）
+      expect(s.snapshot().moveCells).toEqual([]);
       expect(pu(s).bar).toBeLessThan(100); // 条重置（封顶口径）
     }
   });
