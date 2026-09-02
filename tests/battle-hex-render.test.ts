@@ -461,9 +461,15 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
   });
 
   it('Leo 实测反馈：跳跃参数随距离插值（基准 2 格，每 +1 格 +0.15s/+25%，封顶）', () => {
-    expect(jumpParamsFor(2)).toEqual({ duration: JUMP.baseDuration, height: JUMP.baseHeight }); // 基准不变
-    expect(jumpParamsFor(4)).toEqual({ duration: 0.9, height: 132 }); // +2 格
-    expect(jumpParamsFor(10)).toEqual({ duration: JUMP.maxDuration, height: JUMP.maxHeight }); // 封顶
+    const p2 = jumpParamsFor(2);
+    expect(p2.duration).toBeCloseTo(JUMP.baseDuration, 6);
+    expect(p2.height).toBe(JUMP.baseHeight); // 基准不变
+    const p4 = jumpParamsFor(4); // +2 格：0.6+0.15×2 / 88×(1+0.25×2)
+    expect(p4.duration).toBeCloseTo(0.9, 6);
+    expect(p4.height).toBeCloseTo(132, 6);
+    const pMax = jumpParamsFor(10); // 封顶
+    expect(pMax.duration).toBe(JUMP.maxDuration);
+    expect(pMax.height).toBe(JUMP.maxHeight);
     expect(hexDist({ q: 0, r: 0 }, { q: 4, r: 0 })).toBe(4);
     // 渲染侧：上升沿按距离锁定参数
     const view = createView();

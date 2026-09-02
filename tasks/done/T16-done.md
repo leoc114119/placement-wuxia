@@ -118,3 +118,14 @@
 ### 7.4 验证
 - 三零 + **140/140 全绿**（本文件累计 27 例；backend FIELD WIP 已合入对齐）
 - 端到端 14 断言全 PASS（含 R3 rejected、L③ 跳跃三帧、L④ 三尺寸）
+
+
+---
+
+## 8. 追加批次五：跳跃距离插值（Leo 实测反馈①，2026-09-02 晚）
+
+- **根因**：演出时长/高度固定（0.6s/88px），长距位移被同一时长拉平——弧线撑不起来，观感"跳起来被扯下来"
+- **修法**：config `JUMP` 增插值参数组（baseCells 2 / durationPerTile 0.15 / heightPerTileRatio 0.25 / maxDuration 1.2 / maxHeight 176）+ `jumpParamsFor(cells)` 纯函数 + `hexDist`（cube 口径，渲染侧自含）
+- **渲染**：跳跃上升沿按 hex 距离锁定插值参数（view.jumpParams），推进/顶高全用锁定值；短距 ≤2 格观感不变；封顶防浮夸
+- **sticky 去除确认**：backend 已改（跳一次回落普通移动），FE moveKind 消费不变（金格=跳跃演出）
+- 验证：三零 + **142/142 全绿**（新增插值参数组用例：基准不变/+2 格/封顶/上升沿锁定）；shot_4a 长距腾空帧在案
