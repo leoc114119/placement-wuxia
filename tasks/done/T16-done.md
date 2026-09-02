@@ -157,3 +157,17 @@
 
 ### 9.4 驱动脚本稳定性
 - 修复 shot.mjs 间歇崩：R3 演示段 submit 会消耗回合，挪至清单末尾；① 移动段补等回合与 cell 防御（间歇性根因=敌我出生距离随机的回合消耗不确定性）
+
+
+---
+
+## 10. 追加批次七：L 环终验两缺陷（根因 A/B，2026-09-02 晚）
+
+### 10.1 根因 A：特/绝选中后无法释放
+- 修：`ui/battle-input.ts` 敌棋子命中改按**逻辑 hex（快照 pos）**匹配（原按 renderPos 动画位——敌移动动画中 renderPos≠pos 点击落空 → 误走 cancelSkill）
+- 用例：敌 renderPos(4.2,6.5)≠pos(5,6) 动画中，点击逻辑格 → attack 受理派发 ✓
+
+### 10.2 根因 B：跳一次后穿模（直线插值穿单位）
+- **方案抉择：渲染侧自算 BFS 路径**（不走契约工单）。理由：①契约零改动——moveCells 语义（可达格集合）不变，path 属表现细节；②渲染侧 BFS 与 session reachable 同参同数学（FIELD 内/6 邻/阻挡=占格），同一 BFS 无漂移源；③路径方向选择只影响观感不影响结算；④避免快照每帧重建的 path 数组成本
+- 实现：`computeMovePath`（BFS 自含，路径含 from/pos）+ `moveAnimDrawPos`（path 逐格分段插值）+ MoveAnim 扩展 path；drawPieces/y 排序/updateCamera 位置采样统一走 moveAnimDrawPos
+- 用例：绕行场景（col 5 纵向、(5,6) 占格）——路径不含占格、逐段 6 邻相邻、分段采样 30ms 步进连续且不落占格中心 ✓

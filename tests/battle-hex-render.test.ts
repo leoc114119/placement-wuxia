@@ -23,7 +23,9 @@ import {
   axialToOffset,
   boardBounds,
   computeCamera,
+  computeMovePath,
   movableBounds,
+  moveAnimDrawPos,
   createView,
   drawFrame,
   isMovableCell,
@@ -332,6 +334,31 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     expect(sent[2]).toEqual({ type: 'cancelSkill' });
   });
 
+  it('L 环终验根因 A：敌移动动画中点击逻辑格=普攻受理（命中与 renderPos 解耦）', () => {
+    const view = makeViewForInput();
+    view.skillPop = 0;
+    view.layout.skillBtns = [];
+    const sent: Array<Record<string, unknown>> = [];
+    const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>) });
+    const hero: SnapshotActor = {
+      id: 'hero', side: 'player', name: '小虾米', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
+      hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right',
+      animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
+    };
+    // 敌逻辑格 (5,6)，动画位 (4.2,6.5)（移动中）——点击逻辑格
+    const enemy: SnapshotActor = {
+      id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 5, r: 6 }, renderPos: { q: 4.2, r: 6.5 },
+      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+      animState: 'walk', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
+    };
+    const snap = makeSnapshot([hero, enemy]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    const w = hexToWorld(5, 6);
+    input.up(view, snap, w.x + 375 / 2, w.y + 667 / 2, 375, 667);
+    expect(sent).toEqual([{ type: 'attack', targetId: 'e1', skillId: null }]);
+  });
+
   it('ctrl 三钮行命中映射托管/加速/逃跑', () => {
     const view = makeViewForInput();
     const sent: Array<Record<string, unknown>> = [];
@@ -442,6 +469,34 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     fills.length = 0;
     drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
     expect(fills).not.toContain('rgba(245, 205, 70, 0.45)');
+  });
+
+  it('L 环终验根因 B：BFS 绕行路径——路径不含占用格，分段采样连续不穿模', () => {
+    // 纵向直线 col 5，row 5..8，中间 (5,6) 被占 → 必须绕行
+    const from: HexPos = { q: 5 - 3, r: 5 }; // col 5? q=col-⌊r/2⌋=5-2=3
+    const to: HexPos = { q: 5 - 4, r: 8 }; // col 5, row 8 → q=1
+    const occupied = new Set(['5,6']); // col 5, row 6
+    const path = computeMovePath(from, to, occupied);
+    expect(path[0]).toEqual(from);
+    expect(path[path.length - 1]).toEqual(to);
+    const inPath = path.some((c) => c.q === 5 && c.r === 6);
+    expect(inPath).toBe(false); // 不穿占格
+    // 路径逐段相邻（6 邻）
+    for (let i = 1; i < path.length; i++) {
+      const dq = path[i].q - path[i - 1].q;
+      const dr = path[i].r - path[i - 1].r;
+      expect(Math.abs(dq + dr)).toBeLessThanOrEqual(1);
+    }
+    // 分段采样连续：moveAnimDrawPos 序列相邻差 ≤ 1 格，且不进入占格中心
+    const ma = { from, pos: to, path, t: 0, duration: 0.9, hopHeight: 0 };
+    let last = path[0];
+    for (let t = 0; t <= 900; t += 30) {
+      ma.t = t / 1000;
+      const pos = moveAnimDrawPos(ma);
+      expect(Math.hypot(pos.q - last.q, pos.r - last.r)).toBeLessThan(1.05);
+      expect(pos.q === 5 && pos.r === 6).toBe(false); // 不落占格中心
+      last = pos;
+    }
   });
 
   it('L④ 组件资源失败时代码占位兜底：热区照常产出（托管/加速/逃跑永不消失）', () => {

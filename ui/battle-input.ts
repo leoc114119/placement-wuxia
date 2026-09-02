@@ -124,8 +124,10 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
       if (snapshot.selectedSkill) hooks.dispatch({ type: 'cancelSkill' }); // 点棋盘外=取消施放
       return;
     }
+    // 敌棋子命中按逻辑 hex（快照 pos，结算真值）——与 renderPos 动画位解耦（L 环终验根因 A：
+    // 敌移动动画中 renderPos≠pos，按动画位匹配点击落空→误走 cancelSkill）
     const target = snapshot.actors.find(
-      (a) => a.side === 'enemy' && a.animState !== 'dead' && a.renderPos.q === cell.q && a.renderPos.r === cell.r,
+      (a) => a.side === 'enemy' && a.animState !== 'dead' && a.pos.q === cell.q && a.pos.r === cell.r,
     );
     const inMove = snapshot.moveCells.some((c) => sameCell(c, cell));
     const inAttack = snapshot.attackCells.some((c) => sameCell(c, cell));
