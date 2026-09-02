@@ -187,8 +187,12 @@ function logicalToCss(x: number, y: number): CssPoint {
     return session;
   },
   getView: () => view,
-  W,
-  H,
+  get W() {
+    return W;
+  },
+  get H() {
+    return H;
+  },
   /** 格 → 页面坐标（自动化点击用） */
   cellCss(q: number, r: number): CssPoint {
     const w = hexToWorld(q, r);
