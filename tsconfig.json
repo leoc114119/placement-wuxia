@@ -15,5 +15,5 @@
     "noEmitOnError": true,
     "types": []
   },
-  "include": ["game.ts", "types.ts", "env.d.ts", "tests/**/*.ts", "config/**/*.ts", "systems/**/*.ts", "ui/**/*.ts", "net/**/*.ts"]
+  "include": ["game.ts", "types.ts", "env.d.ts", "tests/**/*.ts", "config/**/*.ts", "systems/**/*.ts", "ui/**/*.ts", "net/**/*.ts", "proto/battle_demo/**/*.ts"]
 }
