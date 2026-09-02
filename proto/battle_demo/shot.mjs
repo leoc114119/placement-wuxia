@@ -140,6 +140,26 @@ const foeAfter = st.foes.find((f) => f.id === atk.id);
 check('③ 点敌普攻', foeAfter.hp < atk.before || st.foes.some((f) => f.hp < 100), `hp ${atk.before}→${foeAfter.hp}`);
 await page.screenshot({ path: path.join(outDir, 'shot_5_basic_attack.png') });
 
+// T15 R3：rejected 冒字（点远处敌人 → range 拒绝 → 头顶冒'目标超出射程'）
+await waitHeroTurn();
+await waitPop();
+const rej = await page.evaluate(() => {
+  const d = window.__demo;
+  const s = d.session.snapshot();
+  const hero = s.actors.find((a) => a.id === 'hero');
+  const dist = (a, b) => (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q - b.q + a.r - b.r)) / 2;
+  const far = s.actors
+    .filter((a) => a.side === 'enemy' && a.animState !== 'dead')
+    .sort((a, b) => dist(b.pos, hero.pos) - dist(a.pos, hero.pos))[0]; // 最远敌
+  const p = d.cellCss(far.renderPos.q, far.renderPos.r);
+  return { p, id: far.id, far: true };
+});
+await page.mouse.click(rej.p.x, rej.p.y);
+await page.waitForTimeout(250); // 冒字窗口内截图
+await page.screenshot({ path: path.join(outDir, 'shot_reject_note.png') });
+const rejectedSeen = await page.evaluate(() => window.__demo.getView().fx.some((f) => f.kind === 'note'));
+check('R3 rejected 冒字可观测', rejectedSeen);
+
 // ⑥ 镜头拖动
 await page.mouse.move(225, 400);
 await page.mouse.down();

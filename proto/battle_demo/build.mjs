@@ -96,8 +96,7 @@ parts.push('})();');
 fs.writeFileSync(OUT, parts.join('\n'), 'utf8');
 console.log(`[build] bundle.js 生成：${order.length} 个模块 → ${OUT}`);
 
-// 自动 bump index.html 的 bundle 版本参数（防浏览器缓存旧包）
-import fs from 'node:fs';
+// 自动 bump index.html 的 bundle 版本参数（防浏览器缓存旧包；复用顶部既有 fs）
 {
   const htmlPath = new URL('./index.html', import.meta.url).pathname;
   let html = fs.readFileSync(htmlPath, 'utf8');

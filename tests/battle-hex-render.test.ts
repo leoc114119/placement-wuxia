@@ -87,11 +87,11 @@ describe('瓦片投影（尖角压扁 + 奇偶行错位，逻辑格不变）', (
 
   it('isMovableCell：居中 12×12 可移动区（T15 R3 FIELD，col/row 2..13）', () => {
     expect(isMovableCell({ q: 1, r: 8 })).toBe(true); // col 5, row 8
-    expect(isMovableCell({ q: 0, r: 2 })).toBe(true); // col 1? floor(2/2)=1 → col 1 出带修正
+    expect(isMovableCell({ q: 0, r: 2 })).toBe(false); // col 1 < 2 出带
     expect(isMovableCell({ q: 1, r: 2 })).toBe(true); // col 2, row 2（西北角）
     expect(isMovableCell({ q: 7, r: 11 })).toBe(true); // col 12, row 11（12×12 扩口径后入带）
-    expect(isMovableCell({ q: 8, r: 12 })).toBe(true); // col 13, row 12（东南角）
-    expect(axialToOffset({ q: 8, r: 12 })).toEqual({ col: 13, row: 12 });
+    expect(isMovableCell({ q: 7, r: 12 })).toBe(true); // col 13, row 12（东南角）
+    expect(axialToOffset({ q: 7, r: 12 })).toEqual({ col: 13, row: 12 });
     expect(isMovableCell({ q: -4, r: 4 })).toBe(false); // col -2 出界
     expect(isMovableCell({ q: -1, r: 15 })).toBe(false); // row 15 > 13
     expect(isMovableCell({ q: 0, r: 1 })).toBe(false); // col 0, row 1 < 2
