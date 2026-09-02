@@ -110,6 +110,7 @@ function demoUnit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 's
 }
 
 let session = makeSession();
+let speedOn = false;
 function makeSession() {
   // 敌方 name=configId（F3 约定：spriteKey=configId → 帧表键；名字牌暂显模板名，美化留后续）
   return createHexBattle({
@@ -128,7 +129,8 @@ let assets: BattleHexAssets = { env: null, topbar: null, plaque: null, ctrl: nul
 
 const input = createBattleInput({
   dispatch: (req) => {
-    session.submit(req);
+    const ok = session.submit(req);
+    if (ok && req.type === 'toggleSpeed') speedOn = !speedOn; // 演出态：加速中可视反馈
   },
   onBlocked: (msg) => toast(msg),
   onPlaque: (label) => toast(`${label}（演示占位）`),
@@ -137,6 +139,7 @@ const input = createBattleInput({
 
 function resetDemo(): void {
   session = makeSession();
+  speedOn = false;
   view.anim.clear();
   view.moveFrom.clear();
   view.fx.length = 0;
@@ -217,6 +220,7 @@ function loop(t: number): void {
   resize(); // 每帧检测窗口尺寸变化（resize 事件不可靠场景兜底）
   session.tick(dt);
   const snap = session.snapshot();
+  view.uiState = { mode: session._debug.mode(), speed: speedOn };
   updateView(view, snap, dt, W, H);
   drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view);
   requestAnimationFrame(loop);

@@ -1,7 +1,7 @@
 // 战斗六边形渲染器（T16 frontend · 只读快照绘制，主架构方案 §2）。
 // 红线：本模块禁止 import battle-core（DoD 自动化扫描）；UI 只展示——所有游戏数值来自快照。
 // 环境无关：ctx 与图片由外部注入（wx canvas / 浏览器 canvas 均可跑），坐标一律整数像素定位。
-import type { BattleSnapshot, FrameContext, HexPos, SkillButtonInfo, SnapshotActor } from '../types';
+import type { BattleMode, BattleSnapshot, FrameContext, HexPos, SkillButtonInfo, SnapshotActor } from '../types';
 import {
   ANIM_FRAMES,
   ANIM_LOOP_GROUPS,
@@ -9,6 +9,7 @@ import {
   BOARD,
   CAMERA,
   COMPONENT_LAYOUT,
+  CTRL_ART,
   CTRL_BUTTONS,
   FX,
   HIGHLIGHT,
@@ -78,6 +79,8 @@ export interface BattleHexView {
   fx: FxItem[];
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
+  /** UI 状态反馈（宿主填充；托管/加速钮高亮显示——快照无此字段，演出态） */
+  uiState: { mode?: BattleMode; speed?: boolean };
   layout: HitLayout;
 }
 
@@ -91,6 +94,7 @@ export function createView(): BattleHexView {
     fx: [],
     skillPop: 0,
     selectedCell: null,
+    uiState: {},
     layout: { skillBtns: [], ctrlRect: null, plaqueRect: null },
   };
 }
@@ -151,7 +155,21 @@ export function boardBounds(): { minX: number; minY: number; maxX: number; maxY:
   };
 }
 
-/** 镜头：跟随 cameraTargetId（MVP 简化：恒跟主角/行动者）+ 拖动偏移 + 包围盒 clamp（旧 T06 口径） */
+/** 镜头跟随聚焦包围盒：可动区 8×8 + 窄边一格（L 环二反馈①：土黄外围自然推出视口，绿区铺满主体） */
+export function movableBounds(): { minX: number; minY: number; maxX: number; maxY: number } {
+  const half = (BOARD.cols - BOARD.movable) / 2; // 4
+  const c0 = hexToWorld(half, half); // 可动区西北格
+  const c1 = hexToWorld(BOARD.movable - 1 + half, BOARD.movable - 1 + half); // 东南格
+  const pad = TILE_W / 2 + CAMERA.followPad; // 窄边一格余量
+  return {
+    minX: c0.x - TILE_W / 2 - pad,
+    minY: c0.y - TILE_H / 2 - pad,
+    maxX: c1.x + TILE_W / 2 + pad + TILE_W * 0.5, // 东南奇数行错位半格余量
+    maxY: c1.y + TILE_H / 2 + SIDE_DEPTH + pad,
+  };
+}
+
+/** 镜头：跟随 cameraTargetId（MVP 简化：恒跟主角/行动者）+ 拖动偏移 + 聚焦包围盒 clamp（旧 T06 口径） */
 export function computeCamera(
   snapshot: BattleSnapshot,
   camDrag: { x: number; y: number },
@@ -163,7 +181,7 @@ export function computeCamera(
     snapshot.actors.find((a) => a.side === 'player') ??
     snapshot.actors[0];
   const base = target ? hexToWorld(target.renderPos.q, target.renderPos.r) : { x: 0, y: 0 };
-  const b = boardBounds();
+  const b = movableBounds();
   const clampAxis = (v: number, min: number, max: number, span: number): number =>
     span >= max - min ? (min + max) / 2 : Math.max(min + span / 2, Math.min(max - span / 2, v));
   return {
@@ -658,11 +676,11 @@ function drawComponents(
   view.layout.plaqueRect = { x: px, y: py, w: pw, h: ph };
   // 右下托管/加速/逃跑（右下锚：L 环反馈④——任何窗口比例恒贴右下可见；缺图时代码占位钮）
   const ct = assets.ctrl;
-  const artAR = ct ? ct.height / ct.width : 448 / 223;
+  const artAR = CTRL_ART.h / CTRL_ART.w; // 448/223（与图片解耦，防异常尺寸）
   const cw = Math.min(COMPONENT_LAYOUT.ctrl.wRatio * width, (COMPONENT_LAYOUT.ctrl.maxHRatio * height) / artAR);
   const ch = cw * artAR;
-  const cx = width - COMPONENT_LAYOUT.ctrl.rightRatio * width - cw;
-  const cy = height - COMPONENT_LAYOUT.ctrl.bottomRatio * height - ch;
+  const cx = Math.round(width - COMPONENT_LAYOUT.ctrl.rightRatio * width - cw);
+  const cy = Math.round(height - COMPONENT_LAYOUT.ctrl.bottomRatio * height - ch);
   if (ct) {
     drawImg(ctx, ct, cx, cy, cw, ch);
   } else {
@@ -684,6 +702,15 @@ function drawComponents(
       const label = b.action === 'mode' ? '托管' : b.action === 'speed' ? '加速' : '逃跑';
       ctx.fillText(label, cx + cw * 0.5, by + bh / 2);
     }
+  }
+  // 状态高亮（L 环二反馈②：托管中/加速中的可视反馈——状态来自宿主填充的演出态）
+  const rim =
+    view.uiState.mode === 'auto' ? 'rgba(255, 235, 160, 0.95)' : view.uiState.speed ? 'rgba(160, 240, 160, 0.9)' : null;
+  if (rim) {
+    const row = view.uiState.mode === 'auto' ? CTRL_BUTTONS[0] : CTRL_BUTTONS[1];
+    ctx.strokeStyle = rim;
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(cx + cw * 0.04, cy + (row.y / CTRL_ART.h) * ch, cw * 0.92, (row.h / CTRL_ART.h) * ch);
   }
   view.layout.ctrlRect = { x: cx, y: cy, w: cw, h: ch };
 }

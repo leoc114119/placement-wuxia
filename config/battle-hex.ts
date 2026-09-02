@@ -8,7 +8,7 @@ import { BATTLE_FRAME } from './battle';
 // ===== 瓦片投影规格（L 环投影改造·Leo 看稿修正：尖角朝上/朝下的压扁六边形——上下尖角、左右竖直边，
 // 宽:高 ≈ 1:0.7；行错位半格 + 行距 0.75H 拼贴出边缘整齐的长方形战区（绘制层战区矩形裁剪）；立体侧面厚 12%） =====
 export const TILE_SPEC = {
-  w: 62, // 横向平边间距（= 旧 s=31 的整格宽，列密度不变）
+  w: 88, // 横向平边间距（L 环二反馈①：62→88，560 宽基准每行 6.4 格 ∈ 6-7 格口径）
   hRatio: 0.7, // 宽:高 = 1:0.7（纵向尖到尖，压扁）
   rowRatio: 0.75, // 行距 = 压扁格高 × 0.75（奇偶行错位半格宽）
   sideRatio: 0.12, // 下尖角/下斜边侧面厚 = 格高 × 12%
@@ -43,7 +43,8 @@ export const BOARD = {
 export const CAMERA = {
   viewportCells: 7, // 以镜头中心 hex 为准的视口宽（96 号）
   dragThresholdPx: 8, // 拖动生效判定（位移超过=拖镜头非点按，旧 T06 已验证）
-  worldPad: 40, // 棋盘世界包围盒四周留白（clamp 边距）
+  worldPad: 40, // 战区裁剪包围盒四周留白（drawCells 用）
+  followPad: 96, // 镜头跟随聚焦：可动区外扩窄边（L 环二反馈①：土黄外围自然推出视口，绿区铺满主体）
 } as const;
 
 // ===== 瓦片配色（v8：草绿/土黄两族区域化分布，非棋盘交替；光照上暗下亮——底部光源氛围） =====
@@ -179,7 +180,10 @@ export const COMPONENT_LAYOUT = {
   ctrl: { rightRatio: 0.02, bottomRatio: 0.025, wRatio: 0.183, maxHRatio: 0.42 },
 } as const;
 
-/** ctrl_r_alpha.png（223×448）三钮行标定（measure.mjs 实测）→ ActionRequest 映射 */
+/** ctrl 组件美术标定尺寸（锚定/行映射用它，弱化对图片对象尺寸的依赖） */
+export const CTRL_ART = { w: 223, h: 448 } as const;
+
+/** ctrl_r_alpha.png（=CTRL_ART 尺寸）三钮行标定（measure.mjs 实测）→ ActionRequest 映射 */
 export const CTRL_BUTTONS: ReadonlyArray<{ y: number; h: number; action: 'mode' | 'speed' | 'flee' }> = [
   { y: 2, h: 128, action: 'mode' }, // 托管
   { y: 163, h: 126, action: 'speed' }, // 加速

@@ -75,3 +75,23 @@
 - 三零 + battle-hex-render 25/25 全绿；全量 116/117——**唯一失败 = backend 工作区未提交 WIP**（tests/battle-hex-timeline.test.ts，仅 import systems/*，与渲染侧文件零交集；battle-session.ts 13:22 仍在被 backend 修改中）
 - 多窗口截图：shot_size_375x667 / 560x700 / 900x560-wide（ctrl/plaque 恒可见断言 3 PASS）
 - 压扁透视截图：shot_0（长方形战区）/ shot_1（放大弧钮+金格选中）
+
+
+---
+
+## 6. 追加批次三：L 环二次反馈修复（2026-09-02 晚）
+
+### 6.1 ① 格子放大+绿区铺满
+- TILE_SPEC.w 62→88（560 宽基准每行 6.4 格 ∈ 6-7 格口径）
+- computeCamera 改 **movableBounds 聚焦**（可动区 8×8 + followPad 96 窄边）——土黄外围自然推出视口，绿区铺满画面主体（截图 shot_0：视口内近全绿，土黄只余窄边）；boardBounds 保留供战区裁剪
+- 顺带修：__demo.W/H 快照改 getter（此前 resize 后断言基准假阳）
+
+### 6.2 ② 托管/加速状态反馈 + 三钮完整
+- 根因判定：三钮本地三尺寸+逐行在屏断言均完整；"无法取消"实为**无状态可视反馈**（切托管/加速后钮面无变化，感知为没反应）
+- 修复：view.uiState（演出态，宿主填充 mode/speed）→ ctrl 钮状态高亮（托管中=金边框住托管钮；加速中=绿边框住加速钮）；main.ts 维护 speedOn（submit 返回值翻转发）；CTRL_ART 标定常量与图片对象解耦（NaN/异常尺寸防御）
+- 回归锁定：ctrl 三钮**逐行在屏**断言入 tests（640×480 非常规比例下验证）
+
+### 6.3 验证
+- 三零 + 117/117 全绿（backend timeline WIP 已由其提交修复，全量回归干净）
+- 端到端 13 断言全 PASS（shot.mjs）：七项清单 + L④ 三尺寸 + L⑥ 直径/防重叠
+- 截图：shot_0（绿区铺满）/ shot_7_auto（托管高亮+AI 聚战）/ shot_size_*

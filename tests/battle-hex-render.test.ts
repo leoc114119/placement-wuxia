@@ -10,6 +10,7 @@ import {
   ANIM_FRAMES,
   ANIM_LOOP_GROUPS,
   ARC_BTNS,
+  CTRL_ART,
   CTRL_BUTTONS,
   ROW_H,
   TILE_W,
@@ -19,6 +20,7 @@ import {
   axialToOffset,
   boardBounds,
   computeCamera,
+  movableBounds,
   createView,
   drawFrame,
   isMovableCell,
@@ -93,7 +95,7 @@ describe('瓦片投影（尖角压扁 + 奇偶行错位，逻辑格不变）', (
   });
 
   it('boardBounds 覆盖 16×16 全图角格', () => {
-    const b = boardBounds();
+    const b = boardBounds(); // 仍导出：drawCells 战区裁剪用全图包围盒
     const c0 = hexToWorld(0, 0);
     const c15 = hexToWorld(8, 15); // 底行最右格（q = 15 - 7）
     expect(b.minX).toBeLessThan(c0.x);
@@ -129,20 +131,26 @@ describe('帧组播报（组内单播、组间不跨）', () => {
 
 // ---------- 镜头 ----------
 describe('镜头（拖动偏移 + 包围盒 clamp）', () => {
-  it('镜头：轴小于视口居中 / 轴大于视口夹界（clamp 轴语义复验）', () => {
+  it('镜头：跟随聚焦可动区（轴小于视口居中 / 轴大于视口夹界）', () => {
     const snap = makeSnapshot([{ id: 'hero', animState: 'idle', pos: { q: 0, r: 0 }, renderPos: { q: 0, r: 0 } }]);
     snap.cameraTargetId = 'hero';
-    const b = boardBounds();
-    // y 轴：压扁后战区高 < 视口高 → 居中（clampAxis 居中语义）
+    const b = movableBounds();
+    const inClamp = (v: number, axis: 'x' | 'y', span: number): boolean => {
+      const min = axis === 'x' ? b.minX : b.minY;
+      const max = axis === 'x' ? b.maxX : b.maxY;
+      return v >= min + span / 2 - 0.01 && v <= max - span / 2 + 0.01;
+    };
+    // y 轴：聚焦盒 672 略大于视口 667 → 夹界；主角 (0,0) 在下缘 → 夹于下界
     const cam = computeCamera(snap, { x: 0, y: 0 }, 375, 667);
-    expect(cam.y).toBeCloseTo((b.minY + b.maxY) / 2, 1);
+    expect(inClamp(cam.y, 'y', 667)).toBe(true);
+    expect(cam.y).toBeCloseTo(b.minY + 667 / 2, 1);
     // x 轴：战区宽 > 视口宽 → 夹于包围盒内
     expect(cam.x).toBeGreaterThanOrEqual(b.minX + 375 / 2 - 0.01);
     expect(cam.x).toBeLessThanOrEqual(b.maxX - 375 / 2 + 0.01);
     // 拖动偏移把镜头推得更远时仍被夹回
     const cam2 = computeCamera(snap, { x: -9999, y: 9999 }, 375, 667);
     expect(cam2.x).toBeCloseTo(b.minX + 375 / 2, 1);
-    expect(cam2.y).toBeCloseTo((b.minY + b.maxY) / 2, 1); // y 轴仍居中
+    expect(inClamp(cam2.y, 'y', 667)).toBe(true);
   });
 });
 
@@ -384,6 +392,15 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     expect(cr!.x + cr!.w).toBeLessThanOrEqual(640);
     expect(cr!.y).toBeGreaterThanOrEqual(0);
     expect(cr!.y + cr!.h).toBeLessThanOrEqual(480);
+    // 三钮逐行在屏（L 环二反馈②：加速/逃跑不许溢出/重叠消失）
+    for (const row of CTRL_BUTTONS) {
+      const rowTop = cr!.y + (row.y / CTRL_ART.h) * cr!.h;
+      const rowBottom = cr!.y + ((row.y + row.h) / CTRL_ART.h) * cr!.h;
+      expect(rowTop).toBeGreaterThanOrEqual(0);
+      expect(rowBottom).toBeLessThanOrEqual(480);
+      expect(cr!.x).toBeGreaterThanOrEqual(0);
+      expect(cr!.x + cr!.w).toBeLessThanOrEqual(640);
+    }
     const pr = view.layout.plaqueRect;
     expect(pr).not.toBeNull();
     expect(pr!.x + pr!.w).toBeLessThanOrEqual(640);
