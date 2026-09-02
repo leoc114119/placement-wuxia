@@ -25,7 +25,7 @@ import {
   computeCamera,
   computeMovePath,
   movableBounds,
-  moveAnimDrawPos,
+  moveAnimDrawPosPx,
   createView,
   drawFrame,
   isMovableCell,
@@ -487,16 +487,39 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
       const dr = path[i].r - path[i - 1].r;
       expect(Math.abs(dq + dr)).toBeLessThanOrEqual(1);
     }
-    // 分段采样连续：moveAnimDrawPos 序列相邻差 ≤ 1 格，且不进入占格中心
-    const ma = { from, pos: to, path, t: 0, duration: 0.9, hopHeight: 0 };
-    let last = path[0];
+    // 分段采样连续：像素序列相邻差 ≤ 半格宽，且不进入占格中心（格中心像素）
+    const ma = { from, pos: to, path, pathPx: path.map((c) => hexToWorld(c.q, c.r)), t: 0, duration: 0.9, hopHeight: 0 };
+    const occPx = hexToWorld(5, 6); // 占格中心像素
+    let last = ma.pathPx[0];
     for (let t = 0; t <= 900; t += 30) {
       ma.t = t / 1000;
-      const pos = moveAnimDrawPos(ma);
-      expect(Math.hypot(pos.q - last.q, pos.r - last.r)).toBeLessThan(1.05);
-      expect(pos.q === 5 && pos.r === 6).toBe(false); // 不落占格中心
+      const pos = moveAnimDrawPosPx(ma);
+      expect(Math.hypot(pos.x - last.x, pos.y - last.y)).toBeLessThan(TILE_W); // 帧间步进 < 1 格宽
+      const dOcc = Math.hypot(pos.x - occPx.x, pos.y - occPx.y);
+      expect(dOcc).toBeGreaterThan(6); // 不贴占格中心（>6px）
       last = pos;
     }
+  });
+
+  it('L 环终验：walk 空场直线优先——无遮挡时走 hex 直线（不长甩锯齿绕行）', () => {
+    const from: HexPos = { q: 3, r: 5 }; // col 5, row 5
+    const to: HexPos = { q: 1, r: 8 }; // col 5, row 8
+    const path = computeMovePath(from, to, new Set());
+    expect(path).toHaveLength(hexDist(from, to) + 1); // 直线=距离+1 格，非 BFS 等距多解
+    expect(path[0]).toEqual(from);
+    expect(path[path.length - 1]).toEqual(to);
+  });
+
+  it('L 环终验：jump 凌空飞越——中间单位不构成阻挡，恒走直线（Leo 09-02 轻功绕行缺陷回归锁）', () => {
+    const from: HexPos = { q: 3, r: 5 }; // col 5, row 5
+    const to: HexPos = { q: 1, r: 8 }; // col 5, row 8
+    const occupied = new Set(['5,6']); // 直线正中占格
+    const path = computeMovePath(from, to, occupied, true);
+    expect(path).toHaveLength(hexDist(from, to) + 1); // 直线长度（未被绕行加长）
+    // 直线穿越占格 (col5,row6)=axial(2,6)——飞越而非绕开
+    expect(path.some((c) => c.q === 2 && c.r === 6)).toBe(true);
+    expect(path[0]).toEqual(from);
+    expect(path[path.length - 1]).toEqual(to);
   });
 
   it('L④ 组件资源失败时代码占位兜底：热区照常产出（托管/加速/逃跑永不消失）', () => {

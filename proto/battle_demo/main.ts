@@ -190,6 +190,16 @@ function logicalToCss(x: number, y: number): CssPoint {
   const r = canvas.getBoundingClientRect();
   return { x: r.left + (x / W) * r.width, y: r.top + (y / H) * r.height };
 }
+function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
+  const hero = session.snapshot().actors.find((a) => a.id === 'hero');
+  if (!hero) return { q: 0, r: 0, hop: 0 };
+  const ma = view.moveAnims.get(hero.id);
+  const mp = ma ? Math.min(1, ma.t / ma.duration) : 1;
+  const q = ma ? ma.from.q + (ma.pos.q - ma.from.q) * mp : hero.renderPos.q;
+  const r = ma ? ma.from.r + (ma.pos.r - ma.from.r) * mp : hero.renderPos.r;
+  return { q: +q.toFixed(3), r: +r.toFixed(3), hop: +pieceHop(view, hero).toFixed(1) };
+}
+
 (window as unknown as Record<string, unknown>).__demo = {
   get session() {
     return session;
@@ -208,13 +218,16 @@ function logicalToCss(x: number, y: number): CssPoint {
   },
   /** 主角演出绘制位置采样（终验：移动帧序列单调性断言用） */
   sampleHeroDraw(): { q: number; r: number; hop: number } {
-    const hero = session.snapshot().actors.find((a) => a.id === 'hero');
-    if (!hero) return { q: 0, r: 0, hop: 0 };
-    const ma = view.moveAnims.get(hero.id);
-    const mp = ma ? Math.min(1, ma.t / ma.duration) : 1;
-    const q = ma ? ma.from.q + (ma.pos.q - ma.from.q) * mp : hero.renderPos.q;
-    const r = ma ? ma.from.r + (ma.pos.r - ma.from.r) * mp : hero.renderPos.r;
-    return { q: +q.toFixed(3), r: +r.toFixed(3), hop: +pieceHop(view, hero).toFixed(1) };
+    return sampleHeroDrawPos();
+  },
+  /** 真实 rAF 逐帧位置录制（终验闪烁实证：Performance.now 时间轴） */
+  startFrameLog(): void {
+    frameLog = [];
+    frameLogOn = true;
+  },
+  stopFrameLog(): Array<{ t: number; q: number; r: number; hop: number }> {
+    frameLogOn = false;
+    return frameLog;
   },
   /** 逻辑坐标 → 页面坐标（ctrl 等布局热区换算用） */
   cssOf(lx: number, ly: number): CssPoint {
@@ -229,10 +242,13 @@ function logicalToCss(x: number, y: number): CssPoint {
 
 // ===== 主循环 =====
 let last = performance.now();
+let frameLog: Array<{ t: number; q: number; r: number; hop: number }> = [];
+let frameLogOn = false;
 function loop(t: number): void {
   const dt = Math.min(0.05, (t - last) / 1000 || 0);
   last = t;
   resize(); // 每帧检测窗口尺寸变化（resize 事件不可靠场景兜底）
+  if (frameLogOn) frameLog.push({ t: Math.round(performance.now()), ...sampleHeroDrawPos() });
   session.tick(dt);
   const snap = session.snapshot();
   view.uiState = { mode: session._debug.mode(), speed: speedOn };

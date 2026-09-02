@@ -15,7 +15,6 @@ import {
   FX,
   HIGHLIGHT,
   hexDist,
-  JUMP,
   jumpParamsFor,
   HUD,
   PIECE,
@@ -68,7 +67,8 @@ interface AnimClock {
 export interface MoveAnim {
   from: HexPos; // 演出起点（axial）
   pos: HexPos; // 锁定终点（演出开始时的快照 pos；中途变更以快照为准续画）
-  path: HexPos[]; // 逐格路径（BFS 自算，绕行语义与 session moveCells 同参；[0]=from 末位=pos）
+  path: HexPos[]; // 逐格路径（格序列：绕行回退时由 BFS 产出；[0]=from 末位=pos）
+  pathPx: Array<{ x: number; y: number }>; // 像素路径点列（格中心 hexToWorld；演出插值在像素空间——恒直无锯齿）
   t: number; // 已演出时长（秒）
   duration: number; // 演出总时长（跳跃按距离插值；行走 = moveLerpSec × max(1, dist)）
   hopHeight: number; // 抛物线顶高（普通行走=0）
@@ -94,6 +94,9 @@ export interface BattleHexView {
   /** 移动演出（L 环终验：演出计时主导——演出期渲染位置/帧组完全由演出插值决定，
    * 结束帧无缝衔接快照 pos；终点不一致=快照被外部改动，以快照为准对齐） */
   moveAnims: Map<string, MoveAnim>;
+  /** 演出已完成防重启标记：演出结束后 session 移动动画可能仍未结束（时长不同步），
+   * 该单位离井 walk 前禁止再触发 walkRise（否则以中途小数为起点重启=左闪右闪根因） */
+  moveDone: Set<string>;
   fx: FxItem[];
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
@@ -111,6 +114,7 @@ export function createView(): BattleHexView {
     camInit: false,
     anim: new Map(),
     moveAnims: new Map(),
+    moveDone: new Set(),
     fx: [],
     skillPop: 0,
     selectedCell: null,
@@ -174,9 +178,39 @@ export function boardBounds(): { minX: number; minY: number; maxX: number; maxY:
   };
 }
 
+/** cube 舍入（hex_lerp 直线取格用） */
+function cubeRound(x: number, y: number, z: number): HexPos {
+  let rx = Math.round(x);
+  let ry = Math.round(y);
+  let rz = Math.round(z);
+  const dx = Math.abs(rx - x);
+  const dy = Math.abs(ry - y);
+  const dz = Math.abs(rz - z);
+  if (dx > dy && dx > dz) rx = -ry - rz;
+  else if (dy > dz) ry = -rx - rz;
+  else rz = -rx - ry;
+  return { q: rx, r: ry }; // cube y 轴 = axial r（z 轴是 s，勿取）
+}
+
+/** hex 直线路径（标准 hex_lerp + cube round）：视觉最直、锯齿最小——**优先走此路径**。
+ * L 环终验实证：BFS 等距多解的锯齿/L 形路径在错位网格像素投影下每段横向偏移差 20-46px，
+ * 即 Leo 观感"左闪右闪才到"的根因。 */
+function hexLerpPath(from: HexPos, to: HexPos): HexPos[] {
+  const n = hexDist(to, from);
+  if (n === 0) return [{ ...from }];
+  const path: HexPos[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const q = from.q + (to.q - from.q) * t;
+    const r = from.r + (to.r - from.r) * t;
+    path.push(cubeRound(q, r, -q - r));
+  }
+  return path;
+}
+
 /** BFS 逐格路径（渲染侧自含，与 session reachable 同参同数学：FIELD 内、6 邻、阻挡=占格）。
- * 绕行演出用——结算真值只在 session，本函数仅还原路径观感。路径含 from 与 pos。 */
-export function computeMovePath(from: HexPos, to: HexPos, occupied: Set<string>): HexPos[] {
+ * 仅当 hex 直线路径被占格/出界挡住时作为绕行回退（锯齿是绕行的必要代价）。路径含 from 与 pos。 */
+function bfsMovePath(from: HexPos, to: HexPos, occupied: Set<string>): HexPos[] {
   const dirs: ReadonlyArray<HexPos> = [
     { q: 1, r: 0 },
     { q: 1, r: -1 },
@@ -212,7 +246,7 @@ export function computeMovePath(from: HexPos, to: HexPos, occupied: Set<string>)
       queue.push(nb);
     }
   }
-  if (!found) return [from, to]; // 不可达防御：退化为直线（与旧观感一致）
+  if (!found) return hexLerpPath(from, to); // 不可达防御：退化为直线
   const path: HexPos[] = [];
   let cur: string | undefined = key(to);
   while (cur) {
@@ -223,24 +257,48 @@ export function computeMovePath(from: HexPos, to: HexPos, occupied: Set<string>)
   return path;
 }
 
-function drawPosQ(ma: MoveAnim): number {
-  return moveAnimDrawPos(ma).q;
-}
-function drawPosR(ma: MoveAnim): number {
-  return moveAnimDrawPos(ma).r;
+/** 移动路径（终验修法二版）：hex_lerp 直线 + **出界格 clamp 进 FIELD 带**——纵向窄走廊下斜向直线的
+ * 中间格必然越带，不 clamp 会判 blocked 回退 BFS 锯齿，段间 20-46px 横跳 = Leo"左闪右闪"根因；
+ * clamp 后去重相邻重复格。walk 仍规避占格（被挡回退 BFS）；jump 凌空无视占格恒直线。 */
+export function computeMovePath(from: HexPos, to: HexPos, occupied: Set<string>, isJump = false): HexPos[] {
+  const line = hexLerpPath(from, to);
+  const clampField = (c: HexPos): HexPos => {
+    const off = axialToOffset(c);
+    if (!off) return c;
+    const col = Math.min(FIELD.colMax, Math.max(FIELD.colMin, off.col));
+    const row = Math.min(FIELD.rowMax, Math.max(FIELD.rowMin, off.row));
+    return { q: col - Math.floor(row / 2), r: row };
+  };
+  const clamped: HexPos[] = [];
+  for (const c of line) {
+    const cc = clampField(c);
+    const last = clamped[clamped.length - 1];
+    if (last && last.q === cc.q && last.r === cc.r) continue; // 去重相邻重复格
+    clamped.push(cc);
+  }
+  clamped[0] = { ...from };
+  clamped[clamped.length - 1] = { ...to };
+  if (isJump) return clamped; // 凌空：无视占格
+  const innerBlocked = clamped.slice(1, -1).some((c) => occupied.has(`${c.q},${c.r}`));
+  if (!innerBlocked) return clamped;
+  return bfsMovePath(from, to, occupied);
 }
 
-/** 移动演出位置采样：按 path 逐格分段插值（绕行演出；t 超时长 = 终点） */
-export function moveAnimDrawPos(ma: MoveAnim): HexPos {
+/** 移动演出位置（像素空间插值：from_px→…→pos_px 沿路径点列线性——像素直线恒直，无错位网格锯齿） */
+export function moveAnimDrawPosPx(ma: MoveAnim): { x: number; y: number } {
   const p = Math.min(1, ma.t / ma.duration);
-  const segs = ma.path.length - 1;
-  if (segs < 1) return { ...ma.pos };
+  const pts = ma.pathPx.length >= 2 ? ma.pathPx : [hexToWorld(ma.from.q, ma.from.r), hexToWorld(ma.pos.q, ma.pos.r)];
+  const segs = pts.length - 1;
+  if (segs < 1) return { x: pts[0].x, y: pts[0].y };
   const f = p * segs;
   const i = Math.min(segs - 1, Math.floor(f));
   const lp = f - i;
-  const a = ma.path[i];
-  const b = ma.path[i + 1];
-  return { q: a.q + (b.q - a.q) * lp, r: a.r + (b.r - a.r) * lp };
+  const a = pts[i];
+  const b = pts[i + 1];
+  return { x: a.x + (b.x - a.x) * lp, y: a.y + (b.y - a.y) * lp };
+}
+function drawPosXY(ma: MoveAnim): { x: number; y: number } {
+  return moveAnimDrawPosPx(ma);
 }
 
 /** 镜头跟随聚焦包围盒：可动区 FIELD + 窄边（L 环二反馈①：土黄外围自然推出视口，绿区铺满主体） */
@@ -290,7 +348,7 @@ export function updateCamera(
 ): void {
   const hero = snapshot.actors.find((a) => a.side === 'player');
   const ma = hero ? view.moveAnims.get(hero.id) : null;
-  const draw = ma && ma.t < ma.duration ? moveAnimDrawPos(ma) : hero?.renderPos ?? null;
+  const draw = ma && ma.t < ma.duration ? moveAnimDrawPosPx(ma) : hero ? hexToWorld(hero.renderPos.q, hero.renderPos.r) : null;
   const ideal = computeCamera(
     { ...snapshot, cameraTargetId: hero ? hero.id : snapshot.cameraTargetId },
     view.camDrag,
@@ -313,8 +371,9 @@ export function updateCamera(
   // 主角条满 → 平滑回拉理想机位（目标点含跳跃表现位置）
   const heroTurn = snapshot.phase === 'fighting' && hero && snapshot.turnActorId === hero.id;
   if (heroTurn && draw) {
+    const drawAxial = worldToHex(draw.x, draw.y);
     const dest = computeCamera(
-      { ...snapshot, cameraTargetId: hero.id, actors: [{ ...hero, renderPos: draw }] },
+      { ...snapshot, cameraTargetId: hero.id, actors: [{ ...hero, renderPos: drawAxial }] },
       view.camDrag,
       width,
       height,
@@ -352,9 +411,13 @@ export function updateView(
     // ---- 移动演出启动（查修一体定位：普通移动此前无演出插值、跳跃演出期帧组随快照切 idle——
     // 统一为演出计时主导：上升沿锁 from/pos/duration/hop，演出期位置与帧组全由演出决定） ----
     const jumpRise = a.isJump && !prevAnim; // 无演出中才启动（AnimClock 不再承担跳跃标记）
-    const walkRise = !prevAnim && a.animState === 'walk' && (a.renderPos.q !== a.pos.q || a.renderPos.r !== a.pos.r);
+    const walkRise =
+      !prevAnim && !view.moveDone.has(a.id) && a.animState === 'walk' &&
+      (a.renderPos.q !== a.pos.q || a.renderPos.r !== a.pos.r);
     if (jumpRise || walkRise) {
-      const from = { q: a.renderPos.q, r: a.renderPos.r };
+      // from 取整到最近格：walkRise 可能在 session lerp 中途触发（小数 renderPos），
+      // 小数起点会让 hexLerp/cubeRound 甩出界外乱路径（L 环终验实证）
+      const from = { q: Math.round(a.renderPos.q), r: Math.round(a.renderPos.r) };
       const pos = { q: a.pos.q, r: a.pos.r };
       const dist = hexDist(pos, from);
       const jp = jumpParamsFor(dist);
@@ -363,23 +426,43 @@ export function updateView(
           .filter((u) => u.id !== a.id && u.animState !== 'dead')
           .map((u) => `${u.pos.q},${u.pos.r}`),
       );
+      const path = computeMovePath(from, pos, occupied, a.isJump);
+      const dur = a.isJump ? jp.duration : PIECE.moveLerpSec * Math.max(1, dist);
       view.moveAnims.set(a.id, {
         from,
         pos,
-        path: computeMovePath(from, pos, occupied),
+        path,
+        pathPx: path.map((c) => hexToWorld(c.q, c.r)),
         t: 0,
-        duration: a.isJump ? jp.duration : PIECE.moveLerpSec * Math.max(1, dist),
+        duration: dur,
         hopHeight: a.isJump ? jp.height : 0,
       });
+      if (typeof console !== 'undefined' && a.id === 'hero') {
+        console.log('DBG[move-start]', JSON.stringify({ trig: jumpRise ? 'jump' : 'walk', from, pos, dist, dur, pathLen: path.length, del: view.moveDone.has(a.id) }));
+      }
     }
-    // ---- 移动演出推进 ----
+    // ---- 移动演出推进（演出计时主导：到时不删、定格终点等快照到位/离开 walk 才释放） ----
     const anim = view.moveAnims.get(a.id);
     if (anim) {
-      anim.t += dt;
+      if (anim.t < anim.duration) anim.t = Math.min(anim.duration, anim.t + dt);
       // 终点变更（session 中途改目标）：以快照为准续画（无瞬移；此为快照真值变更非跳变）
       if (anim.pos.q !== a.pos.q || anim.pos.r !== a.pos.r) anim.pos = { q: a.pos.q, r: a.pos.r };
-      if (anim.t >= anim.duration) view.moveAnims.delete(a.id); // 演出终=快照 pos，无缝衔接
+      // 演出时长已满：定格终点；快照位移到位（或 session 已离开 walk）才释放——
+      // 释放即 moveDone：session 移动动画未结束时禁止 walkRise 重启（时长不同步防抖）
+      if (anim.t >= anim.duration) {
+        const settled =
+          (a.renderPos.q === anim.pos.q && a.renderPos.r === anim.pos.r) || a.animState !== 'walk';
+        if (settled) {
+          if (typeof console !== 'undefined' && a.id === 'hero') {
+            console.log('DBG[move-end]', JSON.stringify({ t: +anim.t.toFixed(2), dur: anim.duration, renderPos: a.renderPos, animState: a.animState }));
+          }
+          view.moveAnims.delete(a.id);
+          view.moveDone.add(a.id);
+        }
+      }
     }
+    // 移动演出单位离开 walk（session 侧到位/转向）→ 解除防重启
+    if (a.animState !== 'walk') view.moveDone.delete(a.id);
     // ---- 动画钟（帧组播报：组切换=新组从组首帧重放） ----
     if (!prev || prev.state !== a.animState) {
       const w = hexToWorld(a.renderPos.q, a.renderPos.r);
@@ -629,17 +712,16 @@ function drawPieces(
   const sorted = [...snapshot.actors].sort((a, b) => {
     const aa = view.moveAnims.get(a.id);
     const ab = view.moveAnims.get(b.id);
-    const wa = hexToWorld(...(aa ? [drawPosQ(aa), drawPosR(aa)] : [a.renderPos.q, a.renderPos.r]) as [number, number]);
-    const wb = hexToWorld(...(ab ? [drawPosQ(ab), drawPosR(ab)] : [b.renderPos.q, b.renderPos.r]) as [number, number]);
+    const wa = aa ? drawPosXY(aa) : hexToWorld(a.renderPos.q, a.renderPos.r);
+    const wb = ab ? drawPosXY(ab) : hexToWorld(b.renderPos.q, b.renderPos.r);
     return wa.y - wb.y;
   });
   const placed: PlacedPiece[] = [];
   for (const actor of sorted) {
     const ma = view.moveAnims.get(actor.id);
-    const draw = ma ? moveAnimDrawPos(ma) : actor.renderPos; // 演出期=路径分段插值位置（快照 renderPos 不参与，双轨消灭）
-    const w0 = hexToWorld(draw.q, draw.r);
-    const sx = Math.round(w0.x - cam.x + width / 2);
-    const syGround = Math.round(w0.y - cam.y + height / 2);
+    const draw = ma ? moveAnimDrawPosPx(ma) : hexToWorld(actor.renderPos.q, actor.renderPos.r); // 演出期=像素空间插值（双轨消灭）
+    const sx = Math.round(draw.x - cam.x + width / 2);
+    const syGround = Math.round(draw.y - cam.y + height / 2);
     const scale = actor.isBoss ? PIECE.bossScale : 1;
     const h = hexH * PIECE.heightPerTile * scale;
     const frameState = ma && ma.t < ma.duration ? 'walk' : actor.animState; // 演出期帧组强制 walk（空中不站立滑行）
