@@ -1,0 +1,121 @@
+[
+ {
+  "name": "idle_down",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:20",
+  "note": "山贼甲锚=主角battle_idle_down(gen)派生img2img，已过并排自检(anchor_selfcheck_v1)"
+ },
+ {
+  "name": "idle_side",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:20",
+  "note": "基准=idle_side"
+ },
+ {
+  "name": "walk_down_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:21",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "walk_down_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:22",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "walk_side_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:23",
+  "note": "基准=idle_side"
+ },
+ {
+  "name": "walk_side_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:24",
+  "note": "基准=idle_side"
+ },
+ {
+  "name": "atk_down_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:25",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "atk_down_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:26",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "atk_down_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:27",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "atk_side_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:28",
+  "note": "基准=idle_side"
+ },
+ {
+  "name": "atk_side_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:29",
+  "note": "基准=idle_side"
+ },
+ {
+  "name": "atk_side_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:30",
+  "note": "基准=idle_side"
+ },
+ {
+  "name": "hit_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:31",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "hit_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:32",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "die_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:33",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "die_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:34",
+  "note": "基准=idle_down"
+ },
+ {
+  "name": "die_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 14:35",
+  "note": "基准=idle_down"
+ }
+]

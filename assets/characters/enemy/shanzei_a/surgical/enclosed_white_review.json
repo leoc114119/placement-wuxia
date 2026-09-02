@@ -1,0 +1,223 @@
+{
+ "说明": "封闭白检测门画布尺度复核（规范§3#3：只记录不自动清除）",
+ "判读口径": "逐块平坦度 std/极差/梯度 + 放大目验；纯平白(std<2)且明确不在服装区才允许外科",
+ "基线": "gen 背景白 std≈0.54/极差2.0（纯平参照）",
+ "结论": "全部 32 块为有纹理浅色区（刀钢高光/衣料高光/腿间带影浅带），无一纯平白 → 0 外科",
+ "复核材料": [
+  "review_ew_montage*.png",
+  "review_idle_down_*_4x.png",
+  "review_idle_down_2x.png"
+ ],
+ "blocks": [
+  {
+   "frame": "atk_down_1",
+   "px": 290,
+   "bbox": [
+    84,
+    69,
+    110,
+    96
+   ],
+   "std": 5.1,
+   "range": 29.0,
+   "grad_px": 353,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "atk_down_2",
+   "px": 84,
+   "bbox": [
+    121,
+    251,
+    141,
+    294
+   ],
+   "std": 7.8,
+   "range": 26.7,
+   "grad_px": 327,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "atk_down_3",
+   "px": 133,
+   "bbox": [
+    80,
+    168,
+    92,
+    196
+   ],
+   "std": 5.0,
+   "range": 25.0,
+   "grad_px": 200,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "atk_side_3",
+   "px": 116,
+   "bbox": [
+    125,
+    213,
+    143,
+    228
+   ],
+   "std": 7.1,
+   "range": 27.7,
+   "grad_px": 155,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "die_1",
+   "px": 86,
+   "bbox": [
+    77,
+    246,
+    88,
+    293
+   ],
+   "std": 8.2,
+   "range": 26.3,
+   "grad_px": 320,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "die_2",
+   "px": 81,
+   "bbox": [
+    67,
+    249,
+    82,
+    260
+   ],
+   "std": 3.5,
+   "range": 19.3,
+   "grad_px": 92,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "hit_2",
+   "px": 106,
+   "bbox": [
+    120,
+    230,
+    145,
+    259
+   ],
+   "std": 7.7,
+   "range": 26.7,
+   "grad_px": 247,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "idle_down",
+   "px": 149,
+   "bbox": [
+    79,
+    168,
+    91,
+    195
+   ],
+   "std": 6.5,
+   "range": 29.0,
+   "grad_px": 182,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "idle_down",
+   "px": 186,
+   "bbox": [
+    100,
+    252,
+    139,
+    277
+   ],
+   "std": 7.7,
+   "range": 28.3,
+   "grad_px": 331,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "idle_down_breath",
+   "px": 163,
+   "bbox": [
+    79,
+    165,
+    91,
+    195
+   ],
+   "std": 6.6,
+   "range": 29.0,
+   "grad_px": 208,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "idle_down_breath",
+   "px": 186,
+   "bbox": [
+    100,
+    252,
+    139,
+    277
+   ],
+   "std": 7.7,
+   "range": 28.3,
+   "grad_px": 331,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "idle_side",
+   "px": 156,
+   "bbox": [
+    161,
+    245,
+    200,
+    282
+   ],
+   "std": 6.9,
+   "range": 26.7,
+   "grad_px": 423,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "idle_side_breath",
+   "px": 156,
+   "bbox": [
+    161,
+    245,
+    200,
+    282
+   ],
+   "std": 6.9,
+   "range": 26.7,
+   "grad_px": 423,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "walk_down_1",
+   "px": 316,
+   "bbox": [
+    76,
+    162,
+    93,
+    217
+   ],
+   "std": 5.4,
+   "range": 28.3,
+   "grad_px": 459,
+   "verdict": "TEXTURED"
+  },
+  {
+   "frame": "walk_down_2",
+   "px": 130,
+   "bbox": [
+    86,
+    194,
+    98,
+    220
+   ],
+   "std": 6.2,
+   "range": 27.7,
+   "grad_px": 175,
+   "verdict": "TEXTURED"
+  }
+ ]
+}
