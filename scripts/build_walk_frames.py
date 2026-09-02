@@ -25,14 +25,24 @@ DEFRINGE_L = 195        # 贴透明区的亮像素直接抠除（白边光晕会
 
 # 方向 → 三姿势 raw 文件名前缀（side_* 面朝右 = right 向；left 镜像派生）
 POSES = {
-    "down":  ["down_stand", "down_stepA", "down_stepB"],
-    "up":    ["up_stand", "up_stepA", "up_stepB"],
-    "right": ["side_stand", "side_stepA", "side_stepB"],
+    "down":       ["down_stand", "down_stepA", "down_stepB"],
+    "up":         ["up_stand", "up_stepA", "up_stepB"],
+    "right":      ["side_stand", "side_stepA", "side_stepB"],
+    "down_right": ["downright_stand", "downright_stepA", "downright_stepB"],
+    "up_right":   ["upright_stand", "upright_stepA", "upright_stepB"],
 }
 # 头部尺寸代理（L 环反馈①：帧间头身比漂移，按头归一而非按全身高）
-#   skin = 面部皮肤像素垂直跨度（down/side，发际→颈底）
-#   height = 全身高归一（up 背面：宽度差主要是马尾摆动=合法动态，不做头校正）
-HEAD_MODE = {"down": "skin", "up": "height", "right": "skin"}
+#   skin = 面部皮肤像素垂直跨度（down/side/斜正面，发际→颈底）
+#   height = 全身高归一（up 系背面：宽度差主要是马尾摆动=合法动态，不做头校正）
+HEAD_MODE = {"down": "skin", "up": "height", "right": "skin",
+             "down_right": "skin", "up_right": "height"}
+
+# 镜像派生对（规范 §4：八向 = 5 向生成 + 3 向镜像；FLIP_LEFT_RIGHT 后过同一校验门）
+MIRROR_PAIRS = [("right", "left"), ("down_right", "down_left"), ("up_right", "up_left")]
+
+# 程序化呼吸帧（规范 §1：腰线以上整体上移 3px，禁 AI 重绘）
+BREATH_SHIFT = 3
+BREATH_WAIST = 0.52   # 腰线 = 人物高度 52% 分界（自头顶起算）
 HEAD_TOL = 0.02         # 归一后头代理一致性门（±2%）
 HEIGHT_CLAMP = (246, 266)  # 头归一时全身高允许范围
 LOOP = [0, 1, 0, 2]     # 站→迈A→站→迈B
@@ -163,8 +173,9 @@ def align(cut, s, head_mode="skin"):
     return frame, m
 
 
-def verify(frame, name):
-    """校验门（规范 §8：非空/高度/质心/脚底/边缘）"""
+def verify(frame, name, h_slack=0):
+    """校验门（规范 §8：非空/高度/质心/脚底/边缘）。h_slack：程序化呼吸帧
+    上半身上移 BREATH_SHIFT 是设计行为，高度上界放行 +3（仍查下界/脚底/质心/触边）"""
     bbox = frame.getbbox()
     issues = []
     if bbox is None:
@@ -185,8 +196,8 @@ def verify(frame, name):
          "centroid_x": round(cx, 1), "feet_y": y1}
     if not (0.02 <= ratio <= 0.55):
         issues.append(f"{name}: 非空占比异常 {ratio:.3f}")
-    if not (CHAR_H - 10 <= h <= CHAR_H + 10):
-        issues.append(f"{name}: 高度越界 {h} (目标 {CHAR_H}±10)")
+    if not (CHAR_H - 10 <= h <= CHAR_H + 10 + h_slack):
+        issues.append(f"{name}: 高度越界 {h} (目标 {CHAR_H}±10{f'+{h_slack}' if h_slack else ''})")
     if abs(y1 - BASELINE_Y) > 2:
         issues.append(f"{name}: 脚底基线漂移 {y1}≠{BASELINE_Y}")
     if abs(cx - CENTER_X) > 4:
@@ -196,34 +207,62 @@ def verify(frame, name):
     return issues, m
 
 
+def make_breath(stand):
+    """程序化呼吸帧：腰线（人物高 52%）以上整体上移 3px，下半身原位。
+    接缝处理：上移后在腰线处留 3px 空带，用"上移后上半身底部 3 行内容重叠加固"
+    （复制上移后 [waist-6, waist-3) 行到 [waist-3, waist)）填满空带防透明缝，
+    再把下半身原位贴回（重叠区以下半身为准）。腰线落在深色腰封区，复制行不可见。
+    仅胸口/头/肩上浮，脚底不动——与 AI 重绘呼吸帧（v13 前科抖动）区分。"""
+    W, H = stand.size
+    bb = stand.getbbox()
+    if bb is None:
+        return None
+    y0, y1 = bb[1], bb[3]
+    waist = y0 + int((y1 - y0) * BREATH_WAIST)
+    out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    upper = stand.crop((0, 0, W, waist))
+    lower = stand.crop((0, waist, W, H))
+    # 注意：纯像素平移用无 mask 粘贴（paste(im,pos,im) 会把半透明像素 alpha 平方，
+    # 边缘出现二次加深的虚边——T14 实测前科）。三块区域互不重叠，顺序无关。
+    out.paste(upper, (0, -BREATH_SHIFT))                              # 上半身整体上移
+    seam = out.crop((0, waist - BREATH_SHIFT * 2, W, waist - BREATH_SHIFT))
+    out.paste(seam, (0, waist - BREATH_SHIFT))                        # 接缝重叠加固
+    out.paste(lower, (0, waist))                                      # 下半身原位
+    return out
+
+
 def process_dir(root, direction):
     names = POSES[direction]
     frames, report = {}, {}
     issues_all = []
+    soft_alarms = []   # 封闭白检测门：只记录不自动清除（规范 §3#3，白衣白裤=合法近白）
     mode = HEAD_MODE[direction]
     # 第一遍：抠图 + 测头部代理（以 stand 帧为该方向基准）
     cuts, heads = {}, {}
     for name in names:
         raw_path = os.path.join(root, "raw", f"{name}.png")
         if not os.path.exists(raw_path):
-            return None, [f"{direction}: 缺 raw {raw_path}"], {}
+            return None, [f"{direction}: 缺 raw {raw_path}"], [], {}
         cut, n_bg = flood_cut(Image.open(raw_path))
         cut.save(os.path.join(root, "cut", f"{name}.png"))
         cuts[name] = cut
         heads[name] = measure_head(cut, mode)
         for n_px, bbox in detect_enclosed_white(cut):
-            issues_all.append(f"{direction}/{name}: 封闭白残留 {n_px}px bbox={bbox}（泛洪盲区，需外科清除）")
-    # 可选呼吸帧（down_breath.png 存在时：同锚归一，输出 idle_{dir}_breath）
+            soft_alarms.append(f"{name}: 封闭白残留 {n_px}px bbox={bbox}（泛洪盲区，待人工判读）")
+    # 呼吸帧：优先 AI 呼吸 raw（down 历史件）；否则程序化（规范 §1：禁 AI 重绘）
     prefix = POSES[direction][0].split('_')[0]
     breath_path = os.path.join(root, "raw", f"{prefix}_breath.png")
     breath_cut = None
+    prog_breath = False
     if os.path.exists(breath_path):
         bc, _ = flood_cut(Image.open(breath_path))
         breath_cut = bc
         heads[f"{prefix}_breath"] = measure_head(bc, mode if mode != "height" else "skin")
+    else:
+        prog_breath = True
     target = heads[names[0]]
     if not target:
-        return None, [f"{direction}: stand 帧头代理测量为 0，无法归一"], {}
+        return None, [f"{direction}: stand 帧头代理测量为 0，无法归一"], [], {}
     # 第二遍：头归一（相对校正 × 全局定标 × 全身高钳制）；height 模式=只做全局定标
     bbox_hs = {n: cuts[n].getbbox()[3] - cuts[n].getbbox()[1] for n in names}
     s_head = {n: (target / heads[n]) if mode != "height" else 1.0 for n in names}
@@ -253,7 +292,15 @@ def process_dir(root, direction):
         issues_all += iss_b
         frames[f"{prefix}_breath"] = frame_b
         report[f"{prefix}_breath"] = m_b
-    return frames, issues_all, report
+    elif prog_breath:
+        frame_b = make_breath(frames[names[0]])
+        iss_b, m_b2 = verify(frame_b, f"{prefix}_breath", h_slack=BREATH_SHIFT)
+        m_b = {"mode": "programmatic", "shift_px": BREATH_SHIFT, "waist_pct": BREATH_WAIST}
+        m_b.update(m_b2)
+        issues_all += iss_b
+        frames[f"{prefix}_breath"] = frame_b
+        report[f"{prefix}_breath"] = m_b
+    return frames, issues_all, soft_alarms, report
 
 
 def main():
@@ -267,11 +314,15 @@ def main():
     os.makedirs(os.path.join(root, "cut"), exist_ok=True)
 
     full_report, all_issues = {}, []
+    all_soft = []
     final_frames = {}
     for direction in args.dirs:
-        frames, iss, rep = process_dir(root, direction)
+        frames, iss, soft, rep = process_dir(root, direction)
         if frames is None:
             print("\n".join(iss)); sys.exit(1)
+        if soft:
+            full_report.setdefault("_alarms_enclosed_white", {})[direction] = soft
+            all_soft += [f"[{direction}] {s}" for s in soft]
         # 4 帧循环 + idle
         seq = [frames[names] for names in
                [POSES[direction][LOOP[0]], POSES[direction][LOOP[1]],
@@ -294,16 +345,31 @@ def main():
                 all_issues.append(f"{direction}: 头尺寸散差 {spread:.1f}% > 6%（钳制触顶），建议重生成该向")
         print(f"[{direction}] 4 walk + idle 合成完毕，校验问题 {len(iss)}")
 
-    # left = right 镜像（规范#10）
-    if "right" in args.dirs and "left" in sys.argv or True:
-        for key in [k for k in list(final_frames) if k.startswith(("walk_right", "idle_right"))]:
-            if key == "idle_right" or True:
-                lk = key.replace("right", "left")
-                final_frames[lk] = final_frames[key].transpose(Image.FLIP_LEFT_RIGHT)
+    # 镜像派生（规范 §4：left=right、down_left=down_right、up_left=up_right）
+    #   前缀精确匹配（walk_right 不匹配 walk_down_right），翻转后统一过校验门
+    for src_dir, dst_dir in MIRROR_PAIRS:
+        if src_dir not in args.dirs:
+            continue
+        for key in list(final_frames):
+            if key.startswith((f"walk_{src_dir}", f"idle_{src_dir}")):
+                dk = key.replace(src_dir, dst_dir, 1)
+                final_frames[dk] = final_frames[key].transpose(Image.FLIP_LEFT_RIGHT)
 
-    # 全量复检（含镜像帧）
+    # 全量复检（含镜像帧；程序化呼吸帧高度上界 +BREATH_SHIFT，镜像方向回溯源方向）
+    prog_breath_dirs = set()
+    for direction in args.dirs:
+        prefix = POSES[direction][0].split('_')[0]
+        if not os.path.exists(os.path.join(root, "raw", f"{prefix}_breath.png")):
+            prog_breath_dirs.add(direction)
+    mirror_src = {dst: src for src, dst in MIRROR_PAIRS}
     for name, f in final_frames.items():
-        iss, m = verify(f, name)
+        slack = 0
+        if name.startswith("idle_") and name.endswith("_breath"):
+            d = name[len("idle_"):-len("_breath")]
+            d = mirror_src.get(d, d)
+            if d in prog_breath_dirs:
+                slack = BREATH_SHIFT
+        iss, m = verify(f, name, h_slack=slack)
         full_report.setdefault("final", {})[name] = m
         all_issues += iss
 
@@ -331,11 +397,14 @@ def main():
         json.dump(full_report, fp, ensure_ascii=False, indent=1)
 
     print(f"\n共 {len(final_frames)} 帧 → {root}/frames/ · contact_sheet.png · report.json")
+    if all_soft:
+        print(f"\n⚠️ 封闭白检测门报警 {len(all_soft)} 条（只记录不清除，已写入 report._alarms_enclosed_white，待人工判读）：")
+        print("\n".join(all_soft))
     if all_issues:
         print("❌ 校验失败：")
         print("\n".join(all_issues))
         sys.exit(1)
-    print("✅ 校验门全过")
+    print("✅ 校验门全过（硬失败 0）")
 
 
 if __name__ == "__main__":
