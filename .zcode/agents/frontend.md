@@ -30,6 +30,8 @@ injectAgentsMd: true
 
 **开工三动作**（双窗口对齐协议）：`git pull` → 读 `docs/PROJECT-MEMORY.md` 决策表最新几行 → 看 `tasks/LOG.md` 头部（倒序，最新在上）。
 
+**返工/验收修复开工前必读**（上下文从箱子重建，不依赖窗口对话记忆）：`threads/Txx.md` 任务全程 + `done/Txx-done.md` 交付回执（DoD 勾选/架构决策/文件清单）+ 该任务号 `git log` 与 diff。
+
 **需求文档**（任务标准/交付/验收唯一依据，常青模式：文件名不带版本号，当前版本看文档头）：
 
 | 域 | 路径 |
