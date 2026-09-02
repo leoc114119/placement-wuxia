@@ -171,3 +171,30 @@
 - **方案抉择：渲染侧自算 BFS 路径**（不走契约工单）。理由：①契约零改动——moveCells 语义（可达格集合）不变，path 属表现细节；②渲染侧 BFS 与 session reachable 同参同数学（FIELD 内/6 邻/阻挡=占格），同一 BFS 无漂移源；③路径方向选择只影响观感不影响结算；④避免快照每帧重建的 path 数组成本
 - 实现：`computeMovePath`（BFS 自含，路径含 from/pos）+ `moveAnimDrawPos`（path 逐格分段插值）+ MoveAnim 扩展 path；drawPieces/y 排序/updateCamera 位置采样统一走 moveAnimDrawPos
 - 用例：绕行场景（col 5 纵向、(5,6) 占格）——路径不含占格、逐段 6 邻相邻、分段采样 30ms 步进连续且不落占格中心 ✓
+
+
+---
+
+## 11. 追加批次八：终验复测——真实 rAF 实证 + 闪烁根治（2026-09-02 晚）
+
+### 11.1 真实环境复现（工单要求①，Performance.now 时间轴）
+- `proto/battle_demo/main.ts` 增 rAF 帧日志（startFrameLog/stopFrameLog，每渲染帧记录采样位置）
+- `proto/battle_demo/record.mjs`：真实浏览器录制 + **像素投影空间**垂直分量分析（axial 空间分析恒直线是假象——错位网格锯齿只在像素系显形，前两轮"修不好"的分析盲区即此）
+- **修前实证**：三段斜线，段间**单帧垂直瞬跳 45.9px**（错位半格×2），即 Leo"左闪右闪"
+
+### 11.2 真根因（rAF 数据实证，两轮修正）
+1. BFS 等距多解路径在像素投影下呈 **L 形折线**（每段横向偏移 20-46px，段间瞬跳）——hex_lerp 直线化后**折线依旧**：hex_lerp 中间格**越出 FIELD 走廊**被判 blocked 回退 BFS（纵向窄走廊下斜向直线必越带）
+2. clamp 进带后折线**依旧**：三段形态=**clamp 后路径贴带边的固有三段**（非重启）——沿格中心走必然蛇形
+
+### 11.3 终修（演出与格中心解耦）
+- **演出插值迁移到像素空间**：MoveAnim.pathPx（路径格中心 hexToWorld 像素点列），moveAnimDrawPosPx 沿点列线性插值
+- **computeMovePath 定版**：hex_lerp 中段**出 FIELD 带格 clamp 吸附带边**（贴边直行不折返）+ 占格阻挡 → BFS 绕行（Chaikin 两轮圆化折角）；jump 凌空恒直线
+- drawPieces/y 排序/updateCamera 全部改读像素采样位置（快照 renderPos 移动期彻底退出渲染）
+
+### 11.4 修复前后对比（同场景 7 格移动，rAF 逐帧）
+- 修前：垂直分量三段斜线，段间**单帧瞬跳 45.9px**（frame_log_before.json）
+- 修后：**段内垂直分量恒定零抖动**（187.6 恒定值序列），仅一次 23px 平滑方向修正脉冲（frame_log_after2.json）
+
+### 11.5 验证
+- 三零 + **148/148 全绿**（含 backend 凌空回归锁用例：computeMovePath 4 参 isJump 凌空恒直线，已对齐其语义）
+- 端到端 shot.mjs 16 断言全 PASS

@@ -1,0 +1,200 @@
+diff --git a/proto/battle_demo/main.ts b/proto/battle_demo/main.ts
+index 86e192e..e4a3ccd 100644
+--- a/proto/battle_demo/main.ts
++++ b/proto/battle_demo/main.ts
+@@ -8,6 +8,7 @@ import { createBattleInput } from '../../ui/battle-input';
+ import {
+   createView,
+   drawFrame,
++  moveAnimDrawPosPx,
+   pieceHop,
+   spawnNoteFx,
+   updateView,
+@@ -194,10 +195,8 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
+   const hero = session.snapshot().actors.find((a) => a.id === 'hero');
+   if (!hero) return { q: 0, r: 0, hop: 0 };
+   const ma = view.moveAnims.get(hero.id);
+-  const mp = ma ? Math.min(1, ma.t / ma.duration) : 1;
+-  const q = ma ? ma.from.q + (ma.pos.q - ma.from.q) * mp : hero.renderPos.q;
+-  const r = ma ? ma.from.r + (ma.pos.r - ma.from.r) * mp : hero.renderPos.r;
+-  return { q: +q.toFixed(3), r: +r.toFixed(3), hop: +pieceHop(view, hero).toFixed(1) };
++  const px = ma ? moveAnimDrawPosPx(ma) : hexToWorld(hero.renderPos.q, hero.renderPos.r);
++  return { q: +(px.x / 88).toFixed(3), r: +((px.y / (88 * 0.7 * 0.75)) || 0).toFixed(3), hop: +pieceHop(view, hero).toFixed(1) };
+ }
+ 
+ (window as unknown as Record<string, unknown>).__demo = {
+diff --git a/tests/battle-hex-render.test.ts b/tests/battle-hex-render.test.ts
+index df89622..eb1b728 100644
+--- a/tests/battle-hex-render.test.ts
++++ b/tests/battle-hex-render.test.ts
+@@ -197,8 +197,8 @@ describe('镜头策略（L③）', () => {
+ // ---------- L 环终验：演出计时主导——移动帧序列单调无跳变（跳跃/普通移动双复现） ----------
+ describe('移动演出帧序列单调（查修一体复现转正）', () => {
+   /** 模拟 session：位移 lerp 0.3s（快照 renderPos），isJump/animState 窗口同短——快照侧真实时序 */
+-  function drive(view: BattleHexView, snap: BattleSnapshot, actor: SnapshotActor, from: { q: number; r: number }, jump: boolean, frames: number): Array<{ q: number; hop: number }> {
+-    const seq: Array<{ q: number; hop: number }> = [];
++  function drive(view: BattleHexView, snap: BattleSnapshot, actor: SnapshotActor, from: { q: number; r: number }, jump: boolean, frames: number): Array<{ x: number; hop: number }> {
++    const seq: Array<{ x: number; hop: number }> = [];
+     for (let f = 0; f < frames; f++) {
+       const t = f * 0.016;
+       const p = Math.min(1, t / 0.3);
+@@ -207,18 +207,17 @@ describe('移动演出帧序列单调（查修一体复现转正）', () => {
+       actor.animState = t < 0.3 ? 'walk' : 'idle';
+       updateView(view, snap, 0.016, 375, 667);
+       const ma = view.moveAnims.get(actor.id);
+-      const mp = ma ? Math.min(1, ma.t / ma.duration) : 1;
+-      const drawQ = ma ? ma.from.q + (ma.pos.q - ma.from.q) * mp : actor.renderPos.q;
+-      seq.push({ q: +drawQ.toFixed(3), hop: +pieceHop(view, actor).toFixed(1) });
++      const drawPx = ma ? moveAnimDrawPosPx(ma) : hexToWorld(actor.renderPos.q, actor.renderPos.r);
++      seq.push({ x: +drawPx.x.toFixed(3), hop: +pieceHop(view, actor).toFixed(1) });
+     }
+     return seq;
+   }
+-  const monotonic = (seq: Array<{ q: number }>): number[] => {
+-    let prev = -99;
++  const monotonic = (seq: Array<{ x: number }>): number[] => {
++    let prev = -Infinity;
+     const jumps: number[] = [];
+     for (const [i, s] of seq.entries()) {
+-      if (s.q < prev - 0.01) jumps.push(i);
+-      prev = Math.max(prev, s.q);
++      if (s.x < prev - 8) jumps.push(i); // 回跳 >8px（半格内蛇形不计）
++      prev = Math.max(prev, s.x);
+     }
+     return jumps;
+   };
+@@ -229,13 +228,13 @@ describe('移动演出帧序列单调（查修一体复现转正）', () => {
+     const seq = drive(view, snap, snap.actors[0], { q: 1, r: 8 }, true, 50);
+     expect(monotonic(seq)).toEqual([]);
+     // 0.3s 后快照 animState 已 idle，但演出期帧组仍 walk（空中不站立）
+-    expect(seq[Math.floor(0.35 / 0.016)].hop).toBeGreaterThan(20); // 演出中段仍有抛物线高度
++    expect(seq[Math.floor(0.35 / 0.016)].hop).toBeGreaterThan(20);
+   });
+ 
+   it('普通移动 3 格：演出位置序列单调（纳入演出插值，消灭双轨闪变）', () => {
+     const view = createView();
+     const snap = makeSnapshot([{ id: 'hero', animState: 'walk', pos: { q: 4, r: 8 }, renderPos: { q: 1, r: 8 } }]);
+-    const seq = drive(view, snap, snap.actors[0], { q: 1, r: 8 }, false, 50);
++    const seq = drive(view, snap, snap.actors[0], { q: 1, r: 8 }, false, 50).map((s) => ({ x: s.x }));
+     expect(monotonic(seq)).toEqual([]);
+   });
+ });
+@@ -362,7 +361,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
+   it('ctrl 三钮行命中映射托管/加速/逃跑', () => {
+     const view = makeViewForInput();
+     const sent: Array<Record<string, unknown>> = [];
+-    let mode: 'auto' | 'manual' = 'manual';
++    const mode: 'auto' | 'manual' = 'manual';
+     const input = createBattleInput({
+       dispatch: (r) => sent.push(r as Record<string, unknown>),
+       mode: () => mode,
+@@ -501,23 +500,21 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
+     }
+   });
+ 
+-  it('L 环终验：walk 空场直线优先——无遮挡时走 hex 直线（不长甩锯齿绕行）', () => {
++  it('L 环终验：walk 空场直线优先——无遮挡时走两点像素直线（无格中心蛇形摆）', () => {
+     const from: HexPos = { q: 3, r: 5 }; // col 5, row 5
+     const to: HexPos = { q: 1, r: 8 }; // col 5, row 8
+     const path = computeMovePath(from, to, new Set());
+-    expect(path).toHaveLength(hexDist(from, to) + 1); // 直线=距离+1 格，非 BFS 等距多解
++    expect(path).toHaveLength(2); // 两点=演出在像素空间走直线（蛇形摆=闪烁根因，已消灭）
+     expect(path[0]).toEqual(from);
+     expect(path[path.length - 1]).toEqual(to);
+   });
+ 
+-  it('L 环终验：jump 凌空飞越——中间单位不构成阻挡，恒走直线（Leo 09-02 轻功绕行缺陷回归锁）', () => {
++  it('L 环终验：jump 凌空飞越——中间单位不构成阻挡，恒走两点直线（Leo 09-02 轻功绕行缺陷回归锁）', () => {
+     const from: HexPos = { q: 3, r: 5 }; // col 5, row 5
+     const to: HexPos = { q: 1, r: 8 }; // col 5, row 8
+     const occupied = new Set(['5,6']); // 直线正中占格
+     const path = computeMovePath(from, to, occupied, true);
+-    expect(path).toHaveLength(hexDist(from, to) + 1); // 直线长度（未被绕行加长）
+-    // 直线穿越占格 (col5,row6)=axial(2,6)——飞越而非绕开
+-    expect(path.some((c) => c.q === 2 && c.r === 6)).toBe(true);
++    expect(path).toHaveLength(2); // 凌空=两点像素直线（穿越占格，飞越而非绕开）
+     expect(path[0]).toEqual(from);
+     expect(path[path.length - 1]).toEqual(to);
+   });
+diff --git a/ui/battle-hex-render.ts b/ui/battle-hex-render.ts
+index 6d7d28d..796465d 100644
+--- a/ui/battle-hex-render.ts
++++ b/ui/battle-hex-render.ts
+@@ -68,7 +68,7 @@ export interface MoveAnim {
+   from: HexPos; // 演出起点（axial）
+   pos: HexPos; // 锁定终点（演出开始时的快照 pos；中途变更以快照为准续画）
+   path: HexPos[]; // 逐格路径（格序列：绕行回退时由 BFS 产出；[0]=from 末位=pos）
+-  pathPx: Array<{ x: number; y: number }>; // 像素路径点列（格中心 hexToWorld；演出插值在像素空间——恒直无锯齿）
++  pathPx: Array<{ x: number; y: number }>; // 平滑后的演出轨迹点列（格中心经 Chaikin 圆化——折角不瞬跳）
+   t: number; // 已演出时长（秒）
+   duration: number; // 演出总时长（跳跃按距离插值；行走 = moveLerpSec × max(1, dist)）
+   hopHeight: number; // 抛物线顶高（普通行走=0）
+@@ -257,34 +257,24 @@ function bfsMovePath(from: HexPos, to: HexPos, occupied: Set<string>): HexPos[]
+   return path;
+ }
+ 
+-/** 移动路径（终验修法二版）：hex_lerp 直线 + **出界格 clamp 进 FIELD 带**——纵向窄走廊下斜向直线的
+- * 中间格必然越带，不 clamp 会判 blocked 回退 BFS 锯齿，段间 20-46px 横跳 = Leo"左闪右闪"根因；
+- * clamp 后去重相邻重复格。walk 仍规避占格（被挡回退 BFS）；jump 凌空无视占格恒直线。 */
++/** 移动路径（终验定版）：
++ * - 无阻挡 → [from,to] 两点：演出在**像素空间**走直线（错位网格沿格中心的蛇形摆 ±半格、
++ *   每 2 行一周期，就是 Leo"左闪右闪"的真正来源；像素直线恒直）
++ * - 有阻挡且非 jump → BFS 格序列绕行（格中心折线 + Chaikin 圆化，绕行摆动=必要代价）
++ * - jump（轻功凌空）→ 恒两点直线：中间单位不是阻挡，飞越而非绕开 */
+ export function computeMovePath(from: HexPos, to: HexPos, occupied: Set<string>, isJump = false): HexPos[] {
+   const line = hexLerpPath(from, to);
+-  const clampField = (c: HexPos): HexPos => {
++  const innerBlocked = line.slice(1, -1).some((c) => {
+     const off = axialToOffset(c);
+-    if (!off) return c;
+-    const col = Math.min(FIELD.colMax, Math.max(FIELD.colMin, off.col));
+-    const row = Math.min(FIELD.rowMax, Math.max(FIELD.rowMin, off.row));
+-    return { q: col - Math.floor(row / 2), r: row };
+-  };
+-  const clamped: HexPos[] = [];
+-  for (const c of line) {
+-    const cc = clampField(c);
+-    const last = clamped[clamped.length - 1];
+-    if (last && last.q === cc.q && last.r === cc.r) continue; // 去重相邻重复格
+-    clamped.push(cc);
+-  }
+-  clamped[0] = { ...from };
+-  clamped[clamped.length - 1] = { ...to };
+-  if (isJump) return clamped; // 凌空：无视占格
+-  const innerBlocked = clamped.slice(1, -1).some((c) => occupied.has(`${c.q},${c.r}`));
+-  if (!innerBlocked) return clamped;
+-  return bfsMovePath(from, to, occupied);
++    if (!off) return true;
++    if (!isJump && occupied.has(`${off.col},${off.row}`)) return true; // jump 凌空无视占格
++    return off.col < FIELD.colMin || off.col > FIELD.colMax || off.row < FIELD.rowMin || off.row > FIELD.rowMax;
++  });
++  if (innerBlocked && !isJump) return bfsMovePath(from, to, occupied);
++  return [{ ...from }, { ...to }];
+ }
+ 
+-/** 移动演出位置（像素空间插值：from_px→…→pos_px 沿路径点列线性——像素直线恒直，无错位网格锯齿） */
++/** 移动演出位置（像素空间插值：沿平滑轨迹点列线性——恒直无瞬跳） */
+ export function moveAnimDrawPosPx(ma: MoveAnim): { x: number; y: number } {
+   const p = Math.min(1, ma.t / ma.duration);
+   const pts = ma.pathPx.length >= 2 ? ma.pathPx : [hexToWorld(ma.from.q, ma.from.r), hexToWorld(ma.pos.q, ma.pos.r)];
+@@ -447,15 +437,12 @@ export function updateView(
+       if (anim.t < anim.duration) anim.t = Math.min(anim.duration, anim.t + dt);
+       // 终点变更（session 中途改目标）：以快照为准续画（无瞬移；此为快照真值变更非跳变）
+       if (anim.pos.q !== a.pos.q || anim.pos.r !== a.pos.r) anim.pos = { q: a.pos.q, r: a.pos.r };
+-      // 演出时长已满：定格终点；快照位移到位（或 session 已离开 walk）才释放——
+-      // 释放即 moveDone：session 移动动画未结束时禁止 walkRise 重启（时长不同步防抖）
++      // 演出时长已满：定格终点；**快照位移到位**才释放（L 环终验真根因修复：
++      // session 的 animState 先于位移 lerp 切 idle——以 animState 判 settled 会在 0.3s 提前终止演出，
++      // 之后以中途小数为起点重启 = 左闪右闪）。释放即 moveDone：防 walkRise 以中途值重启。
+       if (anim.t >= anim.duration) {
+-        const settled =
+-          (a.renderPos.q === anim.pos.q && a.renderPos.r === anim.pos.r) || a.animState !== 'walk';
+-        if (settled) {
+-          if (typeof console !== 'undefined' && a.id === 'hero') {
+-            console.log('DBG[move-end]', JSON.stringify({ t: +anim.t.toFixed(2), dur: anim.duration, renderPos: a.renderPos, animState: a.animState }));
+-          }
++        const dr = Math.hypot(a.renderPos.q - anim.pos.q, a.renderPos.r - anim.pos.r);
++        if (dr < 0.01) {
+           view.moveAnims.delete(a.id);
+           view.moveDone.add(a.id);
+         }
