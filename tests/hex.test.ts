@@ -146,6 +146,20 @@ describe('jumpReachable（F-06 跳跃）', () => {
     expect(landing.length).toBe(11);
     expect(has(landing, { q: 2, r: 0 })).toBe(false);
   });
+
+  it('【F1 姊妹锁死】跨越单位直达：中间格被占，跳跃直达其后目标格（普通移动则被切割）', () => {
+    // C 案 A3：普通移动不可穿任何单位；跳跃=可穿越（纯距离半径，无连通性要求）。
+    // 场景：玩家 O(0,0)、挡路单位 X(1,0)、目标 Y(2,0)（O-X-Y 直线，cube(Y)=2）。
+    const o = { q: 0, r: 0 };
+    const blocker = { q: 1, r: 0 };
+    const target = { q: 2, r: 0 };
+    // 普通移动：2 步内到 Y 必经 X → 被切割失达
+    expect(has(reachable(o, 2, [blocker]), target)).toBe(false);
+    // 跳跃（power 4 → 半径 2）：无视中间单位直达 Y，落点为空格
+    expect(has(jumpReachable(o, 4, [blocker]), target)).toBe(true);
+    // 落点占用仍排除：blocker 本身不可作为跳跃落点
+    expect(has(jumpReachable(o, 4, [blocker]), blocker)).toBe(false);
+  });
 });
 
 // ---------- 例 6：射程三形态（O2 定版几何） ----------

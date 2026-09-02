@@ -379,6 +379,35 @@ describe('轻功交互链（F1 阻塞项修复验证）', () => {
     expect(s.submit({ type: 'move', to })).toBe(false);
   });
 
+  it('【F1 姊妹端到端】跳跃跨越单位：敌占邻格挡路，其后格仍在跳跃 moveCells 且点格位移成功', () => {
+    const { s } = qingSession(); // 轻功 grade1.0/level10 → power 5 → 跳跃半径 2
+    // 推进到敌 AI 贴身（占玩家邻格 X，天然挡路单位）
+    let pu: (typeof s._debug.units)[number] | undefined;
+    let eu: typeof pu;
+    for (let guard = 0; guard < 40; guard++) {
+      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+      pu = s._debug.units.find((u) => u.id === 'p')!;
+      eu = s._debug.units.find((u) => u.id === 'e0')!;
+      if (cubeDistance(pu.hex, eu.hex) <= 1) break;
+      const cells = s.snapshot().moveCells;
+      const to = cells.slice().sort((a, b) => cubeDistance(a, eu.hex) - cubeDistance(b, eu.hex))[0];
+      if (to) s.submit({ type: 'move', to });
+    }
+    expect(cubeDistance(pu!.hex, eu!.hex)).toBeLessThanOrEqual(1);
+    // 激活轻功：Y = 穿越 X 的对侧直达格（X 的邻格中距玩家 2 者）
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const snap = s.snapshot();
+    expect(snap.moveKind).toBe('jump');
+    const Y = hexNeighbors(eu!.hex).find(
+      (h) => cubeDistance(pu!.hex, h) === 2 && snap.moveCells.some((m) => m.q === h.q && m.r === h.r),
+    );
+    expect(Y).toBeDefined(); // 跨越单位的目标格在跳跃格集（纯距离筛选，无连通污染）
+    expect(s.submit({ type: 'move', to: Y! })).toBe(true); // 点格位移成功（跨越单位）
+    const after = s._debug.units.find((u) => u.id === 'p')!.hex;
+    expect(after.q === Y!.q && after.r === Y!.r).toBe(true);
+    expect(s.snapshot().actors.find((a) => a.id === 'p')!.isJump).toBe(true); // 跳跃非绕行
+  });
+
   it('heroSkills 会话真值（F2）：内力不足置灰；敌 actor configId/spriteKey（F3）', () => {
     const { s } = qingSession();
     expect(runToPending(s)).toBe(true);

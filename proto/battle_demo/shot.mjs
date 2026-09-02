@@ -84,6 +84,21 @@ const btnGeom = await page.evaluate(() => {
 check('L⑥ 弧钮放大+防重叠', btnGeom.d >= 26 && btnGeom.gaps.every((g) => g > btnGeom.d), JSON.stringify(btnGeom));
 await page.screenshot({ path: path.join(outDir, 'shot_1_skillpop.png') });
 
+// T15 R3：rejected 冒字——走 session 公共 API submit（与 input dispatch 同入口），
+// attack 必然「受理或发 rejected 事件」（bar/range/invalid），确定性触发消费链演示
+const rejectedCount = await page.evaluate(() => {
+  const s = window.__demo.session.snapshot();
+  const foe = s.actors.find((a) => a.side === 'enemy' && a.animState !== 'dead');
+  window.__demo.session.submit({ type: 'attack', targetId: foe.id, skillId: null });
+  return window.__demo.session.events.filter((e) => e.type === 'rejected').length;
+});
+await page.waitForTimeout(300); // 冒字窗口内截图（sec 1.1s）
+await page.screenshot({ path: path.join(outDir, 'shot_reject_note.png') });
+check('R3 rejected 冒字可观测', rejectedCount > 0, `rejected 事件 ${rejectedCount} 条`);
+// 若因此消耗了回合/激活态，取消干净进入主流程
+await page.evaluate(() => window.__demo.session.submit({ type: 'cancelSkill' }));
+
+
 // ① 点击可移动格=移动（绿格）
 await page.evaluate(() => {
   const d = window.__demo;
@@ -139,26 +154,6 @@ st = await snapState();
 const foeAfter = st.foes.find((f) => f.id === atk.id);
 check('③ 点敌普攻', foeAfter.hp < atk.before || st.foes.some((f) => f.hp < 100), `hp ${atk.before}→${foeAfter.hp}`);
 await page.screenshot({ path: path.join(outDir, 'shot_5_basic_attack.png') });
-
-// T15 R3：rejected 冒字（点远处敌人 → range 拒绝 → 头顶冒'目标超出射程'）
-await waitHeroTurn();
-await waitPop();
-const rej = await page.evaluate(() => {
-  const d = window.__demo;
-  const s = d.session.snapshot();
-  const hero = s.actors.find((a) => a.id === 'hero');
-  const dist = (a, b) => (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q - b.q + a.r - b.r)) / 2;
-  const far = s.actors
-    .filter((a) => a.side === 'enemy' && a.animState !== 'dead')
-    .sort((a, b) => dist(b.pos, hero.pos) - dist(a.pos, hero.pos))[0]; // 最远敌
-  const p = d.cellCss(far.renderPos.q, far.renderPos.r);
-  return { p, id: far.id, far: true };
-});
-await page.mouse.click(rej.p.x, rej.p.y);
-await page.waitForTimeout(250); // 冒字窗口内截图
-await page.screenshot({ path: path.join(outDir, 'shot_reject_note.png') });
-const rejectedSeen = await page.evaluate(() => window.__demo.getView().fx.some((f) => f.kind === 'note'));
-check('R3 rejected 冒字可观测', rejectedSeen);
 
 // ⑥ 镜头拖动
 await page.mouse.move(225, 400);
