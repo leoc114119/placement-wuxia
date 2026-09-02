@@ -3,11 +3,12 @@
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
 import type { CombatantInput } from '../../types';
-import { BATTLE_HEX_RES, hexToWorld } from '../../config/battle-hex';
+import { BATTLE_HEX_RES, REJECT_HINTS, hexToWorld } from '../../config/battle-hex';
 import { createBattleInput } from '../../ui/battle-input';
 import {
   createView,
   drawFrame,
+  spawnNoteFx,
   updateView,
   type BattleHexAssets,
   type ImgLike,
@@ -111,6 +112,7 @@ function demoUnit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 's
 
 let session = makeSession();
 let speedOn = false;
+let evCursor = 0; // session.events 消费游标（累积数组）
 function makeSession() {
   // 敌方 name=configId（F3 约定：spriteKey=configId → 帧表键；名字牌暂显模板名，美化留后续）
   return createHexBattle({
@@ -139,6 +141,7 @@ const input = createBattleInput({
 
 function resetDemo(): void {
   session = makeSession();
+  evCursor = 0;
   speedOn = false;
   view.anim.clear();
   view.moveFrom.clear();
@@ -221,6 +224,16 @@ function loop(t: number): void {
   session.tick(dt);
   const snap = session.snapshot();
   view.uiState = { mode: session._debug.mode(), speed: speedOn };
+  // rejected 事件消费（T15 R3）：拒绝可观测——actor 头顶冒字
+  const evs = session.events;
+  for (; evCursor < evs.length; evCursor++) {
+    const e = evs[evCursor];
+    if (e.type !== 'rejected' || !e.actorId) continue;
+    const actor = snap.actors.find((a) => a.id === e.actorId);
+    if (!actor) continue;
+    const w = hexToWorld(actor.renderPos.q, actor.renderPos.r);
+    spawnNoteFx(view, w.x, w.y, REJECT_HINTS[e.reason ?? 'invalid'] ?? '无法执行');
+  }
   updateView(view, snap, dt, W, H);
   drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view);
   requestAnimationFrame(loop);

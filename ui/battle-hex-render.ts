@@ -62,11 +62,12 @@ interface AnimClock {
 }
 
 interface FxItem {
-  kind: 'slash' | 'hit';
+  kind: 'slash' | 'hit' | 'note';
   x: number;
   y: number;
   t: number;
   sec: number;
+  text?: string; // note 专属：头顶冒字文案
 }
 
 /** 演出视图状态（渲染层私有：相机/动画钟/特效/弹出进度/点选高亮）——不含任何结算数值 */
@@ -195,6 +196,11 @@ export function computeCamera(
 function easeOutCubic(p: number): number {
   const c = 1 - Math.max(0, Math.min(1, p));
   return 1 - c * c * c;
+}
+
+/** 拒绝轻提示（T15 R3 rejected 事件消费）：单位头顶冒小字，上浮渐隐 */
+export function spawnNoteFx(view: BattleHexView, x: number, y: number, text: string): void {
+  view.fx.push({ kind: 'note', x, y, t: 0, sec: 1.1, text });
 }
 
 /** 每帧推进视图状态。dt 秒。帧组播报铁律：状态切换=新组从组首帧重放（组间不跨）。 */
@@ -730,7 +736,13 @@ function drawFx(
     const sy = Math.round(f.y - cam.y + height / 2);
     ctx.save();
     ctx.globalAlpha = 1 - p;
-    if (f.kind === 'slash') {
+    if (f.kind === 'note') {
+      ctx.fillStyle = '#ffb84a';
+      ctx.font = `bold ${Math.round(width * 0.032)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(f.text ?? '', sx, Math.round(sy - TILE_H - 26 - p * 22)); // 头顶上浮
+    } else if (f.kind === 'slash') {
       ctx.strokeStyle = FX.slashColor;
       ctx.lineWidth = 3;
       ctx.beginPath();

@@ -36,7 +36,7 @@ export function hexToWorld(q: number, r: number): { x: number; y: number } {
 export const BOARD = {
   cols: 16,
   rows: 16,
-  movable: 8, // 可移动区边长（居中）
+  movable: 12, // 可移动区边长（居中；T15 R3 FIELD 2..13 口径，12×12）
 } as const;
 
 // ===== 视口与镜头（96 号 7×7 视口 + 旧 T06 已验拖动口径） =====
@@ -140,6 +140,13 @@ export const ARC_BTNS = {
   rimColorSelected: '#fff0b0',
   disabledAlpha: 0.45, // 内力不足/冷却中置灰
 } as const;
+
+/** rejected 事件轻提示文案（T15 R3：拒绝可观测；按 reason 映射，头顶冒字） */
+export const REJECT_HINTS: Record<string, string> = {
+  bar: '行动条未就绪',
+  range: '目标超出射程',
+  invalid: '无法执行',
+};
 
 // ===== 特效（L6：纯代码 fx；Q1②裁决——本期由 animState 驱动） =====
 export const FX = {

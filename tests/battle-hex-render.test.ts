@@ -25,6 +25,7 @@ import {
   drawFrame,
   isMovableCell,
   pieceHop,
+  spawnNoteFx,
   updateView,
   worldToHex,
   type BattleHexAssets,
@@ -84,14 +85,16 @@ describe('瓦片投影（尖角压扁 + 奇偶行错位，逻辑格不变）', (
     expect(axialToOffset({ q: 0, r: -1 })).toBeNull();
   });
 
-  it('isMovableCell：居中 8×8 可移动区（col/row 4..11）', () => {
+  it('isMovableCell：居中 12×12 可移动区（T15 R3 FIELD，col/row 2..13）', () => {
     expect(isMovableCell({ q: 1, r: 8 })).toBe(true); // col 5, row 8
-    expect(isMovableCell({ q: 2, r: 4 })).toBe(true); // col 4, row 4（西北角）
-    expect(isMovableCell({ q: 6, r: 11 })).toBe(true); // col 11, row 11（东南角）
-    expect(isMovableCell({ q: 7, r: 11 })).toBe(false); // col 12 出带
-    expect(axialToOffset({ q: 7, r: 11 })).toEqual({ col: 12, row: 11 });
+    expect(isMovableCell({ q: 0, r: 2 })).toBe(true); // col 1? floor(2/2)=1 → col 1 出带修正
+    expect(isMovableCell({ q: 1, r: 2 })).toBe(true); // col 2, row 2（西北角）
+    expect(isMovableCell({ q: 7, r: 11 })).toBe(true); // col 12, row 11（12×12 扩口径后入带）
+    expect(isMovableCell({ q: 8, r: 12 })).toBe(true); // col 13, row 12（东南角）
+    expect(axialToOffset({ q: 8, r: 12 })).toEqual({ col: 13, row: 12 });
     expect(isMovableCell({ q: -4, r: 4 })).toBe(false); // col -2 出界
-    expect(isMovableCell({ q: -1, r: 15 })).toBe(false); // col 6? floor(15/2)=7 → col 6 在 8×8 列带但 row 15 行在外
+    expect(isMovableCell({ q: -1, r: 15 })).toBe(false); // row 15 > 13
+    expect(isMovableCell({ q: 0, r: 1 })).toBe(false); // col 0, row 1 < 2
   });
 
   it('boardBounds 覆盖 16×16 全图角格', () => {
@@ -421,6 +424,39 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     // 无相位基准 → 0（防御）
     const noFrom: BattleHexView = createView();
     expect(pieceHop(noFrom, mid)).toBe(0);
+  });
+
+  it('T15 R3 rejected 消费：spawnNoteFx 头顶冒字（上浮渐隐，寿命到即亡）', () => {
+    const view = createView();
+    spawnNoteFx(view, 100, 200, '行动条未就绪');
+    expect(view.fx).toHaveLength(1);
+    expect(view.fx[0].kind).toBe('note');
+    expect(view.fx[0].text).toBe('行动条未就绪');
+    const snap = makeSnapshot([{ id: 'hero', animState: 'idle' }]);
+    const calls: Record<string, number> = {};
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const rec = t as unknown as Record<string | symbol, unknown>;
+          if (prop in rec) return rec[prop];
+          calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
+          return () => {};
+        },
+        set() {
+          return true;
+        },
+      },
+    );
+    updateView(view, snap, 0.016, 375, 667);
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, { env: null, topbar: null, plaque: null, ctrl: null, frames: new Map() }, view);
+    expect(calls.fillText).toBeGreaterThanOrEqual(1); // 冒字绘制
+    updateView(view, snap, 1.2, 375, 667); // 超寿命
+    expect(view.fx.some((f) => f.kind === 'note')).toBe(false); // 消亡
   });
 });
 

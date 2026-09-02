@@ -136,7 +136,7 @@ export function createMockSession(seed = 42): MockSession {
           const key = `${nq},${nr}`;
           if (seen.has(key) || occ.has(key)) continue;
           const off = { q: nq, r: nr };
-          if (off.q + Math.floor(off.r / 2) < 4 || off.q + Math.floor(off.r / 2) > 11 || off.r < 4 || off.r > 11) continue;
+          if (off.q + Math.floor(off.r / 2) < 2 || off.q + Math.floor(off.r / 2) > 13 || off.r < 2 || off.r > 13) continue; // T15 R3 FIELD 2..13
           seen.add(key);
           out.push({ q: nq, r: nr });
           next.push({ q: nq, r: nr });
