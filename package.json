@@ -8,7 +8,8 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "lint": "eslint game.ts types.ts config systems ui net",
-    "test:battle": "vitest run --exclude \"dist/**\""
+    "test:battle": "vitest run --exclude \"dist/**\"",
+    "test:behavior": "BEHAVIOR=1 vitest run tests/battle-behavior.test.ts"
   },
   "devDependencies": {
     "eslint": "^9.0.0",
