@@ -1,0 +1,254 @@
+[
+ {
+  "name": "battle_idle_down",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:53",
+  "note": "战斗锚=行走锚q_anchor_v5_clean派生"
+ },
+ {
+  "name": "battle_idle_up",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:55",
+  "note": "方向基准=战斗锚派生"
+ },
+ {
+  "name": "battle_idle_side",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:55",
+  "note": "方向基准=战斗锚派生"
+ },
+ {
+  "name": "up_atk_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:57",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "side_atk_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:57",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "up_atk_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:57",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "side_atk_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:57",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "down_atk_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:57",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "side_atk_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:58",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "down_atk_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:58",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "up_atk_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:58",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "down_atk_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:59",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "up_cast_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:59",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "side_cast_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:59",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "down_cast_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:59",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "up_cast_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 12:59",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "side_cast_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:00",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "down_cast_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:00",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "up_cast_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:00",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "side_cast_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:00",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "down_cast_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:01",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "side_hit_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:01",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "up_hit_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:01",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "down_hit_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:01",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "up_hit_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:02",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "side_hit_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:02",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "down_hit_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:02",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "up_die_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:02",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "side_die_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:02",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "down_die_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:03",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "side_die_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:03",
+  "note": "动作帧 基准=battle_idle_side"
+ },
+ {
+  "name": "down_die_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:03",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "up_die_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:04",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "down_die_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:04",
+  "note": "动作帧 基准=battle_idle_down"
+ },
+ {
+  "name": "up_die_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:04",
+  "note": "动作帧 基准=battle_idle_up"
+ },
+ {
+  "name": "side_die_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "09-02 13:05",
+  "note": "动作帧 基准=battle_idle_side"
+ }
+]

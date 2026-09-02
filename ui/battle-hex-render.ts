@@ -1,7 +1,7 @@
 // 战斗六边形渲染器（T16 frontend · 只读快照绘制，主架构方案 §2）。
 // 红线：本模块禁止 import battle-core（DoD 自动化扫描）；UI 只展示——所有游戏数值来自快照。
 // 环境无关：ctx 与图片由外部注入（wx canvas / 浏览器 canvas 均可跑），坐标一律整数像素定位。
-import type { BattleSnapshot, FrameContext, HexPos, SnapshotActor } from '../types';
+import type { BattleSnapshot, FrameContext, HexPos, SkillButtonInfo, SnapshotActor } from '../types';
 import {
   ANIM_FRAMES,
   ANIM_LOOP_GROUPS,
@@ -37,19 +37,9 @@ export interface BattleHexAssets {
   frames: Map<string, Array<ImgLike | null>>;
 }
 
-/** 主角技能钮数据源（置灰判定：内力/冷却）。
- * 契约缺口补充：BattleSnapshot 冻结版无此字段——mock 期由 mock 快照扩展供给，
- * T15 对切时若 session 供给同形字段即零改接入（否则登记工单补契约）。 */
-export interface SkillButtonInfo {
-  id: string;
-  label: string;
-  disabled: boolean;
-}
-
-/** 快照扩展段（渲染可选消费） */
-export interface BattleSnapshotExt {
-  heroSkills?: SkillButtonInfo[];
-}
+/** 主角技能钮数据源（弧形四钮置灰判定）——契约类型唯一出处 types.ts（联调 F2 起由快照必选字段供给），
+ * 此处 re-export 保持 mock_session 等既有引用零改。 */
+export type { SkillButtonInfo };
 
 /** 命中布局（渲染几何唯一出处，输入层只消费不重算） */
 export interface HitLayout {
@@ -61,6 +51,7 @@ export interface HitLayout {
 interface AnimClock {
   state: string;
   t: number;
+  isJump: boolean; // 跳跃真值沿（updateView 检测上升沿记录 moveFrom 相位基准）
 }
 
 interface FxItem {
@@ -77,7 +68,7 @@ export interface BattleHexView {
   camDrag: { x: number; y: number };
   camera: { x: number; y: number };
   anim: Map<string, AnimClock>;
-  moveFrom: Map<string, { x: number; y: number }>;
+  moveFrom: Map<string, HexPos>; // 跳跃/行走相位基准（axial 起点；axial 空间线性才能正确算 done）
   fx: FxItem[];
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
@@ -203,17 +194,17 @@ export function updateView(
   view.time += dt;
   for (const a of snapshot.actors) {
     const prev = view.anim.get(a.id);
-    if (!prev || prev.state !== a.animState) {
-      // 组切换：出招/普攻→斩击特效；受击→红环特效；起走→记录位移起点（跳跃相位基准）
+    if (!prev || prev.state !== a.animState || prev.isJump !== a.isJump) {
+      // 组切换：出招/普攻→斩击特效；受击→红环特效；进入跳跃/行走位移→记录起点（抛物线相位基准）
       const w = hexToWorld(a.renderPos.q, a.renderPos.r);
       if (prev && (a.animState === 'strike' || a.animState === 'basic')) {
         view.fx.push({ kind: 'slash', x: w.x, y: w.y, t: 0, sec: FX.slashSec });
       } else if (prev && a.animState === 'hit') {
         view.fx.push({ kind: 'hit', x: w.x, y: w.y, t: 0, sec: FX.hitSec });
-      } else if (prev && a.animState === 'walk') {
-        view.moveFrom.set(a.id, { x: w.x, y: w.y });
+      } else if (a.isJump || a.animState === 'walk') {
+        view.moveFrom.set(a.id, { q: a.renderPos.q, r: a.renderPos.r });
       }
-      view.anim.set(a.id, { state: a.animState, t: 0 });
+      view.anim.set(a.id, { state: a.animState, t: 0, isJump: a.isJump });
     } else {
       prev.t += dt;
     }
@@ -354,7 +345,7 @@ function fillHex(
   ctx.stroke();
 }
 
-/** L1+L2：格子与高亮（仅绘视口内；数据来自快照，渲染只画不算） */
+/** L1+L2：格子与高亮（仅绘视口内；数据来自快照，渲染只画不算；moveKind 换色——绿=走 / 金=轻功跳，联调 F1） */
 function drawCells(
   ctx: CanvasRenderingContext2D,
   snapshot: BattleSnapshot,
@@ -367,6 +358,9 @@ function drawCells(
   const center = worldToHex(cam.x, cam.y);
   const span = CAMERA.viewportCells + 2;
   const keyOf = (c: HexPos): string => `${c.q},${c.r}`;
+  const jump = snapshot.moveKind === 'jump';
+  const moveFill = jump ? HIGHLIGHT.jump : HIGHLIGHT.move;
+  const moveEdge = jump ? HIGHLIGHT.jumpEdge : HIGHLIGHT.moveEdge;
   const moveSet = new Set(snapshot.moveCells.map(keyOf));
   const attackSet = new Set(snapshot.attackCells.map(keyOf));
   const selKey = selected ? keyOf(selected) : null;
@@ -379,7 +373,7 @@ function drawCells(
       if (sx < -s * 2 || sx > width + s * 2 || sy < -s * 2 - TILE.sideDepth || sy > height + s * 2) continue;
       drawTile(ctx, sx, sy, s, isMovableCell({ q, r }), ((q + r) & 1) === 0);
       const key = `${q},${r}`;
-      if (moveSet.has(key)) fillHex(ctx, sx, sy, s, HIGHLIGHT.move, HIGHLIGHT.moveEdge);
+      if (moveSet.has(key)) fillHex(ctx, sx, sy, s, moveFill, moveEdge);
       else if (attackSet.has(key)) fillHex(ctx, sx, sy, s, HIGHLIGHT.attack, HIGHLIGHT.attackEdge);
       if (selKey === key) fillHex(ctx, sx, sy, s, HIGHLIGHT.selected, HIGHLIGHT.selectedEdge);
     }
@@ -404,6 +398,19 @@ interface PlacedPiece {
   top: number;
   h: number;
   w: number;
+}
+
+/** 跳跃抛物线高度（纯函数，导出供用例；联调 F1：跳跃真值=快照 isJump，禁启发式猜）。
+ * done = 已走位移占比（相位基准 view.moveFrom，updateView 在跳跃上升沿记录）。 */
+export function pieceHop(view: BattleHexView, actor: SnapshotActor): number {
+  if (!actor.isJump) return 0;
+  const from = view.moveFrom.get(actor.id);
+  if (!from) return 0;
+  // done 在 axial 空间计算（session lerp 即 axial 线性；屏幕投影距离非线性会越界）
+  const total = Math.hypot(actor.pos.q - from.q, actor.pos.r - from.r);
+  const remaining = Math.hypot(actor.pos.q - actor.renderPos.q, actor.pos.r - actor.renderPos.r);
+  const done = total > 0.001 ? Math.max(0, Math.min(1, 1 - remaining / total)) : 1;
+  return Math.sin(Math.PI * done) * PIECE.jumpHeightPx;
 }
 
 function drawPieces(
@@ -442,19 +449,7 @@ function drawPieces(
       }
       continue;
     }
-    // 轻功抛物线：位移格距超阈值 → 正弦hop（相位=已走位移占比；基准点 updateView 记录）
-    let hop = 0;
-    const distCells = Math.hypot(actor.renderPos.q - actor.pos.q, actor.renderPos.r - actor.pos.r);
-    const from = view.moveFrom.get(actor.id);
-    if (distCells > 0.05 && from && distCells > PIECE.jumpMinCells) {
-      const total = Math.hypot(w0.x - from.x, w0.y - from.y);
-      const remaining = Math.hypot(
-        hexToWorld(actor.pos.q, actor.pos.r).x - w0.x,
-        hexToWorld(actor.pos.q, actor.pos.r).y - w0.y,
-      );
-      const done = total > 0.001 ? Math.max(0, 1 - remaining / total) : 1;
-      hop = Math.sin(Math.PI * Math.min(1, done)) * PIECE.jumpHeightPx;
-    }
+    const hop = pieceHop(view, actor); // 轻功抛物线（快照 isJump 真值）
     const shake = actor.animState === 'hit' ? Math.sin(view.time * 70) * 2 : 0;
     const cx = sx + shake;
     const top = syGround - h - hop;
@@ -483,7 +478,6 @@ function drawPieceHud(
   placed: PlacedPiece[],
   snapshot: BattleSnapshot,
   view: BattleHexView,
-  ext: BattleSnapshotExt,
 ): void {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -518,7 +512,7 @@ function drawPieceHud(
       HUD.barH,
     );
   }
-  // 主角弧形特绝轻毒四钮（行动条满弹出；内力/冷却置灰——数据来自快照扩展段）
+  // 主角弧形特绝轻毒四钮（行动条满弹出；置灰=内力/冷却/武器不匹配——联调 F2 会话真值）
   const hero = snapshot.actors.find((a) => a.side === 'player');
   const showPop = snapshot.phase === 'fighting' && snapshot.pendingInput && hero && snapshot.turnActorId === hero.id;
   const pop = showPop ? easeOutCubic(view.skillPop) : 0;
@@ -533,7 +527,7 @@ function drawPieceHud(
   const headCy = p.top + headW * 0.6;
   const from = (ARC_BTNS.angleFromDeg * Math.PI) / 180;
   const to = (ARC_BTNS.angleToDeg * Math.PI) / 180;
-  const skills = ext.heroSkills ?? [];
+  const skills = snapshot.heroSkills ?? [];
   for (let i = 0; i < ARC_BTNS.ids.length; i++) {
     const id = ARC_BTNS.ids[i];
     const ang = from + ((to - from) * i) / (ARC_BTNS.ids.length - 1);
@@ -594,9 +588,9 @@ function drawComponents(
       };
       drawBar(TOPBAR.coverRed, hero.hp / Math.max(1, hero.maxHp), TOPBAR.hpColor);
       drawBar(TOPBAR.coverBlue, hero.neili / Math.max(1, hero.maxNeili), TOPBAR.neiliColor);
-      // 状态图标槽×4（Q1③ 占位枚举：poison/bleed/internal/empty 色块）
+      // 状态图标槽×4（横向四等分盖住烘焙图标；statusIcons 真值接入前恒空槽色）
       const slot = TOPBAR.statusSlots;
-      const cell = slot.h / 4;
+      const cell = slot.w / 4;
       for (let i = 0; i < 4; i++) {
         const icon = hero.statusIcons[i] ?? 'empty';
         const color = TOPBAR.statusColors[icon] ?? TOPBAR.statusColors.empty;
@@ -604,15 +598,15 @@ function drawComponents(
         ctx.fillRect(
           Math.round((slot.x + i * cell) * k),
           Math.round(slot.y * k),
-          Math.round(cell * 0.86 * k),
-          Math.round(slot.h * 0.86 * k),
+          Math.round(cell * 0.9 * k),
+          Math.round(slot.h * k),
         );
         ctx.fillStyle = color;
         ctx.fillRect(
           Math.round((slot.x + i * cell + cell * 0.12) * k),
-          Math.round((slot.y + cell * 0.12) * k),
-          Math.round(cell * 0.62 * k),
-          Math.round(slot.h * 0.62 * k),
+          Math.round((slot.y + slot.h * 0.12) * k),
+          Math.round(cell * 0.66 * k),
+          Math.round(slot.h * 0.76 * k),
         );
       }
     }
@@ -691,7 +685,7 @@ function drawPhaseOverlay(ctx: CanvasRenderingContext2D, snapshot: BattleSnapsho
 /** 每帧绘制（L0→L6 顺序）。快照与资源只读；演出状态由 view 承载。 */
 export function drawFrame(
   fc: FrameContext,
-  snapshot: BattleSnapshot & BattleSnapshotExt,
+  snapshot: BattleSnapshot,
   assets: BattleHexAssets,
   view: BattleHexView,
 ): void {
@@ -709,7 +703,7 @@ export function drawFrame(
   ctx.clip();
   drawCells(ctx, snapshot, cam, width, height, view.selectedCell);
   const placed = drawPieces(ctx, snapshot, assets, view, cam, width, height);
-  drawPieceHud(ctx, placed, snapshot, view, snapshot);
+  drawPieceHud(ctx, placed, snapshot, view);
   drawFx(ctx, view, cam, width, height);
   ctx.restore();
   drawComponents(ctx, snapshot, assets, width, height, view);

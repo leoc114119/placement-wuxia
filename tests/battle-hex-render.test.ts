@@ -21,9 +21,11 @@ import {
   createView,
   drawFrame,
   isMovableCell,
+  pieceHop,
   updateView,
   worldToHex,
   type BattleHexAssets,
+  type BattleHexView,
 } from '../ui/battle-hex-render';
 import { createBattleInput, pickSkillButton } from '../ui/battle-input';
 import { createMockSession } from '../proto/battle_demo/mock_session';
@@ -157,12 +159,12 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
   const hero: SnapshotActor = {
     id: 'hero', side: 'player', name: '小虾米', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
     hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right',
-    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
   };
   const enemy: SnapshotActor = {
     id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 3, r: 7 }, renderPos: { q: 3, r: 7 },
     hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
-    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
   };
 
   it('拖动 >8px 判定为拖镜头：不平移不足不发请求，超阈平移 camDrag', () => {
@@ -262,15 +264,17 @@ function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {
   const base: SnapshotActor = {
     id: 'x', side: 'player', name: '单位', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
     hp: 50, maxHp: 50, neili: 30, maxNeili: 30, actionBar: 0, facing: 'right',
-    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
   };
   return {
     phase: 'fighting',
     turnActorId: null,
     pendingInput: false,
     moveCells: [],
+    moveKind: 'walk',
     attackCells: [],
     selectedSkill: null,
+    heroSkills: [],
     actors: parts.map((p) => ({ ...base, ...p })),
     cameraTargetId: 'hero',
   };
@@ -279,6 +283,7 @@ function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {
 describe('渲染烟雾（Proxy ctx 计数）', () => {
   it('快照驱动全层绘制：格子/棋子/HUD/组件/结算遮罩均产生调用', () => {
     const calls: Record<string, number> = {};
+    const fills: string[] = [];
     const ctx = new Proxy(
       {
         canvas: { width: 375, height: 667 },
@@ -292,7 +297,8 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
           calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
           return () => {};
         },
-        set() {
+        set(t, prop, v) {
+          if (prop === 'fillStyle') fills.push(String(v));
           return true;
         },
       },
@@ -304,7 +310,7 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     snap.pendingInput = true;
     snap.turnActorId = 'hero';
     snap.moveCells = [{ q: 1, r: 9 }, { q: 0, r: 9 }, { q: 2, r: 9 }];
-    (snap as { heroSkills?: unknown }).heroSkills = [
+    snap.heroSkills = [
       { id: 'te', label: '特', disabled: false },
       { id: 'jue', label: '绝', disabled: true },
     ];
@@ -325,8 +331,33 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     expect(calls.drawImage).toBeGreaterThan(5); // env+棋子帧+三组件
     expect(calls.fillText).toBeGreaterThanOrEqual(6); // 两名字+四钮字
     expect(view.layout.skillBtns).toHaveLength(ARC_BTNS.ids.length);
-    expect(view.layout.skillBtns.find((b) => b.id === 'jue')?.disabled).toBe(true); // 置灰数据来自快照扩展段
+    expect(view.layout.skillBtns.find((b) => b.id === 'jue')?.disabled).toBe(true); // 置灰=会话真值（F2）
     expect(view.layout.ctrlRect).not.toBeNull();
+    // 联调 F1：moveKind='jump' → 移动格金色高亮（fillStyle 出现 jump 金）
+    snap.moveKind = 'jump';
+    fills.length = 0;
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).toContain('rgba(245, 205, 70, 0.45)');
+    // walk 态则不出现金色移动高亮
+    snap.moveKind = 'walk';
+    fills.length = 0;
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).not.toContain('rgba(245, 205, 70, 0.45)');
+  });
+
+  it('pieceHop 跳跃真值：isJump 才有抛物线高度，贴地恒 0（联调 F1 禁启发式）', () => {
+    const view: BattleHexView = createView();
+    // 相位基准=跳跃起点（updateView 上升沿同款记录）
+    view.moveFrom.set('hero', { q: 2, r: 8 }); // 起点(2,8) → 终点 pos(3,8)，renderPos(2.5) 恰为中点
+    // 中点：抛物线顶附近 >0
+    const mid = makeSnapshot([{ id: 'hero', animState: 'walk', isJump: true, pos: { q: 3, r: 8 }, renderPos: { q: 2.5, r: 8 } }]).actors[0];
+    expect(pieceHop(view, mid)).toBeGreaterThan(0);
+    // 同位置但 isJump=false（贴地 lerp）→ 0
+    const grounded = { ...mid, isJump: false };
+    expect(pieceHop(view, grounded)).toBe(0);
+    // 无相位基准 → 0（防御）
+    const noFrom: BattleHexView = createView();
+    expect(pieceHop(noFrom, mid)).toBe(0);
   });
 });
 
@@ -370,6 +401,7 @@ describe('T15 契约咬合（真实 session 快照 → 渲染全链）', () => {
     }
     // 真快照 → 渲染全链（Proxy ctx 烟雾）
     const calls: Record<string, number> = {};
+    const fills: string[] = [];
     const ctx = new Proxy(
       {
         canvas: { width: 375, height: 667 },
@@ -383,7 +415,8 @@ describe('T15 契约咬合（真实 session 快照 → 渲染全链）', () => {
           calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
           return () => {};
         },
-        set() {
+        set(t, prop, v) {
+          if (prop === 'fillStyle') fills.push(String(v));
           return true;
         },
       },

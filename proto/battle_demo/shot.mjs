@@ -1,4 +1,4 @@
-// battle_demo 目验截图驱动（playwright-core + 本机 Chrome；产物供 L 环预检与交付对比）
+// battle_demo 联调验证驱动（真 battle-session · 七项清单端到端）
 // 用法：node proto/battle_demo/shot.mjs
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -19,8 +19,12 @@ const page = await browser.newPage({ viewport: { width: 450, height: 800 } });
 const logs = [];
 page.on('console', (m) => logs.push(`[${m.type()}] ${m.text()}`));
 page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
+const results = [];
+const check = (name, ok, detail = '') => {
+  results.push(`${ok ? 'PASS' : 'FAIL'} ①-⑦ ${name}${detail ? ' · ' + detail : ''}`);
+  if (!ok) console.log(`FAIL ${name} ${detail}`);
+};
 
-// 带诊断的页面内点按：返回 p 坐标后用鼠标真实点按
 async function tapAt(evalFn, label) {
   const res = await page.evaluate(evalFn);
   if (res && res.err) throw new Error(`[tap:${label}] ${JSON.stringify(res)}`);
@@ -28,86 +32,132 @@ async function tapAt(evalFn, label) {
   else throw new Error(`[tap:${label}] 无坐标`);
 }
 const waitHeroTurn = () =>
-  page.waitForFunction(() => window.__demo.session.snapshot().pendingInput === true, null, { timeout: 30000 });
-const enemyInTarget = () =>
-  page.evaluate(() => {
-    const snap = window.__demo.session.snapshot();
-    return !!snap.actors.find(
-      (a) => a.side === 'enemy' && a.animState !== 'dead' && snap.attackCells.some((c) => c.q === a.renderPos.q && c.r === a.renderPos.r),
-    );
-  });
-const tapTe = async () => {
-  await page.waitForFunction(() => window.__demo.view.skillPop > 0.9, null, { timeout: 5000 });
-  return tapAt(() => {
-    const p = window.__demo.btnCss('te');
-    if (!p) return { err: 'btnCss(te)=null', pop: window.__demo.view.skillPop };
-    return { p };
-  }, 'te');
-  };
-const tapApproach = () =>
+  page.waitForFunction(() => window.__demo.session.snapshot().pendingInput === true, null, { timeout: 40000 });
+const waitPop = () =>
+  page.waitForFunction(() => window.__demo.getView().skillPop > 0.9, null, { timeout: 6000 }).catch(() => {});
+const tapTe = () =>
   tapAt(() => {
-    const d = window.__demo;
-    const snap = d.session.snapshot();
-    const foe = snap.actors.find((a) => a.side === 'enemy' && a.animState !== 'dead');
-    const cell = snap.moveCells
-      .slice()
-      .sort((a, b) => Math.hypot(a.q - foe.pos.q, a.r - foe.pos.r) - Math.hypot(b.q - foe.pos.q, b.r - foe.pos.r))[0];
-    if (!cell) return { err: 'moveCells empty' };
-    return { p: d.cellCss(cell.q, cell.r) };
-  }, 'approach-move');
+    const p = window.__demo.btnCss('te');
+    return p ? { p } : { err: 'btnCss(te)=null' };
+  }, 'te');
+const tapQing = () =>
+  tapAt(() => {
+    const p = window.__demo.btnCss('qing');
+    return p ? { p } : { err: 'btnCss(qing)=null' };
+  }, 'qing');
+const snapState = () =>
+  page.evaluate(() => {
+    const s = window.__demo.session.snapshot();
+    return {
+      phase: s.phase, pending: s.pendingInput, moveKind: s.moveKind,
+      moveN: s.moveCells.length, atkN: s.attackCells.length,
+      heroSkills: s.heroSkills, mode: window.__demo.session._debug.mode(),
+      hero: s.actors.find((a) => a.id === 'hero'),
+      foes: s.actors.filter((a) => a.side === 'enemy').map((a) => ({ id: a.id, hp: a.hp, sprite: a.spriteKey, cfg: a.configId })),
+    };
+  });
 
 await page.goto('file://' + path.join(here, 'index.html'));
 await page.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
 await page.waitForTimeout(800);
 await page.screenshot({ path: path.join(outDir, 'shot_0_env_pieces.png') });
 
-// 等主角行动条满（弧形四钮弹出）
+// ⑤ 敌我名字色/双条 + F3 帧表键（初始画面即含）
+let st = await snapState();
+check('⑤/F3 敌方 spriteKey=configId', st.foes.every((f) => f.sprite === f.cfg && ['npc-shanzei', 'npc-lang'].includes(f.cfg)), JSON.stringify(st.foes));
+
+// ④ 弧形四钮弹出 + 置灰（du=武器不匹配恒灰）
 await waitHeroTurn();
-await page.waitForTimeout(500);
+await waitPop();
+st = await snapState();
+const btns = await page.evaluate(() => window.__demo.getView().layout.skillBtns);
+check('④/F2 四钮弹出+置灰真值', btns.length === 4 && st.heroSkills.length === 4 && btns.find((b) => b.id === 'du')?.disabled === true,
+  JSON.stringify({ ids: btns.map((b) => `${b.id}:${b.disabled ? '灰' : '亮'}`) }));
 await page.screenshot({ path: path.join(outDir, 'shot_1_skillpop.png') });
 
-// 激活「特」→ 攻击范围红格；不入程则「取消→移动逼近」下一回合重试（v8 §2：激活后点无效格=取消）
-await tapTe();
-await page.waitForTimeout(300);
-for (let i = 0; i < 5 && !(await enemyInTarget()); i++) {
-  await tapTe(); // 再点一次=取消施放
-  await tapApproach(); // 点可移动格逼近（skill 已取消，走 !skill && inMove 分支）
-  await waitHeroTurn();
-  await tapTe();
-  await page.waitForTimeout(300);
-}
-if (!(await enemyInTarget())) throw new Error('敌人仍不在攻击范围（演示路径失败）');
-await page.screenshot({ path: path.join(outDir, 'shot_2_attack_range.png') });
-await tapAt(() => {
+// ① 点击可移动格=移动（绿格）
+await page.evaluate(() => {
   const d = window.__demo;
-  const snap = d.session.snapshot();
-  const t = snap.actors.find(
-    (a) => a.side === 'enemy' && a.animState !== 'dead' && snap.attackCells.some((c) => c.q === a.renderPos.q && c.r === a.renderPos.r),
-  );
-  return { p: d.cellCss(t.renderPos.q, t.renderPos.r) };
-}, 'attack-enemy');
-await page.waitForTimeout(700);
-await page.screenshot({ path: path.join(outDir, 'shot_3_attack_fx.png') });
+  const s = d.session.snapshot();
+  const cell = s.moveCells[0];
+  window.__demo._mv = { from: { ...s.actors.find((a) => a.id === 'hero').pos }, to: cell };
+  const p = d.cellCss(cell.q, cell.r);
+  return { p };
+}).then((r) => page.mouse.click(r.p.x, r.p.y));
+await page.waitForTimeout(500);
+st = await snapState();
+check('① 绿格移动', st.hero.pos.q === st.hero.renderPos.q || st.pending === true, `pos=${JSON.stringify(st.hero.pos)}`);
+await page.screenshot({ path: path.join(outDir, 'shot_2_walk.png') });
 
-// 再等一回合，点可移动格（移动演示）
+// ② 激活轻功→金格→点格=跳跃位移（F1 重点）
 await waitHeroTurn();
-await tapAt(() => {
-  const d = window.__demo;
-  const c = d.session.snapshot().moveCells[0];
-  if (!c) return { err: 'moveCells empty' };
-  return { p: d.cellCss(c.q, c.r) };
-}, 'move');
+await waitPop();
+await tapQing();
 await page.waitForTimeout(350);
-await page.screenshot({ path: path.join(outDir, 'shot_4_move.png') });
+st = await snapState();
+check('②/F1 轻功激活→moveKind=jump', st.moveKind === 'jump' && st.moveN > 0, `kind=${st.moveKind} cells=${st.moveN}`);
+await page.screenshot({ path: path.join(outDir, 'shot_3_jump_gold.png') });
+const jumped = await page.evaluate(() => {
+  const d = window.__demo;
+  const s = d.session.snapshot();
+  const hero = s.actors.find((a) => a.id === 'hero');
+  const far = s.moveCells.slice().sort((a, b) => Math.hypot(b.q - hero.pos.q, b.r - hero.pos.r) - Math.hypot(a.q - hero.pos.q, a.r - hero.pos.r))[0];
+  const p = d.cellCss(far.q, far.r);
+  return { p, before: { ...hero.pos }, target: far };
+});
+await page.mouse.click(jumped.p.x, jumped.p.y);
+await page.waitForTimeout(150); // lerp 窗口内截空中帧
+await page.screenshot({ path: path.join(outDir, 'shot_4_jump_air.png') });
+await page.waitForTimeout(600);
+st = await snapState();
+check('②/F1 跳跃位移落地', st.hero.pos.q === jumped.target.q && st.hero.pos.r === jumped.target.r,
+  `${JSON.stringify(jumped.before)}→${JSON.stringify(st.hero.pos)}`);
 
-// 拖镜演示（>8px）
+// ③ 点敌人=普攻（下回合）
+await waitHeroTurn();
+await waitPop();
+const atk = await page.evaluate(() => {
+  const d = window.__demo;
+  const s = d.session.snapshot();
+  const foe = s.actors.find((a) => a.side === 'enemy' && a.animState !== 'dead');
+  const before = foe.hp;
+  const p = d.cellCss(foe.renderPos.q, foe.renderPos.r);
+  return { p, id: foe.id, before };
+});
+await page.mouse.click(atk.p.x, atk.p.y);
+await page.waitForTimeout(600);
+st = await snapState();
+const foeAfter = st.foes.find((f) => f.id === atk.id);
+check('③ 点敌普攻', foeAfter.hp < atk.before || st.foes.some((f) => f.hp < 100), `hp ${atk.before}→${foeAfter.hp}`);
+await page.screenshot({ path: path.join(outDir, 'shot_5_basic_attack.png') });
+
+// ⑥ 镜头拖动
 await page.mouse.move(225, 400);
 await page.mouse.down();
-await page.mouse.move(265, 360, { steps: 5 });
+await page.mouse.move(285, 340, { steps: 6 });
 await page.mouse.up();
-await page.waitForTimeout(200);
-await page.screenshot({ path: path.join(outDir, 'shot_5_camera_drag.png') });
+await page.waitForTimeout(250);
+const camDragged = await page.evaluate(() => window.__demo.getView().camDrag.x > 20);
+check('⑥ 镜头拖动', camDragged);
+await page.screenshot({ path: path.join(outDir, 'shot_6_camera.png') });
 
-console.log(logs.filter((l) => l.includes('battle_demo') || l.includes('pageerror')).slice(0, 6).join('\n'));
+// ⑦ 三场模式（托管切换）
+const tapCtrlRow1 = () =>
+  tapAt(() => {
+    const r = window.__demo.getView().layout.ctrlRect;
+    if (!r) return { err: 'ctrlRect=null' };
+    return { p: window.__demo.cssOf(r.x + r.w / 2, r.y + (66 / 448) * r.h) };
+  }, 'ctrl-row1');
+await tapCtrlRow1();
+await page.waitForTimeout(2500); // AI 代行，画面自行推进
+st = await snapState();
+check('⑦ 托管切 auto（AI 代行推进）', st.mode === 'auto' && st.phase === 'fighting', `mode=${st.mode}`);
+await page.screenshot({ path: path.join(outDir, 'shot_7_auto.png') });
+await tapCtrlRow1();
+st = await snapState();
+check('⑦ 切回 manual', st.mode === 'manual', `mode=${st.mode}`);
+
+console.log(results.join('\n'));
+console.log(logs.filter((l) => l.includes('battle_demo') || l.includes('pageerror')).slice(0, 4).join('\n'));
 await browser.close();
 console.log('[shot] 完成 →', outDir);

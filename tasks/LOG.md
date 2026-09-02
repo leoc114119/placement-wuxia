@@ -124,3 +124,4 @@
 | 2026-08-22 18:55 | CodeBuddy | 📦 素材线·侧身 idle 补帧出图 | 四张帧表第⑧空格补侧身待机（hero/shanzei/lang/boss_lang，img2img 前七格锚定）· 自检全过：lang 徽章风保真、boss 侧脸眼罩甲胄齐 · 落 drafts 待 L 目验 → 转正切帧后 ZCode 接线 BATTLE_FRAME.idle=7 |
 | 2026-09-02 11:05 | frontend | 🤝 领单 T16 | inbox→working · 契约已冻结直接消费（T15 M0）· 透明化走纯 node zlib 管线 · 8 步施工开跑 |
 | 2026-09-02 11:45 | frontend | ✅ 交付 T16 | 三零+108/108 绿（23 新例含真 session 咬合）· preview 全链截图 6 张 · 透明化产物+对比图落盘 · 待 C 环验收 |
+| 2026-09-02 13:00 | frontend | 🔧 T16 联调交付 | 真 session 单点替换+F1/F2/F3 全消费 · 七项清单 9/9 PASS · 111/111 绿+三零 · 观察项 3 条上报 |

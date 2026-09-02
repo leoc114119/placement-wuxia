@@ -1,7 +1,8 @@
 // battle_demo preview 主入口（复用 home_demo 工程模式四件套）：
 // ① 帧预解码（全部 decode 完才开播，防换帧闪烁）② 整数像素定位（渲染模块内 Math.round）
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
-// 数据源=mock 快照（T15 完成后对切真 session，本文件仅换数据源）。
+// 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
+import type { CombatantInput } from '../../types';
 import { BATTLE_HEX_RES, hexToWorld } from '../../config/battle-hex';
 import { createBattleInput } from '../../ui/battle-input';
 import {
@@ -11,7 +12,7 @@ import {
   type BattleHexAssets,
   type ImgLike,
 } from '../../ui/battle-hex-render';
-import { createMockSession, type MockBattleSnapshot } from './mock_session';
+import { createHexBattle } from '../../systems/battle-session';
 
 // ===== 画布（逻辑分辨率 375×667 基线；dpr 放大保真） =====
 const W = 375;
@@ -70,22 +71,62 @@ async function loadAssets(): Promise<BattleHexAssets> {
   return { env, topbar, plaque, ctrl, frames };
 }
 
-// ===== 会话 / 视图 / 输入 =====
-const session = createMockSession(42);
+// ===== 对局构造（联调：真 session；演示阵容=主角四技 vs 山贼+野狼，R-07 档位语义占位） =====
+/** 演示技能表（id 与 ui ARC_BTNS.ids 对齐；数值走 SkillDef 结构由 core 结算，此处非真值来源） */
+const DEMO_SKILLS = [
+  { id: 'te', name: '特', kind: 'special' as const, weapon: 'fist' as const, grade: 1.3 as const, growth: 1, level: 20, cooldownTurns: 2, neiliCost: 20 },
+  { id: 'jue', name: '绝', kind: 'ultimate' as const, weapon: 'fist' as const, grade: 1.7 as const, growth: 1, level: 20, cooldownTurns: 5, neiliCost: 35 },
+  { id: 'qing', name: '轻', kind: 'qingGong' as const, weapon: null, grade: 1.0 as const, growth: 1, level: 20, cooldownTurns: 3, neiliCost: 15 },
+  { id: 'du', name: '毒', kind: 'hiddenWeapon' as const, weapon: 'hidden' as const, grade: 1.0 as const, growth: 1, level: 20, cooldownTurns: 1, neiliCost: 10 },
+];
+
+function demoUnit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 'side' | 'name'>): CombatantInput {
+  return {
+    hp: 100,
+    maxHp: 100,
+    neili: 60,
+    maxNeili: 100,
+    atk: 12,
+    def: 3,
+    neigongLevel: 5,
+    jimin: 8,
+    danshi: 0,
+    shizhan: 60, // 演示高命中（保普攻可观测；命中率真值在 core F-04）
+    pos: { x: 0, y: 0 }, // 出生位由 session 按 O3 随机覆盖
+    weapon: 'fist',
+    skills: [],
+    ...over,
+  };
+}
+
+let session = makeSession();
+function makeSession() {
+  // 敌方 name=configId（F3 约定：spriteKey=configId → 帧表键；名字牌暂显模板名，美化留后续）
+  return createHexBattle({
+    player: demoUnit({ id: 'hero', side: 'player', name: '小虾米', skills: DEMO_SKILLS }),
+    enemies: [
+      demoUnit({ id: 'e1', side: 'enemy', name: 'npc-shanzei', hp: 70, maxHp: 70, atk: 8, jimin: 5 }),
+      demoUnit({ id: 'e2', side: 'enemy', name: 'npc-lang', hp: 60, maxHp: 60, atk: 9, jimin: 6 }),
+    ],
+    mode: 'manual',
+    seed: 42,
+  });
+}
+
 const view = createView();
 let assets: BattleHexAssets = { env: null, topbar: null, plaque: null, ctrl: null, frames: new Map() };
 
 const input = createBattleInput({
   dispatch: (req) => {
-    session.dispatch(req);
+    session.submit(req);
   },
   onBlocked: (msg) => toast(msg),
   onPlaque: (label) => toast(`${label}（演示占位）`),
-  mode: () => session.mode(),
+  mode: () => session._debug.mode(),
 });
 
 function resetDemo(): void {
-  session.reset();
+  session = makeSession();
   view.anim.clear();
   view.moveFrom.clear();
   view.fx.length = 0;
@@ -118,7 +159,7 @@ canvas.addEventListener('pointerup', (e) => {
     resetDemo();
     return;
   }
-  input.up(view, snap as MockBattleSnapshot, p.x, p.y, W, H);
+  input.up(view, snap, p.x, p.y, W, H);
 });
 document.addEventListener('dragstart', (e) => e.preventDefault());
 
@@ -132,14 +173,20 @@ function logicalToCss(x: number, y: number): CssPoint {
   return { x: r.left + (x / W) * r.width, y: r.top + (y / H) * r.height };
 }
 (window as unknown as Record<string, unknown>).__demo = {
-  session,
-  view,
+  get session() {
+    return session;
+  },
+  getView: () => view,
   W,
   H,
   /** 格 → 页面坐标（自动化点击用） */
   cellCss(q: number, r: number): CssPoint {
     const w = hexToWorld(q, r);
     return logicalToCss(w.x - view.camera.x + W / 2, w.y - view.camera.y + H / 2);
+  },
+  /** 逻辑坐标 → 页面坐标（ctrl 等布局热区换算用） */
+  cssOf(lx: number, ly: number): CssPoint {
+    return logicalToCss(lx, ly);
   },
   /** 弧形技能钮 → 页面坐标 */
   btnCss(id: string): CssPoint | null {

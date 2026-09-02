@@ -44,10 +44,12 @@ export const TILE = {
   strokeWidth: 1.5,
 } as const;
 
-// ===== 高亮层（L2：数据来自快照，渲染只画不算） =====
+// ===== 高亮层（L2：数据来自快照，渲染只画不算；moveKind 换色——绿=普通走位 / 金=轻功跳跃，联调 F1） =====
 export const HIGHLIGHT = {
   move: 'rgba(110, 220, 110, 0.38)', // 移动范围（绿）
   moveEdge: 'rgba(160, 240, 160, 0.8)',
+  jump: 'rgba(245, 205, 70, 0.45)', // 轻功跳跃可达（金）
+  jumpEdge: 'rgba(255, 230, 130, 0.95)',
   attack: 'rgba(225, 70, 55, 0.42)', // 攻击范围（红）
   attackEdge: 'rgba(255, 120, 100, 0.85)',
   selected: 'rgba(245, 205, 70, 0.5)', // 选中格（金）
@@ -60,8 +62,7 @@ export const PIECE = {
   bossScale: 1.25, // Boss 放大
   walkFrameMs: 140, // 战斗步频（沿 config/battle BATTLE_FRAME 口径）
   moveLerpSec: 0.3, // 移动位移表现时长（session renderPos 追 pos 的参考口径；mock 同值）
-  jumpMinCells: 1.5, // 位移超过该格距按轻功抛物线表现（否则行走）
-  jumpHeightPx: 44, // 抛物线顶高
+  jumpHeightPx: 44, // 轻功抛物线顶高（跳跃真值=快照 isJump，联调 F1）
   deadAlpha: 0.45, // 阵亡变灰透明度
   hitFlashSec: 0.15, // 受击红闪时长
 } as const;
@@ -187,5 +188,6 @@ export const BATTLE_HEX_RES = {
     return `assets/ui/frames/battle/${dir}/${dir}_0${i}_transparent.png`;
   },
   frameCount: 8, // 00~07（BATTLE_FRAME.idle=7 需全量 8 帧）
-  spriteKinds: ['hero', 'npc-shanzei'], // 占位阵容：主角 + 山贼
+  /** 预载帧表键（联调 F3：敌方 spriteKey=configId，按 T15 敌型对齐；玩家恒 'hero'） */
+  spriteKinds: ['hero', 'npc-shanzei', 'npc-lang'],
 } as const;
