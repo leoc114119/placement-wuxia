@@ -81,3 +81,15 @@
 - FE 同步项延续 T15-R3 两项：config movable=12 已对齐（T16 侧已改）；`rejected` 事件消费（轻提示）待 FE 接。
 - 全量 139 = battle14 + hex10 + session36 + structure5 + timeline3 + render25 + scene16 + npc8 + battle-ui21 + root1（battle-structure 计 5 含于前）——实际 9 文件合计 139。
 - commit 建议注明：`T18 · session 结构重构+交互语义定版（规格 v1.0）· 139/139+三零`。
+
+---
+
+## 7. L 环追加小工单：可动区 12 高 × 8 宽 · 已修
+
+- **口径**（Leo 实拍定）：可动区 row 2..13（12 行）不变，col 收窄 4..11（8 列，16 宽内居中）——配合压扁瓦片形成纵向对峙纵深。
+- **实现**：FIELD 常量拆分为 `FIELD_COL_MIN=4 / FIELD_COL_MAX=11 / FIELD_ROW_MIN=2 / FIELD_ROW_MAX=13`；inField/出生枚举/ATK-5 扫描同步。
+- **D1 锚点重算**：我方锚=可动区左下极格 offset(4,13)、敌方锚=右上极格 offset(11,2)（锚距 cube=12 > 3+3，两带分离保持）；spawnBand 半径过滤自动缩放。
+- **用例**：SP-1 重写为 12h×8w 断言（col 4..11 + row 2..13 + dist(锚)≤3 + 互斥 + 满编 + 同 seed 复现）；inFieldOf helper 同步；ATK-1 改增量断言（waitAdjacent 特例普攻不混入统计）。
+- **规格勘误提醒**：规格 BASE-1「可移动区 12×12」→ 应勘误为「12 高 × 8 宽」，请 PM 转主架构登记。
+- **FE 同步项**：`config/battle-hex.ts` `movable: 8` 为正方形边长假设——需改为宽 8/高 12 两值（isMovableCell 点击过滤口径），请 PM 转 FE。
+- **DoD**：三零全仓 0 + 全量 139/139 不回归。

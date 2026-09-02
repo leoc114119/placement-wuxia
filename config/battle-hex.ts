@@ -32,11 +32,18 @@ export function hexToWorld(q: number, r: number): { x: number; y: number } {
   return { x: (col + (Math.abs(r) % 2 === 1 ? 0.5 : 0)) * TILE_W, y: r * ROW_H };
 }
 
-// ===== 棋盘（offset odd-r 存储：16×16 地图，可移动区居中 8×8） =====
+// ===== 棋盘（offset odd-r 存储：16×16 地图；可动区=T15 R3 定版 FIELD：12 高 × 8 宽） =====
 export const BOARD = {
   cols: 16,
   rows: 16,
-  movable: 12, // 可移动区边长（居中；T15 R3 FIELD 2..13 口径，12×12）
+} as const;
+
+/** 可动区（战区）边界（T15 R3 定版：col 4..11 / row 2..13，12 高 × 8 宽纵向走廊） */
+export const FIELD = {
+  colMin: 4,
+  colMax: 11,
+  rowMin: 2,
+  rowMax: 13,
 } as const;
 
 // ===== 视口与镜头（96 号 7×7 视口 + 旧 T06 已验拖动口径） =====
@@ -45,6 +52,13 @@ export const CAMERA = {
   dragThresholdPx: 8, // 拖动生效判定（位移超过=拖镜头非点按，旧 T06 已验证）
   worldPad: 40, // 战区裁剪包围盒四周留白（drawCells 用）
   followPad: 96, // 镜头跟随聚焦：可动区外扩窄边（L 环二反馈①：土黄外围自然推出视口，绿区铺满主体）
+  smoothingSec: 0.22, // 镜头平滑回拉时长常数（L 环追加③：仅主角条满时回拉，指数平滑 tau）
+} as const;
+
+// ===== 轻功跳跃演出参数（L 环追加①②：时长 0.6s 起步可调；高度翻倍） =====
+export const JUMP = {
+  duration: 0.6, // 跳跃演出时长（秒；FE 表现层重映射——session 位移 lerp 0.3s，渲染侧拖长到 0.6s 增强跳跃感）
+  height: 88, // 抛物线顶高（px；与 PIECE.jumpHeightPx 同源，渲染读此值）
 } as const;
 
 // ===== 瓦片配色（v8：草绿/土黄两族区域化分布，非棋盘交替；光照上暗下亮——底部光源氛围） =====
@@ -77,8 +91,8 @@ export const PIECE = {
   heightPerTile: 2.0, // 渲染高 = 压扁格高(TILE_H) × 本系数（定尺接口：T14 到位调此系数，O4）
   bossScale: 1.25, // Boss 放大
   walkFrameMs: 140, // 战斗步频（沿 config/battle BATTLE_FRAME 口径）
-  moveLerpSec: 0.3, // 移动位移表现时长（session renderPos 追 pos 的参考口径；mock 同值）
-  jumpHeightPx: 44, // 轻功抛物线顶高（跳跃真值=快照 isJump，联调 F1）
+  moveLerpSec: 0.3, // 普通行走位移表现时长
+  jumpHeightPx: 88, // 轻功抛物线顶高（L 环追加②：44→88 翻倍；=JUMP.height 同源）
   deadAlpha: 0.45, // 阵亡变灰透明度
   hitFlashSec: 0.15, // 受击红闪时长
 } as const;

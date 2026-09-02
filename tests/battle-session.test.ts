@@ -6,8 +6,10 @@ import {
   createHexBattle,
   assembleRoster,
   NEILI_COST_PER_CAST,
-  FIELD_MIN,
-  FIELD_MAX,
+  FIELD_COL_MIN,
+  FIELD_COL_MAX,
+  FIELD_ROW_MIN,
+  FIELD_ROW_MAX,
   type HexBattleSession,
 } from '../systems/battle-session';
 import { makeRng } from '../systems/battle-core';
@@ -59,7 +61,7 @@ const dist = (s: HexBattleSession, aId: string, bId: string) => {
 
 const inFieldOf = (_s: HexBattleSession) => (p: { q: number; r: number }) => {
   const off = axialToOffset(p);
-  return off.col >= FIELD_MIN && off.col <= FIELD_MAX && off.row >= FIELD_MIN && off.row <= FIELD_MAX;
+  return off.col >= FIELD_COL_MIN && off.col <= FIELD_COL_MAX && off.row >= FIELD_ROW_MIN && off.row <= FIELD_ROW_MAX;
 };
 
 const eu = (s: HexBattleSession) => s._debug.units.find((u) => u.id === 'e0')!;
@@ -360,8 +362,11 @@ describe('[ATK-1] 普攻：射程内结算 / 射程外拒绝', () => {
     waitAdjacent(s);
     expect(pu(s).bar).toBe(100); // clamp 口径：条满恒 100
     const eHpBefore = eu(s).hp;
+    const nBefore = s.events.length; // 取 submit 后增量（waitAdjacent 的特例普攻不混入）
     expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
-    const fresh = s.events.filter((ev) => ev.actorId === 'p' && (ev.type === 'basic' || ev.type === 'miss'));
+    const fresh = s.events
+      .slice(nBefore)
+      .filter((ev) => ev.actorId === 'p' && (ev.type === 'basic' || ev.type === 'miss'));
     expect(fresh.length).toBe(1);
     if (fresh[0].type === 'basic') {
       expect(fresh[0].damage).toBeGreaterThan(0);
@@ -490,8 +495,8 @@ describe('[ATK-5] 点空格=无操作', () => {
     expect(runToPending(s)).toBe(true);
     const cells = s.snapshot().moveCells;
     const outside: Array<{ q: number; r: number }> = [];
-    for (let row = FIELD_MIN; row <= FIELD_MAX; row++) {
-      for (let col = FIELD_MIN; col <= FIELD_MAX; col++) {
+    for (let row = FIELD_ROW_MIN; row <= FIELD_ROW_MAX; row++) {
+      for (let col = FIELD_COL_MIN; col <= FIELD_COL_MAX; col++) {
         const c = offsetToAxial(col, row);
         const occupied = s._debug.units.some((u) => u.hex.q === c.q && u.hex.r === c.r);
         if (!occupied && !snapHas(cells, c)) outside.push(c);
@@ -582,19 +587,19 @@ describe('[BAR-5] 90s 判定', () => {
 // ══════════ 出生与确定性（规格 §四 4.5 SP） ══════════
 
 describe('[SP-1] 出生：锚点 ≤3 随机（D1）', () => {
-  it('4 seed × 全体单位：出生格 ∈ 可动区且 dist(锚)≤3、我方/敌区互斥；满编容量验证', () => {
-    const anchorP = offsetToAxial(2, 13);
-    const anchorE = offsetToAxial(13, 2);
+  it('4 seed × 全体单位：出生格 ∈ 可动区（12h×8w）且 dist(锚)≤3、我方/敌区互斥；满编容量验证', () => {
+    const anchorP = offsetToAxial(4, 13); // 可动区左下极格（L 环 12h×8w）
+    const anchorE = offsetToAxial(11, 2); // 可动区右上极格
     for (const seed of [1, 7, 13, 42]) {
       const count = seed === 42 ? 6 : 2;
       const enemies = Array.from({ length: count }, (_, i) => unit({ id: `e${i}`, side: 'enemy' as const }));
       const s = makeSession(seed, 'auto', unit({ id: 'p', side: 'player' }), enemies);
       for (const u of s._debug.units) {
         const off = axialToOffset(u.hex);
-        expect(off.col).toBeGreaterThanOrEqual(FIELD_MIN);
-        expect(off.col).toBeLessThanOrEqual(FIELD_MAX);
-        expect(off.row).toBeGreaterThanOrEqual(FIELD_MIN);
-        expect(off.row).toBeLessThanOrEqual(FIELD_MAX);
+        expect(off.col).toBeGreaterThanOrEqual(FIELD_COL_MIN); // 8 列（col 4..11）
+        expect(off.col).toBeLessThanOrEqual(FIELD_COL_MAX);
+        expect(off.row).toBeGreaterThanOrEqual(FIELD_ROW_MIN); // 12 行（row 2..13）
+        expect(off.row).toBeLessThanOrEqual(FIELD_ROW_MAX);
         const anchor = u.side === 'player' ? anchorP : anchorE;
         expect(cubeDistance(anchor, u.hex)).toBeLessThanOrEqual(3);
       }

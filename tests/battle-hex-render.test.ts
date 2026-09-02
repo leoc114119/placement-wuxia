@@ -85,16 +85,16 @@ describe('瓦片投影（尖角压扁 + 奇偶行错位，逻辑格不变）', (
     expect(axialToOffset({ q: 0, r: -1 })).toBeNull();
   });
 
-  it('isMovableCell：居中 12×12 可移动区（T15 R3 FIELD，col/row 2..13）', () => {
+  it('isMovableCell：可动区 FIELD（T15 R3 定版 col 4..11 / row 2..13，12 高 × 8 宽）', () => {
     expect(isMovableCell({ q: 1, r: 8 })).toBe(true); // col 5, row 8
-    expect(isMovableCell({ q: 0, r: 2 })).toBe(false); // col 1 < 2 出带
-    expect(isMovableCell({ q: 1, r: 2 })).toBe(true); // col 2, row 2（西北角）
-    expect(isMovableCell({ q: 7, r: 11 })).toBe(true); // col 12, row 11（12×12 扩口径后入带）
-    expect(isMovableCell({ q: 7, r: 12 })).toBe(true); // col 13, row 12（东南角）
-    expect(axialToOffset({ q: 7, r: 12 })).toEqual({ col: 13, row: 12 });
+    expect(isMovableCell({ q: 0, r: 2 })).toBe(false); // col 1 < 4 出带
+    expect(isMovableCell({ q: 3, r: 2 })).toBe(true); // col 4, row 2（西北角）
+    expect(isMovableCell({ q: 7, r: 11 })).toBe(false); // col 12 > 11 出带
+    expect(isMovableCell({ q: 5, r: 13 })).toBe(true); // col 5, row 13（东南角）
+    expect(axialToOffset({ q: 5, r: 13 })).toEqual({ col: 11, row: 13 });
     expect(isMovableCell({ q: -4, r: 4 })).toBe(false); // col -2 出界
     expect(isMovableCell({ q: -1, r: 15 })).toBe(false); // row 15 > 13
-    expect(isMovableCell({ q: 0, r: 1 })).toBe(false); // col 0, row 1 < 2
+    expect(isMovableCell({ q: 0, r: 1 })).toBe(false); // col 0, row 1 出带
   });
 
   it('boardBounds 覆盖 16×16 全图角格', () => {
@@ -154,6 +154,37 @@ describe('镜头（拖动偏移 + 包围盒 clamp）', () => {
     const cam2 = computeCamera(snap, { x: -9999, y: 9999 }, 375, 667);
     expect(cam2.x).toBeCloseTo(b.minX + 375 / 2, 1);
     expect(inClamp(cam2.y, 'y', 667)).toBe(true);
+  });
+});
+
+// ---------- L 环追加③：镜头策略（敌方行动静止 / 主角条满回拉） ----------
+describe('镜头策略（L③）', () => {
+  it('敌方行动时镜头静止；主角条满时平滑回拉主角', () => {
+    const view = createView();
+    const snap = makeSnapshot([
+      { id: 'hero', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } },
+      { id: 'e1', side: 'enemy', animState: 'walk', pos: { q: 7, r: 4 }, renderPos: { q: 6, r: 4 } },
+    ]);
+    snap.cameraTargetId = 'hero';
+    updateView(view, snap, 0.016, 375, 667); // 首帧定位
+    const c0 = { ...view.camera };
+    // 敌方行动 1 秒（敌 renderPos 持续变化）
+    for (let i = 0; i < 60; i++) {
+      snap.actors[1].renderPos = { q: 6 - i * 0.02, r: 4 };
+      updateView(view, snap, 0.016, 375, 667);
+    }
+    expect(view.camera.x).toBeCloseTo(c0.x, 1); // 镜头静止
+    expect(view.camera.y).toBeCloseTo(c0.y, 1);
+    // 主角条满 → 平滑回拉主角（长帧收敛）
+    snap.actors[0].pos = { q: 7, r: 11 };
+    snap.actors[0].renderPos = { q: 7, r: 11 };
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    updateView(view, snap, 0.016, 375, 667);
+    for (let i = 0; i < 150; i++) updateView(view, snap, 0.016, 375, 667); // 2.4s 平滑充分收敛
+    const dest = computeCamera(snap, view.camDrag, 375, 667);
+    expect(Math.abs(view.camera.x - dest.x)).toBeLessThan(5);
+    expect(Math.abs(view.camera.y - dest.y)).toBeLessThan(5);
   });
 });
 
@@ -322,12 +353,12 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
       },
     );
     const snap = makeSnapshot([
-      { id: 'hero', name: '小虾米', animState: 'idle' },
-      { id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 3, r: 7 }, renderPos: { q: 3, r: 7 }, spriteKey: 'npc-shanzei' },
+      { id: 'hero', name: '小虾米', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } },
+      { id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 6, r: 7 }, renderPos: { q: 6, r: 7 }, spriteKey: 'npc-shanzei' },
     ]);
     snap.pendingInput = true;
     snap.turnActorId = 'hero';
-    snap.moveCells = [{ q: 1, r: 9 }, { q: 0, r: 9 }, { q: 2, r: 9 }];
+    snap.moveCells = [{ q: 4, r: 9 }, { q: 3, r: 9 }, { q: 5, r: 9 }];
     snap.heroSkills = [
       { id: 'te', label: '特', disabled: false },
       { id: 'jue', label: '绝', disabled: true },

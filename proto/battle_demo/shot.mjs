@@ -130,12 +130,17 @@ const jumped = await page.evaluate(() => {
   return { p, before: { ...hero.pos }, target: far };
 });
 await page.mouse.click(jumped.p.x, jumped.p.y);
-await page.waitForTimeout(150); // lerp 窗口内截空中帧
-await page.screenshot({ path: path.join(outDir, 'shot_4_jump_air.png') });
+// L 环追加①②：0.6s 跳跃演出——上升/顶点/落地三帧对比
+await page.waitForTimeout(200);
+await page.screenshot({ path: path.join(outDir, 'shot_4a_jump_rise.png') });
+await page.waitForTimeout(250);
+await page.screenshot({ path: path.join(outDir, 'shot_4b_jump_apex.png') });
 await page.waitForTimeout(600);
+await page.screenshot({ path: path.join(outDir, 'shot_4c_jump_land.png') });
 st = await snapState();
 check('②/F1 跳跃位移落地', st.hero.pos.q === jumped.target.q && st.hero.pos.r === jumped.target.r,
   `${JSON.stringify(jumped.before)}→${JSON.stringify(st.hero.pos)}`);
+/* L③ 镜头静止/回拉策略由单测确定性锁定（时序敏感，不进截图驱动） */
 
 // ③ 点敌人=普攻（下回合）
 await waitHeroTurn();

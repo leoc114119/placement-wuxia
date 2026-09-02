@@ -10,9 +10,11 @@ import {
   CAMERA,
   COMPONENT_LAYOUT,
   CTRL_ART,
+  FIELD,
   CTRL_BUTTONS,
   FX,
   HIGHLIGHT,
+  JUMP,
   HUD,
   PIECE,
   PLAQUE_BUTTONS,
@@ -74,9 +76,13 @@ interface FxItem {
 export interface BattleHexView {
   time: number;
   camDrag: { x: number; y: number };
+  lastCamDrag: { x: number; y: number };
   camera: { x: number; y: number };
+  camInit: boolean; // 镜头首帧定位标记
   anim: Map<string, AnimClock>;
   moveFrom: Map<string, HexPos>; // 跳跃/行走相位基准（axial 起点；axial 空间线性才能正确算 done）
+  moveSmooth: Map<string, HexPos>; // 跳跃表现位置（FE 表现层重映射：以 JUMP.duration 演出，不跟 session 的 0.3s lerp）
+  jumpT: Map<string, number>; // 跳跃已演出时长（秒）
   fx: FxItem[];
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
@@ -89,9 +95,13 @@ export function createView(): BattleHexView {
   return {
     time: 0,
     camDrag: { x: 0, y: 0 },
+    lastCamDrag: { x: 0, y: 0 },
     camera: { x: 0, y: 0 },
+    camInit: false,
     anim: new Map(),
     moveFrom: new Map(),
+    moveSmooth: new Map(),
+    jumpT: new Map(),
     fx: [],
     skillPop: 0,
     selectedCell: null,
@@ -118,12 +128,11 @@ export function axialToOffset(p: HexPos): { col: number; row: number } | null {
   return { col, row };
 }
 
-/** 是否可移动区（offset 居中 8×8；瓦片配色用） */
+/** 是否可动区（T15 R3 FIELD：col 4..11 / row 2..13；瓦片配色用） */
 export function isMovableCell(p: HexPos): boolean {
   const off = axialToOffset(p);
   if (!off) return false;
-  const half = (BOARD.cols - BOARD.movable) / 2;
-  return off.col >= half && off.col < half + BOARD.movable && off.row >= half && off.row < half + BOARD.movable;
+  return off.col >= FIELD.colMin && off.col <= FIELD.colMax && off.row >= FIELD.rowMin && off.row <= FIELD.rowMax;
 }
 
 /** 棋盘世界包围盒（含六边形 extent 与立体厚度、边距）。
@@ -156,12 +165,11 @@ export function boardBounds(): { minX: number; minY: number; maxX: number; maxY:
   };
 }
 
-/** 镜头跟随聚焦包围盒：可动区 8×8 + 窄边一格（L 环二反馈①：土黄外围自然推出视口，绿区铺满主体） */
+/** 镜头跟随聚焦包围盒：可动区 FIELD + 窄边（L 环二反馈①：土黄外围自然推出视口，绿区铺满主体） */
 export function movableBounds(): { minX: number; minY: number; maxX: number; maxY: number } {
-  const half = (BOARD.cols - BOARD.movable) / 2; // 4
-  const c0 = hexToWorld(half, half); // 可动区西北格
-  const c1 = hexToWorld(BOARD.movable - 1 + half, BOARD.movable - 1 + half); // 东南格
-  const pad = TILE_W / 2 + CAMERA.followPad; // 窄边一格余量
+  const c0 = hexToWorld(FIELD.colMin, FIELD.rowMin); // 可动区西北格
+  const c1 = hexToWorld(FIELD.colMax, FIELD.rowMax); // 东南格
+  const pad = TILE_W / 2 + CAMERA.followPad; // 窄边余量
   return {
     minX: c0.x - TILE_W / 2 - pad,
     minY: c0.y - TILE_H / 2 - pad,
@@ -191,6 +199,53 @@ export function computeCamera(
   };
 }
 
+/** 镜头策略（L 环追加③）：
+ * - 非主角条满时镜头静止（敌方行动不牵引镜头；拖镜 delta 即时叠加保证跟手）
+ * - 主角行动条满（等待输入）→ 镜头以指数平滑向主角理想机位回拉
+ * - 跳跃表现位置参与取景（主角跳跃时镜头平滑跟随表现位） */
+export function updateCamera(
+  view: BattleHexView,
+  snapshot: BattleSnapshot,
+  dt: number,
+  width: number,
+  height: number,
+): void {
+  const hero = snapshot.actors.find((a) => a.side === 'player');
+  const draw = hero ? view.moveSmooth.get(hero.id) ?? hero.renderPos : null;
+  const ideal = computeCamera(
+    { ...snapshot, cameraTargetId: hero ? hero.id : snapshot.cameraTargetId },
+    view.camDrag,
+    width,
+    height,
+  );
+  // 拖镜 delta 即时叠加（跟手）；首帧直接定位理想机位
+  if (!view.camInit) {
+    view.camera.x = ideal.x;
+    view.camera.y = ideal.y;
+    view.camInit = true;
+    view.lastCamDrag = { ...view.camDrag };
+    return;
+  }
+  const dx = view.camDrag.x - view.lastCamDrag.x;
+  const dy = view.camDrag.y - view.lastCamDrag.y;
+  view.camera.x += dx;
+  view.camera.y += dy;
+  view.lastCamDrag = { ...view.camDrag };
+  // 主角条满 → 平滑回拉理想机位（目标点含跳跃表现位置）
+  const heroTurn = snapshot.phase === 'fighting' && hero && snapshot.turnActorId === hero.id;
+  if (heroTurn && draw) {
+    const dest = computeCamera(
+      { ...snapshot, cameraTargetId: hero.id, actors: [{ ...hero, renderPos: draw }] },
+      view.camDrag,
+      width,
+      height,
+    );
+    const k = 1 - Math.exp(-dt / Math.max(0.001, CAMERA.smoothingSec));
+    view.camera.x += (dest.x - view.camera.x) * k;
+    view.camera.y += (dest.y - view.camera.y) * k;
+  }
+}
+
 // ============ 演出状态推进（动画钟/特效/弹出/镜头；只消费快照，不改快照任何字段） ============
 
 function easeOutCubic(p: number): number {
@@ -214,19 +269,42 @@ export function updateView(
   view.time += dt;
   for (const a of snapshot.actors) {
     const prev = view.anim.get(a.id);
-    if (!prev || prev.state !== a.animState || prev.isJump !== a.isJump) {
-      // 组切换：出招/普攻→斩击特效；受击→红环特效；进入跳跃/行走位移→记录起点（抛物线相位基准）
+    // 跳跃表现重映射（L 环追加①②）：session 位移 lerp 仅 0.3s（isJump 窗口同短），
+    // FE 以 JUMP.duration 独立演画整段跳跃——上升沿记起点，表现位置沿 from→pos 以 0.6s 推进
+    const jumping = view.jumpT.has(a.id);
+    if (a.isJump && !(prev && prev.isJump)) {
+      view.moveFrom.set(a.id, { q: a.renderPos.q, r: a.renderPos.r });
+      view.moveSmooth.set(a.id, { q: a.renderPos.q, r: a.renderPos.r });
+      view.jumpT.set(a.id, 0);
+    } else if (jumping) {
+      const from = view.moveFrom.get(a.id);
+      const jt = (view.jumpT.get(a.id) ?? 0) + dt;
+      if (from) {
+        const p = Math.min(1, jt / JUMP.duration);
+        const dest = a.pos;
+        view.moveSmooth.set(a.id, {
+          q: from.q + (dest.q - from.q) * p,
+          r: from.r + (dest.r - from.r) * p,
+        });
+      }
+      view.jumpT.set(a.id, jt);
+      if (jt >= JUMP.duration) {
+        view.jumpT.delete(a.id);
+        view.moveSmooth.delete(a.id);
+      }
+    }
+    const prev2 = view.anim.get(a.id);
+    if (!prev2 || prev2.state !== a.animState) {
+      // 组切换：出招/普攻→斩击特效；受击→红环特效
       const w = hexToWorld(a.renderPos.q, a.renderPos.r);
-      if (prev && (a.animState === 'strike' || a.animState === 'basic')) {
+      if (prev2 && (a.animState === 'strike' || a.animState === 'basic')) {
         view.fx.push({ kind: 'slash', x: w.x, y: w.y, t: 0, sec: FX.slashSec });
-      } else if (prev && a.animState === 'hit') {
+      } else if (prev2 && a.animState === 'hit') {
         view.fx.push({ kind: 'hit', x: w.x, y: w.y, t: 0, sec: FX.hitSec });
-      } else if (a.isJump || a.animState === 'walk') {
-        view.moveFrom.set(a.id, { q: a.renderPos.q, r: a.renderPos.r });
       }
       view.anim.set(a.id, { state: a.animState, t: 0, isJump: a.isJump });
     } else {
-      prev.t += dt;
+      prev2.t += dt;
     }
   }
   // 特效寿命
@@ -243,8 +321,8 @@ export function updateView(
   const k = Math.min(1, (dt / ARC_BTNS.popSec) * 3);
   view.skillPop += (popTarget - view.skillPop) * k;
   if (Math.abs(view.skillPop - popTarget) < 0.02) view.skillPop = popTarget;
-  // 镜头
-  view.camera = computeCamera(snapshot, view.camDrag, width, height);
+  // 镜头策略（L 环追加③）：镜头静止；仅主角行动条满时向主角平滑回拉；拖镜 delta 即时跟手
+  updateCamera(view, snapshot, dt, width, height);
 }
 
 // ============ 绘制工具 ============
@@ -444,14 +522,16 @@ interface PlacedPiece {
 /** 跳跃抛物线高度（纯函数，导出供用例；联调 F1：跳跃真值=快照 isJump，禁启发式猜）。
  * done = 已走位移占比（相位基准 view.moveFrom，updateView 在跳跃上升沿记录）。 */
 export function pieceHop(view: BattleHexView, actor: SnapshotActor): number {
-  if (!actor.isJump) return 0;
+  // isJump 快照窗口仅 0.3s（session lerp 窗口），FE 演画 0.6s——jumpT 演出中即使快照窗口已过仍保持 hop
+  if (!actor.isJump && !view.jumpT.has(actor.id)) return 0;
   const from = view.moveFrom.get(actor.id);
   if (!from) return 0;
-  // done 在 axial 空间计算（session lerp 即 axial 线性；屏幕投影距离非线性会越界）
+  // done 用表现位置进度（FE 以 JUMP.duration 重映射演出；session 0.3s lerp 数据不直接决定观感）
+  const smooth = view.moveSmooth.get(actor.id) ?? actor.renderPos;
   const total = Math.hypot(actor.pos.q - from.q, actor.pos.r - from.r);
-  const remaining = Math.hypot(actor.pos.q - actor.renderPos.q, actor.pos.r - actor.renderPos.r);
+  const remaining = Math.hypot(actor.pos.q - smooth.q, actor.pos.r - smooth.r);
   const done = total > 0.001 ? Math.max(0, Math.min(1, 1 - remaining / total)) : 1;
-  return Math.sin(Math.PI * done) * PIECE.jumpHeightPx;
+  return Math.sin(Math.PI * done) * JUMP.height;
 }
 
 function drawPieces(
@@ -472,7 +552,8 @@ function drawPieces(
   });
   const placed: PlacedPiece[] = [];
   for (const actor of sorted) {
-    const w0 = hexToWorld(actor.renderPos.q, actor.renderPos.r);
+    const draw = view.moveSmooth.get(actor.id) ?? actor.renderPos; // 跳跃单位=表现位置（0.6s 演出），其余=快照
+    const w0 = hexToWorld(draw.q, draw.r);
     const sx = Math.round(w0.x - cam.x + width / 2);
     const syGround = Math.round(w0.y - cam.y + height / 2);
     const scale = actor.isBoss ? PIECE.bossScale : 1;

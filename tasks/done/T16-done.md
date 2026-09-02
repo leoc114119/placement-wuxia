@@ -95,3 +95,26 @@
 - 三零 + 117/117 全绿（backend timeline WIP 已由其提交修复，全量回归干净）
 - 端到端 13 断言全 PASS（shot.mjs）：七项清单 + L④ 三尺寸 + L⑥ 直径/防重叠
 - 截图：shot_0（绿区铺满）/ shot_7_auto（托管高亮+AI 聚战）/ shot_size_*
+
+
+---
+
+## 7. 追加批次四：L 环追加小工单（跳跃演出 + 镜头策略）+ T15 R3 同步（2026-09-02 晚）
+
+### 7.1 T15 R3 同步
+- movable 口径：config 新增 FIELD（col 4..11 / row 2..13，12 高 × 8 宽）——BOARD.movable 方形假设删除，isMovableCell/movableBounds/mock reachable 分轴对齐
+- rejected 消费：types 'rejected'（bar/range/invalid）→ render `spawnNoteFx`（头顶冒字上浮渐隐）+ main events 游标消费；端到端 PASS（shot_reject_note.png）
+
+### 7.2 L 环追加①②：轻功跳跃演出参数化
+- config 新增 `JUMP = { duration: 0.6, height: 88 }`（0.3→0.6s 起步、高度翻倍，可调）
+- 实现：**FE 表现层重映射**——跳跃上升沿记 from，表现位置沿 from→pos 以 JUMP.duration 独立演画（session 位移 lerp 0.3s 数据不直接决定观感；isJump 快照窗口短于演出，jumpT 演出中 hop 保持）
+- 架构合规：纯表现层二级插值，快照只读、零数值计算；跳跃三帧对比可截（shot_4a/4b/4c）
+
+### 7.3 L 环追加③：镜头策略
+- **非主角行动镜头静止**（敌方行动不牵引）；**主角条满时平滑回拉**（指数平滑 tau=CAMERA.smoothingSec 0.22s）；拖镜 delta 即时叠加保证跟手；首帧直接定位理想机位（camInit，修开场漂移）
+- 实现：updateCamera（updateView 尾调用）+ computeCamera 保留纯函数语义（测试锚定）
+- 确定性单测：敌方行动 1s 镜头静止 + 条满回拉收敛（时序敏感不进截图驱动）
+
+### 7.4 验证
+- 三零 + **140/140 全绿**（本文件累计 27 例；backend FIELD WIP 已合入对齐）
+- 端到端 14 断言全 PASS（含 R3 rejected、L③ 跳跃三帧、L④ 三尺寸）

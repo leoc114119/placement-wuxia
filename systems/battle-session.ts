@@ -7,6 +7,7 @@
 // | 普通移动（无选中）     | BFS 连通，移动力=F-06                        | ✗ 不可穿任何单位     | 仅空格 |
 // | 轻功跳跃（激活态）     | cube 距离 ≤ ⌊F-06/2⌋，无连通性要求           | ✓ 可穿越任何单位     | 仅空格 |
 // | 轻功未激活/未解锁      | 同普通移动（无跳跃格）                       | ✗                   | 仅空格 |
+// 可动区口径：12 高 × 8 宽（row 2..13 × col 4..11，L 环追加；规格 BASE-1 勘误待登记）
 // ═══════════════════════════════════════════════════════════
 //
 // 五大病灶收敛对照（规格 §八 → 本文件落点，回执引用）：
@@ -62,10 +63,13 @@ import {
 
 // ---------- 布局与经济常量（Q7 批复：session 本地导出，config/battle-hex.ts 归 FE 卡） ----------
 
-/** 棋盘 16×16（96 号），可移动区 12×12 居中（列/行 2..13，边缘 2 圈非可动，BASE-1/L 环③） */
+/** 棋盘 16×16（96 号）。可移动区 = **12 高 × 8 宽**（row 2..13 十二行 × col 4..11 八列【16 宽内居中】，
+ * L 环追加口径：配合压扁瓦片形成纵向对峙纵深；规格 BASE-1 待勘误 12×12 → 12h×8w） */
 export const MAP_SIZE = 16;
-export const FIELD_MIN = 2;
-export const FIELD_MAX = 13;
+export const FIELD_COL_MIN = 4;
+export const FIELD_COL_MAX = 11;
+export const FIELD_ROW_MIN = 2;
+export const FIELD_ROW_MAX = 13;
 
 /** 【Q2 批复 · MVP 内力口径】特/绝/轻每季释放消耗内力 1、我方初始内力 100。
  * 正式内力经济后置：替换点=本常量 + makeInitialPlayer 装配（实装配置时回填公式总览）。 */
@@ -163,12 +167,13 @@ export function createHexBattle(opts: HexBattleOptions) {
     return cells;
   };
 
-  /** 【D1 · SP-1】出生锚：我方=可动区左下极格 offset(2,13)、敌方=右上极格 offset(13,2)；
-   * 出生格=锚 hex 距离 ≤3 的可动区格 rng 洗牌（两带天然不相交，锚距 >6）。 */
-  const ANCHOR_PLAYER = offsetToAxial(2, 13);
-  const ANCHOR_ENEMY = offsetToAxial(13, 2);
+  /** 【D1 · SP-1 · L 环 12h×8w 重算】出生锚：我方=可动区左下极格 offset(4,13)、
+   * 敌方=右上极格 offset(11,2)；出生格=锚 hex 距离 ≤3 的可动区格 rng 洗牌
+   * （锚距 cube=12 > 3+3，两带天然不相交）。 */
+  const ANCHOR_PLAYER = offsetToAxial(4, 13);
+  const ANCHOR_ENEMY = offsetToAxial(11, 2);
   const spawnBand = (anchor: HexPos): HexPos[] =>
-    zoneCells([FIELD_MIN, FIELD_MAX], [FIELD_MIN, FIELD_MAX]).filter((p) => cubeDistance(anchor, p) <= 3);
+    zoneCells([FIELD_COL_MIN, FIELD_COL_MAX], [FIELD_ROW_MIN, FIELD_ROW_MAX]).filter((p) => cubeDistance(anchor, p) <= 3);
 
   const shuffleTake = (cells: HexPos[], n: number): HexPos[] => {
     const a = cells.slice();
@@ -229,7 +234,7 @@ export function createHexBattle(opts: HexBattleOptions) {
     all.filter((c) => c.side === side).reduce((s, c) => s + Math.max(0, c.hp), 0);
   const inField = (p: HexPos): boolean => {
     const off = axialToOffset(p);
-    return off.col >= FIELD_MIN && off.col <= FIELD_MAX && off.row >= FIELD_MIN && off.row <= FIELD_MAX;
+    return off.col >= FIELD_COL_MIN && off.col <= FIELD_COL_MAX && off.row >= FIELD_ROW_MIN && off.row <= FIELD_ROW_MAX;
   };
 
   const emit = (e: Omit<BattleUiEvent, 't'>) => events.push({ t: +t.toFixed(2), ...e });
@@ -625,7 +630,7 @@ export function createHexBattle(opts: HexBattleOptions) {
       if (!walkCells(player).some((p) => hexEq(p, req.to))) {
         const off = axialToOffset(req.to);
         const isFieldEmpty =
-          off.col >= FIELD_MIN && off.col <= FIELD_MAX && off.row >= FIELD_MIN && off.row <= FIELD_MAX &&
+          off.col >= FIELD_COL_MIN && off.col <= FIELD_COL_MAX && off.row >= FIELD_ROW_MIN && off.row <= FIELD_ROW_MAX &&
           !occupied().some((o) => hexEq(o, req.to));
         if (isFieldEmpty) return false; // ATK-5：无操作（不移动不取消，无事件）
         emit({ type: 'rejected', actorId: player.id, reason: 'invalid' });

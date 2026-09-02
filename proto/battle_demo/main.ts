@@ -145,6 +145,9 @@ function resetDemo(): void {
   speedOn = false;
   view.anim.clear();
   view.moveFrom.clear();
+  view.moveSmooth.clear();
+  view.jumpT.clear();
+  view.camInit = false; // 重开重新定位镜头
   view.fx.length = 0;
   view.selectedCell = null;
   view.skillPop = 0;
