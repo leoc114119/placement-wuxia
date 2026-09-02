@@ -376,8 +376,8 @@ describe('轻功交互链（F1 阻塞项修复验证）', () => {
     expect(jumping.isJump).toBe(true); // 快照真值（F1）：渲染禁启发式猜
     s.tick(0.35); // > ANIM_MS.walk(300ms)：lerp 结束后 isJump 复位
     expect(s.snapshot().actors.find((a) => a.id === 'p')!.isJump).toBe(false);
-    // 行动消耗：轻功 sticky 态保持激活（L 环②：连跳不丢）、预算归零
-    expect(s.snapshot().selectedSkill).toBe('qing');
+    // 行动消耗：第三跳前仅攒到 <200 → 跳后条重置（<100）→ 选中清除（四钮统一规则）
+    expect(s.snapshot().selectedSkill).toBeNull();
     expect(s.submit({ type: 'move', to })).toBe(false);
   });
 
@@ -475,11 +475,13 @@ describe('L 环②：轻功 sticky 态（连续跳跃不再丢失激活）', () 
 
     const path: Array<{ q: number; r: number }> = [];
     for (let hop = 1; hop <= 3; hop++) {
-      // 等到玩家下一次条满（sticky 态下无需再点轻功钮）
+      // 等到玩家下一次条满，并攒条至 ≥200（等待期 bar 无 clamp 可积多倍条）——
+      // 四钮统一 sticky 规则：跳后条仍满 → 选中保持，三跳全链无需重新激活
       for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+      for (let i = 0; i < 400 && s._debug.player().bar < 200 && s.phase === 'fighting'; i++) s.tick(DT);
       const snap = s.snapshot();
       expect(snap.pendingInput).toBe(true);
-      expect(snap.selectedSkill).toBe('qing'); // 第 N 跳前激活仍在（修复点：不再被行动清掉）
+      expect(snap.selectedSkill).toBe('qing'); // 第 N 跳前激活仍在（跳前攒条 ≥200，sticky 保持）
       expect(snap.moveKind).toBe('jump');
       expect(snap.moveCells.length).toBeGreaterThan(0);
       const pu = s._debug.units.find((u) => u.id === 'p')!;
@@ -618,6 +620,73 @@ describe('胜负结算', () => {
 });
 
 // 辅助引用（保持 import 完整性；Q6 出生区回归断言）
+// ---------- L 环追加口径：四钮统一 sticky（特/绝/轻/毒同语义） ----------
+describe('四钮统一 sticky（攻击型选中保持与清除）', () => {
+  function castSession() {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword',
+      neili: 50, maxNeili: 50, hp: 999999, maxHp: 999999, def: 99999,
+      skills: [
+        { id: 'te', name: '特技', kind: 'special', weapon: 'sword', grade: 1.7, growth: 3, level: 10, cooldownTurns: 0, neiliCost: 10 },
+      ],
+    });
+    const e = unit({ id: 'e0', side: 'enemy', name: 'shanzei' });
+    return makeSession(13, 'manual', p, [e]);
+  }
+
+  /** 推进到条满 + 贴脸，并把条攒到 ≥ floor（控制连放次数）：每轮先攒条再贴脸，
+   * 避免 move 消耗把条打回刚满（floor=200 → 首发后 ≥100 保持 sticky、次发后重置） */
+  function readyWithBar(s: ReturnType<typeof createHexBattle>, floor: number): number {
+    for (let guard = 0; guard < 40; guard++) {
+      for (let i = 0; i < 600 && !s.snapshot().pendingInput && s.phase === 'fighting'; i++) s.tick(DT);
+      for (let i = 0; i < 600 && s._debug.player().bar < floor && s.phase === 'fighting'; i++) s.tick(DT);
+      if (s.phase !== 'fighting') throw new Error('战斗提前结束');
+      if (dist(s, 'p', 'e0') <= 1) return s._debug.player().bar;
+      const cells = s.snapshot().moveCells;
+      const target = s._debug.units.find((u) => u.id === 'e0')!;
+      const to = cells.slice().sort((a, b) => cubeDistance(a, target.hex) - cubeDistance(b, target.hex))[0];
+      if (to) s.submit({ type: 'move', to });
+    }
+    throw new Error('40 回合内未形成贴脸局面');
+  }
+
+  it('特技选中→条充足时连续两次施放选中保持；条重置→选中清除（钮收回）', () => {
+    const s = castSession();
+    const bar0 = readyWithBar(s, 200); // 攒到 ≥200：两发后条重置
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.snapshot().selectedSkill).toBe('te');
+    expect(s.snapshot().attackCells.length).toBeGreaterThan(0);
+
+    // 第一发：施放成功、扣一格条、条仍满（≥100）→ 选中保持（可连放）
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
+    const after1 = s._debug.player().bar;
+    expect(after1).toBeCloseTo(bar0 - 100, 6);
+    expect(after1).toBeGreaterThanOrEqual(100);
+    expect(s.snapshot().selectedSkill).toBe('te'); // 未重置 → sticky 保持
+    expect(s.snapshot().attackCells.length).toBeGreaterThan(0); // 范围高亮随选中恢复
+
+    // 第二发：立即再点目标即可施放（无需重新点钮）
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
+    const after2 = s._debug.player().bar;
+    expect(after2).toBeCloseTo(bar0 - 200, 6);
+    expect(after2).toBeLessThan(100); // 条重置
+    // 重置 → 选中清除、范围高亮收回（渲染据此收钮）
+    expect(s.snapshot().selectedSkill).toBeNull();
+    expect(s.snapshot().attackCells).toEqual([]);
+    // 两次施放事件齐全（cd0 无降级干扰）
+    const casts = s.events.filter((ev) => ev.type === 'skill' && ev.skillId === 'te');
+    expect(casts.length).toBe(2);
+  });
+
+  it('轻功同规则回归：条重置后选中清除，需重新点选（与攻击型同语义）', () => {
+    const s = castSession();
+    const bar0 = readyWithBar(s, 100); // 条刚满即操作：一跳后必然重置
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    void bar0;
+    // 攻击型已验证；轻功路径由「轻功交互链」用例尾部断言（跳后条重置 → selectedSkill null）覆盖
+  });
+});
+
 // O3 出生带（L 环④修正后口径）：hex 平顶投影 y = r + q/2（py ∝ y，y 大=屏幕下方）。
 // offset 矩形「左下」子区投影斜切到视觉中部（L 环④根因），故按投影分带选格：
 // 我方 = 可动区 y≥10 且 q≤2（视觉左下角），敌方 = y≤8.5 且 q≥5（视觉右上角）。

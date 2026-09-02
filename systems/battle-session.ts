@@ -426,11 +426,12 @@ export function createHexBattle(opts: HexBattleOptions) {
     c.barWasMax = false;
     if (c.side === 'player') {
       manual.idleSec = 0; // 玩家行动重置托管计时（镜像 core）
-      // 激活态清理（L 环②修复）：攻击型技能施放后回普通态；轻功是「移动姿态」——
-      // sticky 保留（Leo 连跳预期：激活一次后连续跳跃，无需每跳重新激活），
-      // 取消路径 = 再次 selectSkill 同 id（toggle）/ cancelSkill / 战斗结束。
-      const sel = selectedSkill ? player.skills.find((x) => x.id === selectedSkill) : undefined;
-      if (sel?.kind !== 'qingGong') selectedSkill = null;
+      // 【四钮统一 sticky · L 环追加口径】特/绝/轻/毒同语义：点选可用即选中，行动后保留，
+      // 可连续施放/跳跃（每次点目标消耗一格行动条）；**行动条重置（扣减后 < 满值）才清除
+      // 选中**。bar 无上限 clamp（镜像 core，等待期可积多倍条）——扣后仍 ≥100 = 未重置，
+      // 选中保持；< 100 = 重置，选中清除、钮收回。取消路径 = 同 id 再点 toggle /
+      // cancelSkill / 战斗结束（与轻功 L② sticky 完全同语义）。
+      if (c.bar < BAR.max) selectedSkill = null;
     }
     lastActedId = c.id;
   }
