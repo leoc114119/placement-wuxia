@@ -95,3 +95,18 @@ parts.push('})();');
 
 fs.writeFileSync(OUT, parts.join('\n'), 'utf8');
 console.log(`[build] bundle.js 生成：${order.length} 个模块 → ${OUT}`);
+
+// 自动 bump index.html 的 bundle 版本参数（防浏览器缓存旧包）
+import fs from 'node:fs';
+{
+  const htmlPath = new URL('./index.html', import.meta.url).pathname;
+  let html = fs.readFileSync(htmlPath, 'utf8');
+  const v = 'v' + Date.now();
+  if (/bundle\.js\?v=/.test(html)) {
+    html = html.replace(/bundle\.js\?v=[^"']+/, `bundle.js?v=${v}`);
+  } else {
+    html = html.replace('bundle.js', `bundle.js?v=${v}`);
+  }
+  fs.writeFileSync(htmlPath, html);
+  console.log(`[build] index.html 版本参数 → ${v}`);
+}
