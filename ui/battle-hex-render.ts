@@ -14,7 +14,9 @@ import {
   CTRL_BUTTONS,
   FX,
   HIGHLIGHT,
+  hexDist,
   JUMP,
+  jumpParamsFor,
   HUD,
   PIECE,
   PLAQUE_BUTTONS,
@@ -81,8 +83,9 @@ export interface BattleHexView {
   camInit: boolean; // 镜头首帧定位标记
   anim: Map<string, AnimClock>;
   moveFrom: Map<string, HexPos>; // 跳跃/行走相位基准（axial 起点；axial 空间线性才能正确算 done）
-  moveSmooth: Map<string, HexPos>; // 跳跃表现位置（FE 表现层重映射：以 JUMP.duration 演出，不跟 session 的 0.3s lerp）
+  moveSmooth: Map<string, HexPos>; // 跳跃表现位置（FE 表现层重映射：随距离插值时长演画，不跟 session 的 0.3s lerp）
   jumpT: Map<string, number>; // 跳跃已演出时长（秒）
+  jumpParams: Map<string, { duration: number; height: number }>; // 本次跳跃插值参数（上升沿按距离锁定）
   fx: FxItem[];
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
@@ -102,6 +105,7 @@ export function createView(): BattleHexView {
     moveFrom: new Map(),
     moveSmooth: new Map(),
     jumpT: new Map(),
+    jumpParams: new Map(),
     fx: [],
     skillPop: 0,
     selectedCell: null,
@@ -276,11 +280,14 @@ export function updateView(
       view.moveFrom.set(a.id, { q: a.renderPos.q, r: a.renderPos.r });
       view.moveSmooth.set(a.id, { q: a.renderPos.q, r: a.renderPos.r });
       view.jumpT.set(a.id, 0);
+      // 距离插值（Leo 实测反馈：长距跳被固定时长拉平——弧线参数随格距放大，封顶防浮夸）
+      view.jumpParams.set(a.id, jumpParamsFor(hexDist({ q: a.pos.q, r: a.pos.r }, { q: a.renderPos.q, r: a.renderPos.r })));
     } else if (jumping) {
       const from = view.moveFrom.get(a.id);
+      const params = view.jumpParams.get(a.id) ?? jumpParamsFor(hexDist({ q: a.pos.q, r: a.pos.r }, { q: a.renderPos.q, r: a.renderPos.r }));
       const jt = (view.jumpT.get(a.id) ?? 0) + dt;
       if (from) {
-        const p = Math.min(1, jt / JUMP.duration);
+        const p = Math.min(1, jt / params.duration);
         const dest = a.pos;
         view.moveSmooth.set(a.id, {
           q: from.q + (dest.q - from.q) * p,
@@ -288,9 +295,10 @@ export function updateView(
         });
       }
       view.jumpT.set(a.id, jt);
-      if (jt >= JUMP.duration) {
+      if (jt >= params.duration) {
         view.jumpT.delete(a.id);
         view.moveSmooth.delete(a.id);
+        view.jumpParams.delete(a.id);
       }
     }
     const prev2 = view.anim.get(a.id);
@@ -531,7 +539,8 @@ export function pieceHop(view: BattleHexView, actor: SnapshotActor): number {
   const total = Math.hypot(actor.pos.q - from.q, actor.pos.r - from.r);
   const remaining = Math.hypot(actor.pos.q - smooth.q, actor.pos.r - smooth.r);
   const done = total > 0.001 ? Math.max(0, Math.min(1, 1 - remaining / total)) : 1;
-  return Math.sin(Math.PI * done) * JUMP.height;
+  const height = view.jumpParams.get(actor.id)?.height ?? JUMP.baseHeight;
+  return Math.sin(Math.PI * done) * height;
 }
 
 function drawPieces(

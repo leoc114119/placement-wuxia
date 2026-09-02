@@ -55,11 +55,32 @@ export const CAMERA = {
   smoothingSec: 0.22, // 镜头平滑回拉时长常数（L 环追加③：仅主角条满时回拉，指数平滑 tau）
 } as const;
 
-// ===== 轻功跳跃演出参数（L 环追加①②：时长 0.6s 起步可调；高度翻倍） =====
+// ===== 轻功跳跃演出参数（L 环追加①② + Leo 实测反馈：参数随 hex 距离插值——
+// 基准 2 格=0.6s/88px，每超 1 格 duration+0.15s、height+25%（线性），封顶防浮夸；短距 ≤2 格观感不变） =====
 export const JUMP = {
-  duration: 0.6, // 跳跃演出时长（秒；FE 表现层重映射——session 位移 lerp 0.3s，渲染侧拖长到 0.6s 增强跳跃感）
-  height: 88, // 抛物线顶高（px；与 PIECE.jumpHeightPx 同源，渲染读此值）
+  baseDuration: 0.6, // 基准演出时长（秒，≤2 格）
+  baseHeight: 88, // 基准抛物线顶高（px，≤2 格）
+  baseCells: 2, // 基准距离（格；≤ 此距离不加成）
+  durationPerTile: 0.15, // 每超 1 格时长增量（秒）
+  heightPerTileRatio: 0.25, // 每超 1 格高度增幅（基准的 25%，线性）
+  maxDuration: 1.2, // 时长封顶
+  maxHeight: 176, // 高度封顶（2 倍基准）
 } as const;
+
+/** 距离插值：hex 距离 → 演出时长/顶高（封顶防浮夸） */
+export function jumpParamsFor(cells: number): { duration: number; height: number } {
+  const extra = Math.max(0, cells - JUMP.baseCells);
+  const duration = Math.min(JUMP.maxDuration, JUMP.baseDuration + JUMP.durationPerTile * extra);
+  const height = Math.min(JUMP.maxHeight, JUMP.baseHeight * (1 + JUMP.heightPerTileRatio * extra));
+  return { duration, height };
+}
+
+/** hex 距离（cube 口径，与 systems/hex 同式；渲染表现侧自含） */
+export function hexDist(a: { q: number; r: number }, b: { q: number; r: number }): number {
+  const dq = a.q - b.q;
+  const dr = a.r - b.r;
+  return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+}
 
 // ===== 瓦片配色（v8：草绿/土黄两族区域化分布，非棋盘交替；光照上暗下亮——底部光源氛围） =====
 export const TILE = {

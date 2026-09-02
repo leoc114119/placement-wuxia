@@ -12,9 +12,12 @@ import {
   ARC_BTNS,
   CTRL_ART,
   CTRL_BUTTONS,
+  JUMP,
   ROW_H,
   TILE_W,
+  hexDist,
   hexToWorld,
+  jumpParamsFor,
 } from '../config/battle-hex';
 import {
   axialToOffset,
@@ -455,6 +458,18 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     // 无相位基准 → 0（防御）
     const noFrom: BattleHexView = createView();
     expect(pieceHop(noFrom, mid)).toBe(0);
+  });
+
+  it('Leo 实测反馈：跳跃参数随距离插值（基准 2 格，每 +1 格 +0.15s/+25%，封顶）', () => {
+    expect(jumpParamsFor(2)).toEqual({ duration: JUMP.baseDuration, height: JUMP.baseHeight }); // 基准不变
+    expect(jumpParamsFor(4)).toEqual({ duration: 0.9, height: 132 }); // +2 格
+    expect(jumpParamsFor(10)).toEqual({ duration: JUMP.maxDuration, height: JUMP.maxHeight }); // 封顶
+    expect(hexDist({ q: 0, r: 0 }, { q: 4, r: 0 })).toBe(4);
+    // 渲染侧：上升沿按距离锁定参数
+    const view = createView();
+    const snap = makeSnapshot([{ id: 'hero', animState: 'walk', isJump: true, pos: { q: 4, r: 8 }, renderPos: { q: 1, r: 8 } }]);
+    updateView(view, snap, 0.016, 375, 667);
+    expect(view.jumpParams.get('hero')).toEqual(jumpParamsFor(hexDist({ q: 4, r: 8 }, { q: 1, r: 8 })));
   });
 
   it('T15 R3 rejected 消费：spawnNoteFx 头顶冒字（上浮渐隐，寿命到即亡）', () => {

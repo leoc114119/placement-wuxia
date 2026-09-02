@@ -210,6 +210,31 @@ describe('[MV-2] 轻功跳跃态：金格=纯距离半径、可穿越', () => {
     expect(s.snapshot().selectedSkill).toBeNull(); // SEL-3
   });
 
+  it('[BASE-6 勘误收编] 去 sticky：跳→选中清除回落普通移动（金格消失绿格回归）→重新激活→再跳', () => {
+    // Leo 拍板（规格 sticky 勘误条目）：跳跃行动提交后 selection 无条件清除，
+    // 即便（假设性）bar≥100 也不保持跳跃态——连跳=重新点轻功钮。
+    // 封顶口径下跳后 bar 必 0；「任何 bar 状态必清」由 commitTurn 无条件 clearSelection
+    // 保证（结构断言病灶①已锁 bar=0 显式清零）。
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
+      unit({ id: 'e0', side: 'enemy', hp: 999999 }),
+    ]);
+    for (let hop = 1; hop <= 2; hop++) {
+      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+      expect(s.snapshot().pendingInput).toBe(true);
+      // 重新激活（连跳=重新点轻功钮，金格重新点亮）
+      expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+      expect(s.snapshot().moveKind).toBe('jump');
+      expect(s.snapshot().moveCells.length).toBeGreaterThan(0);
+      const to = s.snapshot().moveCells[0];
+      expect(s.submit({ type: 'move', to })).toBe(true);
+      // 提交后无条件回落普通移动：选中清除、金格消失、绿格回归
+      expect(s.snapshot().selectedSkill).toBeNull();
+      expect(s.snapshot().moveKind).toBe('walk');
+      expect(s.snapshot().moveCells.length).toBeGreaterThan(0); // 绿格回归（普通可达）
+      expect(pu(s).bar).toBeLessThan(100); // 条重置（封顶口径）
+    }
+  });
+
   it('[MV-2/MV-3] 一阶轻功基线：power ≤ 1 → 零金格（函数级防御；F-06 基础 2 下 ⌊power/2⌋=0 不可达，条目以函数级对号）', () => {
     expect(jumpReachable({ q: 0, r: 0 }, 1, []).length).toBe(0);
     expect(jumpReachable({ q: 0, r: 0 }, 0, []).length).toBe(0);
