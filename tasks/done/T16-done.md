@@ -46,3 +46,32 @@
 - **对切 T15**：render/input 类型已按冻结契约；真快照咬合用例已绿。剩余：① heroSkills 同形供给（工单或 session 扩展）；② mock 替换点=main.ts 的 `createMockSession`（单点）。
 - **L 环目验项**：弧钮间距/弹出时长（ARC_BTNS）、演出时序（CHOREO）、压暗层深度（TOPBAR.dimAlpha）、棋子定尺（PIECE.heightPerTile，T14 后校）均为 config 手感项。
 - **后置**：顶栏文字/胶囊烘焙（M4 真机对位+canvas 叠字配方）；事件流驱动 L6 特效（Q1② 裁决留迭代）；跳格轻功抛物线启发式（renderPos-pos 距离>1.5 格触发）。
+
+
+---
+
+## 5. 追加批次一：联调（mock→真 session）+ L 环三修复（2026-09-02 午后）
+
+### 5.1 联调（工单：mock→真 session 单点替换 + F1/F2/F3 消费）
+- `proto/battle_demo/main.ts`：createMockSession → createHexBattle 单点替换（演示四技 te/jue/qing/du 对齐 ARC_BTNS；敌阵容 npc-shanzei+npc-lang，name=configId）
+- F2：heroSkills 转正为快照必选字段直读，ui 内临时定义删除（re-export types 保 mock 零改）
+- F3：spriteKinds 增 npc-lang；spriteKey=configId 端到端验证
+- F1：moveKind 金格换色 + isJump 真值抛物线（pieceHop 纯函数，相位基准改 axial 空间——屏幕投影非线性会越界，测试抓出）
+- 七项清单 9 断言全 PASS（shot.mjs 可复现）
+
+### 5.2 L 环三修复（Leo 真机反馈）
+- ④ ctrl 看不到 → 右下锚定+短边约束（w=min(18.3%W, 42%H÷宽高比)，任何窗口比例恒贴右下）+ 组件资源失败时代码占位兜底（功能钮永不消失）+ 画布逻辑尺寸自适应窗口（每帧检测 rect 变化，resize 事件不可靠）+ index.html 防变形 CSS（width:min(100%, 100vh×9/16)）
+- ⑤ 拖镜反向 → 相机平移符号取反（画面跟手），单测断言 -30/-20
+- ⑥ 弧钮放大 → 直径 1.8→2.4 头宽（实测 33px），弧半径同步 3.6，间距 42>33 防重叠（断言在案）
+
+### 5.3 追加批次二：投影改造（压扁瓦片透视，Leo 看稿修正版）
+- 形态：尖角朝上/下压扁六边形（1:0.7，上下尖角、左右竖直边），**非平顶**（规格修正二版）
+- 阵列：奇偶行错位半格 + 行距 0.75×格高 + **战区矩形裁剪**（错位行边缘裁平 = 长方形战区，无锯齿菱形边）
+- 投影参数：TILE_SPEC（TILE_W/TILE_H/ROW_H/SIDE_DEPTH 派生），hexToWorld/worldToHex 重写为错位网格（逻辑格 q/r 不变，input 拾取同函数零分叉）
+- L1：代码临时瓦片（顶面+下斜边/下尖角侧面+上暗下亮描边），TILE_SPRITES 素材位预留（草绿/土黄到位即贴）
+- 棋子定尺基准改 TILE_H，heightPerTile 1.5→2.0（压扁格保观感）
+
+### 5.4 追加验证
+- 三零 + battle-hex-render 25/25 全绿；全量 116/117——**唯一失败 = backend 工作区未提交 WIP**（tests/battle-hex-timeline.test.ts，仅 import systems/*，与渲染侧文件零交集；battle-session.ts 13:22 仍在被 backend 修改中）
+- 多窗口截图：shot_size_375x667 / 560x700 / 900x560-wide（ctrl/plaque 恒可见断言 3 PASS）
+- 压扁透视截图：shot_0（长方形战区）/ shot_1（放大弧钮+金格选中）

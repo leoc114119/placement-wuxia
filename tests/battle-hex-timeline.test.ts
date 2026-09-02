@@ -75,7 +75,7 @@ describe('时间线②：手动脚本对局', () => {
   function scriptedRun(seed: number): { s: HexBattleSession; moves: number; attacks: number } {
     const s = createHexBattle({
       player: unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 300, maxHp: 300 }),
-      enemies: [unit({ id: 'e0', side: 'enemy', hp: 150, maxHp: 150, atk: 30, def: 10, jimin: 60 })],
+      enemies: [unit({ id: 'e0', side: 'enemy', hp: 600, maxHp: 600, atk: 30, def: 10, jimin: 60 })], // 血厚防「贴脸特例普攻」一发秒杀提前终局（L 环④新带下敌我更近）
       mode: 'manual',
       seed,
     });
