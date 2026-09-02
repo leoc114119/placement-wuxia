@@ -1,0 +1,201 @@
+{
+  "_comment": "绢帛弹窗九宫格 · 源 ref_pixel_ui_v1.png 唯一大块绢帛面板(背包格面板边框带)",
+  "source": "assets/ui/pixel/raw/ref_pixel_ui_v1.png",
+  "panel_bbox_incl_frame": [
+    524,
+    71,
+    904,
+    511
+  ],
+  "panel_inner_grid_area": [
+    555,
+    128,
+    872,
+    452
+  ],
+  "border_structure": {
+    "left_px": {
+      "outer_wood": [
+        524,
+        529
+      ],
+      "black_stroke": [
+        530,
+        533
+      ],
+      "silk_band": [
+        534,
+        549
+      ],
+      "gold_pinline": [
+        550,
+        551
+      ],
+      "inner_stroke": [
+        552,
+        554
+      ]
+    },
+    "right_px": {
+      "inner_stroke": [
+        893,
+        894
+      ],
+      "outer_wood": [
+        895,
+        903
+      ]
+    },
+    "top_px": {
+      "outer_wood": [
+        71,
+        77
+      ],
+      "black_stroke": [
+        78,
+        80
+      ],
+      "silk_band": [
+        81,
+        124
+      ],
+      "inner_stroke": [
+        125,
+        127
+      ]
+    },
+    "bottom_px": {
+      "inner_stroke": [
+        452,
+        454
+      ],
+      "gold_pinline": [
+        455,
+        456
+      ],
+      "silk_band": [
+        457,
+        496
+      ],
+      "outer_wood": [
+        497,
+        510
+      ]
+    }
+  },
+  "slices": {
+    "left": 31,
+    "right": 32,
+    "top": 57,
+    "bottom": 59
+  },
+  "pieces": {
+    "panel_silk_tl": {
+      "src_rect": [
+        524,
+        71,
+        555,
+        128
+      ],
+      "w": 31,
+      "h": 57
+    },
+    "panel_silk_t": {
+      "src_rect": [
+        555,
+        71,
+        872,
+        128
+      ],
+      "w": 317,
+      "h": 57
+    },
+    "panel_silk_tr": {
+      "src_rect": [
+        872,
+        71,
+        904,
+        128
+      ],
+      "w": 32,
+      "h": 57
+    },
+    "panel_silk_l": {
+      "src_rect": [
+        524,
+        128,
+        555,
+        452
+      ],
+      "w": 31,
+      "h": 324
+    },
+    "panel_silk_c": {
+      "src_rect": [
+        665,
+        241,
+        762,
+        340
+      ],
+      "w": 97,
+      "h": 99
+    },
+    "panel_silk_r": {
+      "src_rect": [
+        872,
+        128,
+        904,
+        452
+      ],
+      "w": 32,
+      "h": 324
+    },
+    "panel_silk_bl": {
+      "src_rect": [
+        524,
+        452,
+        555,
+        511
+      ],
+      "w": 31,
+      "h": 59
+    },
+    "panel_silk_b": {
+      "src_rect": [
+        555,
+        452,
+        872,
+        511
+      ],
+      "w": 317,
+      "h": 59
+    },
+    "panel_silk_br": {
+      "src_rect": [
+        872,
+        452,
+        904,
+        511
+      ],
+      "w": 32,
+      "h": 59
+    }
+  },
+  "notes": [
+    "中心块取自面板内部中央格(665,241)-(762,340)的干净绢帛纹理: 面板内格区被背包格线污染,不可直接作中心",
+    "边块含完整装饰带(外木框/黑描边/绢带/金线/内描边): 角块不拉伸, 边块单轴拉伸, 中心平铺",
+    "边带绢帛(约#CDAAF0 误——实测均值见 tone)与中心格绢帛存在亮度阶差(约+22亮度), 分界处有内描边线, 视觉为框内嵌面板效果"
+  ],
+  "tone": {
+    "border_band_silk": [
+      201,
+      170,
+      129
+    ],
+    "center_tile_silk": [
+      182,
+      155,
+      114
+    ]
+  }
+}
