@@ -106,6 +106,7 @@ console.log(`[build] bundle.js 生成：${order.length} 个模块 → ${OUT}`);
   } else {
     html = html.replace('bundle.js', `bundle.js?v=${v}`);
   }
+  html = html.replace(/(<div id="verTag"[^>]*>)[^<]*(<)/, `$1${v}$2`);
   fs.writeFileSync(htmlPath, html);
   console.log(`[build] index.html 版本参数 → ${v}`);
 }
