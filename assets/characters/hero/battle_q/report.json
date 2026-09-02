@@ -14,24 +14,24 @@
   ],
   "breath": "程序化 make_breath 上移 3px（禁 AI 重绘）",
   "mirror": "left=side FLIP_LEFT_RIGHT；right=side 同款拷贝",
-  "built_at": "2026-09-02 13:05"
+  "built_at": "2026-09-02 13:06"
  },
  "down": {
-  "scale": 0.14841,
+  "scale": 0.14832,
   "frames": {
    "battle_idle": {
     "raw_bbox": [
      0,
      0,
      820,
-     1725
+     1726
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 256,
     "char_w_norm": 122,
     "head_mode": "skin",
-    "head_norm_px": 114.6,
-    "centroid_x_local": 59.2,
+    "head_norm_px": 114.7,
+    "centroid_x_local": 59.4,
     "paste": [
      61,
      44
@@ -44,8 +44,8 @@
      300
     ],
     "char_h": 256,
-    "opaque_ratio": 0.2358,
-    "centroid_x": 120.1,
+    "opaque_ratio": 0.2386,
+    "centroid_x": 120.4,
     "feet_y": 300
    },
    "battle_idle_breath": {
@@ -56,8 +56,8 @@
      300
     ],
     "char_h": 259,
-    "opaque_ratio": 0.2394,
-    "centroid_x": 120.0,
+    "opaque_ratio": 0.2422,
+    "centroid_x": 120.3,
     "feet_y": 300,
     "mode": "programmatic",
     "shift_px": 3,
@@ -70,12 +70,12 @@
      704,
      1454
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 216,
     "char_w_norm": 104,
     "head_mode": "skin",
     "head_norm_px": 80.7,
-    "centroid_x_local": 52.2,
+    "centroid_x_local": 52.3,
     "paste": [
      68,
      84
@@ -97,21 +97,21 @@
      910,
      1818
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 270,
     "char_w_norm": 135,
     "head_mode": "skin",
     "head_norm_px": 117.2,
-    "centroid_x_local": 62.3,
+    "centroid_x_local": 62.8,
     "paste": [
-     58,
+     57,
      30
     ],
-    "legs_band_cx": 120.2,
+    "legs_band_cx": 119.2,
     "bbox": [
-     58,
+     57,
      30,
-     193,
+     192,
      300
     ],
     "char_h": 270,
@@ -122,13 +122,13 @@
      0,
      0,
      677,
-     1747
+     1748
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 259,
     "char_w_norm": 100,
     "head_mode": "skin",
-    "head_norm_px": 116.6,
+    "head_norm_px": 116.7,
     "centroid_x_local": 46.7,
     "paste": [
      73,
@@ -149,14 +149,14 @@
      0,
      0,
      736,
-     1809
+     1810
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 268,
     "char_w_norm": 109,
     "head_mode": "skin",
-    "head_norm_px": 121.1,
-    "centroid_x_local": 49.7,
+    "head_norm_px": 121.2,
+    "centroid_x_local": 49.6,
     "paste": [
      70,
      32
@@ -176,14 +176,14 @@
      0,
      0,
      1058,
-     1568
+     1569
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 233,
     "char_w_norm": 157,
     "head_mode": "skin",
-    "head_norm_px": 96.5,
-    "centroid_x_local": 76.9,
+    "head_norm_px": 96.4,
+    "centroid_x_local": 76.8,
     "paste": [
      43,
      67
@@ -205,11 +205,11 @@
      1018,
      1815
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 269,
     "char_w_norm": 151,
     "head_mode": "skin",
-    "head_norm_px": 106.6,
+    "head_norm_px": 106.5,
     "centroid_x_local": 71.4,
     "paste": [
      49,
@@ -227,26 +227,26 @@
    },
    "hit_1": {
     "raw_bbox": [
-     1,
+     0,
      0,
      988,
-     1526
+     1527
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 226,
-    "char_w_norm": 146,
+    "char_w_norm": 147,
     "head_mode": "skin",
     "head_norm_px": 104.0,
-    "centroid_x_local": 75.9,
+    "centroid_x_local": 76.5,
     "paste": [
      44,
      74
     ],
-    "legs_band_cx": 111.4,
+    "legs_band_cx": 111.9,
     "bbox": [
      44,
      74,
-     190,
+     191,
      300
     ],
     "char_h": 226,
@@ -257,9 +257,9 @@
      0,
      0,
      794,
-     1668
+     1669
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 248,
     "char_w_norm": 118,
     "head_mode": "skin",
@@ -284,23 +284,23 @@
      0,
      0,
      884,
-     1564
+     1565
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 232,
     "char_w_norm": 131,
     "head_mode": "skin",
-    "head_norm_px": 102.4,
-    "centroid_x_local": 61.6,
+    "head_norm_px": 102.3,
+    "centroid_x_local": 61.3,
     "paste": [
-     58,
+     59,
      68
     ],
-    "legs_band_cx": 124.7,
+    "legs_band_cx": 125.7,
     "bbox": [
-     58,
+     59,
      68,
-     189,
+     190,
      300
     ],
     "char_h": 232,
@@ -311,23 +311,23 @@
      0,
      0,
      1029,
-     763
+     764
     ],
-    "scale": 0.1484,
+    "scale": 0.1483,
     "char_h_norm": 113,
     "char_w_norm": 153,
     "head_mode": "skin",
-    "head_norm_px": 45.7,
-    "centroid_x_local": 57.0,
+    "head_norm_px": 45.8,
+    "centroid_x_local": 57.7,
     "paste": [
-     63,
+     62,
      187
     ],
-    "legs_band_cx": 135.9,
+    "legs_band_cx": 135.0,
     "bbox": [
-     63,
+     62,
      187,
-     216,
+     215,
      300
     ],
     "char_h": 113,
@@ -338,46 +338,46 @@
      0,
      0,
      974,
-     1470
+     1477
     ],
-    "scale": 0.1484,
-    "char_h_norm": 218,
-    "char_w_norm": 145,
+    "scale": 0.1483,
+    "char_h_norm": 219,
+    "char_w_norm": 144,
     "head_mode": "skin",
-    "head_norm_px": 101.7,
-    "centroid_x_local": 72.9,
+    "head_norm_px": 102.0,
+    "centroid_x_local": 72.1,
     "paste": [
-     47,
-     82
+     48,
+     81
     ],
-    "legs_band_cx": 118.9,
+    "legs_band_cx": 119.3,
     "bbox": [
-     47,
-     82,
+     48,
+     81,
      192,
      300
     ],
-    "char_h": 218,
+    "char_h": 219,
     "feet_y": 300
    }
   }
  },
  "up": {
-  "scale": 0.14755,
+  "scale": 0.14747,
   "frames": {
    "battle_idle": {
     "raw_bbox": [
      0,
      0,
      999,
-     1735
+     1736
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 256,
     "char_w_norm": 147,
     "head_mode": "skin",
-    "head_norm_px": 113.5,
-    "centroid_x_local": 65.1,
+    "head_norm_px": 113.4,
+    "centroid_x_local": 65.3,
     "paste": [
      55,
      44
@@ -390,8 +390,8 @@
      300
     ],
     "char_h": 256,
-    "opaque_ratio": 0.2141,
-    "centroid_x": 119.9,
+    "opaque_ratio": 0.2159,
+    "centroid_x": 120.2,
     "feet_y": 300
    },
    "battle_idle_breath": {
@@ -402,8 +402,8 @@
      300
     ],
     "char_h": 259,
-    "opaque_ratio": 0.2169,
-    "centroid_x": 120.0,
+    "opaque_ratio": 0.2187,
+    "centroid_x": 120.3,
     "feet_y": 300,
     "mode": "programmatic",
     "shift_px": 3,
@@ -416,12 +416,12 @@
      1002,
      1792
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 264,
     "char_w_norm": 148,
     "head_mode": "skin",
     "head_norm_px": 99.7,
-    "centroid_x_local": 76.4,
+    "centroid_x_local": 76.3,
     "paste": [
      44,
      36
@@ -443,51 +443,51 @@
      1079,
      1671
     ],
-    "scale": 0.1476,
-    "char_h_norm": 247,
+    "scale": 0.1475,
+    "char_h_norm": 246,
     "char_w_norm": 159,
     "head_mode": "skin",
     "head_norm_px": 84.5,
-    "centroid_x_local": 60.8,
+    "centroid_x_local": 60.7,
     "paste": [
      59,
-     53
+     54
     ],
-    "legs_band_cx": 115.6,
+    "legs_band_cx": 115.7,
     "bbox": [
      59,
-     53,
+     54,
      218,
      300
     ],
-    "char_h": 247,
+    "char_h": 246,
     "feet_y": 300
    },
    "atk_3": {
     "raw_bbox": [
      0,
      0,
-     1004,
+     1005,
      1888
     ],
-    "scale": 0.1476,
-    "char_h_norm": 279,
+    "scale": 0.1475,
+    "char_h_norm": 278,
     "char_w_norm": 148,
     "head_mode": "skin",
     "head_norm_px": 130.4,
-    "centroid_x_local": 66.3,
+    "centroid_x_local": 66.4,
     "paste": [
      54,
-     21
+     22
     ],
-    "legs_band_cx": 118.6,
+    "legs_band_cx": 118.5,
     "bbox": [
      54,
-     21,
+     22,
      202,
      300
     ],
-    "char_h": 279,
+    "char_h": 278,
     "feet_y": 300
    },
    "cast_1": {
@@ -497,12 +497,12 @@
      800,
      1878
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 277,
     "char_w_norm": 118,
     "head_mode": "skin",
     "head_norm_px": 58.4,
-    "centroid_x_local": 63.6,
+    "centroid_x_local": 63.5,
     "paste": [
      56,
      23
@@ -524,24 +524,24 @@
      1072,
      1569
     ],
-    "scale": 0.1476,
-    "char_h_norm": 232,
+    "scale": 0.1475,
+    "char_h_norm": 231,
     "char_w_norm": 158,
     "head_mode": "skin",
-    "head_norm_px": 79.1,
-    "centroid_x_local": 64.4,
+    "head_norm_px": 79.0,
+    "centroid_x_local": 64.1,
     "paste": [
      56,
-     68
+     69
     ],
-    "legs_band_cx": 107.0,
+    "legs_band_cx": 107.1,
     "bbox": [
      56,
-     68,
+     69,
      214,
      300
     ],
-    "char_h": 232,
+    "char_h": 231,
     "feet_y": 300
    },
    "cast_3": {
@@ -551,11 +551,11 @@
      832,
      1825
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 269,
     "char_w_norm": 123,
     "head_mode": "skin",
-    "head_norm_px": 125.3,
+    "head_norm_px": 125.2,
     "centroid_x_local": 64.2,
     "paste": [
      56,
@@ -576,13 +576,13 @@
      0,
      0,
      1064,
-     1415
+     1416
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 209,
     "char_w_norm": 157,
     "head_mode": "skin",
-    "head_norm_px": 96.8,
+    "head_norm_px": 96.9,
     "centroid_x_local": 77.4,
     "paste": [
      43,
@@ -603,23 +603,23 @@
      0,
      0,
      1038,
-     1792
+     1793
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 264,
     "char_w_norm": 153,
     "head_mode": "skin",
-    "head_norm_px": 119.1,
-    "centroid_x_local": 69.4,
+    "head_norm_px": 119.0,
+    "centroid_x_local": 69.6,
     "paste": [
-     51,
+     50,
      36
     ],
-    "legs_band_cx": 118.7,
+    "legs_band_cx": 117.7,
     "bbox": [
-     51,
+     50,
      36,
-     204,
+     203,
      300
     ],
     "char_h": 264,
@@ -630,19 +630,19 @@
      0,
      0,
      962,
-     1412
+     1413
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 208,
     "char_w_norm": 142,
     "head_mode": "skin",
-    "head_norm_px": 94.0,
-    "centroid_x_local": 73.3,
+    "head_norm_px": 93.9,
+    "centroid_x_local": 73.1,
     "paste": [
      47,
      92
     ],
-    "legs_band_cx": 116.3,
+    "legs_band_cx": 116.2,
     "bbox": [
      47,
      92,
@@ -657,21 +657,21 @@
      0,
      0,
      844,
-     970
+     971
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 143,
-    "char_w_norm": 125,
+    "char_w_norm": 124,
     "head_mode": "skin",
-    "head_norm_px": 65.1,
-    "centroid_x_local": 63.8,
+    "head_norm_px": 65.0,
+    "centroid_x_local": 63.3,
     "paste": [
-     56,
+     57,
      157
     ],
-    "legs_band_cx": 107.1,
+    "legs_band_cx": 107.7,
     "bbox": [
-     56,
+     57,
      157,
      181,
      300
@@ -683,20 +683,20 @@
     "raw_bbox": [
      0,
      0,
-     1055,
+     1056,
      1180
     ],
-    "scale": 0.1476,
+    "scale": 0.1475,
     "char_h_norm": 174,
     "char_w_norm": 156,
     "head_mode": "skin",
-    "head_norm_px": 79.7,
-    "centroid_x_local": 70.6,
+    "head_norm_px": 79.6,
+    "centroid_x_local": 70.9,
     "paste": [
      49,
      126
     ],
-    "legs_band_cx": 111.5,
+    "legs_band_cx": 111.4,
     "bbox": [
      49,
      126,
@@ -723,7 +723,7 @@
     "char_w_norm": 145,
     "head_mode": "skin",
     "head_norm_px": 113.6,
-    "centroid_x_local": 60.9,
+    "centroid_x_local": 61.3,
     "paste": [
      59,
      44
@@ -736,8 +736,8 @@
      300
     ],
     "char_h": 256,
-    "opaque_ratio": 0.2521,
-    "centroid_x": 119.8,
+    "opaque_ratio": 0.2542,
+    "centroid_x": 120.2,
     "feet_y": 300
    },
    "battle_idle_breath": {
@@ -748,8 +748,8 @@
      300
     ],
     "char_h": 259,
-    "opaque_ratio": 0.2558,
-    "centroid_x": 119.9,
+    "opaque_ratio": 0.2579,
+    "centroid_x": 120.3,
     "feet_y": 300,
     "mode": "programmatic",
     "shift_px": 3,
@@ -759,7 +759,7 @@
     "raw_bbox": [
      0,
      0,
-     1006,
+     1007,
      1795
     ],
     "scale": 0.1423,
@@ -767,16 +767,16 @@
     "char_w_norm": 143,
     "head_mode": "skin",
     "head_norm_px": 81.7,
-    "centroid_x_local": 71.3,
+    "centroid_x_local": 71.5,
     "paste": [
-     49,
+     48,
      45
     ],
-    "legs_band_cx": 126.4,
+    "legs_band_cx": 125.3,
     "bbox": [
-     49,
+     48,
      45,
-     192,
+     191,
      300
     ],
     "char_h": 255,
@@ -794,16 +794,16 @@
     "char_w_norm": 144,
     "head_mode": "skin",
     "head_norm_px": 82.1,
-    "centroid_x_local": 59.1,
+    "centroid_x_local": 59.8,
     "paste": [
-     61,
+     60,
      109
     ],
-    "legs_band_cx": 122.8,
+    "legs_band_cx": 121.8,
     "bbox": [
-     61,
+     60,
      109,
-     205,
+     204,
      300
     ],
     "char_h": 191,
@@ -868,19 +868,19 @@
      0,
      0,
      1070,
-     1309
+     1310
     ],
     "scale": 0.1423,
     "char_h_norm": 186,
     "char_w_norm": 152,
     "head_mode": "skin",
-    "head_norm_px": 80.3,
-    "centroid_x_local": 68.8,
+    "head_norm_px": 80.4,
+    "centroid_x_local": 68.7,
     "paste": [
      51,
      114
     ],
-    "legs_band_cx": 127.8,
+    "legs_band_cx": 127.7,
     "bbox": [
      51,
      114,
@@ -948,7 +948,7 @@
     "raw_bbox": [
      0,
      0,
-     972,
+     973,
      1794
     ],
     "scale": 0.1423,
@@ -956,12 +956,12 @@
     "char_w_norm": 138,
     "head_mode": "skin",
     "head_norm_px": 114.1,
-    "centroid_x_local": 59.8,
+    "centroid_x_local": 60.0,
     "paste": [
      60,
      45
     ],
-    "legs_band_cx": 125.5,
+    "legs_band_cx": 125.4,
     "bbox": [
      60,
      45,
@@ -975,7 +975,7 @@
     "raw_bbox": [
      0,
      0,
-     953,
+     954,
      1352
     ],
     "scale": 0.1423,
@@ -983,12 +983,12 @@
     "char_w_norm": 136,
     "head_mode": "skin",
     "head_norm_px": 83.5,
-    "centroid_x_local": 65.6,
+    "centroid_x_local": 65.8,
     "paste": [
      54,
      108
     ],
-    "legs_band_cx": 121.9,
+    "legs_band_cx": 121.8,
     "bbox": [
      54,
      108,
@@ -1010,16 +1010,16 @@
     "char_w_norm": 153,
     "head_mode": "skin",
     "head_norm_px": 41.4,
-    "centroid_x_local": 89.2,
+    "centroid_x_local": 88.2,
     "paste": [
-     31,
+     32,
      191
     ],
-    "legs_band_cx": 113.8,
+    "legs_band_cx": 114.8,
     "bbox": [
-     31,
+     32,
      191,
-     184,
+     185,
      300
     ],
     "char_h": 109,
@@ -1037,16 +1037,16 @@
     "char_w_norm": 116,
     "head_mode": "skin",
     "head_norm_px": 27.5,
-    "centroid_x_local": 52.3,
+    "centroid_x_local": 52.8,
     "paste": [
-     68,
+     67,
      230
     ],
-    "legs_band_cx": 132.3,
+    "legs_band_cx": 131.3,
     "bbox": [
-     68,
+     67,
      230,
-     184,
+     183,
      300
     ],
     "char_h": 70,
@@ -1054,7 +1054,7 @@
    }
   }
  },
- "_shadow_clears": {
+ "_alarms_shadow_band": {
   "battle_idle_down": {
    "px": 13477,
    "bbox": [
@@ -1062,7 +1062,8 @@
     1449,
     819,
     1725
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_atk_1": {
    "px": 4749,
@@ -1071,7 +1072,8 @@
     1221,
     652,
     1453
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_atk_2": {
    "px": 11826,
@@ -1080,7 +1082,8 @@
     1527,
     787,
     1817
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_atk_3": {
    "px": 8371,
@@ -1089,7 +1092,8 @@
     1468,
     597,
     1747
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_cast_1": {
    "px": 6011,
@@ -1098,7 +1102,8 @@
     1520,
     626,
     1809
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_cast_2": {
    "px": 4834,
@@ -1107,7 +1112,8 @@
     1317,
     845,
     1568
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_cast_3": {
    "px": 7079,
@@ -1116,7 +1122,8 @@
     1524,
     800,
     1813
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_hit_1": {
    "px": 4311,
@@ -1125,7 +1132,8 @@
     1282,
     681,
     1526
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_hit_2": {
    "px": 9866,
@@ -1134,7 +1142,8 @@
     1401,
     693,
     1668
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_die_1": {
    "px": 9536,
@@ -1143,7 +1152,8 @@
     1314,
     778,
     1564
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_die_2": {
    "px": 10603,
@@ -1152,7 +1162,8 @@
     641,
     1028,
     763
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "down_die_3": {
    "px": 10830,
@@ -1161,7 +1172,8 @@
     1240,
     787,
     1476
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "battle_idle_up": {
    "px": 8394,
@@ -1170,7 +1182,8 @@
     1458,
     998,
     1735
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_atk_1": {
    "px": 9471,
@@ -1179,7 +1192,8 @@
     1505,
     868,
     1791
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_atk_2": {
    "px": 3996,
@@ -1188,7 +1202,8 @@
     1403,
     585,
     1670
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_atk_3": {
    "px": 13670,
@@ -1197,7 +1212,8 @@
     1585,
     1004,
     1887
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_cast_1": {
    "px": 15546,
@@ -1206,7 +1222,8 @@
     1577,
     716,
     1877
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_cast_2": {
    "px": 5242,
@@ -1215,7 +1232,8 @@
     1317,
     630,
     1568
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_cast_3": {
    "px": 10749,
@@ -1224,7 +1242,8 @@
     1533,
     765,
     1824
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_hit_1": {
    "px": 5171,
@@ -1233,7 +1252,8 @@
     1189,
     905,
     1415
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_hit_2": {
    "px": 10021,
@@ -1242,7 +1262,8 @@
     1506,
     1037,
     1792
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_die_1": {
    "px": 10825,
@@ -1251,7 +1272,8 @@
     1186,
     912,
     1412
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_die_2": {
    "px": 2326,
@@ -1260,7 +1282,8 @@
     815,
     843,
     970
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "up_die_3": {
    "px": 4055,
@@ -1269,7 +1292,8 @@
     991,
     1055,
     1177
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "battle_idle_side": {
    "px": 10029,
@@ -1278,7 +1302,8 @@
     1511,
     1011,
     1798
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_atk_1": {
    "px": 10089,
@@ -1287,7 +1312,8 @@
     1507,
     1006,
     1794
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_atk_2": {
    "px": 8675,
@@ -1296,7 +1322,8 @@
     1128,
     1005,
     1342
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_atk_3": {
    "px": 4893,
@@ -1305,7 +1332,8 @@
     1601,
     885,
     1906
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_cast_1": {
    "px": 6146,
@@ -1314,7 +1342,8 @@
     1546,
     936,
     1834
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_cast_2": {
    "px": 3710,
@@ -1323,7 +1352,8 @@
     1100,
     900,
     1309
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_cast_3": {
    "px": 2924,
@@ -1332,7 +1362,8 @@
     1208,
     654,
     1434
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_hit_1": {
    "px": 1077,
@@ -1341,7 +1372,8 @@
     1300,
     938,
     1547
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_hit_2": {
    "px": 10301,
@@ -1350,7 +1382,8 @@
     1506,
     972,
     1792
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_die_1": {
    "px": 16002,
@@ -1359,7 +1392,8 @@
     1135,
     953,
     1351
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_die_2": {
    "px": 10895,
@@ -1368,7 +1402,8 @@
     645,
     1065,
     768
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   },
   "side_die_3": {
    "px": 3530,
@@ -1377,7 +1412,8 @@
     412,
     746,
     490
-   ]
+   ],
+   "note": "检测门命中（含裤褶灰影假阳性），只记录待人工判读"
   }
  },
  "_alarms_enclosed_white": {
@@ -1858,5 +1894,588 @@
   "side_die_3: 躺/倒帧无脚底基线语义 → 质心 x 对齐 + 底部贴地 y=300"
  ],
  "_failures": [],
- "_final_frame_count": 65
+ "_final_frame_count": 65,
+ "_triage_enclosed_white": {
+  "total_alarms": 395,
+  "flat_candidates_std_lt3": 42,
+  "vision_pass1_small_sheet": {
+   "1": "garment",
+   "2": "garment",
+   "3": "garment",
+   "4": "garment",
+   "5": "garment",
+   "6": "garment",
+   "7": "residue",
+   "8": "residue",
+   "9": "garment",
+   "10": "garment",
+   "11": "garment",
+   "12": "garment",
+   "13": "residue",
+   "14": "garment",
+   "15": "garment",
+   "16": "garment",
+   "17": "residue",
+   "18": "residue",
+   "19": "residue",
+   "20": "residue",
+   "21": "residue",
+   "22": "garment",
+   "23": "garment",
+   "24": "garment",
+   "25": "garment",
+   "26": "garment",
+   "27": "garment",
+   "28": "residue",
+   "29": "residue",
+   "30": "residue",
+   "31": "garment",
+   "32": "garment",
+   "33": "residue",
+   "34": "garment",
+   "35": "garment",
+   "36": "garment",
+   "37": "garment",
+   "38": "garment",
+   "39": "garment",
+   "40": "garment",
+   "41": "garment",
+   "42": "garment"
+  },
+  "vision_pass2_zoom": {
+   "1": "未复核",
+   "2": "未复核",
+   "3": "未复核",
+   "4": "未复核",
+   "5": "未复核",
+   "6": "未复核",
+   "7": "未复核",
+   "8": "garment/glow(改判)",
+   "9": "未复核",
+   "10": "未复核",
+   "11": "未复核",
+   "12": "未复核",
+   "13": "garment/glow(改判)",
+   "14": "未复核",
+   "15": "garment/glow(改判)",
+   "16": "garment/glow(改判)",
+   "17": "未复核",
+   "18": "未复核",
+   "19": "residue",
+   "20": "未复核",
+   "21": "garment/glow(改判)",
+   "22": "未复核",
+   "23": "未复核",
+   "24": "未复核",
+   "25": "未复核",
+   "26": "未复核",
+   "27": "未复核",
+   "28": "未复核",
+   "29": "未复核",
+   "30": "garment/glow(改判)",
+   "31": "未复核",
+   "32": "未复核",
+   "33": "未复核",
+   "34": "未复核",
+   "35": "garment/glow(改判)",
+   "36": "garment/glow(改判)",
+   "37": "garment/glow(改判)",
+   "38": "garment/glow(改判)",
+   "39": "garment/glow(改判)",
+   "40": "garment/glow(改判)",
+   "41": "未复核",
+   "42": "未复核"
+  },
+  "surgical_performed": "无（0 块清除）",
+  "box19_decision": "side_cast_2 大块(63845px)两轮判残留 → 生成游戏底色 AB 对比（surgical/ab_side_cast_2_box19.png）→ 放大判读读作青绿爆发的白色能量核心，清除会削弱特效 → 保留 A，待 Leo 目验终裁",
+  "review_sheets": [
+   "surgical/review_g1.png",
+   "surgical/review_g2.png",
+   "surgical/review_g3.png",
+   "surgical/review_zoom_1.png",
+   "surgical/review_zoom_2.png",
+   "surgical/review_zoom_3.png"
+  ],
+  "box_manifest": [
+   {
+    "box": 1,
+    "frame": "battle_idle_down",
+    "n": 3999,
+    "bbox": [
+     367,
+     754,
+     448,
+     890
+    ]
+   },
+   {
+    "box": 2,
+    "frame": "battle_idle_up",
+    "n": 14835,
+    "bbox": [
+     540,
+     1105,
+     623,
+     1374
+    ]
+   },
+   {
+    "box": 3,
+    "frame": "battle_idle_up",
+    "n": 8562,
+    "bbox": [
+     548,
+     1300,
+     660,
+     1464
+    ]
+   },
+   {
+    "box": 4,
+    "frame": "down_atk_1",
+    "n": 6199,
+    "bbox": [
+     140,
+     224,
+     278,
+     391
+    ]
+   },
+   {
+    "box": 5,
+    "frame": "down_atk_1",
+    "n": 14652,
+    "bbox": [
+     104,
+     999,
+     233,
+     1224
+    ]
+   },
+   {
+    "box": 6,
+    "frame": "down_atk_1",
+    "n": 16233,
+    "bbox": [
+     396,
+     1052,
+     556,
+     1267
+    ]
+   },
+   {
+    "box": 7,
+    "frame": "down_cast_2",
+    "n": 2766,
+    "bbox": [
+     519,
+     701,
+     584,
+     816
+    ]
+   },
+   {
+    "box": 8,
+    "frame": "down_cast_2",
+    "n": 33687,
+    "bbox": [
+     104,
+     860,
+     310,
+     1186
+    ]
+   },
+   {
+    "box": 9,
+    "frame": "down_cast_2",
+    "n": 29815,
+    "bbox": [
+     82,
+     1019,
+     691,
+     1381
+    ]
+   },
+   {
+    "box": 10,
+    "frame": "down_cast_2",
+    "n": 6302,
+    "bbox": [
+     738,
+     1082,
+     968,
+     1303
+    ]
+   },
+   {
+    "box": 11,
+    "frame": "side_atk_3",
+    "n": 2159,
+    "bbox": [
+     438,
+     750,
+     500,
+     833
+    ]
+   },
+   {
+    "box": 12,
+    "frame": "side_atk_3",
+    "n": 1211,
+    "bbox": [
+     441,
+     804,
+     477,
+     868
+    ]
+   },
+   {
+    "box": 13,
+    "frame": "side_atk_3",
+    "n": 28969,
+    "bbox": [
+     210,
+     1255,
+     395,
+     1619
+    ]
+   },
+   {
+    "box": 14,
+    "frame": "side_atk_3",
+    "n": 32313,
+    "bbox": [
+     591,
+     1282,
+     805,
+     1559
+    ]
+   },
+   {
+    "box": 15,
+    "frame": "side_cast_1",
+    "n": 1761,
+    "bbox": [
+     849,
+     318,
+     870,
+     427
+    ]
+   },
+   {
+    "box": 16,
+    "frame": "side_cast_1",
+    "n": 16796,
+    "bbox": [
+     607,
+     488,
+     782,
+     777
+    ]
+   },
+   {
+    "box": 17,
+    "frame": "side_cast_1",
+    "n": 2191,
+    "bbox": [
+     757,
+     564,
+     783,
+     675
+    ]
+   },
+   {
+    "box": 18,
+    "frame": "side_cast_2",
+    "n": 9413,
+    "bbox": [
+     951,
+     548,
+     1039,
+     825
+    ]
+   },
+   {
+    "box": 19,
+    "frame": "side_cast_2",
+    "n": 63845,
+    "bbox": [
+     464,
+     677,
+     871,
+     1056
+    ]
+   },
+   {
+    "box": 20,
+    "frame": "side_cast_2",
+    "n": 910,
+    "bbox": [
+     1052,
+     782,
+     1069,
+     878
+    ]
+   },
+   {
+    "box": 21,
+    "frame": "side_cast_2",
+    "n": 27260,
+    "bbox": [
+     535,
+     843,
+     989,
+     1228
+    ]
+   },
+   {
+    "box": 22,
+    "frame": "side_cast_2",
+    "n": 1381,
+    "bbox": [
+     667,
+     1048,
+     712,
+     1102
+    ]
+   },
+   {
+    "box": 23,
+    "frame": "side_cast_2",
+    "n": 485,
+    "bbox": [
+     622,
+     1135,
+     682,
+     1171
+    ]
+   },
+   {
+    "box": 24,
+    "frame": "side_cast_3",
+    "n": 1252,
+    "bbox": [
+     333,
+     559,
+     378,
+     623
+    ]
+   },
+   {
+    "box": 25,
+    "frame": "side_cast_3",
+    "n": 2428,
+    "bbox": [
+     354,
+     581,
+     402,
+     690
+    ]
+   },
+   {
+    "box": 26,
+    "frame": "side_cast_3",
+    "n": 820,
+    "bbox": [
+     336,
+     594,
+     368,
+     651
+    ]
+   },
+   {
+    "box": 27,
+    "frame": "side_cast_3",
+    "n": 1735,
+    "bbox": [
+     121,
+     727,
+     198,
+     771
+    ]
+   },
+   {
+    "box": 28,
+    "frame": "side_hit_1",
+    "n": 2315,
+    "bbox": [
+     625,
+     588,
+     664,
+     684
+    ]
+   },
+   {
+    "box": 29,
+    "frame": "side_hit_1",
+    "n": 886,
+    "bbox": [
+     525,
+     610,
+     575,
+     646
+    ]
+   },
+   {
+    "box": 30,
+    "frame": "side_hit_1",
+    "n": 19260,
+    "bbox": [
+     429,
+     1021,
+     589,
+     1260
+    ]
+   },
+   {
+    "box": 31,
+    "frame": "up_atk_1",
+    "n": 2648,
+    "bbox": [
+     775,
+     499,
+     864,
+     594
+    ]
+   },
+   {
+    "box": 32,
+    "frame": "up_cast_1",
+    "n": 6904,
+    "bbox": [
+     476,
+     28,
+     565,
+     171
+    ]
+   },
+   {
+    "box": 33,
+    "frame": "up_cast_1",
+    "n": 2295,
+    "bbox": [
+     606,
+     209,
+     650,
+     287
+    ]
+   },
+   {
+    "box": 34,
+    "frame": "up_cast_1",
+    "n": 2869,
+    "bbox": [
+     504,
+     359,
+     545,
+     469
+    ]
+   },
+   {
+    "box": 35,
+    "frame": "up_cast_1",
+    "n": 13483,
+    "bbox": [
+     606,
+     510,
+     737,
+     695
+    ]
+   },
+   {
+    "box": 36,
+    "frame": "up_cast_1",
+    "n": 13506,
+    "bbox": [
+     510,
+     1286,
+     585,
+     1562
+    ]
+   },
+   {
+    "box": 37,
+    "frame": "up_cast_1",
+    "n": 6602,
+    "bbox": [
+     514,
+     1492,
+     616,
+     1640
+    ]
+   },
+   {
+    "box": 38,
+    "frame": "up_cast_2",
+    "n": 1157,
+    "bbox": [
+     544,
+     72,
+     686,
+     109
+    ]
+   },
+   {
+    "box": 39,
+    "frame": "up_cast_2",
+    "n": 27910,
+    "bbox": [
+     743,
+     124,
+     1048,
+     526
+    ]
+   },
+   {
+    "box": 40,
+    "frame": "up_cast_2",
+    "n": 9177,
+    "bbox": [
+     110,
+     1124,
+     213,
+     1343
+    ]
+   },
+   {
+    "box": 41,
+    "frame": "up_die_2",
+    "n": 1688,
+    "bbox": [
+     113,
+     638,
+     166,
+     697
+    ]
+   },
+   {
+    "box": 42,
+    "frame": "up_die_2",
+    "n": 4686,
+    "bbox": [
+     252,
+     723,
+     356,
+     803
+    ]
+   }
+  ],
+  "policy": "封闭白检测门只记录不自动清除；cast 系帧的白块多为剑气/能量核心（VFX），归人工判读"
+ },
+ "_credits": {
+  "per_image": 2,
+  "images": 36,
+  "total": 72,
+  "budget": 90,
+  "ledger": "credits.json",
+  "retries": 0,
+  "failures": 0
+ },
+ "_selfcheck": {
+  "battle_anchor": "gen/anchor_selfcheck_v1.png（与行走锚并排：特征齐/2.5头身/持剑在手+空鞘/戒备姿/正面/无影子 → 通过）",
+  "direction_idles": "gen/idles_selfcheck_v1.png（up 背面马尾朝镜头无正脸/side 右向侧影持剑 → 通过）",
+  "die_cast_fullres": "gen/review_die_cast_zoom.png（die 1/2/3=跪/倒/躺平 逐帧确认；cast_side 光弧为青绿非白洞；半尺寸 contact sheet 初判 die_3 异常为误读）",
+  "breath": "程序化 3px，差异行 100% 集中于腰线(≈177)以上，三方向一致",
+  "mirror": "atk_left_1 = atk_side_1 镜像字节级一致；atk_right_1 = atk_side_1 拷贝字节级一致"
+ }
 }
