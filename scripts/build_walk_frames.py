@@ -213,6 +213,14 @@ def process_dir(root, direction):
         heads[name] = measure_head(cut, mode)
         for n_px, bbox in detect_enclosed_white(cut):
             issues_all.append(f"{direction}/{name}: 封闭白残留 {n_px}px bbox={bbox}（泛洪盲区，需外科清除）")
+    # 可选呼吸帧（down_breath.png 存在时：同锚归一，输出 idle_{dir}_breath）
+    prefix = POSES[direction][0].split('_')[0]
+    breath_path = os.path.join(root, "raw", f"{prefix}_breath.png")
+    breath_cut = None
+    if os.path.exists(breath_path):
+        bc, _ = flood_cut(Image.open(breath_path))
+        breath_cut = bc
+        heads[f"{prefix}_breath"] = measure_head(bc, mode if mode != "height" else "skin")
     target = heads[names[0]]
     if not target:
         return None, [f"{direction}: stand 帧头代理测量为 0，无法归一"], {}
@@ -236,6 +244,15 @@ def process_dir(root, direction):
         issues_all += iss
         frames[name] = frame
         report[name] = m
+    if breath_cut is not None:
+        s_b = target / heads[f"{prefix}_breath"]
+        fh = bbox_hs.get(f"{prefix}_breath", 0) or cuts[names[0]].getbbox()[3] - cuts[names[0]].getbbox()[1]
+        frame_b, m_b = align(breath_cut, s_b * k if mode != "height" else k, head_mode=mode)
+        iss_b, m_b2 = verify(frame_b, f"{prefix}_breath")
+        m_b.update(m_b2)
+        issues_all += iss_b
+        frames[f"{prefix}_breath"] = frame_b
+        report[f"{prefix}_breath"] = m_b
     return frames, issues_all, report
 
 
@@ -262,6 +279,8 @@ def main():
         for i, f in enumerate(seq):
             final_frames[f"walk_{direction}_{i}"] = f
         final_frames[f"idle_{direction}"] = frames[POSES[direction][0]]
+        if f"{POSES[direction][0].split('_')[0]}_breath" in frames:
+            final_frames[f"idle_{direction}_breath"] = frames[f"{POSES[direction][0].split('_')[0]}_breath"]
         full_report[direction] = rep
         all_issues += iss
         # 成品头一致性门（L 环反馈①；height 模式无头校正，跳过）

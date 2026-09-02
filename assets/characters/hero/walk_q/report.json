@@ -4,90 +4,118 @@
    "raw_bbox": [
     0,
     0,
-    626,
-    1136
+    555,
+    1123
    ],
-   "scale": 0.2241,
-   "char_h_norm": 255,
-   "char_w_norm": 140,
+   "scale": 0.2284,
+   "char_h_norm": 256,
+   "char_w_norm": 127,
    "head_mode": "skin",
-   "head_norm_px": 112.5,
-   "centroid_x_local": 65.7,
+   "head_norm_px": 115.3,
+   "centroid_x_local": 62.7,
    "paste": [
-    54,
-    45
+    57,
+    44
    ],
-   "head_raw_px": 502,
+   "head_raw_px": 505,
    "head_delta_pct": 0.0,
    "bbox": [
-    54,
-    45,
-    194,
+    57,
+    44,
+    184,
     300
    ],
-   "char_h": 255,
-   "opaque_ratio": 0.2427,
-   "centroid_x": 119.6,
+   "char_h": 256,
+   "opaque_ratio": 0.2525,
+   "centroid_x": 119.7,
    "feet_y": 300
   },
   "down_stepA": {
    "raw_bbox": [
-    0,
-    0,
-    588,
-    1099
+    385,
+    47,
+    927,
+    1208
    ],
-   "scale": 0.2329,
+   "scale": 0.2205,
    "char_h_norm": 256,
-   "char_w_norm": 137,
+   "char_w_norm": 120,
    "head_mode": "skin",
-   "head_norm_px": 112.5,
-   "centroid_x_local": 65.1,
+   "head_norm_px": 115.3,
+   "centroid_x_local": 56.3,
    "paste": [
-    55,
+    64,
     44
    ],
-   "head_raw_px": 483,
-   "head_delta_pct": -3.8,
+   "head_raw_px": 523,
+   "head_delta_pct": 3.6,
    "bbox": [
-    55,
+    64,
     44,
-    192,
+    184,
     300
    ],
    "char_h": 256,
-   "opaque_ratio": 0.2392,
-   "centroid_x": 120.1,
+   "opaque_ratio": 0.258,
+   "centroid_x": 120.3,
    "feet_y": 300
   },
   "down_stepB": {
    "raw_bbox": [
-    0,
-    0,
-    583,
-    1103
+    304,
+    56,
+    730,
+    935
    ],
-   "scale": 0.2325,
-   "char_h_norm": 256,
-   "char_w_norm": 136,
+   "scale": 0.2876,
+   "char_h_norm": 253,
+   "char_w_norm": 123,
    "head_mode": "skin",
-   "head_norm_px": 112.5,
-   "centroid_x_local": 64.2,
+   "head_norm_px": 115.3,
+   "centroid_x_local": 58.4,
    "paste": [
-    56,
-    44
+    62,
+    47
    ],
-   "head_raw_px": 484,
-   "head_delta_pct": -3.6,
+   "head_raw_px": 401,
+   "head_delta_pct": -20.6,
    "bbox": [
-    56,
-    44,
+    62,
+    47,
+    185,
+    300
+   ],
+   "char_h": 253,
+   "opaque_ratio": 0.2344,
+   "centroid_x": 120.4,
+   "feet_y": 300
+  },
+  "down_breath": {
+   "raw_bbox": [
+    263,
+    11,
+    810,
+    1006
+   ],
+   "scale": 0.258,
+   "char_h_norm": 257,
+   "char_w_norm": 141,
+   "head_mode": "skin",
+   "head_norm_px": 115.3,
+   "centroid_x_local": 68.6,
+   "paste": [
+    51,
+    43
+   ],
+   "bbox": [
+    51,
+    43,
     192,
     300
    ],
-   "char_h": 256,
-   "opaque_ratio": 0.2363,
-   "centroid_x": 120.2,
+   "char_h": 257,
+   "opaque_ratio": 0.2742,
+   "centroid_x": 119.5,
    "feet_y": 300
   },
   "_head_consistency_pct": 0.0
@@ -95,62 +123,74 @@
  "final": {
   "walk_down_0": {
    "bbox": [
-    54,
-    45,
-    194,
+    57,
+    44,
+    184,
     300
    ],
-   "char_h": 255,
-   "opaque_ratio": 0.2427,
-   "centroid_x": 119.6,
+   "char_h": 256,
+   "opaque_ratio": 0.2525,
+   "centroid_x": 119.7,
    "feet_y": 300
   },
   "walk_down_1": {
    "bbox": [
-    55,
+    64,
     44,
-    192,
+    184,
     300
    ],
    "char_h": 256,
-   "opaque_ratio": 0.2392,
-   "centroid_x": 120.1,
+   "opaque_ratio": 0.258,
+   "centroid_x": 120.3,
    "feet_y": 300
   },
   "walk_down_2": {
    "bbox": [
-    54,
-    45,
-    194,
+    57,
+    44,
+    184,
     300
    ],
-   "char_h": 255,
-   "opaque_ratio": 0.2427,
-   "centroid_x": 119.6,
+   "char_h": 256,
+   "opaque_ratio": 0.2525,
+   "centroid_x": 119.7,
    "feet_y": 300
   },
   "walk_down_3": {
    "bbox": [
-    56,
-    44,
-    192,
+    62,
+    47,
+    185,
     300
    ],
-   "char_h": 256,
-   "opaque_ratio": 0.2363,
-   "centroid_x": 120.2,
+   "char_h": 253,
+   "opaque_ratio": 0.2344,
+   "centroid_x": 120.4,
    "feet_y": 300
   },
   "idle_down": {
    "bbox": [
-    54,
-    45,
-    194,
+    57,
+    44,
+    184,
     300
    ],
-   "char_h": 255,
-   "opaque_ratio": 0.2427,
-   "centroid_x": 119.6,
+   "char_h": 256,
+   "opaque_ratio": 0.2525,
+   "centroid_x": 119.7,
+   "feet_y": 300
+  },
+  "idle_down_breath": {
+   "bbox": [
+    51,
+    43,
+    192,
+    300
+   ],
+   "char_h": 257,
+   "opaque_ratio": 0.2742,
+   "centroid_x": 119.5,
    "feet_y": 300
   }
  }

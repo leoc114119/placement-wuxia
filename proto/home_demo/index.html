@@ -149,17 +149,22 @@
 
 <script>
 /* ===== 素材帧 ===== */
-const V = 'v11'; // 资源版本号（防浏览器缓存）· v8=头归一+去边修复帧
+const V = 'v12'; // 资源版本号（防浏览器缓存）· v8=头归一+去边修复帧
 const FRAMES = {
   down: { seq:[0,1,2,3].map(i=>`frames_v2/walk_down_${i}.png?v=${V}`) },
   up:   { seq:[0,1,2,3].map(i=>`frames_v2/walk_up_${i}.png?v=${V}`) },
   left: { seq:[0,1,2,3].map(i=>`frames_v2/walk_left_${i}.png?v=${V}`) },
   right:{ seq:[0,1,2,3].map(i=>`frames_v2/walk_right_${i}.png?v=${V}`) },
 };
-const IDLE = { down:`frames_v2/idle_down.png?v=${V}`, left:`frames_v2/idle_left.png?v=${V}`, right:`frames_v2/idle_right.png?v=${V}`, up:`frames_v2/idle_up.png?v=${V}` };
+const IDLE2 = {
+  down:  { frames:[`frames_v2/idle_down.png?v=${V}`, `frames_v2/idle_down_breath.png?v=${V}`] },
+  left:  { frames:[`frames_v2/idle_left.png?v=${V}`] },
+  right: { frames:[`frames_v2/idle_right.png?v=${V}`] },
+  up:    { frames:[`frames_v2/idle_up.png?v=${V}`] },
+};
 
 /* 帧预解码：全部帧 decode 完才开播，消除换帧解码期闪烁/虚影（L 环反馈②防御） */
-const ALL_URLS = [...Object.values(FRAMES).flatMap(F=>F.seq), ...Object.values(IDLE)];
+const ALL_URLS = [...Object.values(FRAMES).flatMap(F=>F.seq), ...Object.values(IDLE2).flatMap(I=>I.frames)];
 const DECODE_READY = Promise.all(ALL_URLS.map(u=>{ const im=new Image(); im.src=u; return im.decode().catch(()=>{}); }));
 
 /* 画布几何：整数像素定位（亚像素层抖动会呈"虚影"），resize 时刷新 */
@@ -220,7 +225,8 @@ function loop(t){
     hero.src = fi;
   } else {
     flipNow = false;
-    hero.src = IDLE[dir];
+    const I = IDLE2[dir];
+    hero.src = I.frames[Math.floor(t/600) % I.frames.length];  // 静止呼吸循环（600ms/帧）
   }
   hero.style.transform = 'translate(-50%,-92%)' + (flipNow ? ' scaleX(-1)' : '');  // 脚底=画布93.75%，-92%≈原脚底落点
   requestAnimationFrame(loop);
