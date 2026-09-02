@@ -5,7 +5,7 @@
 //      battle-core（skillRange/basicRange）与公式总览（F-06），本文件只做几何换算。
 // 确定性：全部输入→输出纯映射，无随机、无时钟，node 直接可测。
 
-import type { HexPos, SkillDef } from '../types';
+import type { HexPos, SkillDef, WeaponType } from '../types';
 
 // ---------- 坐标换算（存储 = axial(q,r)，地图 = offset odd-r 行×列，96 号 §2.1） ----------
 
@@ -72,11 +72,15 @@ export function movePower(skills: SkillDef[]): number {
 
 // ---------- 可达搜索（BFS，需求表 #1） ----------
 
+/** 场界谓词类型（axial 输入；session 传入「offset 落在可移动区 8×8」的判定） */
+export type BoundsFn = (p: HexPos) => boolean;
+
 /** 普通移动可达格：从 from 起 BFS 步数 ≤ power 的格子（F-06 移动力即步数预算）。
  * 阻挡规则（C 案 A3，Leo 08-31 定）：普通移动不可穿过任何单位（友/敌）——occupied 格
- * 既不能落脚也不能借道。返回不含起点。 */
-export function reachable(from: HexPos, power: number, occupied: HexPos[]): HexPos[] {
-  const blocked = (p: HexPos) => occupied.some((o) => hexEq(o, p));
+ * 既不能落脚也不能借道；inBounds 给定时界外格同样不可进入/借道（棋盘外不存在绕行）。
+ * 返回不含起点。 */
+export function reachable(from: HexPos, power: number, occupied: HexPos[], inBounds?: BoundsFn): HexPos[] {
+  const blocked = (p: HexPos) => occupied.some((o) => hexEq(o, p)) || (inBounds !== undefined && !inBounds(p));
   const seen = new Set<string>([`${from.q},${from.r}`]);
   let frontier = [from];
   const out: HexPos[] = [];
@@ -97,9 +101,9 @@ export function reachable(from: HexPos, power: number, occupied: HexPos[]): HexP
 }
 
 /** 二阶轻功跳跃可达格（F-06，Leo 08-31 定）：跳跃范围 = ⌊移动范围/2⌋，跳跃可穿越单位。
- * 语义：无视阻挡（不需连通路径），落点仍不可与其他单位重叠、不含起点；
- * ⌊power/2⌋=0（power≤1）时无跳跃格。 */
-export function jumpReachable(from: HexPos, power: number, occupied: HexPos[]): HexPos[] {
+ * 语义：无视阻挡（不需连通路径，穿越单位与界外借道均允许），落点仍须在界内且不与其他
+ * 单位重叠、不含起点；⌊power/2⌋=0（power≤1）时无跳跃格。 */
+export function jumpReachable(from: HexPos, power: number, occupied: HexPos[], inBounds?: BoundsFn): HexPos[] {
   const range = Math.floor(power / 2);
   if (range <= 0) return [];
   const out: HexPos[] = [];
@@ -108,6 +112,7 @@ export function jumpReachable(from: HexPos, power: number, occupied: HexPos[]): 
     for (let dr = Math.max(-range, -dq - range); dr <= Math.min(range, -dq + range); dr++) {
       const p = { q: from.q + dq, r: from.r + dr };
       if ((dq === 0 && dr === 0) || occupied.some((o) => hexEq(o, p))) continue;
+      if (inBounds && !inBounds(p)) continue;
       out.push(p);
     }
   }
@@ -117,6 +122,13 @@ export function jumpReachable(from: HexPos, power: number, occupied: HexPos[]): 
 // ---------- 射程格三形态（O2 裁决定版，需求表 #2） ----------
 
 export type RangeShape = 'circle' | 'ray' | 'cone';
+
+/** 武器形态 → 射程几何（O2 定版/96 号 R-05 换轨：剑拳暗器圆形，棍棒直线，鞭刀锥形） */
+export function rangeShapeOf(weapon: WeaponType): RangeShape {
+  if (weapon === 'staff' || weapon === 'club') return 'ray';
+  if (weapon === 'whip' || weapon === 'blade') return 'cone';
+  return 'circle'; // sword / fist / hidden
+}
 
 /** 方向向量 → 方向索引（六方向最近匹配；输入应是 HEX_DIRS 之一或其负）。
  * 用 cube 点积取最大：v 在某方向的扇区内即匹配（浮点零参与，整数运算）。 */
@@ -152,20 +164,31 @@ function dirRingDist(a: number, b: number): number {
  *   axis 缺省视为东向（调用方必须传战斗语义轴——session 用单位六向 facing）。
  * 视线遮挡不做（Q5 批复）：射程形态只定义"哪些格可选目标"，射线/扇区不被中间单位截断；
  * 阻挡仅作用于移动（reachable 的 BFS），两者语义分离。 */
-export function rangeCells(origin: HexPos, shape: RangeShape, n: number, axis?: HexPos): HexPos[] {
+export function rangeCells(
+  origin: HexPos,
+  shape: RangeShape,
+  n: number,
+  axis?: HexPos,
+  inBounds?: BoundsFn,
+): HexPos[] {
+  const ok = (p: HexPos) => !inBounds || inBounds(p);
   const out: HexPos[] = [];
   if (shape === 'circle') {
     for (let dq = -n; dq <= n; dq++) {
       for (let dr = Math.max(-n, -dq - n); dr <= Math.min(n, -dq + n); dr++) {
         if (dq === 0 && dr === 0) continue;
-        out.push({ q: origin.q + dq, r: origin.r + dr });
+        const p = { q: origin.q + dq, r: origin.r + dr };
+        if (ok(p)) out.push(p);
       }
     }
     return out;
   }
   if (shape === 'ray') {
     for (const d of HEX_DIRS) {
-      for (let i = 1; i <= n; i++) out.push({ q: origin.q + d.q * i, r: origin.r + d.r * i });
+      for (let i = 1; i <= n; i++) {
+        const p = { q: origin.q + d.q * i, r: origin.r + d.r * i };
+        if (ok(p)) out.push(p);
+      }
     }
     return out;
   }
@@ -175,6 +198,7 @@ export function rangeCells(origin: HexPos, shape: RangeShape, n: number, axis?: 
     for (let dr = Math.max(-n, -dq - n); dr <= Math.min(n, -dq + n); dr++) {
       if (dq === 0 && dr === 0) continue;
       const p = { q: origin.q + dq, r: origin.r + dr };
+      if (!ok(p)) continue;
       if (dirRingDist(dirIndexOf({ q: dq, r: dr }), axisIdx) <= 1) out.push(p);
     }
   }
