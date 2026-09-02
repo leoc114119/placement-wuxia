@@ -1,26 +1,33 @@
-// T15 对局编排层单测（DoD：session 6 例——行动条满触发/预算二选一/AI 优先级序/托管切换/
-// 事件流全等/胜负结算；另含 Q1 批复要求的「hex 相邻格普攻不被 core 误判 blocked」锚点用例）
-// 运行：npm run test:battle（vitest）
+// T18 · battle-session 重构验收测试（唯一真源 = 战斗交互行为规格.md v1.0 §五 测试推导矩阵）
+// 规则：每条规格 ≥1 用例；用例名携带条目编号；实现变更不得改写断言方向（规格改走规格变更）。
+// 运行：npm run test:battle（vitest，node 环境）
 import { describe, expect, it } from 'vitest';
-import { createHexBattle, assembleRoster } from '../systems/battle-session';
+import {
+  createHexBattle,
+  assembleRoster,
+  NEILI_COST_PER_CAST,
+  FIELD_MIN,
+  FIELD_MAX,
+  type HexBattleSession,
+} from '../systems/battle-session';
 import { makeRng } from '../systems/battle-core';
-import { axialToOffset, cubeDistance, hexNeighbors, movePower, offsetToAxial, reachable } from '../systems/hex';
+import { axialToOffset, cubeDistance, hexNeighbors, jumpReachable, movePower, offsetToAxial, reachable } from '../systems/hex';
 import type { CombatantInput, SkillDef } from '../types';
 
-const DT = 0.1; // 仿真步长（秒），与确定性口径一致：同脚本同 tick 序列 → 事件流全等
+const DT = 0.1;
 
-/** hex 战斗单位工厂（出生位由 O3 随机覆盖，pos 无需关心） */
+/** hex 战斗单位工厂（出生位由 D1 锚点随机覆盖；未显式配置内力的我方单位由 session 应用 MVP 口径 100） */
 function unit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 'side'>): CombatantInput {
   return {
     name: over.id,
-    hp: 99999,
-    maxHp: 99999,
+    hp: 999999,
+    maxHp: 999999,
     neili: 0,
     maxNeili: 0,
     atk: 1,
-    def: 99999, // 默认互破不了防（保底 1 血/发），用例各自覆写控制节奏
+    def: 99999,
     neigongLevel: 0,
-    jimin: 0, // 默认 10/s：10s 一动
+    jimin: 0,
     danshi: 0,
     shizhan: 0,
     pos: { x: 0, y: 0 },
@@ -34,235 +41,583 @@ function makeSession(seed: number, mode: 'auto' | 'manual', player: CombatantInp
   return createHexBattle({ player, enemies, mode, seed });
 }
 
-/** 手动模式：tick 至主角行动条满（pendingInput） */
-function runToPending(s: ReturnType<typeof createHexBattle>, maxSec = 40): boolean {
+/** SEL-1：tick 至输入态（条满 + 手动） */
+function runToPending(s: HexBattleSession, maxSec = 40): boolean {
   for (let i = 0; i < maxSec / DT && !s.snapshot().pendingInput; i++) s.tick(DT);
   return s.snapshot().pendingInput;
 }
 
-/** 自动模式：tick 至终局（90s 防死循环保证 90+ε 秒内出胜负） */
-function autoTillEnd(s: ReturnType<typeof createHexBattle>, maxSec = 95): void {
+/** 自动模式：tick 至终局（BAR-5 90s 防死循环保底） */
+function autoTillEnd(s: HexBattleSession, maxSec = 95): void {
   for (let i = 0; i < maxSec / DT && s.phase === 'fighting'; i++) s.tick(DT);
 }
 
-const offsetManhattan = (a: { col: number; row: number }, b: { col: number; row: number }) =>
-  Math.abs(a.col - b.col) + Math.abs(a.row - b.row);
-
-const dist = (s: ReturnType<typeof createHexBattle>, aId: string, bId: string) => {
+const dist = (s: HexBattleSession, aId: string, bId: string) => {
   const u = s._debug.units;
   return cubeDistance(u.find((x) => x.id === aId)!.hex, u.find((x) => x.id === bId)!.hex);
 };
 
-/** 场界谓词（与 session 内 inField 同式：可移动区 8×8 居中），供用例侧对照计算 */
-const inFieldOf = (_s: ReturnType<typeof createHexBattle>) => (p: { q: number; r: number }) => {
+const inFieldOf = (_s: HexBattleSession) => (p: { q: number; r: number }) => {
   const off = axialToOffset(p);
-  return off.col >= 2 && off.col <= 13 && off.row >= 2 && off.row <= 13; // 12×12 可动区（L 环③）
+  return off.col >= FIELD_MIN && off.col <= FIELD_MAX && off.row >= FIELD_MIN && off.row <= FIELD_MAX;
 };
 
-/** 取敌单位（单敌局） */
-const eu = (s: ReturnType<typeof createHexBattle>) => s._debug.units.find((u) => u.id === 'e0')!;
+const eu = (s: HexBattleSession) => s._debug.units.find((u) => u.id === 'e0')!;
+const pu = (s: HexBattleSession) => s._debug.units.find((u) => u.id === 'p')!;
+const snapHas = (cells: Array<{ q: number; r: number }>, p: { q: number; r: number }) =>
+  cells.some((c) => c.q === p.q && c.r === p.r);
 
-// ---------- 用例 1：行动条满触发与轮转（F-05） ----------
-describe('行动条满触发', () => {
+/** 推进到输入态 + 贴脸（敌 AI 主动贴身/玩家主动靠近，不干等触发托管） */
+function waitAdjacent(s: HexBattleSession, maxRounds = 40): void {
+  for (let guard = 0; guard < maxRounds; guard++) {
+    for (let i = 0; i < 600 && !s.snapshot().pendingInput && s.phase === 'fighting'; i++) s.tick(DT);
+    if (s.phase !== 'fighting') throw new Error('战斗提前结束');
+    if (dist(s, 'p', 'e0') <= 1) return;
+    const cells = s.snapshot().moveCells;
+    const target = eu(s);
+    const to = cells.slice().sort((a, b) => cubeDistance(a, target.hex) - cubeDistance(b, target.hex))[0];
+    if (to) s.submit({ type: 'move', to });
+  }
+  throw new Error('40 回合内未形成贴脸局面');
+}
+
+/** 常用技能定义（Q2 内力口径：释放消耗 = NEILI_COST_PER_CAST，SkillDef.neiliCost 为历史字段不参与判定） */
+function teSkill(over: Partial<SkillDef> = {}): SkillDef {
+  return {
+    id: 'te', name: '特技', kind: 'special', weapon: 'sword',
+    grade: 1.7, growth: 3, level: 10, cooldownTurns: 2, neiliCost: 10,
+    ...over,
+  };
+}
+function qingSkill(over: Partial<SkillDef> = {}): SkillDef {
+  return {
+    id: 'qing', name: '草上飞', kind: 'qingGong', weapon: null,
+    grade: 1.3, growth: 1, level: 10, cooldownTurns: 0, neiliCost: 0,
+    ...over,
+  };
+}
+
+// ══════════ 移动可达（规格 §三 MV） ══════════
+
+describe('[MV-0/MV-1] 普通可达：BFS 不可穿、限可动区、不含占格', () => {
+  it('moveCells ≡ 普通可达集：单位格不含、可动区外不含（几何背书 tests/hex.test 用例④）', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
+      unit({ id: 'e0', side: 'enemy', name: 'shanzei' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    const cells = s.snapshot().moveCells;
+    const power = movePower(pu(s).skills);
+    const occ = s._debug.units.filter((u) => !u.dead).map((u) => u.hex);
+    const normal = reachable(pu(s).hex, power, occ, inFieldOf(s));
+    expect(cells.length).toBe(normal.length); // 集合全等（对并集回归的充要守卫）
+    for (const c of cells) {
+      expect(occ.some((o) => o.q === c.q && o.r === c.r)).toBe(false); // 占格不可落脚
+      expect(inFieldOf(s)(c)).toBe(true); // 限可动区
+    }
+  });
+
+  it('[MV-1] 移动提交：合法格位移 + move 事件（toX/toY=offset）', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200 }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    const to = s.snapshot().moveCells[0];
+    const off = axialToOffset(to);
+    expect(s.submit({ type: 'move', to })).toBe(true);
+    expect(pu(s).hex).toEqual(to);
+    expect(s.events[s.events.length - 1]).toMatchObject({ type: 'move', actorId: 'p', toX: off.col, toY: off.row });
+  });
+
+  it('[MV-1/MV-2] 移动拒绝：出区/占格 → rejected:invalid；轻功态点金格外 → rejected:invalid 且不取消激活', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    // 出可动区
+    const n1 = s.events.length;
+    expect(s.submit({ type: 'move', to: offsetToAxial(0, 0) })).toBe(false);
+    expect(s.events.slice(n1)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+    // 轻功态：金格集合外（敌占格 / 非金空格）→ rejected(invalid) 且不取消激活（MV-2/SEL-5 反向）
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const n2 = s.events.length;
+    expect(s.submit({ type: 'move', to: eu(s).hex })).toBe(false); // 敌占格
+    expect(s.events.slice(n2)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+    expect(s.snapshot().selectedSkill).toBe('qing'); // 不取消激活（MV-2）
+    const normal = reachable(pu(s).hex, movePower(pu(s).skills), s._debug.units.filter((u) => !u.dead).map((u) => u.hex), inFieldOf(s));
+    const green = normal.find((g) => !snapHas(s.snapshot().moveCells, g) && cubeDistance(pu(s).hex, g) > 2);
+    if (green) {
+      const n3 = s.events.length;
+      expect(s.submit({ type: 'move', to: green })).toBe(false); // 非金空格
+      expect(s.events.slice(n3)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+      expect(s.snapshot().selectedSkill).toBe('qing'); // 仍不取消
+    }
+  });
+});
+
+describe('[MV-2] 轻功跳跃态：金格=纯距离半径、可穿越', () => {
+  it('[MV-2] 轻功激活：金格可穿越（隔单位对侧格 ∈ 集合）、单位格 ∉、逐格 cube ≤ ⌊power/2⌋', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill({ grade: 1.3, level: 10 })] }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const snap = s.snapshot();
+    expect(snap.moveKind).toBe('jump');
+    expect(snap.attackCells).toEqual([]); // MV-2：攻击范围高亮必须为空（金绿互斥）
+    const jumpRange = Math.floor(movePower(pu(s).skills) / 2);
+    const occ = s._debug.units.filter((u) => !u.dead).map((u) => u.hex);
+    for (const c of snap.moveCells) {
+      expect(cubeDistance(pu(s).hex, c)).toBeLessThanOrEqual(jumpRange); // 纯距离
+      expect(occ.some((o) => o.q === c.q && o.r === c.r)).toBe(false); // 落点排除单位格
+      expect(inFieldOf(s)(c)).toBe(true);
+    }
+  });
+
+  it('[F1 姊妹端到端] 跳跃跨越单位：敌占邻格挡路，其后格 ∈ moveCells 且点格位移成功（isJump 真值）', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    waitAdjacent(s);
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const snap = s.snapshot();
+    expect(snap.moveKind).toBe('jump');
+    const Y = hexNeighbors(eu(s).hex).find(
+      (h) => cubeDistance(pu(s).hex, h) === 2 && snap.moveCells.some((m) => m.q === h.q && m.r === h.r),
+    );
+    expect(Y).toBeDefined(); // 穿越挡路单位直达（纯距离筛选，无连通污染）
+    expect(s.submit({ type: 'move', to: Y! })).toBe(true);
+    expect(pu(s).hex).toEqual(Y!);
+    const actor = s.snapshot().actors.find((a) => a.id === 'p')!;
+    expect(actor.isJump).toBe(true); // 跳跃非绕行
+    s.tick(0.35);
+    expect(s.snapshot().actors.find((a) => a.id === 'p')!.isJump).toBe(false); // lerp 窗口后复位
+  });
+
+  it('[MV-2] 轻功提交：位移+内力消耗（Q2 扣 1）+bar 清零+选中清除', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
+      unit({ id: 'e0', side: 'enemy', hp: 999999 }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const neiliBefore = pu(s).neili;
+    const to = s.snapshot().moveCells[0];
+    expect(s.submit({ type: 'move', to })).toBe(true);
+    expect(pu(s).hex).toEqual(to);
+    expect(pu(s).neili).toBe(neiliBefore - NEILI_COST_PER_CAST); // Q2：跳跃释放扣 1
+    expect(pu(s).bar).toBe(0); // BAR-3
+    expect(s.snapshot().selectedSkill).toBeNull(); // SEL-3
+  });
+
+  it('[MV-2/MV-3] 一阶轻功基线：power ≤ 1 → 零金格（函数级防御；F-06 基础 2 下 ⌊power/2⌋=0 不可达，条目以函数级对号）', () => {
+    expect(jumpReachable({ q: 0, r: 0 }, 1, []).length).toBe(0);
+    expect(jumpReachable({ q: 0, r: 0 }, 0, []).length).toBe(0);
+    expect(movePower([])).toBe(2); // MVP 全员基础 2
+  });
+
+  it('[MV-3] 未激活：moveKind=walk 且 moveCells=普通可达（无穿越格）', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill({ grade: 1.3, level: 10 })] }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    const snap = s.snapshot();
+    expect(snap.moveKind).toBe('walk');
+    expect(snap.selectedSkill).toBeNull();
+    const normal = reachable(pu(s).hex, movePower(pu(s).skills), s._debug.units.filter((u) => !u.dead).map((u) => u.hex), inFieldOf(s));
+    expect(snap.moveCells.length).toBe(normal.length); // 无跳跃格混入
+  });
+});
+
+// ══════════ 技能交互状态机（规格 §四 4.2 SEL） ══════════
+
+describe('[SEL-1] 输入态进入：弹出 + bar-max 一次', () => {
+  it('条满 → pendingInput=true + bar-max 恰 1 条；等待期不重复发', () => {
+    const s = makeSession(7, 'manual', unit({ id: 'p', side: 'player', jimin: 200 }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    expect(s.events.filter((ev) => ev.type === 'bar-max' && ev.actorId === 'p').length).toBe(1);
+    for (let i = 0; i < 30; i++) s.tick(DT); // 等待期（含冻结时钟）不重复
+    expect(s.events.filter((ev) => ev.type === 'bar-max' && ev.actorId === 'p').length).toBe(1);
+  });
+});
+
+describe('[SEL-2] 互斥与 toggle', () => {
+  it('选特→选绝（特自动取消）→再点绝（取消）；激活不消耗行动预算', () => {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+      skills: [teSkill({ id: 'te' }), teSkill({ id: 'jue', name: '绝学', kind: 'ultimate', cooldownTurns: 0 })],
+    });
+    const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy' })]);
+    expect(runToPending(s)).toBe(true);
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.snapshot().selectedSkill).toBe('te');
+    expect(pu(s).bar).toBe(100); // 激活不耗预算
+    expect(s.submit({ type: 'selectSkill', skillId: 'jue' })).toBe(true);
+    expect(s.snapshot().selectedSkill).toBe('jue'); // 互斥：新选中自动取消旧
+    expect(s.submit({ type: 'selectSkill', skillId: 'jue' })).toBe(true); // toggle
+    expect(s.snapshot().selectedSkill).toBeNull();
+  });
+});
+
+describe('[SEL-3] 行动消耗：清零+选中清+冷却', () => {
+  it('提交后 bar=0、selectedSkill=null、cd2 技能进入冷却（读后递减节奏见「R-08 冷却节奏」用例）', () => {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+      skills: [teSkill()],
+    });
+    const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy' })]);
+    waitAdjacent(s);
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
+    expect(pu(s).bar).toBe(0); // BAR-3 显式清零
+    expect(s.snapshot().selectedSkill).toBeNull(); // SEL-3
+    expect(pu(s).cooldowns.get('te')).toBe(2); // R-08 写满值（后续每行动读后递减）
+  });
+});
+
+describe('[SEL-4] 自动清除与重弹', () => {
+  it('提交后 pendingInput=false；重积满 → 重新 bar-max + 输入态恢复', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200 }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    const to = s.snapshot().moveCells[0];
+    expect(s.submit({ type: 'move', to })).toBe(true);
+    expect(s.snapshot().pendingInput).toBe(false); // SEL-4 提交即退出输入态
+    const bars1 = s.events.filter((ev) => ev.type === 'bar-max' && ev.actorId === 'p').length;
+    for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+    expect(s.snapshot().pendingInput).toBe(true); // 重积满重新进入
+    const bars2 = s.events.filter((ev) => ev.type === 'bar-max' && ev.actorId === 'p').length;
+    expect(bars2).toBe(bars1 + 1); // SEL-1 重新弹出（一次）
+  });
+});
+
+describe('[SEL-5] 取消路径三条', () => {
+  it('①同钮 toggle 取消 ②攻击态点无效格取消 ③轻功态点非金格不取消（反向断言）', () => {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+      skills: [teSkill({ cooldownTurns: 0 }), qingSkill()],
+    });
+    const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy' })]);
+    expect(runToPending(s)).toBe(true);
+    // ②攻击态点无效格（出区）→ 取消选中
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.submit({ type: 'move', to: offsetToAxial(0, 0) })).toBe(false);
+    expect(s.snapshot().selectedSkill).toBeNull(); // SEL-5② 取消
+    // ①同钮 toggle
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.snapshot().selectedSkill).toBeNull();
+    // ③轻功态点非金格（敌占格）→ 不取消（ATK-4/MV-2 反向断言）
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(false); // 点敌=无操作
+    expect(s.snapshot().selectedSkill).toBe('qing'); // 不取消
+  });
+});
+
+describe('[SEL-6] 置灰判定（heroSkills 数据源）', () => {
+  it('内力不足 te 置灰 / 轻功内力不足置灰；毒钮无数据源（D6 归 FE 常量置灰）', () => {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 0, maxNeili: 50,
+      skills: [teSkill(), qingSkill()],
+    });
+    const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy' })]);
+    expect(runToPending(s)).toBe(true);
+    const btn = (id: string) => s.snapshot().heroSkills.find((b) => b.id === id)!;
+    expect(btn('te').disabled).toBe(true); // 内力 0 < 1（Q2 口径）
+    expect(btn('qing').disabled).toBe(true); // 内力 0 < 1（SEL-6）
+    expect(s.snapshot().heroSkills.some((b) => b.id === 'du')).toBe(false); // 毒无数据源，D6 归 FE
+  });
+});
+
+describe('[SEL-7] 切自动/逃跑清输入态', () => {
+  it('setMode(auto) → pendingInput=false + AI 代行；flee → phase=fled', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200 }), [
+      unit({ id: 'e0', side: 'enemy', hp: 999999 }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    expect(s.submit({ type: 'setMode', mode: 'auto' })).toBe(true);
+    for (let i = 0; i < 600 && s.snapshot().pendingInput; i++) s.tick(DT);
+    expect(s.snapshot().pendingInput).toBe(false);
+    for (let i = 0; i < 300 && !s.events.some((ev) => ev.actorId === 'p' && ev.type !== 'bar-max'); i++) s.tick(DT);
+    expect(s.events.some((ev) => ev.actorId === 'p' && ev.type !== 'bar-max')).toBe(true); // AI 代行
+
+    const f = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200 }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(f)).toBe(true);
+    expect(f.submit({ type: 'flee' })).toBe(true);
+    expect(f.phase).toBe('fled'); // SEL-7/R-10
+  });
+});
+
+// ══════════ 攻击行为（规格 §四 4.3 ATK） ══════════
+
+describe('[ATK-1] 普攻：射程内结算 / 射程外拒绝', () => {
+  it('贴脸点敌 → basic 事件+伤害+条清零；射程外 → rejected:invalid 且 bar 不动（=100）', () => {
+    const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500 });
+    const e = unit({ id: 'e0', side: 'enemy', hp: 500, maxHp: 500, atk: 30, def: 10, jimin: 60 });
+    const s = makeSession(13, 'manual', p, [e]);
+    waitAdjacent(s);
+    expect(pu(s).bar).toBe(100); // clamp 口径：条满恒 100
+    const eHpBefore = eu(s).hp;
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
+    const fresh = s.events.filter((ev) => ev.actorId === 'p' && (ev.type === 'basic' || ev.type === 'miss'));
+    expect(fresh.length).toBe(1);
+    if (fresh[0].type === 'basic') {
+      expect(fresh[0].damage).toBeGreaterThan(0);
+      expect(eu(s).hp).toBeLessThan(eHpBefore);
+    }
+    expect(pu(s).bar).toBe(0); // BAR-3
+
+    // 射程外：拉开距离后点敌 → rejected:invalid 且 bar 不动（ATK-1/矩阵断言）
+    for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+    const cells = s.snapshot().moveCells;
+    const far = cells.slice().sort((a, b) => cubeDistance(b, eu(s).hex) - cubeDistance(a, eu(s).hex))[0];
+    if (far && cubeDistance(pu(s).hex, eu(s).hex) - cubeDistance(far, eu(s).hex) >= 1) {
+      expect(s.submit({ type: 'move', to: far })).toBe(true);
+      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+      const barBefore = pu(s).bar;
+      const n = s.events.length;
+      expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(false);
+      expect(s.events.slice(n)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+      expect(pu(s).bar).toBe(barBefore); // bar 不动
+    }
+  });
+});
+
+describe('[ATK-2] 技能施放：四查拒绝 + 合法结算（Q1 定版：无降级）', () => {
+  function castSession(playerOver: Partial<CombatantInput>) {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+      skills: [teSkill()], ...playerOver,
+    });
+    return makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy', hp: 999999 })]);
+  }
+
+  it('武器不匹配 → rejected:invalid（不消耗）', () => {
+    const s = castSession({ weapon: 'fist' }); // te 是剑技
+    waitAdjacent(s);
+    const n = s.events.length;
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(false);
+    expect(s.events.slice(n)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+    expect(pu(s).bar).toBe(100); // 不消耗
+  });
+
+  it('冷却中 → rejected:invalid（不消耗）；合法 → skill 事件+内力 -1（Q2）', () => {
+    const s = castSession({});
+    waitAdjacent(s);
+    const neiliBefore = pu(s).neili;
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
+    expect(s.events.some((ev) => ev.type === 'skill' && ev.skillId === 'te')).toBe(true);
+    expect(pu(s).neili).toBe(neiliBefore - NEILI_COST_PER_CAST);
+    // 冷却窗口（cd=2）：再点 → rejected:invalid（Q1 定版：取消降级普攻，无消耗）
+    for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+    const n = s.events.length;
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(false);
+    expect(s.events.slice(n)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+    expect(s.events.slice(n).some((ev) => ev.type === 'fallback' || ev.type === 'basic')).toBe(false); // 无降级
+    expect(pu(s).bar).toBe(100); // bar 不动（拒绝无消耗）
+  });
+
+  it('内力不足 → rejected:invalid（SEL-6/ATK-2）', () => {
+    const s = castSession({ neili: 0, maxNeili: 50 });
+    waitAdjacent(s);
+    const n = s.events.length;
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(false);
+    expect(s.events.slice(n)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+    expect(pu(s).bar).toBe(100);
+  });
+
+  it('射程外 → rejected:range（走位是玩家决策）', () => {
+    const s = castSession({});
+    expect(runToPending(s)).toBe(true); // seed 13 开局远距
+    const n = s.events.length;
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(false);
+    expect(s.events.slice(n)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'range' }));
+    expect(pu(s).bar).toBe(100);
+  });
+});
+
+describe('[ATK-3] 移动附带普攻特例', () => {
+  it('移动落点相邻敌 → basic 事件紧随 move 事件（不另耗回合）', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500 }), [
+      unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1 }),
+    ]);
+    waitAdjacent(s);
+    // 拉开两格再贴回：制造「移动到位相邻」场景
+    const target = eu(s);
+    const away = s.snapshot().moveCells.find((c) => cubeDistance(c, target.hex) === 2);
+    if (away) {
+      expect(s.submit({ type: 'move', to: away })).toBe(true);
+      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+      const back = s.snapshot().moveCells
+        .slice()
+        .sort((a, b) => cubeDistance(a, target.hex) - cubeDistance(b, target.hex))[0];
+      const nMoves = s.events.filter((ev) => ev.type === 'move' && ev.actorId === 'p').length;
+      expect(s.submit({ type: 'move', to: back })).toBe(true);
+      const off = axialToOffset(back);
+      const idx = s.events.findIndex(
+        (ev) => ev.type === 'move' && ev.actorId === 'p' && ev.toX === off.col && ev.toY === off.row,
+      );
+      expect(idx).toBeGreaterThanOrEqual(0);
+      const follow = s.events.slice(idx + 1).find((ev) => ev.actorId === 'p' && ['basic', 'miss'].includes(ev.type));
+      expect(follow).toBeDefined(); // 特例普攻紧随移动（不另耗回合）
+      expect(s.events.filter((ev) => ev.type === 'move' && ev.actorId === 'p').length).toBe(nMoves + 1);
+    }
+  });
+});
+
+describe('[ATK-4] 轻功态点敌=无操作（Q4）', () => {
+  it('激活轻功 → submit(attack)=false、无事件、selectedSkill 保持', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    waitAdjacent(s);
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const n = s.events.length;
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(false);
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'qing' })).toBe(false);
+    expect(s.events.slice(n).length).toBe(0); // 无事件（无操作，非非法）
+    expect(s.snapshot().selectedSkill).toBe('qing'); // 不取消
+  });
+});
+
+describe('[ATK-5] 点空格=无操作', () => {
+  it('无选中点普通空格（可达集外）：false、无事件、选中不变', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200 }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    const cells = s.snapshot().moveCells;
+    const outside: Array<{ q: number; r: number }> = [];
+    for (let row = FIELD_MIN; row <= FIELD_MAX; row++) {
+      for (let col = FIELD_MIN; col <= FIELD_MAX; col++) {
+        const c = offsetToAxial(col, row);
+        const occupied = s._debug.units.some((u) => u.hex.q === c.q && u.hex.r === c.r);
+        if (!occupied && !snapHas(cells, c)) outside.push(c);
+      }
+    }
+    expect(outside.length).toBeGreaterThan(0); // 12×12 vs 移动力 2：场内必有可达集外空格
+    const n = s.events.length;
+    expect(s.submit({ type: 'move', to: outside[0] })).toBe(false); // 无操作
+    expect(s.events.slice(n).length).toBe(0); // 无事件（ATK-5）
+    expect(s.snapshot().selectedSkill).toBeNull(); // 选中不变
+  });
+});
+
+// ══════════ 行动条与回合（规格 §四 4.4 BAR） ══════════
+
+describe('[BAR-1] clamp 封顶', () => {
+  it('超速角色任意时刻 bar ≤100；出手间隔 ≈ 100/fillRate（速度优势=出手频繁）', () => {
+    const fast = unit({ id: 'p', side: 'player', jimin: 200, atk: 50 }); // 30/s
+    const slow = unit({ id: 'e0', side: 'enemy', jimin: 0, def: 99999 }); // 10/s
+    const s = makeSession(7, 'auto', fast, [slow]);
+    for (let i = 0; i < 800; i++) {
+      s.tick(DT);
+      for (const u of s._debug.units) expect(u.bar).toBeLessThanOrEqual(100.0001);
+      if (s.phase !== 'fighting') break;
+    }
+    const acts = s.events.filter((ev) => ev.actorId === 'p' && ['skill', 'basic', 'miss', 'fallback', 'move'].includes(ev.type));
+    if (acts.length >= 2) {
+      const gap = acts[1].t - acts[0].t;
+      expect(gap).toBeGreaterThanOrEqual(3.2);
+      expect(gap).toBeLessThanOrEqual(3.6);
+    }
+    const eActs = s.events.filter((ev) => ev.actorId === 'e0' && ['skill', 'basic', 'miss', 'fallback', 'move'].includes(ev.type));
+    if (eActs.length >= 2) expect(eActs[1].t - eActs[0].t).toBeGreaterThan(9);
+  });
+});
+
+describe('[BAR-2] 轮转排序', () => {
   it('速度快者先满条先行动（bar-max → 出手事件），慢者后置', () => {
-    const fast = unit({ id: 'p', side: 'player', jimin: 100 }); // 20/s：5s 满
-    const slow = unit({ id: 'e0', side: 'enemy', jimin: 0 }); // 10/s：10s 满
+    const fast = unit({ id: 'p', side: 'player', jimin: 100 }); // 20/s
+    const slow = unit({ id: 'e0', side: 'enemy', jimin: 0 }); // 10/s
     const s = makeSession(7, 'auto', fast, [slow]);
     for (let i = 0; i < 120 && s.events.length < 3; i++) s.tick(DT);
     expect(s.events[0]).toMatchObject({ type: 'bar-max', actorId: 'p' });
-    // 玩家首次行动：seed 7 出生距离 > 普攻射程 1 → AI 第 4 级位移（move）先于出手
-    expect(s.events[1]).toMatchObject({ type: 'move', actorId: 'p' });
-    expect(s.events.some((e) => e.type === 'bar-max' && e.actorId === 'e0')).toBe(true);
+    expect(s.events[1]).toMatchObject({ type: 'move', actorId: 'p' }); // 射程外先位移（AI 第 4 级）
+    expect(s.events.some((ev) => ev.type === 'bar-max' && ev.actorId === 'e0')).toBe(true);
   });
 });
 
-// ---------- 用例 2：O1 行动预算二选一 + 移动到位相邻自动普攻特例 ----------
-describe('预算二选一（O1 定版）', () => {
-  it('移动后本回合不能再出招；回合结束恢复；移动到位相邻自动普攻不另耗行动', () => {
-    const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 50, def: 99999 }); // 30/s
-    const e = unit({ id: 'e0', side: 'enemy', hp: 999, maxHp: 999, atk: 1, def: 10 });
-    const s = makeSession(13, 'manual', p, [e]); // seed 13：初始 offset 距离 4
-    expect(runToPending(s)).toBe(true);
-
-    // 第一回合：移动（二选一之「移动」）
-    const cells = s.snapshot().moveCells;
-    expect(cells.length).toBeGreaterThan(0);
-    const first = cells[0];
-    expect(s.submit({ type: 'move', to: first })).toBe(true);
-    expect(s.events.some((ev) => ev.type === 'move')).toBe(true);
-    // 预算已耗：同回合出招/再移动均拒绝
-    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(false);
-    expect(s.submit({ type: 'move', to: first })).toBe(false);
-
-    // 第二回合：出招（二选一之「出招」；等待敌方逼近至普攻射程）
-    for (let i = 0; i < 600; i++) {
-      s.tick(DT);
-      if (s.snapshot().pendingInput && dist(s, 'p', 'e0') <= 1) break;
-    }
-    if (dist(s, 'p', 'e0') <= 1) {
-      const nEvents = s.events.length;
-      expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
-      expect(s.events.length).toBeGreaterThan(nEvents); // 普攻结算产生事件
-      expect(s.submit({ type: 'move', to: first })).toBe(false); // 预算已耗
-    }
-  });
-
-  it('【Q1 锚点】hex 相邻格普攻不被 core 曼哈顿复核误判 blocked', () => {
-    // 场景：敌我 hex 相邻但 offset 曼哈顿=2（odd-r 折线格）。core resolveAction 普攻分支
-    // 以 offset 曼哈顿 > basicRange 判 blocked；session 的 Q1 适配（调用前临时对齐 pos）
-    // 必须令其正常结算。若适配缺失，本用例中普攻被静默吞掉（事件无 basic/miss）即失败。
-    const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 50, hp: 999999, maxHp: 999999 });
-    const e = unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1 });
-    const s = makeSession(13, 'manual', p, [e]);
-    let anchored = false;
-    for (let round = 0; round < 12 && !anchored; round++) {
-      for (let i = 0; i < 300 && !s.snapshot().pendingInput; i++) s.tick(DT);
-      if (!s.snapshot().pendingInput) break;
-      const pu = s._debug.units.find((u) => u.id === 'p')!;
-      const eu = s._debug.units.find((u) => u.id === 'e0')!;
-      const d = cubeDistance(pu.hex, eu.hex);
-      if (d === 1 && offsetManhattan(axialToOffset(pu.hex), axialToOffset(eu.hex)) === 2) {
-        // 目标场景：hex 相邻 + offset 曼哈顿 2 → 普攻必须正常结算（不被误判 blocked）
-        const nEvents = s.events.length;
-        expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
-        const fresh = s.events.slice(nEvents).filter((ev) => ev.actorId === 'p');
-        expect(fresh.length).toBeGreaterThan(0);
-        expect(['basic', 'miss']).toContain(fresh[0].type); // blocked 则为 'blocked'
-        anchored = true;
-      } else {
-        // 尚未就位：向敌移动（候选中取 offset 曼哈顿=2 的敌邻格优先，构造 Q1 场景）
-        const cells = s.snapshot().moveCells;
-        const adj2 = hexNeighbors(eu.hex).find(
-          (h) =>
-            offsetManhattan(axialToOffset(h), axialToOffset(eu.hex)) === 2 &&
-            cells.some((c) => c.q === h.q && c.r === h.r),
-        );
-        const to = adj2 ?? cells.slice().sort((a, b) => cubeDistance(a, eu.hex) - cubeDistance(b, eu.hex))[0];
-        expect(s.submit({ type: 'move', to })).toBe(true);
-      }
-    }
-    expect(anchored).toBe(true); // 12 回合内必现（敌 AI 同步逼近，seed 固定路径确定）
-  });
-});
-
-// ---------- 用例 3：selectSkill 攻击范围显示态（不耗 O1 预算） ----------
-describe('selectSkill 激活态', () => {
-  it('激活后快照带 selectedSkill/attackCells；取消还原；不阻塞后续移动预算', () => {
-    const p = unit({
-      id: 'p',
-      side: 'player',
-      jimin: 200,
-      weapon: 'sword',
-      skills: [
-        { id: 'yemao', name: '野猫剑法', kind: 'waiGong', weapon: 'sword', grade: 0.5, growth: 1.5, level: 10, cooldownTurns: 0, neiliCost: 10 },
-      ],
-    });
-    const e = unit({ id: 'e0', side: 'enemy' });
-    const s = makeSession(7, 'manual', p, [e]);
-    expect(runToPending(s)).toBe(true);
-    expect(s.submit({ type: 'selectSkill', skillId: 'yemao' })).toBe(true);
-    const snap = s.snapshot();
-    expect(snap.selectedSkill).toBe('yemao');
-    expect(snap.attackCells.length).toBeGreaterThan(0); // 剑=圆形半径 1（inField 后 ≥3 格）
-    expect(snap.moveCells.length).toBe(0); // 激活态显示攻击范围而非移动范围
-    // 激活不耗 O1 预算：cancel 后移动候选恢复
-    expect(s.submit({ type: 'cancelSkill' })).toBe(true);
-    expect(s.snapshot().selectedSkill).toBeNull();
-    const cells = s.snapshot().moveCells;
-    expect(cells.length).toBeGreaterThan(0);
-    expect(s.submit({ type: 'move', to: cells[0] })).toBe(true);
-  });
-});
-
-// ---------- 用例 4：AI 五级优先表（C 案 B2） ----------
-describe('AI 优先级序', () => {
-  it('第 2 级技能按伤害倍率降序（grade 1.7 先于 1.0，无视数组序）；集火最近敌', () => {
-    const p = unit({ id: 'p', side: 'player', atk: 1 }); // 站桩
-    const e = unit({
-      id: 'e0',
-      side: 'enemy',
-      jimin: 200,
-      neili: 999,
-      maxNeili: 999,
-      weapon: 'sword',
-      def: 99999,
-      skills: [
-        { id: 'low', name: '低阶', kind: 'waiGong', weapon: 'sword', grade: 1.0, growth: 1, level: 60, cooldownTurns: 0, neiliCost: 10 },
-        { id: 'high', name: '高阶', kind: 'special', weapon: 'sword', grade: 1.7, growth: 3, level: 60, cooldownTurns: 0, neiliCost: 10 },
-      ],
-    });
-    const s = makeSession(7, 'auto', p, [e]);
-    for (let i = 0; i < 600 && !s.events.some((ev) => ev.type === 'skill'); i++) s.tick(DT);
-    const firstSkill = s.events.find((ev) => ev.type === 'skill');
-    expect(firstSkill).toMatchObject({ actorId: 'e0', skillId: 'high' }); // 倍率序压数组序
-  });
-
-  it('R-08 冷却节奏：cd2 技能出招后隔 2 个行动回合恢复（镜像 core 用例 3 口径）', () => {
-    const p = unit({ id: 'p', side: 'player', atk: 1 });
-    const e = unit({
-      id: 'e0',
-      side: 'enemy',
-      jimin: 200,
-      neili: 999,
-      maxNeili: 999,
-      weapon: 'sword',
-      hp: 999999,
-      maxHp: 999999,
-      def: 99999,
-      skills: [
-        { id: 'cd2', name: '特技', kind: 'special', weapon: 'sword', grade: 1.0, growth: 1, level: 10, cooldownTurns: 2, neiliCost: 10 },
-      ],
-    });
-    const s = makeSession(7, 'auto', p, [e]);
-    let acts: typeof s.events = [];
-    // 等到第二个技能事件出现（首个 skill → cd2 → 两个冷却回合 → 复现），再统一断言节奏
-    for (let i = 0; i < 1500; i++) {
-      s.tick(DT);
-      acts = s.events.filter((ev) => ev.actorId === 'e0' && ['skill', 'fallback', 'basic', 'miss'].includes(ev.type));
-      if (acts.filter((ev) => ev.type === 'skill').length >= 2) break;
-    }
-    const skillIdxs = acts.map((ev, i) => (ev.type === 'skill' ? i : -1)).filter((i) => i >= 0);
-    expect(skillIdxs.length).toBeGreaterThanOrEqual(2);
-    // 相邻两次 skill 之间：cd2 → 至少 2 个冷却回合（各 ≥1 次出手事件），期间绝无 skill
-    const gap = acts.slice(skillIdxs[0] + 1, skillIdxs[1]);
-    expect(gap.some((ev) => ev.type === 'skill')).toBe(false);
-    expect(gap.length).toBeGreaterThanOrEqual(3); // 2 回合 × (fallback+出手) ≥ 3 事件（miss 回合为 1 事件，两回合至少 3）
-  });
-
-  it('第 4 级位移：射程外敌方首行动是 move（F-06 位移进射程）', () => {
-    const p = unit({ id: 'p', side: 'player', jimin: 0 });
-    const e = unit({ id: 'e0', side: 'enemy', jimin: 0 }); // 双方 fist 射程 1，初始必在射程外
-    const s = makeSession(13, 'auto', p, [e]);
-    for (let i = 0; i < 200 && !s.events.some((ev) => ev.actorId === 'e0'); i++) s.tick(DT);
-    const firstAct = s.events.find((ev) => ev.actorId === 'e0' && ev.type !== 'bar-max');
-    expect(firstAct).toMatchObject({ type: 'move' });
-  });
-});
-
-// ---------- 用例 5：托管双阈值（docs/80 §4；等待期冻结总时钟） ----------
-describe('托管切换', () => {
-  it('手动挂机 90s → trust 代行；再 90s → switchAuto 切自动', () => {
+describe('[BAR-4] 托管双阈值 + 冻结时钟', () => {
+  it('手动挂机 90s → trust（t<15s）→ switch-auto；等待期总时钟不推进', () => {
     const p = unit({ id: 'p', side: 'player', jimin: 0, hp: 999999, maxHp: 999999 });
     const e = unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1 });
     const s = makeSession(7, 'manual', p, [e]);
     for (let i = 0; i < 300 && !(s.events.some((ev) => ev.type === 'trust') && s._debug.mode() === 'auto'); i++) s.tick(1);
-    const trust = s.events.find((ev) => ev.type === 'trust');
-    const switchAuto = s.events.find((ev) => ev.type === 'switch-auto');
+    const trust = s.events.find((ev) => ev.type === 'trust')!;
+    const switchAuto = s.events.find((ev) => ev.type === 'switch-auto')!;
     expect(trust).toBeDefined();
     expect(switchAuto).toBeDefined();
     expect(s._debug.mode()).toBe('auto');
-    // 等待期总时钟冻结（T06 口径）：trust 发生在首满时刻（≈10s）而非挂钟 100s
-    expect(trust!.t).toBeLessThan(15);
+    expect(trust!.t).toBeLessThan(15); // 等待期总时钟冻结（BAR-4）
     expect(trust!.t).toBeLessThanOrEqual(switchAuto!.t);
   });
 });
 
-// ---------- 用例 6：同 seed 事件流全等（确定性 DoD 硬项） ----------
-describe('事件流确定性', () => {
+describe('[BAR-5] 90s 判定', () => {
+  it('高胜 / 低负 / 同量玩家负（一致性断言）三断言', () => {
+    const mk = (pHp: number, eHp: number) =>
+      makeSession(7, 'auto', unit({ id: 'p', side: 'player', hp: pHp, maxHp: pHp, jimin: 0 }), [
+        unit({ id: 'e0', side: 'enemy', hp: eHp, maxHp: eHp, jimin: 0 }),
+      ]);
+    const high = mk(1000, 500);
+    autoTillEnd(high);
+    expect(high.events.some((ev) => ev.type === 'timeout-hp')).toBe(true);
+    expect(high.phase).toBe('won');
+    const low = mk(500, 1000);
+    autoTillEnd(low);
+    expect(low.phase).toBe('lost');
+    const tie = mk(800, 800);
+    autoTillEnd(tie);
+    expect(tie.events.some((ev) => ev.type === 'timeout-hp')).toBe(true);
+    const pHp = tie._debug.units.filter((u) => u.side === 'player').reduce((s2, u) => s2 + Math.max(0, u.hp), 0);
+    const eHp = tie._debug.units.filter((u) => u.side === 'enemy').reduce((s2, u) => s2 + Math.max(0, u.hp), 0);
+    expect(tie.phase).toBe(pHp > eHp ? 'won' : 'lost'); // 同量归 lost（BAR-5）
+    if (pHp === eHp) expect(tie.phase).toBe('lost');
+  });
+});
+
+// ══════════ 出生与确定性（规格 §四 4.5 SP） ══════════
+
+describe('[SP-1] 出生：锚点 ≤3 随机（D1）', () => {
+  it('4 seed × 全体单位：出生格 ∈ 可动区且 dist(锚)≤3、我方/敌区互斥；满编容量验证', () => {
+    const anchorP = offsetToAxial(2, 13);
+    const anchorE = offsetToAxial(13, 2);
+    for (const seed of [1, 7, 13, 42]) {
+      const count = seed === 42 ? 6 : 2;
+      const enemies = Array.from({ length: count }, (_, i) => unit({ id: `e${i}`, side: 'enemy' as const }));
+      const s = makeSession(seed, 'auto', unit({ id: 'p', side: 'player' }), enemies);
+      for (const u of s._debug.units) {
+        const off = axialToOffset(u.hex);
+        expect(off.col).toBeGreaterThanOrEqual(FIELD_MIN);
+        expect(off.col).toBeLessThanOrEqual(FIELD_MAX);
+        expect(off.row).toBeGreaterThanOrEqual(FIELD_MIN);
+        expect(off.row).toBeLessThanOrEqual(FIELD_MAX);
+        const anchor = u.side === 'player' ? anchorP : anchorE;
+        expect(cubeDistance(anchor, u.hex)).toBeLessThanOrEqual(3);
+      }
+      for (const u of s._debug.units) {
+        // 两带互斥（SP-1：锚距 >6 > 3+3）
+        if (u.side === 'player') expect(cubeDistance(anchorE, u.hex)).toBeGreaterThan(3);
+        else expect(cubeDistance(anchorP, u.hex)).toBeGreaterThan(3);
+      }
+      const keys = new Set(s._debug.units.map((u) => `${u.hex.q},${u.hex.r}`));
+      expect(keys.size).toBe(s._debug.units.length); // 不重叠
+    }
+    // 同 seed 布局可复现（SP-2 布局面）
+    const a = makeSession(42, 'auto', unit({ id: 'p', side: 'player' }), [unit({ id: 'e0', side: 'enemy' })]);
+    const b = makeSession(42, 'auto', unit({ id: 'p', side: 'player' }), [unit({ id: 'e0', side: 'enemy' })]);
+    expect(a._debug.units.map((u) => u.hex)).toEqual(b._debug.units.map((u) => u.hex));
+  });
+});
+
+describe('[SP-2] 同 seed 全等', () => {
   const pDef = () => unit({ id: 'p', side: 'player', jimin: 120, atk: 80, def: 30, hp: 500, maxHp: 500 });
   const eDef = () => unit({ id: 'e0', side: 'enemy', hp: 300, maxHp: 300, atk: 20, def: 10, jimin: 40 });
 
-  it('自动模式同 seed 两场事件流逐条全等；不同 seed 不同', () => {
+  it('自动双场事件流 JSON 全等；异 seed 不同', () => {
     const a = makeSession(7, 'auto', pDef(), [eDef()]);
     const b = makeSession(7, 'auto', pDef(), [eDef()]);
     autoTillEnd(a);
@@ -273,340 +628,32 @@ describe('事件流确定性', () => {
     expect(c.events).not.toEqual(a.events);
   });
 
-  it('手动模式同 seed + 同操作脚本 → 事件流全等', () => {
-    // 操作脚本（确定性，无外部随机源）：回合 k 时若与敌相邻且 k 为偶数则普攻，否则移动到
-    // 候选第 k 格；同 seed 下布局与掷骰全同 → 事件流必须逐条全等。
+  it('手动脚本双场事件流全等（含非法操作 → SP-3 拒绝序列纳入确定性）', () => {
     const runScripted = (seed: number) => {
       const s = makeSession(seed, 'manual', pDef(), [eDef()]);
-      for (let k = 0; k < 6 && s.phase === 'fighting'; k++) {
+      for (let k = 0; k < 8 && s.phase === 'fighting'; k++) {
         for (let i = 0; i < 400 && !s.snapshot().pendingInput && s.phase === 'fighting'; i++) s.tick(DT);
         if (s.phase !== 'fighting') break;
-        const cells = s.snapshot().moveCells;
-        if (dist(s, 'p', 'e0') <= 1 && k % 2 === 0) s.submit({ type: 'attack', targetId: 'e0', skillId: null });
-        else if (cells.length > 0) s.submit({ type: 'move', to: cells[k % cells.length] });
+        if (k % 2 === 0) s.submit({ type: 'move', to: offsetToAxial(0, 0) }); // 非法（拒绝序列）
+        if (dist(s, 'p', 'e0') <= 1 && k % 2 === 1) s.submit({ type: 'attack', targetId: 'e0', skillId: null });
+        else {
+          const cells = s.snapshot().moveCells;
+          if (cells.length > 0) s.submit({ type: 'move', to: cells[k % cells.length] });
+        }
       }
       return s;
     };
     const a = runScripted(7);
     const b = runScripted(7);
     expect(a.events).toEqual(b.events);
-  });
-
-  it('assembleRoster 薄转发：数量规则 = core rollEnemyCount', () => {
-    const tpl = { name: '山贼', hp: 50, atk: 10, def: 5, jimin: 5, danshi: 0, shizhan: 50 };
-    expect(assembleRoster(99, tpl, makeRng(1)).length).toBe(1); // <100 固定 1
-    const roster = assembleRoster(50000, tpl, makeRng(2));
-    expect(roster.length).toBeGreaterThanOrEqual(1);
-    expect(roster.length).toBeLessThanOrEqual(6);
-    expect(roster[0].id).toBe('enemy-0');
+    expect(a.events.some((ev) => ev.type === 'rejected')).toBe(true); // 脚本确实含拒绝
   });
 });
 
-// ---------- 返工工单（验收 F1/F2/F3）：轻功交互链 + heroSkills + configId ----------
-describe('轻功交互链（F1 阻塞项修复验证）', () => {
-  const qing: SkillDef = {
-    id: 'qing',
-    name: '草上飞',
-    kind: 'qingGong',
-    weapon: null,
-    grade: 1.0,
-    growth: 1,
-    level: 10,
-    cooldownTurns: 0,
-    neiliCost: 0,
-  };
+// ══════════ 既有行为资产收编（矩阵外补充，防回归） ══════════
 
-  function qingSession() {
-    const p = unit({
-      id: 'p',
-      side: 'player',
-      jimin: 200,
-      neili: 50,
-      maxNeili: 50,
-      weapon: 'fist',
-      skills: [
-        qing,
-        { ...qing, id: 'expensive', name: '昂贵技', kind: 'waiGong', weapon: 'fist', neiliCost: 999 }, // 内力不足 → 置灰样本
-      ],
-    });
-    const e = unit({ id: 'e0', side: 'enemy', name: 'shanzei' });
-    const s = makeSession(13, 'manual', p, [e]);
-    return { s, p };
-  }
-
-  it('selectSkill(轻功) → 快照 moveCells=跳跃可达格（moveKind=jump/attackCells 空）→ 点格位移成功', () => {
-    const { s } = qingSession();
-    expect(runToPending(s)).toBe(true);
-
-    // 未激活：moveCells = 普通∪跳跃并集，moveKind=walk
-    const idle = s.snapshot();
-    expect(idle.moveKind).toBe('walk');
-    expect(idle.moveCells.length).toBeGreaterThan(0);
-
-    // 激活轻功：移动型技能分支（F1 修复点）——跳跃可达格 + 金色形态 + 攻击范围置空
-    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
-    const snap = s.snapshot();
-    expect(snap.selectedSkill).toBe('qing');
-    expect(snap.moveKind).toBe('jump');
-    expect(snap.attackCells).toEqual([]); // 轻功不再误出「武器射程红圈」（F1 证据链第 2 条）
-    expect(snap.moveCells.length).toBeGreaterThan(0);
-    // 跳跃格语义：cube 距离 ≤ ⌊power/2⌋=2（grade1.0+1、⌊10/5⌋+2 → power5），不含自己/敌占格
-    const pu = s._debug.units.find((u) => u.id === 'p')!;
-    const eu = s._debug.units.find((u) => u.id === 'e0')!;
-    for (const c of snap.moveCells) {
-      expect(cubeDistance(pu.hex, c)).toBeLessThanOrEqual(2);
-      expect(c.q === pu.hex.q && c.r === pu.hex.r).toBe(false);
-      expect(c.q === eu.hex.q && c.r === eu.hex.r).toBe(false);
-    }
-
-    // 校验与显示一致：激活态下点「非跳跃格」（未激活时合法的远格）被拒
-    const far = idle.moveCells.find((c) => cubeDistance(pu.hex, c) > 2);
-    if (far) expect(s.submit({ type: 'move', to: far })).toBe(false);
-
-    // 模拟点格（input 侧 qing && inMove 路径）：位移成功 + move 事件 + isJump 真值
-    const to = snap.moveCells[0];
-    const before = { q: pu.hex.q, r: pu.hex.r };
-    expect(s.submit({ type: 'move', to })).toBe(true);
-    const after = s._debug.units.find((u) => u.id === 'p')!.hex;
-    expect(after.q === before.q && after.r === before.r).toBe(false); // 位置变更
-    expect(s.events[s.events.length - 1]).toMatchObject({ type: 'move', actorId: 'p' });
-    const jumping = s.snapshot().actors.find((a) => a.id === 'p')!;
-    expect(jumping.isJump).toBe(true); // 快照真值（F1）：渲染禁启发式猜
-    s.tick(0.35); // > ANIM_MS.walk(300ms)：lerp 结束后 isJump 复位
-    expect(s.snapshot().actors.find((a) => a.id === 'p')!.isJump).toBe(false);
-    // 行动消耗：第三跳前仅攒到 <200 → 跳后条重置（<100）→ 选中清除（四钮统一规则）
-    expect(s.snapshot().selectedSkill).toBeNull();
-    expect(s.submit({ type: 'move', to })).toBe(false);
-  });
-
-  it('【F1 姊妹端到端】跳跃跨越单位：敌占邻格挡路，其后格仍在跳跃 moveCells 且点格位移成功', () => {
-    const { s } = qingSession(); // 轻功 grade1.0/level10 → power 5 → 跳跃半径 2
-    // 推进到敌 AI 贴身（占玩家邻格 X，天然挡路单位）
-    let pu: (typeof s._debug.units)[number] | undefined;
-    let eu: typeof pu;
-    for (let guard = 0; guard < 40; guard++) {
-      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
-      pu = s._debug.units.find((u) => u.id === 'p')!;
-      eu = s._debug.units.find((u) => u.id === 'e0')!;
-      if (cubeDistance(pu.hex, eu.hex) <= 1) break;
-      const cells = s.snapshot().moveCells;
-      const to = cells.slice().sort((a, b) => cubeDistance(a, eu.hex) - cubeDistance(b, eu.hex))[0];
-      if (to) s.submit({ type: 'move', to });
-    }
-    expect(cubeDistance(pu!.hex, eu!.hex)).toBeLessThanOrEqual(1);
-    // 激活轻功：Y = 穿越 X 的对侧直达格（X 的邻格中距玩家 2 者）
-    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
-    const snap = s.snapshot();
-    expect(snap.moveKind).toBe('jump');
-    const Y = hexNeighbors(eu!.hex).find(
-      (h) => cubeDistance(pu!.hex, h) === 2 && snap.moveCells.some((m) => m.q === h.q && m.r === h.r),
-    );
-    expect(Y).toBeDefined(); // 跨越单位的目标格在跳跃格集（纯距离筛选，无连通污染）
-    expect(s.submit({ type: 'move', to: Y! })).toBe(true); // 点格位移成功（跨越单位）
-    const after = s._debug.units.find((u) => u.id === 'p')!.hex;
-    expect(after.q === Y!.q && after.r === Y!.r).toBe(true);
-    expect(s.snapshot().actors.find((a) => a.id === 'p')!.isJump).toBe(true); // 跳跃非绕行
-  });
-
-  it('heroSkills 会话真值（F2）：内力不足置灰；敌 actor configId/spriteKey（F3）', () => {
-    const { s } = qingSession();
-    expect(runToPending(s)).toBe(true);
-    const snap = s.snapshot();
-    const qingBtn = snap.heroSkills.find((b) => b.id === 'qing')!;
-    const expBtn = snap.heroSkills.find((b) => b.id === 'expensive')!;
-    expect(qingBtn).toEqual({ id: 'qing', label: '草上飞', disabled: false }); // 内力够/无冷却/无武器约束
-    expect(expBtn.disabled).toBe(true); // 内力 50 < 999 → 置灰（会话真值，Ext 过渡段可降级）
-    // F3：敌型身份带出 —— configId=模板名，spriteKey 约定 = configId；玩家走 hero 帧表
-    const enemy = snap.actors.find((a) => a.id === 'e0')!;
-    expect(enemy.configId).toBe('shanzei');
-    expect(enemy.spriteKey).toBe('shanzei');
-    const hero = snap.actors.find((a) => a.id === 'p')!;
-    expect(hero.configId).toBeUndefined();
-    expect(hero.spriteKey).toBe('hero');
-  });
-});
-
-// ---------- L 环反馈修复（①穿模 / ②三跳失效 / ③点特不重置） ----------
-describe('L 环①：普通移动不可穿越单位（C 案 A3）', () => {
-  const qing2: SkillDef = {
-    id: 'qing2', name: '二阶轻功', kind: 'qingGong', weapon: null,
-    grade: 1.3, growth: 1, level: 10, cooldownTurns: 0, neiliCost: 0,
-  };
-
-  it('未激活轻功时 moveCells ≡ 普通可达集（跳跃格不并入）；占格不可落脚', () => {
-    // 玩家带二阶轻功（power=2+2+2=6，跳跃半径 3）：修复前未激活态把跳跃格并进 moveCandidates，
-    // 普通移动可点跳跃格穿越单位占格（穿模根因）；修复后 moveCells 恒等于普通可达集。
-    // 「路径穿过单位占格 → 该格不可达」的 BFS 几何行为由 tests/hex.test.ts 用例④
-    // （单格阻挡失达/整墙切割）背书，此处锁死 session 候选不再并入跳跃集。
-    const p = unit({
-      id: 'p', side: 'player', jimin: 200, skills: [qing2],
-    });
-    const e = unit({ id: 'e0', side: 'enemy', name: 'shanzei' });
-    const s = makeSession(13, 'manual', p, [e]);
-    expect(runToPending(s)).toBe(true);
-    const pu = s._debug.units.find((u) => u.id === 'p')!;
-    const power = movePower(pu.skills);
-    const occupiedCells = s._debug.units.filter((u) => !u.dead).map((u) => u.hex);
-    const normal = reachable(pu.hex, power, occupiedCells, inFieldOf(s));
-    const snap = s.snapshot();
-    // 集合全等（对「并集移除」是充要守卫）：moveCells ≯ normalReach
-    expect(snap.moveCells.length).toBe(normal.length);
-    for (const c of snap.moveCells) {
-      expect(normal.some((n) => n.q === c.q && n.r === c.r)).toBe(true);
-      expect(occupiedCells.some((o) => o.q === c.q && o.r === c.r)).toBe(false); // 占格不可落脚
-    }
-    // 敌贴身后同理（敌 AI 第 4 级位移同样不并入跳跃格，AI 与玩家同构守普通规则）
-    for (let i = 0; i < 600; i++) {
-      s.tick(DT);
-      if (s.snapshot().pendingInput && cubeDistance(pu.hex, eu(s).hex) <= 1) break;
-    }
-    const snap2 = s.snapshot();
-    const normal2 = reachable(s._debug.units.find((u) => u.id === 'p')!.hex, power, s._debug.units.filter((u) => !u.dead).map((u) => u.hex), inFieldOf(s));
-    expect(snap2.moveCells.length).toBe(normal2.length);
-    expect(snap2.moveCells.every((c) => !normal2.some((n) => n.q === c.q && n.r === c.r) === false)).toBe(true);
-  });
-
-  it('AI 位移不穿模：敌方首个移动事件的目标格在场内且不与其他单位重叠', () => {
-    const p = unit({ id: 'p', side: 'player', jimin: 0 });
-    const e = unit({ id: 'e0', side: 'enemy', jimin: 0, skills: [qing2] }); // 敌带轻功（power 6）：AI 也不许跳
-    const s = makeSession(13, 'auto', p, [e]);
-    for (let i = 0; i < 300 && !s.events.some((ev) => ev.type === 'move' && ev.actorId === 'e0'); i++) s.tick(DT);
-    const moveEv = s.events.find((ev) => ev.type === 'move' && ev.actorId === 'e0')!;
-    const to = moveEv.toX !== undefined && moveEv.toY !== undefined ? offsetToAxial(moveEv.toX, moveEv.toY) : null;
-    expect(to).not.toBeNull();
-    expect(inFieldOf(s)(to!)).toBe(true);
-    // 落点排除其他存活单位（移动者自身除外——它此刻已站在该格）
-    for (const u of s._debug.units) {
-      if (u.id === 'e0') continue;
-      expect(u.hex.q === to!.q && u.hex.r === to!.r).toBe(false);
-    }
-  });
-});
-
-// L 环② sticky + L 环①封顶合并口径：条满 100 封顶、行动清零重积——
-// 选中为「回合内」态：激活→点金格跳跃→条清零选中清除；下一跳需重新激活（消耗可见）。
-// 「误点防护」：激活态高亮只显示金格（moveKind=jump），submit 仅受理金格——点普通可达格
-// （绿格语义）被拒且无位移。
-describe('L 环②：轻功激活链（封顶口径下三跳全成功）', () => {
-  const qing: SkillDef = {
-    id: 'qing', name: '草上飞', kind: 'qingGong', weapon: null,
-    grade: 1.3, growth: 1, level: 10, cooldownTurns: 0, neiliCost: 0,
-  };
-
-  function qingOnly() {
-    const p = unit({ id: 'p', side: 'player', jimin: 200, skills: [qing] });
-    const e = unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1 });
-    return makeSession(13, 'manual', p, [e]);
-  }
-
-  it('激活→点金格跳跃→清零重积 ×3：三跳位移全成功；激活态点绿格被拒且无位移', () => {
-    const s = qingOnly();
-    const path: Array<{ q: number; r: number }> = [];
-    for (let hop = 1; hop <= 3; hop++) {
-      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
-      expect(s.snapshot().pendingInput).toBe(true);
-      expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
-      const snap = s.snapshot();
-      expect(snap.selectedSkill).toBe('qing');
-      expect(snap.moveKind).toBe('jump'); // 高亮互斥：激活态只显示金格
-      expect(snap.moveCells.length).toBeGreaterThan(0);
-
-      // 误点防护：普通可达格（绿格语义，非金格）在激活态被拒且无位移（工单②用例前半）
-      const pu0 = s._debug.units.find((u) => u.id === 'p')!;
-      const normal = reachable(pu0.hex, movePower(pu0.skills), s._debug.units.filter((u) => !u.dead).map((u) => u.hex), inFieldOf(s));
-      const green = normal.find((g) => !snap.moveCells.some((m) => m.q === g.q && m.r === g.r));
-      if (green) {
-        expect(s.submit({ type: 'move', to: green })).toBe(false);
-        const puNow = s._debug.units.find((u) => u.id === 'p')!;
-        expect(puNow.hex.q === pu0.hex.q && puNow.hex.r === pu0.hex.r).toBe(true); // 无位移
-      }
-
-      // 点金格：跳跃位移 + isJump 真值 + 行动提交即清选中（条清零重积）
-      path.push({ ...pu0.hex });
-      const to = snap.moveCells[0];
-      expect(s.submit({ type: 'move', to })).toBe(true);
-      const actor = s.snapshot().actors.find((a) => a.id === 'p')!;
-      expect(actor.isJump).toBe(true);
-      expect(s.events[s.events.length - 1]).toMatchObject({ type: 'move', actorId: 'p' });
-      expect(s.snapshot().selectedSkill).toBeNull(); // 封顶口径：条清零 → 选中清除
-      expect(s.snapshot().moveKind).toBe('walk');
-    }
-    for (let i = 1; i < path.length; i++) {
-      expect(path[i - 1].q !== path[i].q || path[i - 1].r !== path[i].r).toBe(true);
-    }
-  });
-});
-
-describe('L 环③：不可用技能降级普攻（行动条必重置）', () => {
-  function skillSession() {
-    const p = unit({
-      id: 'p', side: 'player', jimin: 200, weapon: 'sword',
-      neili: 10, maxNeili: 10, hp: 999999, maxHp: 999999, def: 99999,
-      skills: [
-        { id: 'te', name: '特技', kind: 'special', weapon: 'sword', grade: 1.7, growth: 3, level: 10, cooldownTurns: 2, neiliCost: 10 },
-      ],
-    });
-    const e = unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1, name: 'shanzei' });
-    return makeSession(13, 'manual', p, [e]);
-  }
-
-  /** 推进到玩家条满且与敌相邻（seed 13）：条满而敌未贴上时主动移动靠近——
-   * 不干等（手动挂机 90s 会触发托管链，干扰被测的降级路径） */
-  function waitAdjacent(s: ReturnType<typeof createHexBattle>): void {
-    for (let guard = 0; guard < 40; guard++) {
-      for (let i = 0; i < 600 && !s.snapshot().pendingInput && s.phase === 'fighting'; i++) s.tick(DT);
-      if (s.phase !== 'fighting') throw new Error('战斗提前结束');
-      if (dist(s, 'p', 'e0') <= 1) return;
-      const cells = s.snapshot().moveCells;
-      const target = s._debug.units.find((u) => u.id === 'e0')!;
-      const to = cells.slice().sort((a, b) => cubeDistance(a, target.hex) - cubeDistance(b, target.hex))[0];
-      if (to) s.submit({ type: 'move', to });
-    }
-    throw new Error('40 回合内未形成贴脸局面');
-  }
-
-  it('冷却窗口点「特」→ 降级普攻出手（fallback+basic）且行动条重置；内力耗尽同理', () => {
-    const s = skillSession();
-    waitAdjacent(s);
-    // 回合 1：特技真施放（可用：内力 10 够 / 冷却 0）
-    const barBefore = s._debug.units.find((u) => u.id === 'p')!.bar;
-    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
-    expect(s.events.some((ev) => ev.type === 'skill' && ev.skillId === 'te')).toBe(true);
-    // 行动条重置 = 扣满值一次（bar 无上限 clamp，镜像 core 口径，故用差值断言）
-    expect(s._debug.units.find((u) => u.id === 'p')!.bar).toBeCloseTo(barBefore - 100, 6);
-
-    // 回合 2（冷却 1 + 内力 0）：再点「特」→ 不再静默拒卡条，降级普攻兜底
-    for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
-    const barBefore2 = s._debug.units.find((u) => u.id === 'p')!.bar;
-    const nEvents = s.events.length;
-    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
-    const fresh = s.events.slice(nEvents).filter((ev) => ev.actorId === 'p');
-    expect(fresh.map((ev) => ev.type)).toContain('fallback'); // core act() 同款兜底提示
-    expect(fresh.some((ev) => ['basic', 'miss'].includes(ev.type))).toBe(true); // 普攻真出手
-    expect(fresh.every((ev) => ev.type !== 'skill')).toBe(true); // 特技未施放
-    expect(s._debug.units.find((u) => u.id === 'p')!.bar).toBeCloseTo(barBefore2 - 100, 6); // 重置（L 环③主诉）
-
-    // 后续回合（冷却归零但内力 0）：仍降级，绝不静默卡条
-    for (let r = 0; r < 2; r++) {
-      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
-      expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
-    }
-    const fallbackCount = s.events.filter((ev) => ev.type === 'fallback' && ev.actorId === 'p').length;
-    expect(fallbackCount).toBeGreaterThanOrEqual(3);
-  });
-
-  it('射程外点「特」仍拒绝（走位是玩家决策，不降级乱打）', () => {
-    const s = skillSession();
-    expect(runToPending(s)).toBe(true); // seed 13 开局敌距 3 > 普攻射程 1
-    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(false);
-    // 拒绝不消耗行动（条保持满，等待玩家走位或换目标）
-    expect(s.snapshot().pendingInput).toBe(true);
-  });
-});
-
-// ---------- 用例 7：胜负结算 ----------
-describe('胜负结算', () => {
-  it('全灭 → won + win/death；玩家亡 → lost + lose；逃跑 → fled', () => {
+describe('[BAR-5/SEL-7 补充] 歼灭/玩家亡终局', () => {
+  it('全灭 → won+win/death；玩家亡 → lost+lose', () => {
     const winS = makeSession(7, 'auto', unit({ id: 'p', side: 'player', jimin: 200, atk: 9999 }), [
       unit({ id: 'e0', side: 'enemy', hp: 5, maxHp: 5, atk: 1 }),
     ]);
@@ -621,213 +668,86 @@ describe('胜负结算', () => {
     autoTillEnd(loseS);
     expect(loseS.phase).toBe('lost');
     expect(loseS.events.some((ev) => ev.type === 'lose')).toBe(true);
-
-    const fleeS = makeSession(7, 'manual', unit({ id: 'p', side: 'player', jimin: 200 }), [
-      unit({ id: 'e0', side: 'enemy' }),
-    ]);
-    expect(runToPending(fleeS)).toBe(true);
-    expect(fleeS.submit({ type: 'flee' })).toBe(true);
-    expect(fleeS.phase).toBe('fled');
-    expect(fleeS.events.some((ev) => ev.type === 'flee')).toBe(true);
-    expect(fleeS.submit({ type: 'flee' })).toBe(false); // 终局后拒绝
-  });
-
-  it('90s 防死循环：hp 总量高者胜、同量判玩家负（F-05 尾规则）', () => {
-    const mk = (pHp: number, eHp: number) =>
-      makeSession(7, 'auto', unit({ id: 'p', side: 'player', hp: pHp, maxHp: pHp, jimin: 0 }), [
-        unit({ id: 'e0', side: 'enemy', hp: eHp, maxHp: eHp, jimin: 0 }),
-      ]);
-    const high = mk(1000, 500);
-    autoTillEnd(high);
-    expect(high.events.some((ev) => ev.type === 'timeout-hp')).toBe(true);
-    expect(high.phase).toBe('won');
-    const low = mk(500, 1000);
-    autoTillEnd(low);
-    expect(low.phase).toBe('lost');
-    const tie = mk(800, 800);
-    autoTillEnd(tie);
-    // 90s 互殴血差随机（命中率掷骰），做终局一致性断言：phase ≡ (pHp > eHp ? won : lost)，
-    // 「同量判玩家负」规则内含于 else 分支（镜像 core 尾判）
-    expect(tie.events.some((ev) => ev.type === 'timeout-hp')).toBe(true);
-    const pHp = tie._debug.units.filter((u) => u.side === 'player').reduce((s2, u) => s2 + Math.max(0, u.hp), 0);
-    const eHp = tie._debug.units.filter((u) => u.side === 'enemy').reduce((s2, u) => s2 + Math.max(0, u.hp), 0);
-    expect(tie.phase).toBe(pHp > eHp ? 'won' : 'lost');
-    if (pHp === eHp) expect(tie.phase).toBe('lost');
   });
 });
 
-// 辅助引用（保持 import 完整性；Q6 出生区回归断言）
-// ---------- L 环追加口径：四钮统一 sticky（特/绝/轻/毒同语义） ----------
-describe('四钮统一 sticky（攻击型选中保持与清除）', () => {
-  function castSession() {
-    const p = unit({
-      id: 'p', side: 'player', jimin: 200, weapon: 'sword',
-      neili: 50, maxNeili: 50, hp: 999999, maxHp: 999999, def: 99999,
+describe('[AI 补充 · B2] 优先级序与冷却节奏（矩阵外，C 案 B2 行为资产）', () => {
+  it('第 2 级技能按伤害倍率降序（grade 压数组序）；第 4 级射程外先位移', () => {
+    const p = unit({ id: 'p', side: 'player', atk: 1 });
+    const e = unit({
+      id: 'e0', side: 'enemy', jimin: 200, neili: 999, maxNeili: 999, weapon: 'sword', def: 99999,
       skills: [
-        { id: 'te', name: '特技', kind: 'special', weapon: 'sword', grade: 1.7, growth: 3, level: 10, cooldownTurns: 0, neiliCost: 10 },
+        { id: 'low', name: '低阶', kind: 'waiGong', weapon: 'sword', grade: 1.0, growth: 1, level: 60, cooldownTurns: 0, neiliCost: 10 },
+        { id: 'high', name: '高阶', kind: 'special', weapon: 'sword', grade: 1.7, growth: 3, level: 60, cooldownTurns: 0, neiliCost: 10 },
       ],
     });
-    const e = unit({ id: 'e0', side: 'enemy', name: 'shanzei' });
-    return makeSession(13, 'manual', p, [e]);
-  }
+    const s = makeSession(7, 'auto', p, [e]);
+    for (let i = 0; i < 600 && !s.events.some((ev) => ev.type === 'skill'); i++) s.tick(DT);
+    expect(s.events.find((ev) => ev.type === 'skill')).toMatchObject({ actorId: 'e0', skillId: 'high' });
 
-  /** 推进到条满 + 贴脸，并把条攒到 ≥ floor（控制连放次数）：每轮先攒条再贴脸，
-   * 避免 move 消耗把条打回刚满（floor=200 → 首发后 ≥100 保持 sticky、次发后重置） */
-  function readyWithBar(s: ReturnType<typeof createHexBattle>, floor: number): number {
-    for (let guard = 0; guard < 40; guard++) {
-      for (let i = 0; i < 600 && !s.snapshot().pendingInput && s.phase === 'fighting'; i++) s.tick(DT);
-      for (let i = 0; i < 600 && s._debug.player().bar < floor && s.phase === 'fighting'; i++) s.tick(DT);
-      if (s.phase !== 'fighting') throw new Error('战斗提前结束');
-      if (dist(s, 'p', 'e0') <= 1) return s._debug.player().bar;
-      const cells = s.snapshot().moveCells;
-      const target = s._debug.units.find((u) => u.id === 'e0')!;
-      const to = cells.slice().sort((a, b) => cubeDistance(a, target.hex) - cubeDistance(b, target.hex))[0];
-      if (to) s.submit({ type: 'move', to });
-    }
-    throw new Error('40 回合内未形成贴脸局面');
-  }
-
-  it('特技选中→施放→条清零重积+选中清除（封顶口径，消耗可见）；重新涨满可再次施放', () => {
-    const s = castSession();
-    const bar0 = readyWithBar(s, 100); // 封顶后条恒 ≤100：攒满即可
-    expect(bar0).toBeLessThanOrEqual(100);
-    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
-    expect(s.snapshot().selectedSkill).toBe('te');
-    expect(s.snapshot().attackCells.length).toBeGreaterThan(0);
-
-    // 施放：受理 → skill 事件 → 条清零重积 → 选中清除、范围收回（消耗可见，L 环①闭环）
-    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
-    expect(s._debug.player().bar).toBeLessThan(100);
-    expect(s.snapshot().selectedSkill).toBeNull();
-    expect(s.snapshot().attackCells).toEqual([]);
-    expect(s.events.filter((ev) => ev.type === 'skill' && ev.skillId === 'te').length).toBe(1);
-
-    // 速度优势 = 重新涨满后可再次施放（积得快出手频繁）
-    for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
-    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
-    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
-    expect(s.events.filter((ev) => ev.type === 'skill' && ev.skillId === 'te').length).toBe(2);
+    const s2 = makeSession(13, 'auto', unit({ id: 'p', side: 'player', jimin: 0 }), [
+      unit({ id: 'e0', side: 'enemy', jimin: 0 }),
+    ]);
+    for (let i = 0; i < 200 && !s2.events.some((ev) => ev.actorId === 'e0'); i++) s2.tick(DT);
+    const firstAct = s2.events.find((ev) => ev.actorId === 'e0' && ev.type !== 'bar-max');
+    expect(firstAct).toMatchObject({ type: 'move' });
   });
 
-  it('轻功同规则回归：条重置后选中清除，需重新点选（与攻击型同语义）', () => {
-    const s = castSession();
-    const bar0 = readyWithBar(s, 100); // 条刚满即操作：一跳后必然重置
-    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
-    void bar0;
-    // 攻击型已验证；轻功路径由「轻功交互链」用例尾部断言（跳后条重置 → selectedSkill null）覆盖
-  });
-});
-
-// ---------- L 环①：积条封顶 100 + 回归锁死（条满点敌普攻全链） ----------
-describe('L 环①：积条封顶（bar 恒 ≤100）', () => {
-  it('超速角色任意时刻 bar ≤100；出手间隔 ≈ 100/fillRate（速度优势=出手频繁）', () => {
-    const fast = unit({ id: 'p', side: 'player', jimin: 200, atk: 50 }); // 30/s → 3.33s/动
-    const slow = unit({ id: 'e0', side: 'enemy', jimin: 0, hp: 999999, maxHp: 999999, def: 99999 }); // 10/s
-    const s = makeSession(7, 'auto', fast, [slow]);
-    for (let i = 0; i < 800; i++) {
+  it('[SEL-3/CD-1] R-08 冷却节奏：cd2 技能隔 2 行动回合复现（读后递减镜像 core 用例 3 口径）', () => {
+    const p = unit({ id: 'p', side: 'player', atk: 1 });
+    const e = unit({
+      id: 'e0', side: 'enemy', jimin: 200, neili: 999, maxNeili: 999, weapon: 'sword',
+      hp: 999999, maxHp: 999999, def: 99999,
+      skills: [{ id: 'cd2', name: '特技', kind: 'special', weapon: 'sword', grade: 1.0, growth: 1, level: 10, cooldownTurns: 2, neiliCost: 10 }],
+    });
+    const s = makeSession(7, 'auto', p, [e]);
+    let acts: typeof s.events = [];
+    for (let i = 0; i < 1500; i++) {
       s.tick(DT);
-      for (const u of s._debug.units) expect(u.bar).toBeLessThanOrEqual(100.0001); // 封顶断言
-      if (s.phase !== 'fighting') break;
+      acts = s.events.filter((ev) => ev.actorId === 'e0' && ['skill', 'fallback', 'basic', 'miss'].includes(ev.type));
+      if (acts.filter((ev) => ev.type === 'skill').length >= 2) break;
     }
-    // 出手间隔：p 相邻两次行动事件（首个出手族事件）t 差 ≈ 100/30 = 3.33s
-    const acts = s.events.filter((ev) => ev.actorId === 'p' && ['skill', 'basic', 'miss', 'fallback', 'move'].includes(ev.type));
-    if (acts.length >= 2) {
-      const gap = acts[1].t - acts[0].t;
-      expect(gap).toBeGreaterThanOrEqual(3.2);
-      expect(gap).toBeLessThanOrEqual(3.6);
-    }
-    // 速度优势：慢敌出手间隔显著更长（≈10s）
-    const eActs = s.events.filter((ev) => ev.actorId === 'e0' && ['skill', 'basic', 'miss', 'fallback', 'move'].includes(ev.type));
-    if (eActs.length >= 2) expect(eActs[1].t - eActs[0].t).toBeGreaterThan(9);
-  });
-
-  it('【回归锁死】条满 clamp=100 → 点敌 → 普攻执行（含伤害）；重积窗口点击 rejected(bar)', () => {
-    const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500 });
-    const e = unit({ id: 'e0', side: 'enemy', hp: 500, maxHp: 500, atk: 30, def: 10, jimin: 60 });
-    const s = makeSession(13, 'manual', p, [e]);
-    // 推进到条满 + 贴脸
-    for (let guard = 0; guard < 40; guard++) {
-      for (let i = 0; i < 600 && !s.snapshot().pendingInput && s.phase === 'fighting'; i++) s.tick(DT);
-      if (dist(s, 'p', 'e0') <= 1) break;
-      const cells = s.snapshot().moveCells;
-      const target = s._debug.units.find((u) => u.id === 'e0')!;
-      const to = cells.slice().sort((a, b) => cubeDistance(a, target.hex) - cubeDistance(b, target.hex))[0];
-      if (to) s.submit({ type: 'move', to });
-    }
-    // 条满判定：clamp 后 bar 恰 = 100（封顶口径）
-    const pu = s._debug.units.find((u) => u.id === 'p')!;
-    expect(s.snapshot().pendingInput).toBe(true);
-    expect(pu.bar).toBe(100);
-    // 点敌普攻：受理执行、含伤害/闪避结算、条清零重积
-    const eHpBefore = s._debug.units.find((u) => u.id === 'e0')!.hp;
-    const nEvents = s.events.length;
-    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
-    const fresh = s.events.slice(nEvents).filter((ev) => ev.actorId === 'p');
-    expect(fresh.some((ev) => ev.type === 'basic' || ev.type === 'miss')).toBe(true);
-    if (fresh.some((ev) => ev.type === 'basic')) {
-      expect(fresh.find((ev) => ev.type === 'basic')!.damage).toBeGreaterThan(0); // 含伤害
-      expect(s._debug.units.find((u) => u.id === 'e0')!.hp).toBeLessThan(eHpBefore);
-    }
-    expect(pu.bar).toBe(0); // 出手后清零重积（封顶口径）
-    // 重积窗口内再点：拒绝可观测（rejected reason=bar），不再静默
-    const n2 = s.events.length;
-    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(false);
-    expect(s.events.slice(n2)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'bar' }));
-    // 射程外点击：rejected reason=range（先拉开距离再点）
-    for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
-    const cells2 = s.snapshot().moveCells;
-    const eu = s._debug.units.find((u) => u.id === 'e0')!;
-    const far = cells2.slice().sort((a, b) => cubeDistance(b, eu.hex) - cubeDistance(a, eu.hex))[0];
-    if (far && cubeDistance(pu.hex, eu.hex) - cubeDistance(far, eu.hex) >= 1) {
-      expect(s.submit({ type: 'move', to: far })).toBe(true);
-      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
-      const n3 = s.events.length;
-      expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(false);
-      expect(s.events.slice(n3)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'range' }));
-    }
+    const skillIdxs = acts.map((ev, i) => (ev.type === 'skill' ? i : -1)).filter((i) => i >= 0);
+    expect(skillIdxs.length).toBeGreaterThanOrEqual(2);
+    const gap = acts.slice(skillIdxs[0] + 1, skillIdxs[1]);
+    expect(gap.some((ev) => ev.type === 'skill')).toBe(false);
+    expect(gap.length).toBeGreaterThanOrEqual(3);
   });
 });
 
-// O3 出生带（L 环④修正后口径）：hex 平顶投影 y = r + q/2（py ∝ y，y 大=屏幕下方）。
-// offset 矩形「左下」子区投影斜切到视觉中部（L 环④根因），故按投影分带选格：
-// 我方 = 可动区 y≥10 且 q≤2（视觉左下角），敌方 = y≤8.5 且 q≥5（视觉右上角）。
-describe('O3 出生布点（L 环④投影分带口径）', () => {
-  const projY = (p: { q: number; r: number }) => p.r + p.q / 2;
+describe('[SEL-6/F2] heroSkills 数据源 + [F3] 敌型身份', () => {
+  it('heroSkills 置灰数据源正确；敌方 configId/spriteKey；我方 hero 帧表', () => {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+      skills: [teSkill({ cooldownTurns: 0 }), qingSkill({ grade: 1.0, level: 10 })],
+    });
+    const e = unit({ id: 'e0', side: 'enemy', name: 'shanzei' });
+    const s = makeSession(13, 'manual', p, [e]);
+    expect(runToPending(s)).toBe(true);
+    const btn = (id: string) => s.snapshot().heroSkills.find((b) => b.id === id)!;
+    expect(btn('te')).toEqual({ id: 'te', label: '特技', disabled: false });
+    expect(btn('qing').disabled).toBe(false); // ⌊power/2⌋≥1 且内力足
+    const enemy = s.snapshot().actors.find((a) => a.id === 'e0')!;
+    expect(enemy.configId).toBe('shanzei');
+    expect(enemy.spriteKey).toBe('shanzei'); // F3 约定
+    expect(s.snapshot().actors.find((a) => a.id === 'p')!.spriteKey).toBe('hero');
+    expect(s.snapshot().actors.find((a) => a.id === 'p')!.configId).toBeUndefined();
+  });
+});
 
-  it('我方整带投影严格低于敌方（min 我方 y > max 敌方 y）且偏左/偏右；seed 可控可复现', () => {
-    for (const seed of [1, 7, 13, 42, 99]) {
-      const enemyCount = seed === 42 ? 6 : 2; // 满编容量一并验证（敌带 7 格 ≥ 上限 6）
-      const enemies = Array.from({ length: enemyCount }, (_, i) => unit({ id: `e${i}`, side: 'enemy' as const }));
-      const s = makeSession(seed, 'auto', unit({ id: 'p', side: 'player' }), enemies);
-      const mine = s._debug.units.filter((u) => u.side === 'player').map((u) => u.hex);
-      const foe = s._debug.units.filter((u) => u.side === 'enemy').map((u) => u.hex);
-      // 投影分离（L 环④主断言）：我方最浅格仍深于敌方最深格 → 屏幕上我方整带在下方
-      const mineY = mine.map(projY);
-      const foeY = foe.map(projY);
-      expect(Math.min(...mineY)).toBeGreaterThan(Math.max(...foeY));
-      expect(Math.min(...mineY)).toBeGreaterThanOrEqual(10.5); // 我方带口径（12×12 可动区）
-      expect(Math.max(...foeY)).toBeLessThanOrEqual(8.5); // 敌方带口径
-      // 横向偏向：我方 q≤2（左）、敌方 q≥5（右）
-      for (const h of mine) expect(h.q).toBeLessThanOrEqual(2);
-      for (const h of foe) expect(h.q).toBeGreaterThanOrEqual(5);
-      // 不重叠、不出可动区
-      const offs = s._debug.units.map((u) => axialToOffset(u.hex));
-      for (const off of offs) {
-        expect(off.col).toBeGreaterThanOrEqual(2); // 12×12 可动区（L 环③）
-        expect(off.col).toBeLessThanOrEqual(13);
-        expect(off.row).toBeGreaterThanOrEqual(2);
-        expect(off.row).toBeLessThanOrEqual(13);
-      }
-      expect(new Set(offs.map((o) => `${o.col},${o.row}`)).size).toBe(offs.length);
-    }
-    // 同 seed 布局可复现
-    const mk = () =>
-      makeSession(42, 'auto', unit({ id: 'p', side: 'player' }), [
-        unit({ id: 'e0', side: 'enemy' }),
-        unit({ id: 'e1', side: 'enemy' }),
-      ]);
-    const a = mk();
-    const b = mk();
-    expect(a._debug.units.map((u) => u.hex)).toEqual(b._debug.units.map((u) => u.hex));
+describe('[SP-2 附] assembleRoster 薄转发 + [Q2] MVP 内力口径', () => {
+  it('数量规则 = core rollEnemyCount 唯一真值', () => {
+    const tpl = { name: '山贼', hp: 50, atk: 10, def: 5, jimin: 5, danshi: 0, shizhan: 50 };
+    expect(assembleRoster(99, tpl, makeRng(1)).length).toBe(1);
+    const roster = assembleRoster(50000, tpl, makeRng(2));
+    expect(roster.length).toBeGreaterThanOrEqual(1);
+    expect(roster.length).toBeLessThanOrEqual(6);
+    expect(roster[0].id).toBe('enemy-0');
+  });
+
+  it('未显式配置内力的我方单位 → neili=maxNeili=100（替换点 NEILI_INITIAL）', () => {
+    const s = makeSession(7, 'auto', unit({ id: 'p', side: 'player' }), [unit({ id: 'e0', side: 'enemy' })]);
+    expect(pu(s).neili).toBe(100);
+    expect(pu(s).maxNeili).toBe(100);
   });
 });

@@ -131,6 +131,7 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
     const inAttack = snapshot.attackCells.some((c) => sameCell(c, cell));
     const skill = snapshot.selectedSkill;
     if (target) {
+      if (skill === 'qing') return; // 【ATK-4 / T18-D4 · 主架构授权例外】轻功态点敌=无操作（不派发任何请求）
       // 点敌人：未激活=普攻；激活特/绝/毒=施放（轻功不是攻击技）
       const skillId = skill && skill !== 'qing' ? skill : null;
       hooks.dispatch({ type: 'attack', targetId: target.id, skillId });
