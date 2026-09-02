@@ -5,16 +5,31 @@
 import { BATTLE_FRAME } from './battle';
 
 // ===== 六边形几何（96 号定值：平顶 flat-top，s=31 → 格 62×54pt） =====
-export const HEX = {
-  s: 31, // 外接圆半径（96 号定值；MVP 单档，缩放档位仅留常量）
-  zoomTiers: [31, 24, 16], // 96 号三档缩放（MVP 只用第 0 档）
-  zoomIndex: 0,
-  sqrt3: Math.sqrt(3),
+// ===== 瓦片投影规格（L 环投影改造·Leo 看稿修正：尖角朝上/朝下的压扁六边形——上下尖角、左右竖直边，
+// 宽:高 ≈ 1:0.7；行错位半格 + 行距 0.75H 拼贴出边缘整齐的长方形战区（绘制层战区矩形裁剪）；立体侧面厚 12%） =====
+export const TILE_SPEC = {
+  w: 62, // 横向平边间距（= 旧 s=31 的整格宽，列密度不变）
+  hRatio: 0.7, // 宽:高 = 1:0.7（纵向尖到尖，压扁）
+  rowRatio: 0.75, // 行距 = 压扁格高 × 0.75（奇偶行错位半格宽）
+  sideRatio: 0.12, // 下尖角/下斜边侧面厚 = 格高 × 12%
 } as const;
 
-/** 平顶六边形像素投影（方案 §2.2）：px = s×1.5×q；py = s×√3×(r + q/2)。返回相对棋盘原点的世界坐标 */
-export function hexToWorld(q: number, r: number, s: number = HEX.s): { x: number; y: number } {
-  return { x: s * 1.5 * q, y: s * HEX.sqrt3 * (r + q / 2) };
+export const TILE_W = TILE_SPEC.w;
+export const TILE_H = TILE_W * TILE_SPEC.hRatio;
+export const ROW_H = TILE_H * TILE_SPEC.rowRatio;
+export const SIDE_DEPTH = TILE_H * TILE_SPEC.sideRatio;
+
+/** 瓦片 sprite 素材（美术窗口产出：草绿/土黄立体瓦片，透明底；空串=未到位走代码绘制） */
+export const TILE_SPRITES = {
+  grass: '',
+  dirt: '',
+} as const;
+
+/** 压扁错位网格像素投影（投影层唯一公式；逻辑格 q/r 不变，col = q + ⌊r/2⌋ odd-r）：
+ * px = (col + (row&1 ? 0.5 : 0)) × TILE_W；py = row × ROW_H。 */
+export function hexToWorld(q: number, r: number): { x: number; y: number } {
+  const col = q + Math.floor(r / 2);
+  return { x: (col + (Math.abs(r) % 2 === 1 ? 0.5 : 0)) * TILE_W, y: r * ROW_H };
 }
 
 // ===== 棋盘（offset odd-r 存储：16×16 地图，可移动区居中 8×8） =====
@@ -31,14 +46,14 @@ export const CAMERA = {
   worldPad: 40, // 棋盘世界包围盒四周留白（clamp 边距）
 } as const;
 
-// ===== 瓦片配色（v8 定稿：顶面草地绿/土黄、侧面深色土层、边缘高光描边） =====
+// ===== 瓦片配色（v8：草绿/土黄两族区域化分布，非棋盘交替；光照上暗下亮——底部光源氛围） =====
 export const TILE = {
   topGrass: '#7d9b4a', // 草地绿（可移动区）
   topDirt: '#c49a52', // 土黄（可移动区外）
-  altBrightness: 1.07, // 相邻格高光交替系数（(q+r)&1 纹理）
-  side: '#57432a', // 侧面土层
-  sideShade: '#3e2f1c', // 侧面暗部（背光边）
-  sideDepth: 12, // 立体厚度（px）
+  side: '#57432a', // 侧面土层（左下段）
+  sideShade: '#3e2f1c', // 侧面暗部（右下段，背光）
+  sideLit: '#6b543a', // 侧面受光段（底缘，底部光源氛围）
+  sideDepth: SIDE_DEPTH, // 立体厚度（压扁规格派生）
   edgeLight: '#d9c98f', // 顶面受光边描边
   edgeDark: '#2e2418', // 背光边描边
   strokeWidth: 1.5,
@@ -58,7 +73,7 @@ export const HIGHLIGHT = {
 
 // ===== 棋子（L3；占位帧=既有 battle/ 小表，T14 Q 版帧到位换 spriteKey+定尺系数即可） =====
 export const PIECE = {
-  heightPerTile: 1.5, // 渲染高 = 格高(√3·s) × 本系数（定尺接口：T14 到位调此系数，O4）
+  heightPerTile: 2.0, // 渲染高 = 压扁格高(TILE_H) × 本系数（定尺接口：T14 到位调此系数，O4）
   bossScale: 1.25, // Boss 放大
   walkFrameMs: 140, // 战斗步频（沿 config/battle BATTLE_FRAME 口径）
   moveLerpSec: 0.3, // 移动位移表现时长（session renderPos 追 pos 的参考口径；mock 同值）
@@ -105,13 +120,13 @@ export const HUD = {
   nameBg: 'rgba(10, 10, 10, 0.45)',
 } as const;
 
-// ===== 主角弧形特绝轻毒四钮（L4；v8：深色底鎏金描边金字，直径≈头部宽 1.8 倍） =====
+// ===== 主角弧形特绝轻毒四钮（L4；v8：深色底鎏金描边金字；L 环反馈⑥：直径=头宽 2.4 倍放大可点面积） =====
 export const ARC_BTNS = {
   ids: ['te', 'jue', 'qing', 'du'] as const, // 特技/绝学/轻功/毒功（与 ActionRequest.selectSkill 的 skillId 对表）
   labels: ['特', '绝', '轻', '毒'],
-  headWidthRatio: 0.3, // 头宽 ≈ 棋子渲染宽 × 本系数
-  diameterPerHead: 1.8, // 钮直径 ≈ 头宽 × 1.8（v8）
-  arcRadiusPerHead: 3.0, // 弧排布半径（×头宽）：四钮在头顶上方浅弧展开（间距>钮径防重叠）
+  headWidthRatio: 0.32, // 头宽 ≈ 棋子渲染宽 × 本系数
+  diameterPerHead: 2.4, // 钮直径 ≈ 头宽 × 2.4（L 环⑥：1.8→2.4 放大可点面积）
+  arcRadiusPerHead: 3.6, // 弧排布半径（×头宽）：弧距 = R×Δθ/3 ≈ 头宽×3.15 > 钮径，防重叠
   angleFromDeg: 195, // 弧起始角（度，屏幕坐标系：180=正左、270=正上）
   angleToDeg: 345, // 弧终止角
   popSec: 0.18, // 弹出动画时长
@@ -156,10 +171,12 @@ export const TOPBAR = {
   } as Record<string, string>,
 } as const;
 
-// ===== 组件布局（L5；v8 1440×2560 实测屏占比标定） =====
+// ===== 组件布局（L5；L 环反馈④：ctrl 改右下锚定+高度占比上限——任何窗口比例恒贴右下可见） =====
 export const COMPONENT_LAYOUT = {
-  plaque: { xRatio: 0.012, yRatio: 0.075, wRatio: 0.17 }, // 左侧木牌挂串
-  ctrl: { xRatio: 0.795, yRatio: 0.758, wRatio: 0.183 }, // 右下托管/加速/逃跑
+  /** 左侧木牌挂串（左上锚） */
+  plaque: { leftRatio: 0.012, topRatio: 0.075, wRatio: 0.17, maxHRatio: 0.42 },
+  /** 右下托管/加速/逃跑（右下锚）：w=min(wRatio×W, maxHRatio×H÷artH/artW) —— 短边约束防溢出 */
+  ctrl: { rightRatio: 0.02, bottomRatio: 0.025, wRatio: 0.183, maxHRatio: 0.42 },
 } as const;
 
 /** ctrl_r_alpha.png（223×448）三钮行标定（measure.mjs 实测）→ ActionRequest 映射 */

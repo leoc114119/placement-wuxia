@@ -315,7 +315,7 @@ export interface BattleSnapshot {
   phase: BattleSnapshotPhase;
   turnActorId: string | null; // 当前行动者（行动条满者；无则 null）
   pendingInput: boolean; // 等待主角输入（行动条满 + 手动模式；期间世界照常推进，镜像 core 口径）
-  moveCells: HexPos[]; // 可移动高亮（绿/金）= 普通可达 ∪ 跳跃可达（F-06，阻挡=不可穿单位）
+  moveCells: HexPos[]; // 可移动高亮：普通态=普通可达（绿，不可穿越单位，C 案 A3）/轻功激活态=跳跃可达（金，moveKind='jump'）
   moveKind: 'walk' | 'jump'; // 当前 moveCells 形态（渲染换色：绿=普通 / 金=轻功跳跃）
   attackCells: HexPos[]; // 攻击范围高亮（红，激活攻击型技能后；O2 三形态，锥形按六向 facing 轴）
   selectedSkill: string | null; // 已激活待施放的技能 id

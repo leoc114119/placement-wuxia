@@ -14,8 +14,10 @@
 //   - 出招结算：session 用 hex cube 距离预筛目标/校验射程（R-05 数字半径与度量无关），
 //     数值真值唯一走 core resolveAction（Q1 批复的 pos 对齐适配见 doAttack 注释）。
 //   - AI 五级优先表（C 案 B2）+ 敌方同构；托管双阈值复用 core stepManualTimeout。
-//   - 出生布点 = 初始范围随机（O3 定版）：我方左下 4×4 / 敌方右上 4×4 子区（Q6 批复），
-//     无部署 UI；rng 由 seed 派生、出生先消费（确定性口径见 createHexBattle 注释）。
+//   - 出生布点 = 初始范围随机（O3 定版）：我方=可动区投影深处偏左（视觉左下）、
+//     敌方=投影浅处偏右（视觉右上），min(我方投影 y) > max(敌方 y) 整带分离（L 环④修正：
+//     offset 矩形子区在平顶投影下斜切到视觉中部，改按投影分带选格）；seed 可控可复现，
+//     rng 由 seed 派生、出生先消费（确定性口径见 createHexBattle 注释）。
 //
 // 确定性契约（DoD 硬项）：同 seed + 同操作序列（含 tick 步长序列）→ 事件流全等。
 // 事件 t 为逻辑时钟（秒，含倍速）；动画/lerp 只影响快照表现字段、不产生事件。
@@ -66,11 +68,6 @@ import {
 export const MAP_SIZE = 16;
 export const FIELD_MIN = 4;
 export const FIELD_MAX = 11;
-
-/** 出生子区边长 4×4（Q6 批复）：我方 = 可移动区左下（列 4..7 × 行 8..11），
- * 敌方 = 右上（列 8..11 × 行 4..7）。offset(列,行) 口径，入图时换算 axial。
- * 敌方上限 6（R-07 档位）< 区容量 16，不重叠可证。 */
-export const SPAWN_SIZE = 4;
 
 /** 表现时长 ms（展示参数，ADR-004 口径：不含结算公式；驱动快照动画态） */
 export const ANIM_MS = { walk: 300, charge: 100, strike: 300, basic: 300, hit: 300 } as const;
@@ -141,6 +138,20 @@ export function createHexBattle(opts: HexBattleOptions) {
     return cells;
   };
 
+  /** 投影纵坐标（方案 §2.2：py = HEX_S·√3·(r + q/2)，y 越大屏幕越靠下）。
+   * L 环④修正：offset 矩形区在平顶投影下是斜切平行四边形——原「行号下半」子区投影
+   * 落在视觉左侧中部（我方 y 带 [8,12] 与敌方 [7,11] 交叠）。出生带改为按投影分带，
+   * 保证 min(我方 y) > max(敌方 y)：我方整带严格在屏幕下方、敌方在上方。 */
+  const projY = (p: HexPos): number => p.r + p.q / 2;
+
+  /** 视觉左下角出生带：可动区内 y ≥ 10（投影深处）且 q ≤ 2（偏左）→ 8 格（≥ 玩家数 1）。 */
+  const playerBand = (): HexPos[] =>
+    zoneCells([FIELD_MIN, FIELD_MAX], [FIELD_MIN, FIELD_MAX]).filter((p) => projY(p) >= 10 && p.q <= 2);
+
+  /** 视觉右上角出生带：y ≤ 8.5（投影浅处）且 q ≥ 5（偏右）→ 7 格（≥ 敌方上限 6，R-07）。 */
+  const enemyBand = (): HexPos[] =>
+    zoneCells([FIELD_MIN, FIELD_MAX], [FIELD_MIN, FIELD_MAX]).filter((p) => projY(p) <= 8.5 && p.q >= 5);
+
   /** Fisher-Yates 洗牌（rng 注入）取前 n 格——同区一次洗牌按序分配，天然不重叠 */
   const shuffleTake = (cells: HexPos[], n: number): HexPos[] => {
     const a = cells.slice();
@@ -174,12 +185,9 @@ export function createHexBattle(opts: HexBattleOptions) {
     };
   };
 
-  const playerSpawn = shuffleTake(zoneCells([FIELD_MIN, FIELD_MIN + SPAWN_SIZE - 1], [FIELD_MAX - SPAWN_SIZE + 1, FIELD_MAX]), 1)[0];
+  const playerSpawn = shuffleTake(playerBand(), 1)[0];
   const player = mk(opts.player, playerSpawn);
-  const enemySpawns = shuffleTake(
-    zoneCells([FIELD_MAX - SPAWN_SIZE + 1, FIELD_MAX], [FIELD_MIN, FIELD_MIN + SPAWN_SIZE - 1]),
-    opts.enemies.length,
-  );
+  const enemySpawns = shuffleTake(enemyBand(), opts.enemies.length);
   const enemies = opts.enemies.map((e, i) => mk(e, enemySpawns[i]));
   const all: Runner[] = [player, ...enemies];
 
@@ -392,8 +400,9 @@ export function createHexBattle(opts: HexBattleOptions) {
       doAttack(actor, target, null); // 第 3 级：普攻
       return;
     }
-    // 第 4 级：位移进射程（F-06；普通不可穿，跳跃可穿）
-    const cells = [...normalReach(actor), ...jumpReachable(actor.hex, movePower(actor.skills), occupied(), inField)];
+    // 第 4 级：位移进射程（F-06 普通移动，阻挡不可穿；L 环①：AI 同构不并入跳跃格——
+    // 跳跃是二阶轻功主动能力，AI 是否主动用跳留待 AI 技能决策卡，默认普通移动）
+    const cells = normalReach(actor);
     const unique = cells.filter((p, i) => cells.findIndex((x) => hexEq(x, p)) === i);
     const best = unique
       .slice()
@@ -417,7 +426,11 @@ export function createHexBattle(opts: HexBattleOptions) {
     c.barWasMax = false;
     if (c.side === 'player') {
       manual.idleSec = 0; // 玩家行动重置托管计时（镜像 core）
-      selectedSkill = null;
+      // 激活态清理（L 环②修复）：攻击型技能施放后回普通态；轻功是「移动姿态」——
+      // sticky 保留（Leo 连跳预期：激活一次后连续跳跃，无需每跳重新激活），
+      // 取消路径 = 再次 selectSkill 同 id（toggle）/ cancelSkill / 战斗结束。
+      const sel = selectedSkill ? player.skills.find((x) => x.id === selectedSkill) : undefined;
+      if (sel?.kind !== 'qingGong') selectedSkill = null;
     }
     lastActedId = c.id;
   }
@@ -510,11 +523,11 @@ export function createHexBattle(opts: HexBattleOptions) {
 
   // ---- 玩家输入（§3.3 ActionRequest；校验合法才执行，非法静默拒绝返回 false） ----
 
-  /** 二选一预算下的合法移动格：普通可达 ∪ 跳跃可达（界内、不与存活单位重叠） */
+  /** 二选一预算下的合法移动格（L 环①修复）：仅普通可达——C 案 A3「普通移动不可穿过任何
+   * 单位」；跳跃格是二阶轻功的主动能力，只在轻功激活态（moveKind='jump'）出现，
+   * 未激活态并入跳跃格会导致普通移动穿越单位占格（穿模根因）。 */
   function moveCandidates(): HexPos[] {
-    const power = movePower(player.skills);
-    const cells = [...normalReach(player), ...jumpReachable(player.hex, power, occupied(), inField)];
-    return cells.filter((p, i) => cells.findIndex((x) => hexEq(x, p)) === i);
+    return normalReach(player);
   }
 
   function submit(req: ActionRequest): boolean {
@@ -535,7 +548,12 @@ export function createHexBattle(opts: HexBattleOptions) {
     if (phase !== 'fighting') return false;
     if (req.type === 'selectSkill') {
       if (player.dead || !player.skills.some((x) => x.id === req.skillId)) return false;
-      selectedSkill = req.skillId; // 激活待施放：进入攻击范围显示态，不消耗 O1 预算
+      // 同 id 再点 = toggle 取消（轻功 sticky 态的取消路径，L 环②）；异 id = 切换激活
+      if (selectedSkill === req.skillId) {
+        selectedSkill = null;
+        return true;
+      }
+      selectedSkill = req.skillId; // 激活待施放：进入范围显示态，不消耗 O1 预算
       return true;
     }
     if (req.type === 'cancelSkill') {
@@ -553,7 +571,8 @@ export function createHexBattle(opts: HexBattleOptions) {
         ? jumpReachable(player.hex, power, occupied(), inField)
         : moveCandidates();
       if (!cands.some((p) => hexEq(p, req.to))) return false;
-      const isJump = jumpOnly || !normalReach(player).some((p) => hexEq(p, req.to));
+      // isJump 真值：轻功激活态的点格必为跳跃格；普通态候选已不含跳跃格（L 环①）
+      const isJump = jumpOnly;
       doMove(player, req.to, isJump);
       basicIfAdjacent(player); // O1 特例：到位相邻自动普攻，不另耗行动
       tickCooldowns(player); // 行动计 1 回合（R-08）
@@ -572,15 +591,21 @@ export function createHexBattle(opts: HexBattleOptions) {
         consumeTurn(player);
         return true;
       }
-      // 技能：R-05 武器匹配 + R-08 冷却 + R-09 内力 + hex 射程预筛（锥形按六向 facing 扇区）
+      // 技能施放（L 环③修复）：冷却中/内力不足/武器不匹配 → 降级普攻兜底（镜像 core
+      // act() 的 R-08/R-09 fallback 语义）——手动「点了就出手」，行动条必重置，
+      // 修复冷却窗口期点「特」被静默拒绝导致条满卡住（Leo 真机「偶发不重置」根因）。
+      // 射程外仍拒绝（普攻同样够不着，走位是玩家决策）；未知技能 id 纯非法，拒绝。
       const s = player.skills.find((x) => x.id === req.skillId);
       if (!s) return false;
-      if (s.weapon !== null && s.weapon !== player.weapon) return false;
-      if ((player.cooldowns.get(s.id) ?? 0) > 0) return false;
-      if (player.neili < s.neiliCost) return false;
-      if (!targetInRange(player, target, skillRange(s), rangeShapeOf(s.weapon ?? player.weapon ?? 'fist'))) return false;
-      tickCooldowns(player);
-      doAttack(player, target, s);
+      const usable =
+        (s.weapon === null || s.weapon === player.weapon) &&
+        (player.cooldowns.get(s.id) ?? 0) <= 0 &&
+        player.neili >= s.neiliCost;
+      const n = usable ? skillRange(s) : basicRange(player);
+      const shape = usable ? rangeShapeOf(s.weapon ?? player.weapon ?? 'fist') : rangeShapeOf(player.weapon ?? 'fist');
+      if (!targetInRange(player, target, n, shape)) return false;
+      tickCooldowns(player); // 行动计 1 回合（R-08）：降级普攻同样递减冷却
+      doAttack(player, target, usable ? s : null); // 降级时 resolveAction 自动产出 fallback 日志
       consumeTurn(player);
       return true;
     }

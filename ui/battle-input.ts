@@ -66,9 +66,9 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
     const dyTotal = y - pointer.sy;
     if (!pointer.dragging && Math.hypot(dxTotal, dyTotal) > CAMERA.dragThresholdPx) pointer.dragging = true;
     if (pointer.dragging) {
-      // 拖镜头：画面随手指平移（clamp 在 computeCamera 统一处理）
-      view.camDrag.x += x - pointer.lx;
-      view.camDrag.y += y - pointer.ly;
+      // 拖镜头：画面跟手（手指右拖=内容右移 → 相机反向平移，L 环反馈⑤方向修正）；clamp 在 computeCamera 统一处理
+      view.camDrag.x -= x - pointer.lx;
+      view.camDrag.y -= y - pointer.ly;
     }
     pointer.lx = x;
     pointer.ly = y;

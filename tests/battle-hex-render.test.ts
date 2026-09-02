@@ -11,7 +11,8 @@ import {
   ANIM_LOOP_GROUPS,
   ARC_BTNS,
   CTRL_BUTTONS,
-  HEX,
+  ROW_H,
+  TILE_W,
   hexToWorld,
 } from '../config/battle-hex';
 import {
@@ -52,15 +53,20 @@ describe('架构红线：渲染/输入层 import battle-core = 0', () => {
   }
 });
 
-// ---------- 六边形几何 ----------
-describe('六边形几何（平顶 s=31，方案 §2.2）', () => {
-  it('hexToWorld 像素公式：px=s×1.5q；py=s×√3(r+q/2)', () => {
-    const w = hexToWorld(2, 3);
-    expect(w.x).toBeCloseTo(HEX.s * 1.5 * 2, 6);
-    expect(w.y).toBeCloseTo(HEX.s * HEX.sqrt3 * (3 + 1), 6);
+// ---------- 瓦片投影（尖角压扁 + 奇偶行错位，逻辑格不变） ----------
+describe('瓦片投影（尖角压扁 + 奇偶行错位，逻辑格不变）', () => {
+  it('hexToWorld：px=(col+(row&1?0.5:0))×TILE_W；py=row×ROW_H（col=q+⌊r/2⌋）', () => {
+    expect(hexToWorld(0, 0)).toEqual({ x: 0, y: 0 });
+    expect(hexToWorld(1, 0).x).toBe(TILE_W); // row 0 不偏移
+    const odd = hexToWorld(0, 1); // col=0，奇数行偏移半格
+    expect(odd.x).toBeCloseTo(TILE_W * 0.5, 6);
+    expect(odd.y).toBeCloseTo(ROW_H, 6);
+    const even = hexToWorld(2, 4); // col=4，偶数行
+    expect(even.x).toBeCloseTo(TILE_W * 4, 6);
+    expect(even.y).toBeCloseTo(ROW_H * 4, 6);
   });
 
-  it('worldToHex 中心点往返恒等（cube 舍入）', () => {
+  it('worldToHex 中心点往返恒等（压扁网格反算）', () => {
     for (const c of [{ q: 0, r: 0 }, { q: 3, r: -2 }, { q: -4, r: 9 }, { q: 7, r: 7 } as HexPos]) {
       const w = hexToWorld(c.q, c.r);
       const back = worldToHex(w.x, w.y);
@@ -123,19 +129,20 @@ describe('帧组播报（组内单播、组间不跨）', () => {
 
 // ---------- 镜头 ----------
 describe('镜头（拖动偏移 + 包围盒 clamp）', () => {
-  it('镜头恒在棋盘包围盒内（clamp 轴计算复验）', () => {
+  it('镜头：轴小于视口居中 / 轴大于视口夹界（clamp 轴语义复验）', () => {
     const snap = makeSnapshot([{ id: 'hero', animState: 'idle', pos: { q: 0, r: 0 }, renderPos: { q: 0, r: 0 } }]);
     snap.cameraTargetId = 'hero';
-    const cam = computeCamera(snap, { x: 0, y: 0 }, 375, 667);
     const b = boardBounds();
+    // y 轴：压扁后战区高 < 视口高 → 居中（clampAxis 居中语义）
+    const cam = computeCamera(snap, { x: 0, y: 0 }, 375, 667);
+    expect(cam.y).toBeCloseTo((b.minY + b.maxY) / 2, 1);
+    // x 轴：战区宽 > 视口宽 → 夹于包围盒内
     expect(cam.x).toBeGreaterThanOrEqual(b.minX + 375 / 2 - 0.01);
     expect(cam.x).toBeLessThanOrEqual(b.maxX - 375 / 2 + 0.01);
-    expect(cam.y).toBeGreaterThanOrEqual(b.minY + 667 / 2 - 0.01);
-    expect(cam.y).toBeLessThanOrEqual(b.maxY - 667 / 2 + 0.01);
     // 拖动偏移把镜头推得更远时仍被夹回
     const cam2 = computeCamera(snap, { x: -9999, y: 9999 }, 375, 667);
     expect(cam2.x).toBeCloseTo(b.minX + 375 / 2, 1);
-    expect(cam2.y).toBeCloseTo(b.maxY - 667 / 2, 1);
+    expect(cam2.y).toBeCloseTo((b.minY + b.maxY) / 2, 1); // y 轴仍居中
   });
 });
 
@@ -178,10 +185,10 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     input.move(view, 103, 102); // <8px：仍可能点选
     input.up(view, snap, 103, 102, 375, 667); // 视作点选（此处点空白格）→ 不崩
     input.down(view, snap, 100, 100, 375, 667);
-    input.move(view, 130, 120); // >8px：拖镜头
+    input.move(view, 130, 120); // >8px：拖镜头（L⑤：画面跟手=相机反向平移）
     input.up(view, snap, 130, 120, 375, 667);
-    expect(view.camDrag.x).toBe(30);
-    expect(view.camDrag.y).toBe(20);
+    expect(view.camDrag.x).toBe(-30);
+    expect(view.camDrag.y).toBe(-20);
   });
 
   it('弧形技能钮：命中派发 selectSkill；再点同钮=取消；置灰钮不派发', () => {
@@ -343,6 +350,45 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     fills.length = 0;
     drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
     expect(fills).not.toContain('rgba(245, 205, 70, 0.45)');
+  });
+
+  it('L④ 组件资源失败时代码占位兜底：热区照常产出（托管/加速/逃跑永不消失）', () => {
+    const calls: Record<string, number> = {};
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const rec = t as unknown as Record<string | symbol, unknown>;
+          if (prop in rec) return rec[prop];
+          calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
+          return () => {};
+        },
+        set() {
+          return true;
+        },
+      },
+    );
+    const snap = makeSnapshot([{ id: 'hero', name: '小虾米', animState: 'idle' }]);
+    const emptyAssets: BattleHexAssets = { env: null, topbar: null, plaque: null, ctrl: null, frames: new Map() };
+    const view = createView();
+    // 非常规比例（宽窗 640×480）：ctrl 恒贴右下且完整在屏内
+    updateView(view, snap, 0.016, 640, 480);
+    drawFrame({ ctx, width: 640, height: 480, dt: 0.016 }, snap, emptyAssets, view);
+    const cr = view.layout.ctrlRect;
+    expect(cr).not.toBeNull();
+    expect(cr!.x).toBeGreaterThanOrEqual(0);
+    expect(cr!.x + cr!.w).toBeLessThanOrEqual(640);
+    expect(cr!.y).toBeGreaterThanOrEqual(0);
+    expect(cr!.y + cr!.h).toBeLessThanOrEqual(480);
+    const pr = view.layout.plaqueRect;
+    expect(pr).not.toBeNull();
+    expect(pr!.x + pr!.w).toBeLessThanOrEqual(640);
+    expect(pr!.y + pr!.h).toBeLessThanOrEqual(480);
+    expect(calls.fillText).toBeGreaterThanOrEqual(2); // 占位牌文字（装备/武功）
   });
 
   it('pieceHop 跳跃真值：isJump 才有抛物线高度，贴地恒 0（联调 F1 禁启发式）', () => {

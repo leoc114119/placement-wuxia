@@ -14,15 +14,25 @@ import {
 } from '../../ui/battle-hex-render';
 import { createHexBattle } from '../../systems/battle-session';
 
-// ===== 画布（逻辑分辨率 375×667 基线；dpr 放大保真） =====
-const W = 375;
-const H = 667;
+// ===== 画布（逻辑分辨率自适应窗口实际比例，L 环反馈④；dpr 放大保真） =====
+let W = 375;
+let H = 667;
 const canvas = document.getElementById('cv') as HTMLCanvasElement;
 const dpr = Math.min(3, window.devicePixelRatio || 1);
-canvas.width = W * dpr;
-canvas.height = H * dpr;
+function resize(): void {
+  const r = canvas.getBoundingClientRect();
+  const w = Math.max(280, Math.round(r.width));
+  const h = Math.max(420, Math.round(r.height));
+  if (w === W && h === H) return;
+  W = w;
+  H = h;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-ctx.scale(dpr, dpr);
+resize();
+window.addEventListener('resize', resize);
 
 // ===== toast =====
 const toastEl = document.getElementById('toast') as HTMLElement;
@@ -200,6 +210,7 @@ let last = performance.now();
 function loop(t: number): void {
   const dt = Math.min(0.05, (t - last) / 1000 || 0);
   last = t;
+  resize(); // 每帧检测窗口尺寸变化（resize 事件不可靠场景兜底）
   session.tick(dt);
   const snap = session.snapshot();
   updateView(view, snap, dt, W, H);

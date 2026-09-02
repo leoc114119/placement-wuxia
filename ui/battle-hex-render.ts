@@ -9,12 +9,18 @@ import {
   BOARD,
   CAMERA,
   COMPONENT_LAYOUT,
+  CTRL_BUTTONS,
   FX,
-  HEX,
   HIGHLIGHT,
   HUD,
   PIECE,
+  PLAQUE_BUTTONS,
   TILE,
+  TILE_H,
+  TILE_SPRITES,
+  TILE_W,
+  ROW_H,
+  SIDE_DEPTH,
   TOPBAR,
   hexToWorld,
 } from '../config/battle-hex';
@@ -91,24 +97,12 @@ export function createView(): BattleHexView {
 
 // ============ 几何纯函数（导出供 node 用例；FE 自含——T15 hex.ts 仍在演进，不反向耦合） ============
 
-/** 世界坐标 → 轴向格（cube 舍入取整；点选拾取用） */
-export function worldToHex(wx: number, wy: number, s: number = HEX.s): HexPos {
-  const qf = wx / (s * 1.5);
-  const rf = wy / (s * HEX.sqrt3) - qf / 2;
-  // axial → cube → 舍入 → axial
-  const xf = qf;
-  const zf = rf;
-  const yf = -xf - zf;
-  let rx = Math.round(xf);
-  let ry = Math.round(yf);
-  let rz = Math.round(zf);
-  const dx = Math.abs(rx - xf);
-  const dy = Math.abs(ry - yf);
-  const dz = Math.abs(rz - zf);
-  if (dx > dy && dx > dz) rx = -ry - rz;
-  else if (dy > dz) ry = -rx - rz;
-  else rz = -rx - ry;
-  return { q: rx, r: rz };
+/** 世界坐标 → 轴向格（压扁错位网格反算；点选拾取用，与 hexToWorld 严格互逆） */
+export function worldToHex(wx: number, wy: number): HexPos {
+  const row = Math.round(wy / ROW_H);
+  const odd = Math.abs(row) % 2 === 1 ? 0.5 : 0;
+  const col = Math.round(wx / TILE_W - odd);
+  return { q: col - Math.floor(row / 2), r: row };
 }
 
 /** 轴向格 → offset col/row（odd-r：q = col - ⌊row/2⌋）；出界返回 null */
@@ -129,7 +123,7 @@ export function isMovableCell(p: HexPos): boolean {
 
 /** 棋盘世界包围盒（含六边形 extent 与立体厚度、边距）。
  * 角格：odd-r 下 r=15 行的 q ∈ [-7, 8]（q = col - ⌊15/2⌋）。 */
-export function boardBounds(s: number = HEX.s): { minX: number; minY: number; maxX: number; maxY: number } {
+export function boardBounds(): { minX: number; minY: number; maxX: number; maxY: number } {
   const corners: Array<HexPos> = [
     { q: 0, r: 0 },
     { q: BOARD.cols - 1, r: 0 },
@@ -140,18 +134,20 @@ export function boardBounds(s: number = HEX.s): { minX: number; minY: number; ma
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
+  const halfW = TILE_W / 2 + 6; // 6 = 错位半格余量
+  const halfH = TILE_H / 2 + SIDE_DEPTH;
   for (const c of corners) {
-    const w = hexToWorld(c.q, c.r, s);
-    if (w.x - s < minX) minX = w.x - s;
-    if (w.x + s > maxX) maxX = w.x + s;
-    if (w.y - s < minY) minY = w.y - s;
-    if (w.y + s > maxY) maxY = w.y + s;
+    const w = hexToWorld(c.q, c.r);
+    if (w.x - halfW < minX) minX = w.x - halfW;
+    if (w.x + halfW > maxX) maxX = w.x + halfW;
+    if (w.y - halfH < minY) minY = w.y - halfH;
+    if (w.y + halfH > maxY) maxY = w.y + halfH;
   }
   return {
     minX: minX - CAMERA.worldPad,
     minY: minY - CAMERA.worldPad,
     maxX: maxX + CAMERA.worldPad,
-    maxY: maxY + TILE.sideDepth + CAMERA.worldPad,
+    maxY: maxY + CAMERA.worldPad,
   };
 }
 
@@ -247,97 +243,101 @@ function drawImg(
   );
 }
 
-function hexPath(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number): void {
+/** 尖角压扁六边形路径（pointy-top：上下尖角、左右竖直边；宽 TILE_W × 高 TILE_H） */
+function tilePath(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number): void {
+  const hw = w / 2;
+  const hh = h / 2;
+  const q = h / 4; // 竖直边半高（正六边形拓扑：竖边端点在 ±h/4）
   ctx.beginPath();
-  for (let k = 0; k < 6; k++) {
-    const ang = (Math.PI / 3) * k;
-    const px = cx + s * Math.cos(ang);
-    const py = cy + s * Math.sin(ang);
-    if (k === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  }
+  ctx.moveTo(cx, cy - hh); // 上尖
+  ctx.lineTo(cx + hw, cy - q); // 右上
+  ctx.lineTo(cx + hw, cy + q); // 右下（右竖直边）
+  ctx.lineTo(cx, cy + hh); // 下尖
+  ctx.lineTo(cx - hw, cy + q); // 左下
+  ctx.lineTo(cx - hw, cy - q); // 左上（左竖直边）
   ctx.closePath();
-}
-
-function shiftColor(hex: string, factor: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const f = (c: number) => Math.min(255, Math.round(c * factor));
-  return `rgb(${f(r)},${f(g)},${f(b)})`;
 }
 
 // ============ L1 立体瓦片 / L2 高亮 ============
 
-function drawTile(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  s: number,
-  movable: boolean,
-  alt: boolean,
-): void {
-  const v: Array<[number, number]> = [];
-  for (let k = 0; k < 6; k++) {
-    const ang = (Math.PI / 3) * k;
-    v.push([cx + s * Math.cos(ang), cy + s * Math.sin(ang)]);
+/** 单块压扁立体瓦片（临时代码版；TILE_SPRITES 素材到位即贴 sprite）：
+ * 顶面尖角压扁形 + 下尖角/下斜边深色侧面（厚 SIDE_DEPTH）+ 上暗下亮光照描边。 */
+function drawTile(ctx: CanvasRenderingContext2D, cx: number, cy: number, movable: boolean): void {
+  const sprite = movable ? TILE_SPRITES.grass : TILE_SPRITES.dirt;
+  if (sprite) {
+    const img = tileSpriteImg(sprite);
+    if (img) {
+      drawImg(ctx, img, cx - TILE_W / 2, cy - TILE_H / 2 + (TILE_H - img.height) / 2 + 0, TILE_W, TILE_H);
+      return;
+    }
   }
-  // 侧面（下三边挤出：k0→k1 右下 / k1→k2 底 / k2→k3 左下）
-  const sideEdges: Array<[number, number, string]> = [
-    [0, 1, TILE.sideShade],
-    [1, 2, TILE.side],
-    [2, 3, TILE.side],
+  const hw = TILE_W / 2;
+  const hh = TILE_H / 2;
+  const q = TILE_H / 4;
+  const P = (dx: number, dy: number): [number, number] => [cx + dx, cy + dy];
+  // 顶点序：上尖(0,-hh) 右上(hw,-q) 右下(hw,q) 下尖(0,hh) 左下(-hw,q) 左上(-hw,-q)
+  const top = P(0, -hh);
+  const rt = P(hw, -q);
+  const rb = P(hw, q);
+  const bot = P(0, hh);
+  const lb = P(-hw, q);
+  const lt = P(-hw, -q);
+  // 侧面：下尖角与两条下斜边向外挤出（深色/受光分段——底部光源氛围）
+  const sidePolys: Array<{ pts: Array<[number, number]>; color: string }> = [
+    { pts: [rt, bot, [bot[0], bot[1] + SIDE_DEPTH], [rt[0], rt[1] + SIDE_DEPTH]], color: TILE.side }, // 右下斜边
+    { pts: [bot, lb, [lb[0], lb[1] + SIDE_DEPTH], [bot[0], bot[1] + SIDE_DEPTH]], color: TILE.sideShade }, // 左下斜边（背光）
+    { pts: [lb, lt, [lt[0], lt[1] + SIDE_DEPTH], [lb[0], lb[1] + SIDE_DEPTH]], color: TILE.sideShade }, // 左竖直边下段
   ];
-  for (const [a, b, color] of sideEdges) {
+  for (const poly of sidePolys) {
     ctx.beginPath();
-    ctx.moveTo(v[a][0], v[a][1]);
-    ctx.lineTo(v[b][0], v[b][1]);
-    ctx.lineTo(v[b][0], v[b][1] + TILE.sideDepth);
-    ctx.lineTo(v[a][0], v[a][1] + TILE.sideDepth);
+    poly.pts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
     ctx.closePath();
-    ctx.fillStyle = color;
+    ctx.fillStyle = poly.color;
     ctx.fill();
   }
-  // 顶面（草地绿/土黄 + (q+r)&1 高光交替）
-  const base = movable ? TILE.topGrass : TILE.topDirt;
-  hexPath(ctx, cx, cy, s - 0.5);
-  ctx.fillStyle = alt ? shiftColor(base, TILE.altBrightness) : base;
+  // 顶面
+  tilePath(ctx, cx, cy, TILE_W - 1, TILE_H - 1);
+  ctx.fillStyle = movable ? TILE.topGrass : TILE.topDirt;
   ctx.fill();
-  // 分边描边：上三边受光 / 下三边背光
+  // 光照描边：上尖两斜边暗（上暗）/ 下尖两斜边亮+底缘受光线（下亮）
   ctx.lineWidth = TILE.strokeWidth;
-  ctx.strokeStyle = TILE.edgeLight;
-  for (const [a, b] of [
-    [3, 4],
-    [4, 5],
-    [5, 0],
-  ] as Array<[number, number]>) {
-    ctx.beginPath();
-    ctx.moveTo(v[a][0], v[a][1]);
-    ctx.lineTo(v[b][0], v[b][1]);
-    ctx.stroke();
-  }
   ctx.strokeStyle = TILE.edgeDark;
   for (const [a, b] of [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-  ] as Array<[number, number]>) {
+    [top, rt],
+    [top, lt],
+  ] as Array<Array<[number, number]>>) {
     ctx.beginPath();
-    ctx.moveTo(v[a][0], v[a][1]);
-    ctx.lineTo(v[b][0], v[b][1]);
+    ctx.moveTo(a[0], a[1]);
+    ctx.lineTo(b[0], b[1]);
     ctx.stroke();
   }
+  ctx.strokeStyle = TILE.edgeLight;
+  for (const [a, b] of [
+    [rb, bot],
+    [bot, lb],
+    [rt, rb],
+    [lt, lb],
+  ] as Array<Array<[number, number]>>) {
+    ctx.beginPath();
+    ctx.moveTo(a[0], a[1]);
+    ctx.lineTo(b[0], b[1]);
+    ctx.stroke();
+  }
+}
+
+/** 瓦片 sprite 解析（素材键 → 已加载图；未加载返回 null 走代码绘制） */
+function tileSpriteImg(_key: string): ImgLike | null {
+  return null; // 素材未到位；loader 接入时按键取已加载瓦片图
 }
 
 function fillHex(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
-  s: number,
   fill: string,
   edge: string,
 ): void {
-  hexPath(ctx, cx, cy, s - 2);
+  tilePath(ctx, cx, cy, TILE_W - 2, TILE_H - 2);
   ctx.fillStyle = fill;
   ctx.fill();
   ctx.strokeStyle = edge;
@@ -346,6 +346,8 @@ function fillHex(
 }
 
 /** L1+L2：格子与高亮（仅绘视口内；数据来自快照，渲染只画不算；moveKind 换色——绿=走 / 金=轻功跳，联调 F1） */
+/** L1+L2：格子与高亮（仅绘视口内；数据来自快照，渲染只画不算；moveKind 换色——绿=走 / 金=轻功跳）。
+ * 战区矩形裁剪：错位行的半格出界部分裁平 → 边缘整齐的长方形战区（Leo 要求，勿出锯齿菱形边）。 */
 function drawCells(
   ctx: CanvasRenderingContext2D,
   snapshot: BattleSnapshot,
@@ -354,7 +356,6 @@ function drawCells(
   height: number,
   selected: HexPos | null,
 ): void {
-  const s = HEX.s;
   const center = worldToHex(cam.x, cam.y);
   const span = CAMERA.viewportCells + 2;
   const keyOf = (c: HexPos): string => `${c.q},${c.r}`;
@@ -364,20 +365,36 @@ function drawCells(
   const moveSet = new Set(snapshot.moveCells.map(keyOf));
   const attackSet = new Set(snapshot.attackCells.map(keyOf));
   const selKey = selected ? keyOf(selected) : null;
+  // 战区矩形（世界系外接框，长边含错位半格）
+  const b = boardBounds();
+  const zoneL = Math.round(b.minX - CAMERA.worldPad);
+  const zoneT = Math.round(b.minY - CAMERA.worldPad);
+  const zoneR = Math.round(b.maxX + CAMERA.worldPad);
+  const zoneB = Math.round(b.maxY + SIDE_DEPTH + CAMERA.worldPad);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(
+    Math.round(zoneL - cam.x + width / 2),
+    Math.round(zoneT - cam.y + height / 2),
+    zoneR - zoneL,
+    zoneB - zoneT,
+  );
+  ctx.clip();
   for (let r = center.r - span; r <= center.r + span; r++) {
     for (let q = center.q - span; q <= center.q + span; q++) {
       if (!axialToOffset({ q, r })) continue;
       const w = hexToWorld(q, r);
       const sx = Math.round(w.x - cam.x + width / 2);
       const sy = Math.round(w.y - cam.y + height / 2);
-      if (sx < -s * 2 || sx > width + s * 2 || sy < -s * 2 - TILE.sideDepth || sy > height + s * 2) continue;
-      drawTile(ctx, sx, sy, s, isMovableCell({ q, r }), ((q + r) & 1) === 0);
+      if (sx < -TILE_W * 2 || sx > width + TILE_W * 2 || sy < -TILE_H * 2 - SIDE_DEPTH || sy > height + TILE_H * 2) continue;
+      drawTile(ctx, sx, sy, isMovableCell({ q, r }));
       const key = `${q},${r}`;
-      if (moveSet.has(key)) fillHex(ctx, sx, sy, s, moveFill, moveEdge);
-      else if (attackSet.has(key)) fillHex(ctx, sx, sy, s, HIGHLIGHT.attack, HIGHLIGHT.attackEdge);
-      if (selKey === key) fillHex(ctx, sx, sy, s, HIGHLIGHT.selected, HIGHLIGHT.selectedEdge);
+      if (moveSet.has(key)) fillHex(ctx, sx, sy, moveFill, moveEdge);
+      else if (attackSet.has(key)) fillHex(ctx, sx, sy, HIGHLIGHT.attack, HIGHLIGHT.attackEdge);
+      if (selKey === key) fillHex(ctx, sx, sy, HIGHLIGHT.selected, HIGHLIGHT.selectedEdge);
     }
   }
+  ctx.restore();
 }
 
 // ============ L3 棋子 / L4 HUD ============
@@ -422,8 +439,7 @@ function drawPieces(
   width: number,
   height: number,
 ): PlacedPiece[] {
-  const s = HEX.s;
-  const hexH = s * HEX.sqrt3;
+  const hexH = TILE_H; // 压扁格高（棋子定尺基准）
   // y 排序遮挡
   const sorted = [...snapshot.actors].sort((a, b) => {
     const wa = hexToWorld(a.renderPos.q, a.renderPos.r);
@@ -564,73 +580,112 @@ function drawComponents(
 ): void {
   view.layout.plaqueRect = null;
   view.layout.ctrlRect = null;
-  // 顶栏：切图全宽贴屏顶（v8 同构图）+ 代码压暗层（Leo：原稿过亮）+ 动态条/状态槽叠绘
+  // 顶栏：切图全宽贴屏顶（v8 同构图）+ 代码压暗层（Leo：原稿过亮）+ 动态条/状态槽叠绘；缺图时代码兜底
   const tb = assets.topbar;
-  if (tb) {
-    const h = (width * tb.height) / tb.width;
-    drawImg(ctx, tb, 0, 0, width, h);
-    ctx.fillStyle = `rgba(0,0,0,${TOPBAR.dimAlpha})`;
-    ctx.fillRect(0, 0, Math.round(width), Math.round(h));
-    const k = width / TOPBAR.artW;
-    const hero = snapshot.actors.find((a) => a.side === 'player');
-    if (hero) {
-      const drawBar = (cover: { x: number; y: number; w: number; h: number }, frac: number, color: string): void => {
-        ctx.fillStyle = TOPBAR.slotBg;
-        ctx.fillRect(Math.round(cover.x * k), Math.round(cover.y * k), Math.round(cover.w * k), Math.round(cover.h * k));
-        const inset = TOPBAR.barInset * k;
-        ctx.fillStyle = color;
-        ctx.fillRect(
-          Math.round(cover.x * k + inset),
-          Math.round(cover.y * k + inset),
-          Math.round((cover.w * k - inset * 2) * Math.max(0, Math.min(1, frac))),
-          Math.round(TOPBAR.barH * k),
-        );
-      };
-      drawBar(TOPBAR.coverRed, hero.hp / Math.max(1, hero.maxHp), TOPBAR.hpColor);
-      drawBar(TOPBAR.coverBlue, hero.neili / Math.max(1, hero.maxNeili), TOPBAR.neiliColor);
-      // 状态图标槽×4（横向四等分盖住烘焙图标；statusIcons 真值接入前恒空槽色）
-      const slot = TOPBAR.statusSlots;
-      const cell = slot.w / 4;
-      for (let i = 0; i < 4; i++) {
-        const icon = hero.statusIcons[i] ?? 'empty';
-        const color = TOPBAR.statusColors[icon] ?? TOPBAR.statusColors.empty;
-        ctx.fillStyle = TOPBAR.slotBg;
-        ctx.fillRect(
-          Math.round((slot.x + i * cell) * k),
-          Math.round(slot.y * k),
-          Math.round(cell * 0.9 * k),
-          Math.round(slot.h * k),
-        );
-        ctx.fillStyle = color;
-        ctx.fillRect(
-          Math.round((slot.x + i * cell + cell * 0.12) * k),
-          Math.round((slot.y + slot.h * 0.12) * k),
-          Math.round(cell * 0.66 * k),
-          Math.round(slot.h * 0.76 * k),
-        );
-      }
+  const topH = (width * (tb ? tb.height : TOPBAR.artH)) / (tb ? tb.width : TOPBAR.artW);
+  if (tb) drawImg(ctx, tb, 0, 0, width, topH);
+  else {
+    ctx.fillStyle = '#4a3826';
+    ctx.fillRect(0, 0, Math.round(width), Math.round(topH));
+  }
+  ctx.fillStyle = `rgba(0,0,0,${TOPBAR.dimAlpha})`;
+  ctx.fillRect(0, 0, Math.round(width), Math.round(topH));
+  const k = width / TOPBAR.artW;
+  const hero = snapshot.actors.find((a) => a.side === 'player');
+  if (hero) {
+    const drawBar = (cover: { x: number; y: number; w: number; h: number }, frac: number, color: string): void => {
+      ctx.fillStyle = TOPBAR.slotBg;
+      ctx.fillRect(Math.round(cover.x * k), Math.round(cover.y * k), Math.round(cover.w * k), Math.round(cover.h * k));
+      const inset = TOPBAR.barInset * k;
+      ctx.fillStyle = color;
+      ctx.fillRect(
+        Math.round(cover.x * k + inset),
+        Math.round(cover.y * k + inset),
+        Math.round((cover.w * k - inset * 2) * Math.max(0, Math.min(1, frac))),
+        Math.round(TOPBAR.barH * k),
+      );
+    };
+    drawBar(TOPBAR.coverRed, hero.hp / Math.max(1, hero.maxHp), TOPBAR.hpColor);
+    drawBar(TOPBAR.coverBlue, hero.neili / Math.max(1, hero.maxNeili), TOPBAR.neiliColor);
+    // 状态图标槽×4（横向四等分盖住烘焙图标；statusIcons 真值接入前恒空槽色）
+    const slot = TOPBAR.statusSlots;
+    const cell = slot.w / 4;
+    for (let i = 0; i < 4; i++) {
+      const icon = hero.statusIcons[i] ?? 'empty';
+      const color = TOPBAR.statusColors[icon] ?? TOPBAR.statusColors.empty;
+      ctx.fillStyle = TOPBAR.slotBg;
+      ctx.fillRect(
+        Math.round((slot.x + i * cell) * k),
+        Math.round(slot.y * k),
+        Math.round(cell * 0.9 * k),
+        Math.round(slot.h * k),
+      );
+      ctx.fillStyle = color;
+      ctx.fillRect(
+        Math.round((slot.x + i * cell + cell * 0.12) * k),
+        Math.round((slot.y + slot.h * 0.12) * k),
+        Math.round(cell * 0.66 * k),
+        Math.round(slot.h * 0.76 * k),
+      );
     }
   }
-  // 左侧木牌挂串（透明化产物；文字烘焙在切图内）
+  // 左侧木牌挂串（左上锚；缺图时代码占位牌，热区照常产出）
   const pl = assets.plaque;
+  const pw = Math.min(COMPONENT_LAYOUT.plaque.wRatio * width, (COMPONENT_LAYOUT.plaque.maxHRatio * height) / (pl ? pl.height / pl.width : 2.19));
+  const ph = (pw * (pl ? pl.height : 680)) / (pl ? pl.width : 310);
+  const px = COMPONENT_LAYOUT.plaque.leftRatio * width;
+  const py = COMPONENT_LAYOUT.plaque.topRatio * height;
   if (pl) {
-    const w = COMPONENT_LAYOUT.plaque.wRatio * width;
-    const h = (w * pl.height) / pl.width;
-    const x = COMPONENT_LAYOUT.plaque.xRatio * width;
-    const y = COMPONENT_LAYOUT.plaque.yRatio * height;
-    drawImg(ctx, pl, x, y, w, h);
-    view.layout.plaqueRect = { x, y, w, h };
+    drawImg(ctx, pl, px, py, pw, ph);
+  } else {
+    // 占位牌：深木双牌+金字（视觉降级，功能不缺位）
+    ctx.fillStyle = '#3a2c18';
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 2;
+    for (const b of PLAQUE_BUTTONS) {
+      const by = py + b.yRatio * ph;
+      const bh = b.hRatio * ph;
+      ctx.fillRect(Math.round(px + pw * 0.06), Math.round(by), Math.round(pw * 0.88), Math.round(bh));
+      ctx.strokeRect(Math.round(px + pw * 0.06), Math.round(by), Math.round(pw * 0.88), Math.round(bh));
+      ctx.fillStyle = '#ffd870';
+      ctx.font = `bold ${Math.round(pw * 0.22)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(b.label, px + pw * 0.5, by + bh / 2);
+      ctx.fillStyle = '#3a2c18';
+    }
   }
-  // 右下托管/加速/逃跑（透明化产物）
+  view.layout.plaqueRect = { x: px, y: py, w: pw, h: ph };
+  // 右下托管/加速/逃跑（右下锚：L 环反馈④——任何窗口比例恒贴右下可见；缺图时代码占位钮）
   const ct = assets.ctrl;
+  const artAR = ct ? ct.height / ct.width : 448 / 223;
+  const cw = Math.min(COMPONENT_LAYOUT.ctrl.wRatio * width, (COMPONENT_LAYOUT.ctrl.maxHRatio * height) / artAR);
+  const ch = cw * artAR;
+  const cx = width - COMPONENT_LAYOUT.ctrl.rightRatio * width - cw;
+  const cy = height - COMPONENT_LAYOUT.ctrl.bottomRatio * height - ch;
   if (ct) {
-    const w = COMPONENT_LAYOUT.ctrl.wRatio * width;
-    const h = (w * ct.height) / ct.width;
-    const x = COMPONENT_LAYOUT.ctrl.xRatio * width;
-    const y = COMPONENT_LAYOUT.ctrl.yRatio * height;
-    drawImg(ctx, ct, x, y, w, h);
-    view.layout.ctrlRect = { x, y, w, h };
+    drawImg(ctx, ct, cx, cy, cw, ch);
+  } else {
+    // 占位钮：深木底圆角矩形+金字（视觉降级，功能不缺位）
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const b of CTRL_BUTTONS) {
+      const by = cy + (b.y / 448) * ch;
+      const bh = (b.h / 448) * ch;
+      ctx.fillStyle = '#3a2c18';
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(cx + cw * 0.04, by, cw * 0.92, bh, 6);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffd870';
+      ctx.font = `bold ${Math.round(bh * 0.42)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      const label = b.action === 'mode' ? '托管' : b.action === 'speed' ? '加速' : '逃跑';
+      ctx.fillText(label, cx + cw * 0.5, by + bh / 2);
+    }
   }
+  view.layout.ctrlRect = { x: cx, y: cy, w: cw, h: ch };
 }
 
 // ============ L6 特效 + 结算遮罩 ============

@@ -73,6 +73,15 @@ st = await snapState();
 const btns = await page.evaluate(() => window.__demo.getView().layout.skillBtns);
 check('④/F2 四钮弹出+置灰真值', btns.length === 4 && st.heroSkills.length === 4 && btns.find((b) => b.id === 'du')?.disabled === true,
   JSON.stringify({ ids: btns.map((b) => `${b.id}:${b.disabled ? '灰' : '亮'}`) }));
+// L⑥：放大后直径与防重叠（相邻钮心距 > 直径）
+const btnGeom = await page.evaluate(() => {
+  const bs = window.__demo.getView().layout.skillBtns;
+  const d = bs[0].r * 2;
+  const gaps = [];
+  for (let i = 1; i < bs.length; i++) gaps.push(+(Math.hypot(bs[i].x - bs[i - 1].x, bs[i].y - bs[i - 1].y).toFixed(1)));
+  return { d: +d.toFixed(1), gaps };
+});
+check('L⑥ 弧钮放大+防重叠', btnGeom.d >= 26 && btnGeom.gaps.every((g) => g > btnGeom.d), JSON.stringify(btnGeom));
 await page.screenshot({ path: path.join(outDir, 'shot_1_skillpop.png') });
 
 // ① 点击可移动格=移动（绿格）
@@ -137,8 +146,8 @@ await page.mouse.down();
 await page.mouse.move(285, 340, { steps: 6 });
 await page.mouse.up();
 await page.waitForTimeout(250);
-const camDragged = await page.evaluate(() => window.__demo.getView().camDrag.x > 20);
-check('⑥ 镜头拖动', camDragged);
+const camDragged = await page.evaluate(() => window.__demo.getView().camDrag.x);
+check('⑥/L⑤ 镜头拖动跟手（右拖 camDrag 负向）', camDragged < -20, `camDrag.x=${camDragged}`);
 await page.screenshot({ path: path.join(outDir, 'shot_6_camera.png') });
 
 // ⑦ 三场模式（托管切换）
@@ -156,6 +165,21 @@ await page.screenshot({ path: path.join(outDir, 'shot_7_auto.png') });
 await tapCtrlRow1();
 st = await snapState();
 check('⑦ 切回 manual', st.mode === 'manual', `mode=${st.mode}`);
+
+// L④：多窗口尺寸下 ctrl/plaque 恒可见（右下/左上锚定 + 短边约束）
+for (const vp of [{ w: 375, h: 667, tag: '375x667' }, { w: 560, h: 700, tag: '560x700' }, { w: 900, h: 560, tag: '900x560-wide' }]) {
+  await page.setViewportSize({ width: vp.w, height: vp.h });
+  await page.waitForTimeout(400); // resize 自适应 + 数帧
+  const vis = await page.evaluate(() => {
+    const l = window.__demo.getView().layout;
+    const W = window.__demo.W;
+    const H = window.__demo.H;
+    const inScreen = (r) => r && r.x >= 0 && r.y >= 0 && r.x + r.w <= W + 0.5 && r.y + r.h <= H + 0.5;
+    return { W, H, ctrl: inScreen(l.ctrlRect), plaque: inScreen(l.plaqueRect), ctrlRect: l.ctrlRect };
+  });
+  check(`L④ ${vp.tag} ctrl/plaque 恒可见`, vis.ctrl && vis.plaque, JSON.stringify({ W: vis.W, H: vis.H, ctrl: vis.ctrlRect }));
+  await page.screenshot({ path: path.join(outDir, `shot_size_${vp.tag}.png`) });
+}
 
 console.log(results.join('\n'));
 console.log(logs.filter((l) => l.includes('battle_demo') || l.includes('pageerror')).slice(0, 4).join('\n'));
