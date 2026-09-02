@@ -148,3 +148,32 @@
 - 三零：typecheck 0 / lint 0 / build 0（全仓）
 - 全量：**119/119**
 - 本侧未入库改动：`systems/battle-session.ts`（sticky 统一）、`tests/battle-session.test.ts`（+2 例+三跳/F1 断言适配）；工作区其余改动（ui/、proto/、config/battle-hex.ts、assets/icons）属 FE/美术并行，勿混入本侧提交。
+
+---
+
+## 10. L 环深度试玩三轮修复 + 点敌普攻回归通报 · 已修
+
+### ① 积条封顶 100（口径变更）· 已修
+- session tick 积条 clamp：`bar = min(100, bar + fillRate·dt)`——满即触发轮转、出手后清零重积；速度优势=积得快出手频繁。core 零改动（runBattleHeadless 积条逻辑/ fillRate 公式不动，clamp 为 hex 对局表现层口径，注释已标）。
+- 连带：四钮 sticky 收敛为「回合内保持」——行动提交即条清零 → 选中清除钮收回（消耗可见，Leo 质疑「连跳还满/不消耗」的闭环）；连放/连跳=重新涨满后再次点选。上轮连放用例按封顶语义重写。
+- 用例：超速角色任意 tick bar ≤100.0001；出手间隔 ≈100/fillRate（3.33s）且显著短于慢敌（≈10s）。
+
+### ② 轻功「有时不跳」· 已修
+- 根因链：封顶口径下跳跃-100 → 条清零 → 选中清除钮收回——清除后玩家仍点原金格位置：若该格普通不可达=静默拒（观感失效）；高亮互斥已由 F1（激活态只显金格）+ submit 仅受理金格保证。
+- 本轮加固：用例锁死「激活态点绿格（普通可达非金格）→ 拒绝且无位移」+「点金格 → 跳跃位移+isJump 真值」×3 循环；清除时机=consumeTurn 同步帧（session 侧原子，无中间帧）。
+
+### ③ 可动区 8×8 → 12×12（口径变更）· 已修
+- `FIELD_MIN/FIELD_MAX` 4..11 → **2..13**（16×16、边缘 2 圈非可动）；出生带按投影自动缩放，阈值重算保持分离：我方 y≥10.5 且 q≤2（19 格）、敌方 y≤8.5 且 q≥5（24 格）。
+- 用例：O3 断言同步（y 阈值/可动区 2..13/满编 6 敌/同 seed 复现）；`inFieldOf` 测试 helper 同步。
+
+### 回归通报：点敌普攻失效（查修结论：链路零缺陷，失效观感=重积窗口静默拒绝）· 已修
+- **逐环实证**：条满 clamp=100（bar 恰 100 ✓）→ 点敌（贴脸 dist=1 ✓）→ attack 受理 ✓ → basic 事件+伤害+条 100→0 ✓——受理执行链无失效环。
+- **真凶**：clamp 前积条时代连点连打每次都受理；clamp 后出手即清零，重积窗口（≈100/fillRate 秒）内点击全部**静默拒绝**（pendingInput false → return false 无任何反馈）→ Leo 观感「失效」。射程外拒绝同理不可见。
+- **修复（拒绝可观测）**：契约扩展 `BattleUiEvent.type += 'rejected'` + `reason: 'bar'|'range'|'invalid'`（bar=条未就绪/重积中、range=射程外、invalid=非法格/目标）——submit 的 move/attack 拒绝路径全部发事件，FE 消费做轻提示（未消费前忽略无害）；事件流确定性不变。
+- **回归锁死用例**（工单指名）：条满 clamp=100 → 点敌 → 普攻执行（含伤害+目标掉血+条清零）；重积窗口点击 → rejected(bar)；射程外点击 → rejected(range)。
+
+### DoD 终态
+- 三零：typecheck 0 / lint 0 / build 0（全仓）
+- 全量：**121/121**（净增 2：封顶/回归锁死；R-08 用例改自适应窗口、tie 用例改终局一致性断言——封顶后节奏变化的行为级适配）
+- **FE 同步项（移交）**：① `config/battle-hex.ts` `movable: 8 → 12`（isMovableCell 点击过滤口径，不同步则新可动区外圈点不了）；② 消费 `rejected` 事件（reason 轻提示）。均已在线程登记。
+- 本侧未入库改动：`systems/battle-session.ts`、`types.ts`、`tests/battle-session.test.ts`；工作区其余（ui/、proto/、config/、assets/）属 FE/美术并行。

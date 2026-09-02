@@ -64,10 +64,11 @@ import {
 
 // ---------- 布局常量（几何参数，Q7 批复：session 本地导出，config/battle-hex.ts 归 FE 卡） ----------
 
-/** 棋盘 16×16（96 号 MVP 档），可移动区 8×8 居中（列/行 4..11） */
+/** 棋盘 16×16（96 号 MVP 档），可移动区 **12×12 居中**（列/行 2..13，边缘 2 圈非可动；
+ * L 环③口径变更：8×8 → 12×12） */
 export const MAP_SIZE = 16;
-export const FIELD_MIN = 4;
-export const FIELD_MAX = 11;
+export const FIELD_MIN = 2;
+export const FIELD_MAX = 13;
 
 /** 表现时长 ms（展示参数，ADR-004 口径：不含结算公式；驱动快照动画态） */
 export const ANIM_MS = { walk: 300, charge: 100, strike: 300, basic: 300, hit: 300 } as const;
@@ -144,11 +145,12 @@ export function createHexBattle(opts: HexBattleOptions) {
    * 保证 min(我方 y) > max(敌方 y)：我方整带严格在屏幕下方、敌方在上方。 */
   const projY = (p: HexPos): number => p.r + p.q / 2;
 
-  /** 视觉左下角出生带：可动区内 y ≥ 10（投影深处）且 q ≤ 2（偏左）→ 8 格（≥ 玩家数 1）。 */
+  /** 视觉左下角出生带：可动区内 y ≥ 10.5（投影深处）且 q ≤ 2（偏左）→ 19 格
+   * （12×12 可动区下重算，L 环③；敌上限 6 ≪ 容量）。 */
   const playerBand = (): HexPos[] =>
-    zoneCells([FIELD_MIN, FIELD_MAX], [FIELD_MIN, FIELD_MAX]).filter((p) => projY(p) >= 10 && p.q <= 2);
+    zoneCells([FIELD_MIN, FIELD_MAX], [FIELD_MIN, FIELD_MAX]).filter((p) => projY(p) >= 10.5 && p.q <= 2);
 
-  /** 视觉右上角出生带：y ≤ 8.5（投影浅处）且 q ≥ 5（偏右）→ 7 格（≥ 敌方上限 6，R-07）。 */
+  /** 视觉右上角出生带：y ≤ 8.5（投影浅处）且 q ≥ 5（偏右）→ 24 格（≥ 敌方上限 6，R-07）。 */
   const enemyBand = (): HexPos[] =>
     zoneCells([FIELD_MIN, FIELD_MAX], [FIELD_MIN, FIELD_MAX]).filter((p) => projY(p) <= 8.5 && p.q >= 5);
 
@@ -426,11 +428,9 @@ export function createHexBattle(opts: HexBattleOptions) {
     c.barWasMax = false;
     if (c.side === 'player') {
       manual.idleSec = 0; // 玩家行动重置托管计时（镜像 core）
-      // 【四钮统一 sticky · L 环追加口径】特/绝/轻/毒同语义：点选可用即选中，行动后保留，
-      // 可连续施放/跳跃（每次点目标消耗一格行动条）；**行动条重置（扣减后 < 满值）才清除
-      // 选中**。bar 无上限 clamp（镜像 core，等待期可积多倍条）——扣后仍 ≥100 = 未重置，
-      // 选中保持；< 100 = 重置，选中清除、钮收回。取消路径 = 同 id 再点 toggle /
-      // cancelSkill / 战斗结束（与轻功 L② sticky 完全同语义）。
+      // 【四钮统一 sticky · 条封顶口径】积条封顶 100（L 环①）后每次行动 bar 必重置（=0），
+      // 选中在回合内保持（点钮→点目标），行动提交即清除钮收回——「连放/连跳」由
+      // 重新涨满后再次点选完成，消耗可见（Leo 质疑「连跳还满/不消耗」的闭环修正）。
       if (c.bar < BAR.max) selectedSkill = null;
     }
     lastActedId = c.id;
@@ -471,7 +471,13 @@ export function createHexBattle(opts: HexBattleOptions) {
 
     // 行动条推进（F-05）+ 移动 lerp / 动画态推进（表现随倍速）
     for (const c of all) {
-      if (!c.dead) c.bar += fillRate(c) * dt;
+      if (!c.dead) {
+        // 【L 环①口径变更】积条封顶 100：满即触发行动轮转、出手后清零重积——
+        // 速度优势 = 积得快出手频繁，不积多倍条（Leo 质疑「连跳还满/不消耗」的修正）。
+        // clamp 仅 session 表现层口径（core 零改动红线：runBattleHeadless 的积条逻辑不动，
+        // fillRate 公式语义不变，只是 hex 对局的条管理不积存）。
+        c.bar = Math.min(BAR.max, c.bar + fillRate(c) * dt);
+      }
       if (c.moveT < 1) {
         c.moveT = Math.min(1, c.moveT + (dt * 1000) / ANIM_MS.walk);
         c.renderQ = c.moveFromQ + (c.hex.q - c.moveFromQ) * c.moveT;
@@ -561,17 +567,26 @@ export function createHexBattle(opts: HexBattleOptions) {
       selectedSkill = null;
       return true;
     }
-    // move / attack：仅玩家轮到自己（条满 + 手动模式）时受理 —— 二选一预算（O1 定版）
-    if (!pendingInputNow()) return false;
+    // move / attack：仅玩家轮到自己（条满 + 手动模式）时受理 —— 二选一预算（O1 定版）。
+    // 【L 环回归修复】拒绝可观测：条封顶后出手即清零，重积窗口（≈100/fillRate 秒）内的
+    // 点击此前全部静默拒绝 → Leo 观感「点敌普攻失效」。现发 rejected 事件（reason 标明）
+    // 供 FE 轻提示；事件流确定性不变（同 seed 同操作 → 同拒绝序列）。
+    if (!pendingInputNow()) {
+      emit({ type: 'rejected', actorId: player.id, reason: 'bar' });
+      return false;
+    }
     if (req.type === 'move') {
-      // 校验范围与快照显示一致（F1）：轻功激活态只受理跳跃格（金格），未激活态=普通∪跳跃
+      // 校验范围与快照显示一致（F1）：轻功激活态只受理跳跃格（金格），未激活态=普通可达
       const selected = selectedSkill ? player.skills.find((x) => x.id === selectedSkill) : undefined;
       const jumpOnly = selected?.kind === 'qingGong';
       const power = movePower(player.skills);
       const cands = jumpOnly
         ? jumpReachable(player.hex, power, occupied(), inField)
         : moveCandidates();
-      if (!cands.some((p) => hexEq(p, req.to))) return false;
+      if (!cands.some((p) => hexEq(p, req.to))) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'invalid' }); // 非金格/不可达格
+        return false;
+      }
       // isJump 真值：轻功激活态的点格必为跳跃格；普通态候选已不含跳跃格（L 环①）
       const isJump = jumpOnly;
       doMove(player, req.to, isJump);
@@ -582,11 +597,17 @@ export function createHexBattle(opts: HexBattleOptions) {
     }
     if (req.type === 'attack') {
       const target = byId(req.targetId);
-      if (!target || target.dead || target.side === player.side) return false;
+      if (!target || target.dead || target.side === player.side) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'invalid' }); // 非法/已亡目标
+        return false;
+      }
       if (req.skillId === null) {
         // 普攻：hex cube 距离 ≤ basicRange（core 导出真值，Q2 放行）；锥形武器另受扇区约束
         const n = basicRange(player);
-        if (!targetInRange(player, target, n, rangeShapeOf(player.weapon ?? 'fist'))) return false;
+        if (!targetInRange(player, target, n, rangeShapeOf(player.weapon ?? 'fist'))) {
+          emit({ type: 'rejected', actorId: player.id, targetId: target.id, reason: 'range' }); // 射程外（走位是玩家决策）
+          return false;
+        }
         tickCooldowns(player);
         doAttack(player, target, null);
         consumeTurn(player);
@@ -597,14 +618,20 @@ export function createHexBattle(opts: HexBattleOptions) {
       // 修复冷却窗口期点「特」被静默拒绝导致条满卡住（Leo 真机「偶发不重置」根因）。
       // 射程外仍拒绝（普攻同样够不着，走位是玩家决策）；未知技能 id 纯非法，拒绝。
       const s = player.skills.find((x) => x.id === req.skillId);
-      if (!s) return false;
+      if (!s) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'invalid' }); // 未知技能 id
+        return false;
+      }
       const usable =
         (s.weapon === null || s.weapon === player.weapon) &&
         (player.cooldowns.get(s.id) ?? 0) <= 0 &&
         player.neili >= s.neiliCost;
       const n = usable ? skillRange(s) : basicRange(player);
       const shape = usable ? rangeShapeOf(s.weapon ?? player.weapon ?? 'fist') : rangeShapeOf(player.weapon ?? 'fist');
-      if (!targetInRange(player, target, n, shape)) return false;
+      if (!targetInRange(player, target, n, shape)) {
+        emit({ type: 'rejected', actorId: player.id, targetId: target.id, reason: 'range' }); // 技能/降级普攻均够不着
+        return false;
+      }
       tickCooldowns(player); // 行动计 1 回合（R-08）：降级普攻同样递减冷却
       doAttack(player, target, usable ? s : null); // 降级时 resolveAction 自动产出 fallback 日志
       consumeTurn(player);

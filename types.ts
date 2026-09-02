@@ -229,7 +229,8 @@ export interface BattleUiEvent {
     | 'death'
     | 'trust' | 'switch-auto' // 手动托管双阈值
     | 'win' | 'lose' | 'timeout-hp' // 胜负
-    | 'flee'; // 逃跑（零结算）
+    | 'flee' // 逃跑（零结算）
+    | 'rejected'; // 请求被拒（L 环回归修复：拒绝可观测——FE 消费做轻提示，未消费前忽略无害）
   actorId?: string;
   targetId?: string;
   skillId?: string;
@@ -237,6 +238,8 @@ export interface BattleUiEvent {
   crit?: boolean;
   toX?: number;
   toY?: number;
+  /** rejected 专属：拒绝原因（bar=行动条未就绪/重积中；range=目标超出射程；invalid=非法格/目标） */
+  reason?: 'bar' | 'range' | 'invalid';
 }
 
 /** 演出层对局结果（结算占位口径：胜负+统计；奖励/疗伤文案占位待 T07） */
