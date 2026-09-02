@@ -191,6 +191,53 @@ describe('镜头策略（L③）', () => {
   });
 });
 
+
+// ---------- L 环终验：演出计时主导——移动帧序列单调无跳变（跳跃/普通移动双复现） ----------
+describe('移动演出帧序列单调（查修一体复现转正）', () => {
+  /** 模拟 session：位移 lerp 0.3s（快照 renderPos），isJump/animState 窗口同短——快照侧真实时序 */
+  function drive(view: BattleHexView, snap: BattleSnapshot, actor: SnapshotActor, from: { q: number; r: number }, jump: boolean, frames: number): Array<{ q: number; hop: number }> {
+    const seq: Array<{ q: number; hop: number }> = [];
+    for (let f = 0; f < frames; f++) {
+      const t = f * 0.016;
+      const p = Math.min(1, t / 0.3);
+      actor.renderPos = { q: from.q + (actor.pos.q - from.q) * p, r: from.r + (actor.pos.r - from.r) * p };
+      (actor as { isJump: boolean }).isJump = jump && t < 0.3;
+      actor.animState = t < 0.3 ? 'walk' : 'idle';
+      updateView(view, snap, 0.016, 375, 667);
+      const ma = view.moveAnims.get(actor.id);
+      const mp = ma ? Math.min(1, ma.t / ma.duration) : 1;
+      const drawQ = ma ? ma.from.q + (ma.pos.q - ma.from.q) * mp : actor.renderPos.q;
+      seq.push({ q: +drawQ.toFixed(3), hop: +pieceHop(view, actor).toFixed(1) });
+    }
+    return seq;
+  }
+  const monotonic = (seq: Array<{ q: number }>): number[] => {
+    let prev = -99;
+    const jumps: number[] = [];
+    for (const [i, s] of seq.entries()) {
+      if (s.q < prev - 0.01) jumps.push(i);
+      prev = Math.max(prev, s.q);
+    }
+    return jumps;
+  };
+
+  it('跳跃 3 格：演出位置序列单调（空中帧组不随快照切 idle）', () => {
+    const view = createView();
+    const snap = makeSnapshot([{ id: 'hero', animState: 'walk', pos: { q: 4, r: 8 }, renderPos: { q: 1, r: 8 } }]);
+    const seq = drive(view, snap, snap.actors[0], { q: 1, r: 8 }, true, 50);
+    expect(monotonic(seq)).toEqual([]);
+    // 0.3s 后快照 animState 已 idle，但演出期帧组仍 walk（空中不站立）
+    expect(seq[Math.floor(0.35 / 0.016)].hop).toBeGreaterThan(20); // 演出中段仍有抛物线高度
+  });
+
+  it('普通移动 3 格：演出位置序列单调（纳入演出插值，消灭双轨闪变）', () => {
+    const view = createView();
+    const snap = makeSnapshot([{ id: 'hero', animState: 'walk', pos: { q: 4, r: 8 }, renderPos: { q: 1, r: 8 } }]);
+    const seq = drive(view, snap, snap.actors[0], { q: 1, r: 8 }, false, 50);
+    expect(monotonic(seq)).toEqual([]);
+  });
+});
+
 // ---------- 输入翻译 ----------
 function makeViewForInput(): ReturnType<typeof createView> {
   const view = createView();
@@ -445,20 +492,7 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     expect(calls.fillText).toBeGreaterThanOrEqual(2); // 占位牌文字（装备/武功）
   });
 
-  it('pieceHop 跳跃真值：isJump 才有抛物线高度，贴地恒 0（联调 F1 禁启发式）', () => {
-    const view: BattleHexView = createView();
-    // 相位基准=跳跃起点（updateView 上升沿同款记录）
-    view.moveFrom.set('hero', { q: 2, r: 8 }); // 起点(2,8) → 终点 pos(3,8)，renderPos(2.5) 恰为中点
-    // 中点：抛物线顶附近 >0
-    const mid = makeSnapshot([{ id: 'hero', animState: 'walk', isJump: true, pos: { q: 3, r: 8 }, renderPos: { q: 2.5, r: 8 } }]).actors[0];
-    expect(pieceHop(view, mid)).toBeGreaterThan(0);
-    // 同位置但 isJump=false（贴地 lerp）→ 0
-    const grounded = { ...mid, isJump: false };
-    expect(pieceHop(view, grounded)).toBe(0);
-    // 无相位基准 → 0（防御）
-    const noFrom: BattleHexView = createView();
-    expect(pieceHop(noFrom, mid)).toBe(0);
-  });
+
 
   it('Leo 实测反馈：跳跃参数随距离插值（基准 2 格，每 +1 格 +0.15s/+25%，封顶）', () => {
     const p2 = jumpParamsFor(2);
@@ -475,7 +509,10 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     const view = createView();
     const snap = makeSnapshot([{ id: 'hero', animState: 'walk', isJump: true, pos: { q: 4, r: 8 }, renderPos: { q: 1, r: 8 } }]);
     updateView(view, snap, 0.016, 375, 667);
-    expect(view.jumpParams.get('hero')).toEqual(jumpParamsFor(hexDist({ q: 4, r: 8 }, { q: 1, r: 8 })));
+    const ma = view.moveAnims.get('hero');
+    const expectP = jumpParamsFor(hexDist({ q: 4, r: 8 }, { q: 1, r: 8 }));
+    expect(ma?.duration).toBeCloseTo(expectP.duration, 6);
+    expect(ma?.hopHeight).toBeCloseTo(expectP.height, 6);
   });
 
   it('T15 R3 rejected 消费：spawnNoteFx 头顶冒字（上浮渐隐，寿命到即亡）', () => {

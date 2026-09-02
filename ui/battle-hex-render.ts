@@ -62,7 +62,15 @@ export interface HitLayout {
 interface AnimClock {
   state: string;
   t: number;
-  isJump: boolean; // 跳跃真值沿（updateView 检测上升沿记录 moveFrom 相位基准）
+}
+
+/** 移动演出实例（跳跃/行走共用；演出期位置与帧组由本插值主导） */
+export interface MoveAnim {
+  from: HexPos; // 演出起点（axial）
+  pos: HexPos; // 锁定终点（演出开始时的快照 pos；中途变更以快照为准续画）
+  t: number; // 已演出时长（秒）
+  duration: number; // 演出总时长（跳跃按距离插值；行走 = moveLerpSec × max(1, dist)）
+  hopHeight: number; // 抛物线顶高（普通行走=0）
 }
 
 interface FxItem {
@@ -82,10 +90,9 @@ export interface BattleHexView {
   camera: { x: number; y: number };
   camInit: boolean; // 镜头首帧定位标记
   anim: Map<string, AnimClock>;
-  moveFrom: Map<string, HexPos>; // 跳跃/行走相位基准（axial 起点；axial 空间线性才能正确算 done）
-  moveSmooth: Map<string, HexPos>; // 跳跃表现位置（FE 表现层重映射：随距离插值时长演画，不跟 session 的 0.3s lerp）
-  jumpT: Map<string, number>; // 跳跃已演出时长（秒）
-  jumpParams: Map<string, { duration: number; height: number }>; // 本次跳跃插值参数（上升沿按距离锁定）
+  /** 移动演出（L 环终验：演出计时主导——演出期渲染位置/帧组完全由演出插值决定，
+   * 结束帧无缝衔接快照 pos；终点不一致=快照被外部改动，以快照为准对齐） */
+  moveAnims: Map<string, MoveAnim>;
   fx: FxItem[];
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
@@ -102,10 +109,7 @@ export function createView(): BattleHexView {
     camera: { x: 0, y: 0 },
     camInit: false,
     anim: new Map(),
-    moveFrom: new Map(),
-    moveSmooth: new Map(),
-    jumpT: new Map(),
-    jumpParams: new Map(),
+    moveAnims: new Map(),
     fx: [],
     skillPop: 0,
     selectedCell: null,
@@ -215,7 +219,10 @@ export function updateCamera(
   height: number,
 ): void {
   const hero = snapshot.actors.find((a) => a.side === 'player');
-  const draw = hero ? view.moveSmooth.get(hero.id) ?? hero.renderPos : null;
+  const ma = hero ? view.moveAnims.get(hero.id) : null;
+  const draw = ma && ma.t < ma.duration
+    ? { q: ma.from.q + (ma.pos.q - ma.from.q) * (ma.t / ma.duration), r: ma.from.r + (ma.pos.r - ma.from.r) * (ma.t / ma.duration) }
+    : hero?.renderPos ?? null;
   const ideal = computeCamera(
     { ...snapshot, cameraTargetId: hero ? hero.id : snapshot.cameraTargetId },
     view.camDrag,
@@ -273,61 +280,56 @@ export function updateView(
   view.time += dt;
   for (const a of snapshot.actors) {
     const prev = view.anim.get(a.id);
-    // 跳跃表现重映射（L 环追加①②）：session 位移 lerp 仅 0.3s（isJump 窗口同短），
-    // FE 以 JUMP.duration 独立演画整段跳跃——上升沿记起点，表现位置沿 from→pos 以 0.6s 推进
-    const jumping = view.jumpT.has(a.id);
-    if (a.isJump && !(prev && prev.isJump)) {
-      view.moveFrom.set(a.id, { q: a.renderPos.q, r: a.renderPos.r });
-      view.moveSmooth.set(a.id, { q: a.renderPos.q, r: a.renderPos.r });
-      view.jumpT.set(a.id, 0);
-      // 距离插值（Leo 实测反馈：长距跳被固定时长拉平——弧线参数随格距放大，封顶防浮夸）
-      view.jumpParams.set(a.id, jumpParamsFor(hexDist({ q: a.pos.q, r: a.pos.r }, { q: a.renderPos.q, r: a.renderPos.r })));
-    } else if (jumping) {
-      const from = view.moveFrom.get(a.id);
-      const params = view.jumpParams.get(a.id) ?? jumpParamsFor(hexDist({ q: a.pos.q, r: a.pos.r }, { q: a.renderPos.q, r: a.renderPos.r }));
-      const jt = (view.jumpT.get(a.id) ?? 0) + dt;
-      if (from) {
-        const p = Math.min(1, jt / params.duration);
-        const dest = a.pos;
-        view.moveSmooth.set(a.id, {
-          q: from.q + (dest.q - from.q) * p,
-          r: from.r + (dest.r - from.r) * p,
-        });
-      }
-      view.jumpT.set(a.id, jt);
-      if (jt >= params.duration) {
-        view.jumpT.delete(a.id);
-        view.moveSmooth.delete(a.id);
-        view.jumpParams.delete(a.id);
-      }
+    const prevAnim = view.moveAnims.get(a.id);
+    // ---- 移动演出启动（查修一体定位：普通移动此前无演出插值、跳跃演出期帧组随快照切 idle——
+    // 统一为演出计时主导：上升沿锁 from/pos/duration/hop，演出期位置与帧组全由演出决定） ----
+    const jumpRise = a.isJump && !prevAnim; // 无演出中才启动（AnimClock 不再承担跳跃标记）
+    const walkRise = !prevAnim && a.animState === 'walk' && (a.renderPos.q !== a.pos.q || a.renderPos.r !== a.pos.r);
+    if (jumpRise || walkRise) {
+      const dist = hexDist({ q: a.pos.q, r: a.pos.r }, { q: a.renderPos.q, r: a.renderPos.r });
+      const jp = jumpParamsFor(dist);
+      view.moveAnims.set(a.id, {
+        from: { q: a.renderPos.q, r: a.renderPos.r },
+        pos: { q: a.pos.q, r: a.pos.r },
+        t: 0,
+        duration: a.isJump ? jp.duration : PIECE.moveLerpSec * Math.max(1, dist),
+        hopHeight: a.isJump ? jp.height : 0,
+      });
     }
-    const prev2 = view.anim.get(a.id);
-    if (!prev2 || prev2.state !== a.animState) {
-      // 组切换：出招/普攻→斩击特效；受击→红环特效
+    // ---- 移动演出推进 ----
+    const anim = view.moveAnims.get(a.id);
+    if (anim) {
+      anim.t += dt;
+      // 终点变更（session 中途改目标）：以快照为准续画（无瞬移；此为快照真值变更非跳变）
+      if (anim.pos.q !== a.pos.q || anim.pos.r !== a.pos.r) anim.pos = { q: a.pos.q, r: a.pos.r };
+      if (anim.t >= anim.duration) view.moveAnims.delete(a.id); // 演出终=快照 pos，无缝衔接
+    }
+    // ---- 动画钟（帧组播报：组切换=新组从组首帧重放） ----
+    if (!prev || prev.state !== a.animState) {
       const w = hexToWorld(a.renderPos.q, a.renderPos.r);
-      if (prev2 && (a.animState === 'strike' || a.animState === 'basic')) {
+      if (prev && (a.animState === 'strike' || a.animState === 'basic')) {
         view.fx.push({ kind: 'slash', x: w.x, y: w.y, t: 0, sec: FX.slashSec });
-      } else if (prev2 && a.animState === 'hit') {
+      } else if (prev && a.animState === 'hit') {
         view.fx.push({ kind: 'hit', x: w.x, y: w.y, t: 0, sec: FX.hitSec });
       }
-      view.anim.set(a.id, { state: a.animState, t: 0, isJump: a.isJump });
+      view.anim.set(a.id, { state: a.animState, t: 0 });
     } else {
-      prev2.t += dt;
+      prev.t += dt;
     }
   }
-  // 特效寿命
-  const alive: FxItem[] = [];
+  // 特效寿命推进（含 note 冒字）
+  const aliveFx: FxItem[] = [];
   for (const f of view.fx) {
     f.t += dt;
-    if (f.t < f.sec) alive.push(f);
+    if (f.t < f.sec) aliveFx.push(f);
   }
-  view.fx = alive;
-  // 弧形四钮弹出进度（目标：主角行动回合等待输入）
-  const hero = snapshot.actors.find((a) => a.side === 'player');
+  view.fx = aliveFx;
+  // 弧形四钮弹出进度（目标：主角行动条满等待输入）
+  const popHero = snapshot.actors.find((a) => a.side === 'player');
   const popTarget =
-    snapshot.phase === 'fighting' && snapshot.pendingInput && hero && snapshot.turnActorId === hero.id ? 1 : 0;
-  const k = Math.min(1, (dt / ARC_BTNS.popSec) * 3);
-  view.skillPop += (popTarget - view.skillPop) * k;
+    snapshot.phase === 'fighting' && snapshot.pendingInput && popHero && snapshot.turnActorId === popHero.id ? 1 : 0;
+  const popK = Math.min(1, (dt / ARC_BTNS.popSec) * 3);
+  view.skillPop += (popTarget - view.skillPop) * popK;
   if (Math.abs(view.skillPop - popTarget) < 0.02) view.skillPop = popTarget;
   // 镜头策略（L 环追加③）：镜头静止；仅主角行动条满时向主角平滑回拉；拖镜 delta 即时跟手
   updateCamera(view, snapshot, dt, width, height);
@@ -510,12 +512,13 @@ function drawCells(
 // ============ L3 棋子 / L4 HUD ============
 
 /** 当前帧号（帧组播报：循环组取模循环；单播组夹到组尾保持，组切换由 updateView 重置） */
-function frameOf(view: BattleHexView, actor: SnapshotActor): number {
+function frameOf(view: BattleHexView, actor: SnapshotActor, stateOverride?: string): number {
+  const state = stateOverride ?? actor.animState;
   const clock = view.anim.get(actor.id);
-  const group = ANIM_FRAMES[actor.animState] ?? ANIM_FRAMES.idle;
-  if (!clock || clock.state !== actor.animState) return group[0];
+  const group = ANIM_FRAMES[state] ?? ANIM_FRAMES.idle;
+  if (!clock || clock.state !== state) return group[0];
   const idx = Math.floor((clock.t * 1000) / PIECE.walkFrameMs);
-  if (ANIM_LOOP_GROUPS.includes(actor.animState)) return group[idx % group.length];
+  if (ANIM_LOOP_GROUPS.includes(state)) return group[idx % group.length];
   return group[Math.min(idx, group.length - 1)];
 }
 
@@ -530,17 +533,10 @@ interface PlacedPiece {
 /** 跳跃抛物线高度（纯函数，导出供用例；联调 F1：跳跃真值=快照 isJump，禁启发式猜）。
  * done = 已走位移占比（相位基准 view.moveFrom，updateView 在跳跃上升沿记录）。 */
 export function pieceHop(view: BattleHexView, actor: SnapshotActor): number {
-  // isJump 快照窗口仅 0.3s（session lerp 窗口），FE 演画 0.6s——jumpT 演出中即使快照窗口已过仍保持 hop
-  if (!actor.isJump && !view.jumpT.has(actor.id)) return 0;
-  const from = view.moveFrom.get(actor.id);
-  if (!from) return 0;
-  // done 用表现位置进度（FE 以 JUMP.duration 重映射演出；session 0.3s lerp 数据不直接决定观感）
-  const smooth = view.moveSmooth.get(actor.id) ?? actor.renderPos;
-  const total = Math.hypot(actor.pos.q - from.q, actor.pos.r - from.r);
-  const remaining = Math.hypot(actor.pos.q - smooth.q, actor.pos.r - smooth.r);
-  const done = total > 0.001 ? Math.max(0, Math.min(1, 1 - remaining / total)) : 1;
-  const height = view.jumpParams.get(actor.id)?.height ?? JUMP.baseHeight;
-  return Math.sin(Math.PI * done) * height;
+  const ma = view.moveAnims.get(actor.id);
+  if (!ma || ma.hopHeight <= 0) return 0;
+  const p = Math.min(1, ma.t / ma.duration);
+  return Math.sin(Math.PI * p) * ma.hopHeight;
 }
 
 function drawPieces(
@@ -553,23 +549,32 @@ function drawPieces(
   height: number,
 ): PlacedPiece[] {
   const hexH = TILE_H; // 压扁格高（棋子定尺基准）
-  // y 排序遮挡
+  // y 排序遮挡（移动演出期按演出位置排序，保证跃过单位时遮挡正确）
   const sorted = [...snapshot.actors].sort((a, b) => {
-    const wa = hexToWorld(a.renderPos.q, a.renderPos.r);
-    const wb = hexToWorld(b.renderPos.q, b.renderPos.r);
-    return wa.y - wb.y;
+    const pa = view.moveAnims.get(a.id);
+    const pb = view.moveAnims.get(b.id);
+    const qa = pa ? pa.from.q + (pa.pos.q - pa.from.q) * Math.min(1, pa.t / pa.duration) : a.renderPos.q;
+    const ra = pa ? pa.from.r + (pa.pos.r - pa.from.r) * Math.min(1, pa.t / pa.duration) : a.renderPos.r;
+    const qb = pb ? pb.from.q + (pb.pos.q - pb.from.q) * Math.min(1, pb.t / pb.duration) : b.renderPos.q;
+    const rb = pb ? pb.from.r + (pb.pos.r - pb.from.r) * Math.min(1, pb.t / pb.duration) : b.renderPos.r;
+    return hexToWorld(qa, ra).y - hexToWorld(qb, rb).y;
   });
   const placed: PlacedPiece[] = [];
   for (const actor of sorted) {
-    const draw = view.moveSmooth.get(actor.id) ?? actor.renderPos; // 跳跃单位=表现位置（0.6s 演出），其余=快照
+    const ma = view.moveAnims.get(actor.id);
+    const mp = ma ? Math.min(1, ma.t / ma.duration) : 0;
+    const draw = ma
+      ? { q: ma.from.q + (ma.pos.q - ma.from.q) * mp, r: ma.from.r + (ma.pos.r - ma.from.r) * mp }
+      : actor.renderPos; // 演出期=演出插值位置（快照 renderPos 不参与，双轨消灭）
     const w0 = hexToWorld(draw.q, draw.r);
     const sx = Math.round(w0.x - cam.x + width / 2);
     const syGround = Math.round(w0.y - cam.y + height / 2);
     const scale = actor.isBoss ? PIECE.bossScale : 1;
     const h = hexH * PIECE.heightPerTile * scale;
-    const img = assets.frames.get(actor.spriteKey)?.[frameOf(view, actor)] ?? null;
+    const frameState = ma && mp < 1 ? 'walk' : actor.animState; // 演出期帧组强制 walk（空中不站立滑行）
+    const img = assets.frames.get(actor.spriteKey)?.[frameOf(view, actor, frameState)] ?? null;
     const w = img ? (h * img.width) / img.height : h * 0.5;
-    if (actor.animState === 'dead') {
+    if (frameState === 'dead') {
       // 阵亡：压扁淡出倒地
       if (img) {
         ctx.save();
@@ -579,7 +584,7 @@ function drawPieces(
       }
       continue;
     }
-    const hop = pieceHop(view, actor); // 轻功抛物线（快照 isJump 真值）
+    const hop = pieceHop(view, actor); // 轻功抛物线（演出期参数随距离插值）
     const shake = actor.animState === 'hit' ? Math.sin(view.time * 70) * 2 : 0;
     const cx = sx + shake;
     const top = syGround - h - hop;

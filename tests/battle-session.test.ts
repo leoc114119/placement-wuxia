@@ -195,6 +195,39 @@ describe('[MV-2] 轻功跳跃态：金格=纯距离半径、可穿越', () => {
     expect(s.snapshot().actors.find((a) => a.id === 'p')!.isJump).toBe(false); // lerp 窗口后复位
   });
 
+  it('[L 环终验③] 跳一次（去 sticky 清选中）→ moveCells ≡ walk BFS 恒等（无跳跃快取残留）+ 敌占格恒排除', () => {
+    // 工单场景：轻功跳一次（selection 清除）→ 回落普通移动。锁死两点：
+    // a) 跳后 moveCells 与「同参 reachable」集合恒等——旧跳跃快取若残留（可穿集合混入）必挂；
+    // b) 跳后可穿集合（jumpReachable ∖ walkCells）中的格提交必被拒——受理走实时 legalMoveCells，
+    //    不消费旧快取。几何背书：tests/hex.test「F1 姊妹锁死」。
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill({ grade: 1.3, level: 10 })] }), [
+      unit({ id: 'e0', side: 'enemy', hp: 999999 }),
+    ]);
+    waitAdjacent(s); // 敌贴身：occupied 密度最高，最大化切割/穿越判定的检验强度
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    expect(s.snapshot().moveKind).toBe('jump');
+    const jumpTo = s.snapshot().moveCells[0];
+    expect(s.submit({ type: 'move', to: jumpTo })).toBe(true); // 跳一次
+    expect(s.snapshot().selectedSkill).toBeNull(); // 去 sticky：选中清除
+    // 回落后输入态恢复：moveCells ≡ 同参普通可达（恒等式）
+    for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+    expect(s.snapshot().pendingInput).toBe(true);
+    const walk = reachable(pu(s).hex, movePower(pu(s).skills), s._debug.units.filter((u) => !u.dead).map((u) => u.hex), inFieldOf(s));
+    const cells = s.snapshot().moveCells;
+    expect(cells.length).toBe(walk.length);
+    for (const c of cells) expect(walk.some((w) => w.q === c.q && w.r === c.r)).toBe(true);
+    // 穿越格拒绝：jump-only 格（跳跃可达但普通不可达）提交必拒（快取残留会使其被受理）
+    const jumpSet = jumpReachable(pu(s).hex, movePower(pu(s).skills), s._debug.units.filter((u) => !u.dead).map((u) => u.hex), inFieldOf(s));
+    const jumpOnly = jumpSet.filter((j) => !walk.some((w) => w.q === j.q && w.r === j.r));
+    for (const j of jumpOnly) {
+      const n = s.events.length;
+      expect(s.submit({ type: 'move', to: j })).toBe(false);
+      expect(s.events.slice(n).some((ev) => ev.type === 'move')).toBe(false); // 无位移
+    }
+    // 敌占格恒排除
+    expect(cells.some((c) => c.q === eu(s).hex.q && c.r === eu(s).hex.r)).toBe(false);
+  });
+
   it('[MV-2] 轻功提交：位移+内力消耗（Q2 扣 1）+bar 清零+选中清除', () => {
     const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
       unit({ id: 'e0', side: 'enemy', hp: 999999 }),
