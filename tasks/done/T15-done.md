@@ -65,3 +65,46 @@
 - 全局 lint 剩余 2 error 在 `ui/battle-hex-render.ts`（T16 未用导入 CTRL_BUTTONS/PLAQUE_BUTTONS）——T16 收尾自清即可，本卡不越界。
 - `ed7facf` 已包含 M0-M1 时点快照；主会话入库本卡终稿时建议 commit message 注明「T15 · hex 适配层+对局编排 · §3.1 抽取导出先例」。
 - FE 对切（方案 M2 里程碑）：FE 拿 `snapshot()/submit()/events` 三口即可 mock→真切换；`_debug` 仅供测试，非渲染契约。
+
+---
+
+## 7. 返工工单交付（2026-09-02 下午 · 主架构技术验收 F1/F2/F3）
+
+> 验收结论：有条件通过（F1 阻塞 + F2/F3 P1）· 本工单一次修复交付 · 出处：`docs/reviews/T15-T16-主架构技术验收报告.md`
+
+### DoD 复核（返工后终态）
+
+| 项 | 结果 |
+|---|---|
+| 三零 | ✅ typecheck 0 / lint **全仓 0**（T16 侧 unused vars 亦已清）/ build 0 |
+| 全量 | ✅ **110/110**（原 85 + T16 render 23 + 本工单新增 2） |
+| F1 用例 | ✅ 新增 2 it：轻功链路（selectSkill→跳跃快照→点格位移成功+isJump 真值）/ heroSkills+configId |
+
+### F1 轻功交互链（阻塞项 · 已修）
+
+- `snapshot()` selectedSkill 分支加轻功判断：`kind==='qingGong'` → `moveCells=jumpReachable(...)`、`moveKind='jump'`、`attackCells` 置空（types.ts BattleSnapshot 注释同步契约语义）
+- 契约新增：`BattleSnapshot.moveKind: 'walk'|'jump'`（渲染金格换色）、`SnapshotActor.isJump: boolean`（移动 lerp 窗口内真值，渲染禁启发式猜——验收建议采纳）
+- `submit(move)` 校验与快照显示一致：轻功激活态只受理跳跃格（防「显示金格可点绿格」错位）；未激活态仍=普通∪跳跃
+- input 侧 `qing && inMove` 路径自然复活（读到的 moveCells 非空）；点格可达已由用例断言
+
+### F2 heroSkills 契约化（P1 · 已修）
+
+- `SkillButtonInfo`（id/label/disabled）升级进 types.ts 契约节；session `snapshot()` 产出 `heroSkills`（置灰=内力不足||冷却中||武器不匹配，会话真值 ~12 行）
+- ui 侧 `BattleSnapshotExt` 过渡段由 T16 降级删除（其 render 消费同形结构零改；本次未触碰 ui/ 文件）
+
+### F3 spriteKey 敌型区分（P1 · 已修）
+
+- `SnapshotActor.configId?: string`：敌方=模板 name（依托 CombatantInput.name），玩家 undefined 走 hero 帧表
+- 约定：敌方 `spriteKey === configId`；config 侧 `BATTLE_HEX_RES.spriteKinds` 对齐归 T16（未触碰）
+
+### 契约变更连带适配（机械补字段，不动 T16 逻辑）
+
+- `proto/battle_demo/mock_session.ts`：3×`isJump:false` + `moveKind:'walk'`（mock 无轻功激活态）
+- `tests/battle-hex-render.test.ts`：3×`isJump:false` + `moveKind:'walk'`+`heroSkills:[]`（mock 快照工厂）
+
+### 返工后文件增改清单
+
+- `types.ts`：BattleSnapshot.moveKind/heroSkills、SnapshotActor.isJump/configId、SkillButtonInfo 契约节
+- `systems/battle-session.ts`：snapshot() 轻功分支+heroSkills 产出+isJump/configId 真值；submit(move) 轻功态校验
+- `tests/battle-session.test.ts`：+2 it（16 例）
+- `proto/battle_demo/mock_session.ts`、`tests/battle-hex-render.test.ts`：契约字段机械适配（T16 物，仅补字段）

@@ -287,6 +287,20 @@ export interface SnapshotActor {
   statusIcons: string[]; // 顶栏四槽数据源（中毒/流血/内伤…；MVP 恒空数组，字段先冻结）
   isBoss: boolean;
   spriteKey: string; // 帧表资源键（走资源管理器+配置表，禁代码写死路径）
+  /** 本次移动是否跳跃型（轻功抛物线 vs 贴地 lerp；验收 F1：快照真值，禁渲染启发式猜）。
+   * 仅在该单位移动 lerp 窗口内为 true。 */
+  isJump: boolean;
+  /** 敌型身份（NPC 帧表键，依托模板 name；玩家侧 undefined 走 hero 帧表）。
+   * 约定：敌方 spriteKey = configId（验收 F3；config 侧 BATTLE_HEX_RES.spriteKinds 对齐归 FE 卡）。 */
+  configId?: string;
+}
+
+/** 主角技能钮数据源（弧形四钮置灰判定 = 会话真值：内力/冷却/武器匹配）。
+ * 验收 F2 契约化：T16 侧 ui 内同形临时定义以本类型为准（结构咬合零改消费）。 */
+export interface SkillButtonInfo {
+  id: string; // 技能 id（施放请求回传用）
+  label: string; // 钮面文字/资源键（SkillDef.name）
+  disabled: boolean; // 置灰 = 内力不足 || 冷却中 || 武器不匹配
 }
 
 /** hex 对局阶段。O3 定版无部署 UI：出生=初始范围随机布点，开局即 fighting；
@@ -294,14 +308,18 @@ export interface SnapshotActor {
 export type BattleSnapshotPhase = 'fighting' | 'won' | 'lost' | 'fled';
 
 /** 对局快照（session → render，每帧产出，渲染只读）。
- * moveCells/attackCells 由 session 用 hex 度量算好（O2 三形态），渲染层只画不算。 */
+ * moveCells/attackCells 由 session 用 hex 度量算好（O2 三形态），渲染层只画不算。
+ * selectedSkill 为轻功（kind='qingGong'）时：moveCells=跳跃可达格（金格高亮）+
+ * moveKind='jump'、attackCells 置空（验收 F1：移动型技能分支，方案 §3.2 契约语义补角）。 */
 export interface BattleSnapshot {
   phase: BattleSnapshotPhase;
   turnActorId: string | null; // 当前行动者（行动条满者；无则 null）
   pendingInput: boolean; // 等待主角输入（行动条满 + 手动模式；期间世界照常推进，镜像 core 口径）
-  moveCells: HexPos[]; // 可移动高亮（绿）= BFS 可达（F-06 移动力，阻挡=不可穿单位）
-  attackCells: HexPos[]; // 攻击范围高亮（红，激活技能后；O2 三形态，锥形按六向 facing 轴）
+  moveCells: HexPos[]; // 可移动高亮（绿/金）= 普通可达 ∪ 跳跃可达（F-06，阻挡=不可穿单位）
+  moveKind: 'walk' | 'jump'; // 当前 moveCells 形态（渲染换色：绿=普通 / 金=轻功跳跃）
+  attackCells: HexPos[]; // 攻击范围高亮（红，激活攻击型技能后；O2 三形态，锥形按六向 facing 轴）
   selectedSkill: string | null; // 已激活待施放的技能 id
+  heroSkills: SkillButtonInfo[]; // 主角弧形技能钮（验收 F2：置灰数据源=会话真值，Ext 过渡段降级删除）
   actors: SnapshotActor[];
   cameraTargetId: string; // 镜头跟随目标（自动模式跟当前行动者；MVP 简化为主角/行动者）
 }

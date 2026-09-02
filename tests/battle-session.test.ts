@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { createHexBattle, assembleRoster } from '../systems/battle-session';
 import { makeRng } from '../systems/battle-core';
 import { axialToOffset, cubeDistance, hexNeighbors, offsetToAxial } from '../systems/hex';
-import type { CombatantInput } from '../types';
+import type { CombatantInput, SkillDef } from '../types';
 
 const DT = 0.1; // 仿真步长（秒），与确定性口径一致：同脚本同 tick 序列 → 事件流全等
 
@@ -290,6 +290,101 @@ describe('事件流确定性', () => {
     expect(roster.length).toBeGreaterThanOrEqual(1);
     expect(roster.length).toBeLessThanOrEqual(6);
     expect(roster[0].id).toBe('enemy-0');
+  });
+});
+
+// ---------- 返工工单（验收 F1/F2/F3）：轻功交互链 + heroSkills + configId ----------
+describe('轻功交互链（F1 阻塞项修复验证）', () => {
+  const qing: SkillDef = {
+    id: 'qing',
+    name: '草上飞',
+    kind: 'qingGong',
+    weapon: null,
+    grade: 1.0,
+    growth: 1,
+    level: 10,
+    cooldownTurns: 0,
+    neiliCost: 0,
+  };
+
+  function qingSession() {
+    const p = unit({
+      id: 'p',
+      side: 'player',
+      jimin: 200,
+      neili: 50,
+      maxNeili: 50,
+      weapon: 'fist',
+      skills: [
+        qing,
+        { ...qing, id: 'expensive', name: '昂贵技', kind: 'waiGong', weapon: 'fist', neiliCost: 999 }, // 内力不足 → 置灰样本
+      ],
+    });
+    const e = unit({ id: 'e0', side: 'enemy', name: 'shanzei' });
+    const s = makeSession(13, 'manual', p, [e]);
+    return { s, p };
+  }
+
+  it('selectSkill(轻功) → 快照 moveCells=跳跃可达格（moveKind=jump/attackCells 空）→ 点格位移成功', () => {
+    const { s } = qingSession();
+    expect(runToPending(s)).toBe(true);
+
+    // 未激活：moveCells = 普通∪跳跃并集，moveKind=walk
+    const idle = s.snapshot();
+    expect(idle.moveKind).toBe('walk');
+    expect(idle.moveCells.length).toBeGreaterThan(0);
+
+    // 激活轻功：移动型技能分支（F1 修复点）——跳跃可达格 + 金色形态 + 攻击范围置空
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const snap = s.snapshot();
+    expect(snap.selectedSkill).toBe('qing');
+    expect(snap.moveKind).toBe('jump');
+    expect(snap.attackCells).toEqual([]); // 轻功不再误出「武器射程红圈」（F1 证据链第 2 条）
+    expect(snap.moveCells.length).toBeGreaterThan(0);
+    // 跳跃格语义：cube 距离 ≤ ⌊power/2⌋=2（grade1.0+1、⌊10/5⌋+2 → power5），不含自己/敌占格
+    const pu = s._debug.units.find((u) => u.id === 'p')!;
+    const eu = s._debug.units.find((u) => u.id === 'e0')!;
+    for (const c of snap.moveCells) {
+      expect(cubeDistance(pu.hex, c)).toBeLessThanOrEqual(2);
+      expect(c.q === pu.hex.q && c.r === pu.hex.r).toBe(false);
+      expect(c.q === eu.hex.q && c.r === eu.hex.r).toBe(false);
+    }
+
+    // 校验与显示一致：激活态下点「非跳跃格」（未激活时合法的远格）被拒
+    const far = idle.moveCells.find((c) => cubeDistance(pu.hex, c) > 2);
+    if (far) expect(s.submit({ type: 'move', to: far })).toBe(false);
+
+    // 模拟点格（input 侧 qing && inMove 路径）：位移成功 + move 事件 + isJump 真值
+    const to = snap.moveCells[0];
+    const before = { q: pu.hex.q, r: pu.hex.r };
+    expect(s.submit({ type: 'move', to })).toBe(true);
+    const after = s._debug.units.find((u) => u.id === 'p')!.hex;
+    expect(after.q === before.q && after.r === before.r).toBe(false); // 位置变更
+    expect(s.events[s.events.length - 1]).toMatchObject({ type: 'move', actorId: 'p' });
+    const jumping = s.snapshot().actors.find((a) => a.id === 'p')!;
+    expect(jumping.isJump).toBe(true); // 快照真值（F1）：渲染禁启发式猜
+    s.tick(0.35); // > ANIM_MS.walk(300ms)：lerp 结束后 isJump 复位
+    expect(s.snapshot().actors.find((a) => a.id === 'p')!.isJump).toBe(false);
+    // 行动消耗：激活态清除、预算归零
+    expect(s.snapshot().selectedSkill).toBeNull();
+    expect(s.submit({ type: 'move', to })).toBe(false);
+  });
+
+  it('heroSkills 会话真值（F2）：内力不足置灰；敌 actor configId/spriteKey（F3）', () => {
+    const { s } = qingSession();
+    expect(runToPending(s)).toBe(true);
+    const snap = s.snapshot();
+    const qingBtn = snap.heroSkills.find((b) => b.id === 'qing')!;
+    const expBtn = snap.heroSkills.find((b) => b.id === 'expensive')!;
+    expect(qingBtn).toEqual({ id: 'qing', label: '草上飞', disabled: false }); // 内力够/无冷却/无武器约束
+    expect(expBtn.disabled).toBe(true); // 内力 50 < 999 → 置灰（会话真值，Ext 过渡段可降级）
+    // F3：敌型身份带出 —— configId=模板名，spriteKey 约定 = configId；玩家走 hero 帧表
+    const enemy = snap.actors.find((a) => a.id === 'e0')!;
+    expect(enemy.configId).toBe('shanzei');
+    expect(enemy.spriteKey).toBe('shanzei');
+    const hero = snap.actors.find((a) => a.id === 'p')!;
+    expect(hero.configId).toBeUndefined();
+    expect(hero.spriteKey).toBe('hero');
   });
 });
 

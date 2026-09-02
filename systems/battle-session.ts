@@ -28,6 +28,7 @@ import type {
   BattleUiEvent,
   CombatantInput,
   HexPos,
+  SkillButtonInfo,
   SkillDef,
   SnapshotActor,
 } from '../types';
@@ -544,8 +545,15 @@ export function createHexBattle(opts: HexBattleOptions) {
     // move / attack：仅玩家轮到自己（条满 + 手动模式）时受理 —— 二选一预算（O1 定版）
     if (!pendingInputNow()) return false;
     if (req.type === 'move') {
-      if (!moveCandidates().some((p) => hexEq(p, req.to))) return false;
-      const isJump = !normalReach(player).some((p) => hexEq(p, req.to));
+      // 校验范围与快照显示一致（F1）：轻功激活态只受理跳跃格（金格），未激活态=普通∪跳跃
+      const selected = selectedSkill ? player.skills.find((x) => x.id === selectedSkill) : undefined;
+      const jumpOnly = selected?.kind === 'qingGong';
+      const power = movePower(player.skills);
+      const cands = jumpOnly
+        ? jumpReachable(player.hex, power, occupied(), inField)
+        : moveCandidates();
+      if (!cands.some((p) => hexEq(p, req.to))) return false;
+      const isJump = jumpOnly || !normalReach(player).some((p) => hexEq(p, req.to));
       doMove(player, req.to, isJump);
       basicIfAdjacent(player); // O1 特例：到位相邻自动普攻，不另耗行动
       tickCooldowns(player); // 行动计 1 回合（R-08）
@@ -585,14 +593,22 @@ export function createHexBattle(opts: HexBattleOptions) {
     const pending = pendingInputNow();
     const turnId = pending ? player.id : lastActedId;
     let moveCells: HexPos[] = [];
+    let moveKind: 'walk' | 'jump' = 'walk';
     let attackCells: HexPos[] = [];
     if (pending) {
-      if (selectedSkill) {
-        const s = player.skills.find((x) => x.id === selectedSkill)!;
-        const shape = rangeShapeOf(s.weapon ?? player.weapon ?? 'fist');
-        attackCells = rangeCells(player.hex, shape, skillRange(s), player.hexFacing, inField);
+      const selected = selectedSkill ? player.skills.find((x) => x.id === selectedSkill) : undefined;
+      if (selected && selected.kind === 'qingGong') {
+        // 【验收 F1 · 移动型技能分支】轻功既是技能（selectSkill 激活）又是移动（吃可达格）：
+        // 快照给「跳跃可达格」（F-06 跳跃=⌊范围/2⌋ 可穿越，金格高亮 moveKind='jump'），
+        // attackCells 置空——否则 input 侧 qing && inMove 读到空 moveCells，点格无响应。
+        moveKind = 'jump';
+        moveCells = jumpReachable(player.hex, movePower(player.skills), occupied(), inField);
+      } else if (selected) {
+        // 攻击型技能：O2 三形态攻击范围（锥形按六向 facing 轴，Q4 批复）
+        const shape = rangeShapeOf(selected.weapon ?? player.weapon ?? 'fist');
+        attackCells = rangeCells(player.hex, shape, skillRange(selected), player.hexFacing, inField);
       } else {
-        moveCells = moveCandidates(); // O2：锥形轴 = 玩家六向 facing（Q4 批复）
+        moveCells = moveCandidates();
       }
     }
     const actors: SnapshotActor[] = all.map((c) => ({
@@ -610,15 +626,31 @@ export function createHexBattle(opts: HexBattleOptions) {
       animState: c.animState,
       statusIcons: [], // MVP 无状态图标数据源；字段按 §3.2 冻结先占位
       isBoss: false, // MVP 1v多无 Boss 字段来源；Boss 战随玩法层卡扩展 HexBattleOptions
-      spriteKey: c.side === 'player' ? 'hero' : 'mob', // 资源键走资源管理器+配置表（外置铁律）
+      spriteKey: c.side === 'player' ? 'hero' : c.name, // 敌方约定 spriteKey=configId（F3）；资源走资源管理器+配置表
+      isJump: c.isJump && c.moveT < 1, // 跳跃真值（F1）：仅移动 lerp 窗口内为 true，渲染禁启发式猜
+      configId: c.side === 'player' ? undefined : c.name, // 敌型身份=模板名（F3；玩家走 hero 帧表）
     }));
+    // 【验收 F2】弧形技能钮置灰数据源 = 会话真值：内力不足 || 冷却中 || 武器不匹配。
+    // ui 侧 BattleSnapshotExt.heroSkills 过渡段由此降级删除（render 消费同形结构零改）。
+    const heroSkills: SkillButtonInfo[] = player.dead
+      ? []
+      : player.skills.map((s) => ({
+          id: s.id,
+          label: s.name,
+          disabled:
+            player.neili < s.neiliCost ||
+            (player.cooldowns.get(s.id) ?? 0) > 0 ||
+            (s.weapon !== null && s.weapon !== player.weapon),
+        }));
     return {
       phase,
       turnActorId: turnId,
       pendingInput: pending,
       moveCells,
+      moveKind,
       attackCells,
       selectedSkill,
+      heroSkills,
       actors,
       cameraTargetId: turnId ?? player.id,
     };
