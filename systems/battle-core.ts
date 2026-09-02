@@ -13,7 +13,10 @@ import type {
 
 // ---------- 常量（均为公式编号拍板值，禁止改动） ----------
 const BAR_MAX = 100; // F-05 行动条满值（docs/80 §4：1000 作废）
-const TOTAL_TIME_LIMIT_S = 90; // F-05 防死循环：战斗总时长 90s
+// F-05 防死循环：战斗总时长 90s。
+// 2026-09-02 export（T15/Q2 批复）：主架构方案 §3.1「抽取导出」级零行为变更，
+// battle-session 90s 总时长判定消费；值与逻辑零改动，历史 14 用例背书。
+export const TOTAL_TIME_LIMIT_S = 90;
 export const MANUAL_TIMEOUT_S = 90; // docs/80 §4：手动 90s 托管 → 再 90s 切自动
 const DT = 0.05; // 仿真步长（秒）
 const BASE_HIT = 0.85; // F-04
@@ -81,8 +84,11 @@ export function skillRange(skill: SkillDef): number {
   return RANGE_BY_WEAPON[skill.weapon ?? 'fist'][rangeTier(skill.level)];
 }
 
-/** 普攻射程：取该武器下等级最高武功的档位（无匹配武功按档 1） */
-function basicRange(c: CombatantInput): number {
+/** 普攻射程：取该武器下等级最高武功的档位（无匹配武功按档 1）。
+ * 2026-09-02 export（T15/Q2 批复）：主架构方案 §3.1「抽取导出」级零行为变更——
+ * battle-session hex 度量预筛/高亮/AI 位移进射程消费，数值唯一真值仍在本文件；
+ * 仅加 export 关键字，函数体零改动，历史 14 用例背书。 */
+export function basicRange(c: CombatantInput): number {
   if (!c.weapon) return RANGE_BY_WEAPON.fist[0];
   const tier = c.skills
     .filter((s) => s.weapon === c.weapon)

@@ -255,3 +255,66 @@ export interface SceneView {
   assets: SceneAssets;
   bobMs: number; // 行走累计时间（降级颠簸/动画共用）
 }
+
+// ============ T15 战斗 hex 适配层（主架构方案 §3 契约冻结 2026-09-02） ============
+// 冻结来源：《战斗界面接入技术方案》§3.2/3.3/3.4 · 冻结后变更走工单。
+// 裁决落实：O1 行动预算=二选一（session 内部实现，不在类型层）；O2 射程三形态由
+// systems/hex.ts 纯函数承载；O3 无部署 UI → BattleSnapshot.phase 不含 'deploy'（PM 批复 Q3）。
+// 边界：本节类型只描述数据，不含任何公式；数值真值仍在 battle-core / 云端 settle。
+
+/** 六边形轴向坐标（cube 系的二维投影，s = -q - r 按需计算；96 号定 cube 系） */
+export interface HexPos {
+  q: number;
+  r: number;
+}
+
+/** 快照单单位（session → render，每帧重建，渲染只读不可变约定）。
+ * 与 T06 BattleActor 的区别：不带任何可变演出计时器（lerp/lunge 进度等），
+ * 渲染层凭 renderPos+animState+事件流自行驱动表现，保证快照可整体替换。 */
+export interface SnapshotActor {
+  id: string;
+  side: 'player' | 'enemy';
+  name: string;
+  pos: HexPos; // 逻辑格（结算真值）
+  renderPos: HexPos; // 渲染格（session 内 lerp 追 pos，移动表现；方案 §2.3 L3）
+  hp: number;
+  maxHp: number;
+  neili: number;
+  maxNeili: number;
+  actionBar: number; // 0~100（F-05，fillRate 推进）
+  facing: BattleFacing; // 立绘翻转用左右朝向（dx≈0 防抖，T06 已验口径）
+  animState: 'idle' | 'walk' | 'charge' | 'strike' | 'basic' | 'hit' | 'dead'; // hit/dead 为 hex 层新增（T06 BattleAnimState 不含）
+  statusIcons: string[]; // 顶栏四槽数据源（中毒/流血/内伤…；MVP 恒空数组，字段先冻结）
+  isBoss: boolean;
+  spriteKey: string; // 帧表资源键（走资源管理器+配置表，禁代码写死路径）
+}
+
+/** hex 对局阶段。O3 定版无部署 UI：出生=初始范围随机布点，开局即 fighting；
+ * 90s 总时长到点由 session 按 F-05 尾规则判胜并落 won/lost（事件流记 timeout-hp）。 */
+export type BattleSnapshotPhase = 'fighting' | 'won' | 'lost' | 'fled';
+
+/** 对局快照（session → render，每帧产出，渲染只读）。
+ * moveCells/attackCells 由 session 用 hex 度量算好（O2 三形态），渲染层只画不算。 */
+export interface BattleSnapshot {
+  phase: BattleSnapshotPhase;
+  turnActorId: string | null; // 当前行动者（行动条满者；无则 null）
+  pendingInput: boolean; // 等待主角输入（行动条满 + 手动模式；期间世界照常推进，镜像 core 口径）
+  moveCells: HexPos[]; // 可移动高亮（绿）= BFS 可达（F-06 移动力，阻挡=不可穿单位）
+  attackCells: HexPos[]; // 攻击范围高亮（红，激活技能后；O2 三形态，锥形按六向 facing 轴）
+  selectedSkill: string | null; // 已激活待施放的技能 id
+  actors: SnapshotActor[];
+  cameraTargetId: string; // 镜头跟随目标（自动模式跟当前行动者；MVP 简化为主角/行动者）
+}
+
+/** 玩家输入（input → session）。session 校验（预算/距离/内力/冷却）合法才执行，
+ * 非法静默拒绝（submit 返回 boolean 供输入层反馈）。
+ * attack.skillId=null=普攻；selectSkill/cancelSkill 与 attack.skillId 两条激活路径并存，
+ * session 均接受（方案 §3.3 原样冻结）。 */
+export type ActionRequest =
+  | { type: 'move'; to: HexPos }
+  | { type: 'attack'; targetId: string; skillId: string | null }
+  | { type: 'selectSkill'; skillId: string }
+  | { type: 'cancelSkill' }
+  | { type: 'setMode'; mode: BattleMode }
+  | { type: 'toggleSpeed' }
+  | { type: 'flee' };
