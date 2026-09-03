@@ -820,3 +820,84 @@ describe('[SP-2 附] assembleRoster 薄转发 + [Q2] MVP 内力口径', () => {
     expect(pu(s).maxNeili).toBe(100);
   });
 });
+
+// ══════════ T19/N1 演出层修复（方案 §3.2/§3.3 · 领单第一交付 B 组，先红后修） ══════════
+
+/** T19 B 组白盒布点（对齐 behavior 套件 place() 口径）：确定性摆放 + 清动画/行动条态 */
+function pin(s: HexBattleSession, id: string, col: number, row: number): void {
+  const u = s._debug.units.find((x) => x.id === id)!;
+  const hex = offsetToAxial(col, row);
+  u.hex = { ...hex };
+  u.renderQ = hex.q; u.renderR = hex.r; u.moveFromQ = hex.q; u.moveFromR = hex.r;
+  u.moveT = 1; u.isJump = false; u.animState = 'idle'; u.animLeftMs = 0;
+  u.bar = 0; u.barWasMax = false; u.dead = false;
+  if (u.hp <= 0) u.hp = 50;
+}
+
+/** B 组共用场景：主角(5,8)、敌正东相邻(6,8)、敌后落点(7,8)、另一敌远离(11,3)；主角条满进输入态。
+ * 主角配 20 级一阶轻功（对齐 behavior 套件 DEMO_SKILLS 口径）→ F-06 移动力 7，
+ * 敌后绕行（BFS 3 步）方可落点——本组只测演出层，不测移动力预算。 */
+function bScene(): { s: HexBattleSession; hero: ReturnType<HexBattleSession['_debug']['player']>; dest: ReturnType<typeof offsetToAxial>; foeCell: ReturnType<typeof offsetToAxial> } {
+  const s = makeSession(42, 'manual', unit({ id: 'p', side: 'player', hp: 100, maxHp: 100, atk: 12, def: 3, skills: [{ id: 'qing', name: '轻', kind: 'qingGong', weapon: null, grade: 1.0, growth: 1, level: 20, cooldownTurns: 3, neiliCost: 15 }] }), [
+    unit({ id: 'e0', side: 'enemy', hp: 100, maxHp: 100, atk: 12, def: 3 }),
+    unit({ id: 'e1', side: 'enemy', hp: 100, maxHp: 100, atk: 12, def: 3 }),
+  ]);
+  pin(s, 'p', 5, 8);
+  pin(s, 'e0', 6, 8);
+  pin(s, 'e1', 11, 3);
+  const hero = pu(s);
+  hero.bar = 100;
+  s.tick(0.001);
+  return { s, hero, dest: offsetToAxial(7, 8), foeCell: offsetToAxial(6, 8) };
+}
+
+describe('[T19/N1] 演出延后（方案 §3.2）与回退轨插值（§3.3）', () => {
+  it('B-1 §3.2：ATK-3 路径 submit 后零 tick 快照 animState 保持 walk；事件仍同步紧跟；walk 结束后补播 basic', () => {
+    const { s, hero, dest } = bScene();
+    expect(s.snapshot().pendingInput).toBe(true);
+    const n0 = s.events.length;
+    expect(s.submit({ type: 'move', to: dest })).toBe(true);
+    // ① 零 tick：walk 演出未被 basicIfAdjacent 覆写（修复前此处 = 'basic'）
+    expect(hero.animState).toBe('walk');
+    // ② 结算/事件 emit 仍同步：move 事件后紧跟出手事件（绿锁不变式在本例复证）
+    const tail = s.events.slice(n0).map((e) => e.type);
+    const iMove = tail.indexOf('move');
+    expect(iMove).toBeGreaterThanOrEqual(0);
+    expect(tail.slice(iMove)).toContain('basic');
+    // ③ pendingAnim 消费：walk（ANIM_MS.walk=300ms）结束后补播攻击演出
+    for (let i = 0; i < 25; i++) s.tick(0.016); // 0.4s：跨过 walk 窗、停在 basic 窗内（敌 bar 未满不干扰）
+    expect(hero.animState).toBe('basic');
+  });
+
+  it('B-2 §3.3：同排隔敌移动逐帧采样 renderPos 不进入敌占格；moveT=1 精确等于落点；逻辑 pos 即时到位', () => {
+    const { s, hero, dest, foeCell } = bScene();
+    expect(s.submit({ type: 'move', to: dest })).toBe(true);
+    // ④ moveT=0：renderPos 从 path[0]（旧格）起、不预推进（walkRise from 取整前提）
+    const a0 = s.snapshot().actors.find((x) => x.id === 'p')!;
+    expect(a0.renderPos.q).toBe(dest.q - 2);
+    expect(a0.renderPos.r).toBe(dest.r);
+    const samples: Array<{ q: number; r: number; moveT: number }> = [];
+    for (let i = 0; i < 40; i++) {
+      s.tick(0.016);
+      const a = s.snapshot().actors.find((x) => x.id === 'p')!;
+      samples.push({ q: a.renderPos.q, r: a.renderPos.r, moveT: hero.moveT });
+      if (hero.moveT >= 1) break;
+    }
+    expect(samples.some((sm) => sm.moveT > 0 && sm.moveT < 1)).toBe(true); // 采样确曾覆盖位移窗
+    // ② moveT<1 期间画位不进入敌占格（修复前直线插值连续穿 (6,8)）
+    for (const sm of samples) {
+      if (sm.moveT < 1) {
+        const throughFoe = Math.round(sm.q) === foeCell.q && Math.round(sm.r) === foeCell.r;
+        expect(throughFoe).toBe(false);
+      }
+    }
+    // ③ moveT=1：renderPos 逐字段精确等于落点（整数精确性 = FE settled 释放前提）
+    const a = s.snapshot().actors.find((x) => x.id === 'p')!;
+    expect(hero.moveT).toBe(1);
+    expect(a.renderPos.q).toBe(dest.q);
+    expect(a.renderPos.r).toBe(dest.r);
+    // ⑤ 结算同步不变：逻辑 pos 在 submit 即时到位（插值只是演出）
+    expect(a.pos).toEqual(dest);
+    expect(s.snapshot().pendingInput).toBe(false); // 行动已消耗（O1 二选一）
+  });
+});

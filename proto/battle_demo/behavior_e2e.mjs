@@ -9,10 +9,11 @@
 // ─── 红名单（与 tests/battle-behavior.test.ts 文件头同源维护）───
 // | 用例  | 缺陷号 | 根因层 | 登记日 | 修复 commit |
 // |-------|--------|--------|--------|-------------|
-// | BE2   | N2     | 空红格零反馈（input 层 + 规格缺口 ATK-2/ATK-5 之间） | 09-02 | （未修） |
-// | BE3   | N2     | 敌演出位≠逻辑格时点可见位 → 误取消选中（input 命中层） | 09-02 | （未修） |
-// | BE4   | N1     | ATK-3 覆写 walk → moveAnim 不启动 → 直线插值穿人（FE 演出触发） | 09-02 | （未修） |
+// | BE2   | N2     | 空红格零反馈（input 层 + 规格缺口 ATK-2/ATK-5 之间） | 09-02 | （未修 · 二批 P-2=c 特/绝格子施放转绿） |
+// | BE3   | N2     | 敌演出位≠逻辑格时点可见位 → 误取消选中（input 命中层） | 09-02 | （未修 · 批一已拦普攻态，本例=skill 态保持红，二批按格子施放新语义重写） |
+// | BE4   | N1     | ATK-3 覆写 walk → moveAnim 不启动 → 直线插值穿人（FE 演出触发+session 回退轨） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
 // BE1 = 绿锁（特技施放全链，受理/结算层无病的端到端证据）。
+// T19 批一（09-03）终态：BE1 绿锁 / BE2·BE3 预期红（二批）/ BE4 转预期绿。
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -232,8 +233,8 @@ const clearEnemyBars = () =>
   const dbgResidue = consoleLines.filter((l) => l.includes('DBG['));
   // DBG[move-start] 印在 walkRise 分支内（battle-hex-render.ts:440）：本用例 0 条=分支从未执行的旁证；
   // 对照组（普通移动正常触发演出）可复现该日志——线上调试残留本体，见报告 §3.4
-  // 期望（修复后）：animStarted=true 且 crossed=false；当前缺陷：animStarted=false 且 crossed=true
-  report('BE4 移动路径演出启动+不穿占格（N1）', true, animStarted && !crossed,
+  // T19 批一修复后：animStarted=true 且 crossed=false 且 DBG残留 0 条 → 预期绿（§3.2+§3.3+§五）
+  report('BE4 移动路径演出启动+不穿占格（N1）', false, animStarted && !crossed,
     `moveAnim启动=${animStarted} renderPos穿敌格=${crossed}（${plan.heroPos.q},${plan.heroPos.r}→${plan.dest.q},${plan.dest.r} 敌${foe.q},${foe.r}） DBG残留${dbgResidue.length}条`);
   await page.screenshot({ path: path.join(outDir, 'behavior_be4_n1_through.png') });
 }

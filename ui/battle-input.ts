@@ -2,7 +2,7 @@
 // 红线：禁止 import battle-core（DoD 自动化扫描）；本层不算数值——只做命中判定与请求翻译。
 // 镜头拖动 >8px 判定沿用旧 T06 已验口径（config CAMERA.dragThresholdPx）。
 import type { ActionRequest, BattleSnapshot, HexPos } from '../types';
-import { CAMERA, CTRL_BUTTONS, PLAQUE_BUTTONS } from '../config/battle-hex';
+import { CAMERA, CTRL_BUTTONS, PLAQUE_BUTTONS, hexToWorld } from '../config/battle-hex';
 import { axialToOffset, worldToHex, type BattleHexView } from './battle-hex-render';
 
 export interface BattleInputHooks {
@@ -150,6 +150,26 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
       view.selectedCell = cell;
       hooks.dispatch({ type: 'move', to: cell });
       return;
+    }
+    // 【T19/N2 机制② · 方案 §4】普攻态（无技能选中）点中移动中敌的「演出位」（可见位≠逻辑格）
+    // 且该格非合法移动格 → 不派发任何请求（零 dispatch）、onBlocked 可观测反馈。
+    // 分支序：pos 命中/轻功金格/无选中绿格之后、cancelSkill 之前——
+    // 逻辑格可点（D-06 绿锁）与移动意图优先（绿/金格）不受影响；skill 态（特/绝/轻/毒）零改动。
+    // 「移动中」= 双通道：session 位移窗（renderPos≠pos，300ms）∪ FE 演出窗（view.moveAnims.has，
+    // 长演出尾段）；可视位量化与绘制/点击同链 worldToHex(hexToWorld(renderPos))，禁自造取整。
+    if (!skill) {
+      const movingFoe = snapshot.actors.find((a) => {
+        if (a.side !== 'enemy' || a.animState === 'dead') return false; // 排除 dead 与我方单位
+        const moving = a.renderPos.q !== a.pos.q || a.renderPos.r !== a.pos.r || view.moveAnims.has(a.id);
+        if (!moving) return false;
+        const w = hexToWorld(a.renderPos.q, a.renderPos.r);
+        const vis = worldToHex(w.x, w.y);
+        return vis.q === cell.q && vis.r === cell.r;
+      });
+      if (movingFoe) {
+        hooks.onBlocked?.('目标移动中');
+        return;
+      }
     }
     if (skill && !inAttack) {
       // 激活技能后点无效格=取消施放

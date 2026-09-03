@@ -54,6 +54,7 @@ import {
   hexEq,
   inCone,
   jumpReachable,
+  movePathCells,
   movePower,
   offsetToAxial,
   rangeCells,
@@ -125,10 +126,16 @@ interface Runner {
   moveFromQ: number;
   moveFromR: number;
   moveT: number;
+  /** 【T19/N1 防御 · 方案 §3.3】本次移动的回退轨（walk=movePathCells 合法路径 / jump=[旧格,to]）。
+   * 空/单点时 tick 回退现直线公式；moveT=1 后不再被消费。 */
+  movePath: HexPos[];
   isJump: boolean; // 【病灶②】唯一写入点=doMove（意图派生）
   dead: boolean;
   animState: SnapshotActor['animState'];
   animLeftMs: number;
+  /** 【T19/N1 主修 · 方案 §3.2】ATK-3 同栈延后的攻击演出写入：doAttack 在 quiet && walk 时不
+   * setAnim 改记此处，tick 倒计时归零分支消费（优先级 charge→strike→pendingAnim→idle）。 */
+  pendingAnim: SnapshotActor['animState'] | null;
   barWasMax: boolean; // bar-max 一次性事件守卫（SEL-1：等待期不重复发）
 }
 
@@ -212,10 +219,12 @@ export function createHexBattle(opts: HexBattleOptions) {
     moveFromQ: spawn.q,
     moveFromR: spawn.r,
     moveT: 1,
+    movePath: [],
     isJump: false,
     dead: false,
     animState: 'idle',
     animLeftMs: 0,
+    pendingAnim: null,
     barWasMax: false,
   });
 
@@ -349,7 +358,14 @@ export function createHexBattle(opts: HexBattleOptions) {
     const skillView = skill ? { ...skill, neiliCost: NEILI_COST_PER_CAST } : null;
     const outcome = resolveAction(actor, target, skillView, rng);
     if (outcome.kind !== 'blocked') {
-      setAnim(actor, skill ? 'charge' : 'basic');
+      // 【T19/N1 主修 · 方案 §3.2】ATK-3 路径（quiet 且仍在移动演出中）不覆写 walk——攻击演出
+      // 写入延后到移动演出结束（tick 倒计时归零分支消费 pendingAnim）。
+      // 结算与事件 emit 不受影响（仍同步，绿锁「move 事件后跟 basic 事件」保住）；faceToward 不变。
+      if (quiet && actor.animState === 'walk') {
+        actor.pendingAnim = skill ? 'charge' : 'basic';
+      } else {
+        setAnim(actor, skill ? 'charge' : 'basic');
+      }
       faceToward(actor, target.hex);
     }
     for (const l of outcome.logs) {
@@ -388,12 +404,17 @@ export function createHexBattle(opts: HexBattleOptions) {
   function doMove(actor: Runner, to: HexPos, intent: 'walk' | 'jump'): void {
     const isJump = intent === 'jump'; // 【病灶②收敛】isJump 唯一产生点
     faceToward(actor, to);
+    // 【T19/N1 防御 · 方案 §3.3】改 hex 前计算回退轨：walk 沿合法路径（BFS，不可穿占格，
+    // 失败防御回退直线）；jump 凌空可穿（MV-2 语义）恒 [旧格,to] 直线，不套绕行。
+    const fromCell = { ...actor.hex };
+    actor.movePath = isJump ? [fromCell, to] : movePathCells(fromCell, to, occupied(), inField);
     actor.hex = to;
     const off = axialToOffset(to);
     actor.moveFromQ = actor.renderQ;
     actor.moveFromR = actor.renderR;
     actor.moveT = 0;
     actor.isJump = isJump;
+    actor.pendingAnim = null; // 新移动演出开始，旧延后攻击演出作废（防跨回合误播）
     setAnim(actor, 'walk');
     emit({ type: 'move', actorId: actor.id, toX: off.col, toY: off.row });
   }
@@ -521,8 +542,21 @@ export function createHexBattle(opts: HexBattleOptions) {
       if (!c.dead) c.bar = Math.min(BAR.max, c.bar + fillRate(c) * dt); // BAR-1 clamp 封顶
       if (c.moveT < 1) {
         c.moveT = Math.min(1, c.moveT + (dt * 1000) / ANIM_MS.walk);
-        c.renderQ = c.moveFromQ + (c.hex.q - c.moveFromQ) * c.moveT;
-        c.renderR = c.moveFromR + (c.hex.r - c.moveFromR) * c.moveT;
+        // 【T19/N1 防御 · 方案 §3.3】沿 movePath 分段等时插值（回退轨不穿占格）：
+        // moveT=1 时 f=segs → i 收敛到末段、lp=1 → renderPos 精确等于 path 末位=hex
+        //（整数坐标 IEEE 精确，FE settled 释放条件保持成立）；movePath 空/单点回退现直线公式。
+        const path = c.movePath;
+        if (path.length >= 2) {
+          const segs = path.length - 1;
+          const f = Math.min(segs, c.moveT * segs);
+          const i = Math.min(segs - 1, Math.floor(f));
+          const lp = f - i;
+          c.renderQ = path[i].q + (path[i + 1].q - path[i].q) * lp;
+          c.renderR = path[i].r + (path[i + 1].r - path[i].r) * lp;
+        } else {
+          c.renderQ = c.moveFromQ + (c.hex.q - c.moveFromQ) * c.moveT;
+          c.renderR = c.moveFromR + (c.hex.r - c.moveFromR) * c.moveT;
+        }
       }
       if (c.animLeftMs > 0) {
         c.animLeftMs -= dt * 1000;
@@ -530,6 +564,10 @@ export function createHexBattle(opts: HexBattleOptions) {
           if (c.animState === 'charge') {
             c.animState = 'strike';
             c.animLeftMs = ANIM_MS.strike;
+          } else if (c.pendingAnim) {
+            // 【T19/N1 主修 · 方案 §3.2】移动演出结束 → 补播延后的攻击演出（优先级 charge→strike→pendingAnim→idle）
+            setAnim(c, c.pendingAnim);
+            c.pendingAnim = null;
           } else {
             c.animState = 'idle';
             c.animLeftMs = 0;

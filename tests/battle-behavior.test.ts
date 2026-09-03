@@ -8,11 +8,12 @@
 // ─── 红名单（红 ↔ 缺陷号对照；修复后转绿并在此登记修复 commit）───
 // | 用例（describe 内标题）                | 缺陷号 | 根因层     | 登记日    | 修复 commit |
 // |---------------------------------------|--------|-----------|----------|-------------|
-// | N1🔴 移动演出·路径演出必须启动          | N1     | FE 演出触发 | 09-02    | （未修）    |
-// | N1🔴 移动演出·绘制路径不得穿占格        | N1     | FE 演出路径 | 09-02    | （未修）    |
-// | N2🔴 空红格点击必须有可观测反馈         | N2     | input+规格 | 09-02    | （未修）    |
-// | N2🔴 敌演出位点击不得静默取消选中       | N2     | input 命中  | 09-02    | （未修）    |
+// | N1🟢 移动演出·路径演出必须启动          | N1     | session ATK-3 覆写 walk 演出（§3.2） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
+// | N1🟢 移动演出·绘制路径不得穿占格        | N1     | session 直线回退轨穿占格（§3.3） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
+// | N2🔴 空红格点击必须有可观测反馈         | N2     | input+规格 | 09-02    | （未修 · 二批 P-2=c 特/绝格子施放转绿） |
+// | N2🔴 敌演出位点击不得静默取消选中       | N2     | input 命中  | 09-02    | （未修 · 批一已拦普攻态，本例=skill 态保持红，二批按格子施放新语义重写） |
 // 其余用例 = 绿锁（规格矩阵对号；红即回归，不是登记簿）。
+// T19 批一（09-03）终态：4 红 → 2 红（N2-①/N2-②）；N1×2 转绿见上表。
 //
 // 测试基建说明：place() 通过 session 公开的 _debug 白盒布点（绕过随机出生求确定性场景），
 // 断言只针对公共 API（snapshot/submit/events）与渲染公共函数（updateView/moveAnimDrawPosPx）。
@@ -75,6 +76,7 @@ function place(s: Session, id: string, col: number, row: number): void {
   u.hex = { ...hex };
   u.renderQ = hex.q; u.renderR = hex.r; u.moveFromQ = hex.q; u.moveFromR = hex.r;
   u.moveT = 1; u.isJump = false; u.animState = 'idle'; u.animLeftMs = 0;
+  u.pendingAnim = null; u.movePath = []; // 【T19 · 方案 §九-3】Runner 新增字段同步重置，防用例间状态泄漏
   u.bar = 0; u.barWasMax = false; u.dead = false;
   if (u.hp <= 0) u.hp = 50;
 }

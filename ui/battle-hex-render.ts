@@ -437,9 +437,6 @@ export function updateView(
         duration: dur,
         hopHeight: a.isJump ? jp.height : 0,
       });
-      if (typeof console !== 'undefined' && a.id === 'hero') {
-        console.log('DBG[move-start]', JSON.stringify({ trig: jumpRise ? 'jump' : 'walk', from, pos, dist, dur, pathLen: path.length, del: view.moveDone.has(a.id) }));
-      }
     }
     // ---- 移动演出推进（演出计时主导：到时不删、定格终点等快照到位/离开 walk 才释放） ----
     const anim = view.moveAnims.get(a.id);
@@ -453,9 +450,6 @@ export function updateView(
         const settled =
           (a.renderPos.q === anim.pos.q && a.renderPos.r === anim.pos.r) || a.animState !== 'walk';
         if (settled) {
-          if (typeof console !== 'undefined' && a.id === 'hero') {
-            console.log('DBG[move-end]', JSON.stringify({ t: +anim.t.toFixed(2), dur: anim.duration, renderPos: a.renderPos, animState: a.animState }));
-          }
           view.moveAnims.delete(a.id);
           view.moveDone.add(a.id);
         }

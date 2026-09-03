@@ -119,6 +119,50 @@ export function jumpReachable(from: HexPos, power: number, occupied: HexPos[], i
   return out;
 }
 
+/** 【T19/N1 防御 · 方案 §3.3】普通移动回退轨的合法路径（6 邻 BFS 最短路）。
+ * 阻挡语义同 reachable()：occupied/inBounds 格不可进入与借道；差异：
+ * - 起点格不作阻挡（session 的 occupied() 天然含移动者旧格）；
+ * - 返回含首尾的完整格序列 [from, …, to]（供 tick 分段等时插值）；
+ * - BFS 失败（终点被占/界内无路）防御回退 [from, to]（= 现直线几何，不劣化）。
+ * 确定性：HEX_DIRS 方向序固定 + 队列序 → 同输入恒同输出（纯函数、无随机无时钟）。
+ * 注：jump 不走本函数（凌空可穿恒直线，doMove 处分流）；终点被占时先于 BFS 直接回退
+ *（occupied 不可落脚 ⇒ BFS 必失败，提前返回同时避免无界网格上的无效展开）。 */
+export function movePathCells(from: HexPos, to: HexPos, occupied: HexPos[], inBounds?: BoundsFn): HexPos[] {
+  if (hexEq(from, to)) return [from];
+  const blocked = (p: HexPos): boolean =>
+    (!hexEq(p, from) && occupied.some((o) => hexEq(o, p))) || (inBounds !== undefined && !inBounds(p));
+  if (blocked(to)) return [from, to];
+  const keyOf = (p: HexPos): string => `${p.q},${p.r}`;
+  const prev = new Map<string, string>(); // 邻格 key → 前驱 key（回溯用）
+  const seen = new Set<string>([keyOf(from)]);
+  let frontier: HexPos[] = [from];
+  while (frontier.length > 0) {
+    const next: HexPos[] = [];
+    for (const cur of frontier) {
+      for (const d of HEX_DIRS) {
+        const n = { q: cur.q + d.q, r: cur.r + d.r };
+        const k = keyOf(n);
+        if (seen.has(k) || blocked(n)) continue;
+        seen.add(k);
+        prev.set(k, keyOf(cur));
+        if (hexEq(n, to)) {
+          const path: HexPos[] = [n]; // 回溯 to → from 再反转
+          let cur2 = k;
+          while (cur2 !== keyOf(from)) {
+            cur2 = prev.get(cur2)!;
+            const [q, r] = cur2.split(',').map(Number);
+            path.push({ q, r });
+          }
+          return path.reverse();
+        }
+        next.push(n);
+      }
+    }
+    frontier = next;
+  }
+  return [from, to];
+}
+
 // ---------- 射程格三形态（O2 裁决定版，需求表 #2） ----------
 
 export type RangeShape = 'circle' | 'ray' | 'cone';

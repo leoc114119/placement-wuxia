@@ -359,6 +359,85 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     expect(sent).toEqual([{ type: 'attack', targetId: 'e1', skillId: null }]);
   });
 
+  it('T19/N2②（方案 §4）：无选中点移动中敌演出位=零派发+「目标移动中」反馈（双通道并存）；dead/我方不拦', () => {
+    const view = makeViewForInput();
+    view.skillPop = 0;
+    view.layout.skillBtns = [];
+    const sent: Array<Record<string, unknown>> = [];
+    let blocked = '';
+    const input = createBattleInput({
+      dispatch: (r) => sent.push(r as Record<string, unknown>),
+      onBlocked: (m) => (blocked = m),
+    });
+    const mover: SnapshotActor = {
+      id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 5, r: 6 }, renderPos: { q: 4.2, r: 6.5 },
+      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+      animState: 'walk', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
+    };
+    const snap = makeSnapshot([hero, mover]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    snap.moveCells = []; // 演出位量化格 ∉ 绿格（否则走移动意图分支）
+    // 可视位量化与绘制/点击同链（禁自造取整）：worldToHex(wx, wy) 双参签名，组合式分两步展开
+    const vis = worldToHex(hexToWorld(mover.renderPos.q, mover.renderPos.r).x, hexToWorld(mover.renderPos.q, mover.renderPos.r).y);
+    updateView(view, snap, 0.016, 375, 667); // 驱动一帧：真实页面同一帧即启动 FE 演出
+    expect(view.moveAnims.has('e1')).toBe(true); // 前置：session 轨（renderPos≠pos）+FE 轨并存
+    const center = (c: HexPos) => {
+      const cw = hexToWorld(c.q, c.r);
+      return { x: cw.x + 375 / 2 - view.camera.x, y: cw.y + 667 / 2 - view.camera.y };
+    };
+    const p = center(vis);
+    // ① 拦截面：零派发 + onBlocked('目标移动中')、选中保持（本就无选中）
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent).toEqual([]);
+    expect(blocked).toBe('目标移动中');
+    // ② dead 排除：同几何敌已亡（moveAnims 残留）→ 不走新分支，零反馈零派发
+    blocked = '';
+    const moverInSnap = snap.actors.find((a) => a.id === 'e1')!; // makeSnapshot 是拷贝，须改快照内份身
+    moverInSnap.animState = 'dead';
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent).toEqual([]);
+    expect(blocked).toBe('');
+    // ③ 我方排除：友军演出位点击不拦（无选中态落既有分支语义=无操作）
+    mover.animState = 'walk';
+    const ally: SnapshotActor = {
+      ...hero, id: 'ally', pos: { q: 8, r: 4 }, renderPos: { q: 7.4, r: 4.5 }, animState: 'walk',
+    };
+    snap.actors = [hero, mover, ally];
+    const avis = worldToHex(hexToWorld(ally.renderPos.q, ally.renderPos.r).x, hexToWorld(ally.renderPos.q, ally.renderPos.r).y);
+    const ap = center(avis);
+    input.up(view, snap, ap.x, ap.y, 375, 667);
+    expect(sent).toEqual([]);
+    expect(blocked).toBe('');
+  });
+
+  it('T19/N2②（方案 §4.3 分支序）：敌演出位飘在绿格上 → 无选中点击仍派发移动（移动意图优先，不拦）', () => {
+    const view = makeViewForInput();
+    view.skillPop = 0;
+    view.layout.skillBtns = [];
+    const sent: Array<Record<string, unknown>> = [];
+    let blocked = '';
+    const input = createBattleInput({
+      dispatch: (r) => sent.push(r as Record<string, unknown>),
+      onBlocked: (m) => (blocked = m),
+    });
+    const mover: SnapshotActor = {
+      id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 5, r: 6 }, renderPos: { q: 4.2, r: 6.5 },
+      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+      animState: 'walk', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
+    };
+    const snap = makeSnapshot([hero, mover]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    // 可视位量化与绘制/点击同链（禁自造取整）：worldToHex(wx, wy) 双参签名，组合式分两步展开
+    const vis = worldToHex(hexToWorld(4.2, 6.5).x, hexToWorld(4.2, 6.5).y);
+    snap.moveCells = [vis]; // 演出位量化格恰为合法移动格
+    const w = hexToWorld(vis.q, vis.r);
+    input.up(view, snap, w.x + 375 / 2, w.y + 667 / 2, 375, 667); // camera 未驱动=0,0
+    expect(sent).toEqual([{ type: 'move', to: { q: vis.q, r: vis.r } }]);
+    expect(blocked).toBe('');
+  });
+
   it('ctrl 三钮行命中映射托管/加速/逃跑', () => {
     const view = makeViewForInput();
     const sent: Array<Record<string, unknown>> = [];

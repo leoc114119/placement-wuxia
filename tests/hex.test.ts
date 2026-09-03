@@ -1,4 +1,5 @@
 // T15 hex 数学单测（DoD：hex 6 例——换算往返/邻接/距离/可达/跳跃/三形态射程）
+// T19 增补：movePathCells 回退轨合法路径 5 例（领单第一交付 C 组，PM 裁定落点本文件）
 // 运行：npm run test:battle（vitest）
 import { describe, expect, it } from 'vitest';
 import {
@@ -9,6 +10,7 @@ import {
   hexNeighbors,
   inCone,
   jumpReachable,
+  movePathCells,
   movePower,
   offsetToAxial,
   rangeCells,
@@ -197,5 +199,80 @@ describe('rangeCells 三形态（O2）', () => {
       expect(inCone(o, east, c, 3)).toBe(has(rangeCells(o, 'cone', 3, east), c));
     }
     expect(inCone(o, east, o, 9)).toBe(false); // 原点不是目标
+  });
+});
+
+// ---------- T19/N1 防御（方案 §3.3）：movePathCells——普通移动回退轨合法路径 ----------
+// 用例口径 = 领单第一交付 C 组（先红后修）：6 邻 BFS 最短路、起点格不作阻挡、
+// occupied/inBounds 不可进入与借道、BFS 失败防御回退 [from,to]、HEX_DIRS 方向序固定→确定性。
+describe('movePathCells（T19/N1 防御 · 回退轨 6 邻 BFS）', () => {
+  // 同排直线：offset col 5，row 5..8 → axial (3,5) (2,6) (2,7) (1,8)，直距 3
+  const F = offsetToAxial(5, 5);
+  const M = offsetToAxial(5, 6); // 直线中格
+  const T = offsetToAxial(5, 8);
+
+  const adjacentChain = (path: HexPos[]): boolean => {
+    for (let i = 1; i < path.length; i++) {
+      if (cubeDistance(path[i - 1], path[i]) !== 1) return false;
+    }
+    return true;
+  };
+
+  it('C-1 直连：空占格直线=距离+1 格、首尾正确、逐段六邻相邻、同输入两次全等（方向序固定→确定性）', () => {
+    const p1 = movePathCells(F, T, []);
+    const p2 = movePathCells(F, T, []);
+    expect(p1[0]).toEqual(F);
+    expect(p1[p1.length - 1]).toEqual(T);
+    expect(p1).toHaveLength(cubeDistance(F, T) + 1);
+    expect(adjacentChain(p1)).toBe(true);
+    expect(p1).toEqual(p2);
+  });
+
+  it('C-2 绕行：直线中格被占 → 路径不含占格、首尾正确、逐段相邻、保持最短路（非回退非加长甩尾）', () => {
+    const path = movePathCells(F, T, [M]);
+    expect(has(path, M)).toBe(false);
+    expect(path[0]).toEqual(F);
+    expect(path[path.length - 1]).toEqual(T);
+    expect(adjacentChain(path)).toBe(true);
+    // 存在等距绕行地线（经 (3,6)/(1,7) 侧），BFS 最短路仍=直距+1；且必非 [F,T] 长度 2 的回退
+    expect(path.length).toBe(cubeDistance(F, T) + 1);
+  });
+
+  it('C-3 不可达回退：a) 终点被占 b) 界内狭廊无路（BFS 耗尽）→ 均恰返回 [from,to]（=现直线几何，不劣化）', () => {
+    // a) 终点被占：legalMoveCells 校验后 session 不会出现，纯函数健壮态——防御回退（免无界展开）
+    const onFoe = movePathCells(F, T, [T]);
+    expect(onFoe).toHaveLength(2);
+    expect(onFoe[0]).toEqual(F);
+    expect(onFoe[1]).toEqual(T);
+    // b) 界内狭廊（col==5 且 row 4..8 共 5 格）+ 中格 M 被占：廊内连通体不含 T → BFS 耗尽回退
+    const corridor = (p: HexPos): boolean => {
+      const off = axialToOffset(p);
+      return off.col === 5 && off.row >= 4 && off.row <= 8;
+    };
+    const walled = movePathCells(F, T, [M], corridor);
+    expect(walled).toHaveLength(2);
+    expect(walled[0]).toEqual(F);
+    expect(walled[1]).toEqual(T);
+  });
+
+  it('C-4 起点自身格：occupied 含 from 不构成阻挡（session occupied() 天然含移动者旧格）→ 照常找到 BFS 路径', () => {
+    const path = movePathCells(F, T, [F, offsetToAxial(9, 9)]);
+    expect(path[0]).toEqual(F);
+    expect(path[path.length - 1]).toEqual(T);
+    // 长度=距离+1 证明走的是 BFS 直连而非 [from,to] 回退（回退长度恒 2）
+    expect(path).toHaveLength(cubeDistance(F, T) + 1);
+    expect(adjacentChain(path)).toBe(true);
+  });
+
+  it('C-5 inBounds 约束：禁东侧（col≥6）绕行 → 从西侧界内绕到，全程不出界、严格长于直线（真绕行非回退）', () => {
+    const westOnly = (p: HexPos): boolean => axialToOffset(p).col <= 5;
+    const path = movePathCells(F, T, [M], westOnly);
+    expect(path[0]).toEqual(F);
+    expect(path[path.length - 1]).toEqual(T);
+    expect(adjacentChain(path)).toBe(true);
+    for (const c of path) expect(axialToOffset(c).col).toBeLessThanOrEqual(5);
+    // 地理事实：col≤5 下等距绕行全被封死（SW 侧=M、S 侧=col6），最短界内路=5 格；
+    // 断言 > 直距+1 可同时排除「回退 [F,T]（长 2）」与「未受 inBounds 约束的等距路（长 4）」
+    expect(path.length).toBeGreaterThan(cubeDistance(F, T) + 1);
   });
 });
