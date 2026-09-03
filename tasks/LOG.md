@@ -174,3 +174,4 @@
 | 2026-09-03 18:01 | ZCode | ✅ T20-BE 开工批复 | DoR 过审（Q1 准增补门用例/Q2 准白盒测法）；卡移 working，施工中，交付不 push 停等中间门复验 | 卡=working/T20-BE.md |
 | 2026-09-03 18:20 | ZCode | ✅ T20-BE 中间门合流 | PM 复验六项全过，7a426ac push 合流；T20-FE 解锁 | 卡=done/T20-BE.md |
 | 2026-09-03 18:38 | ZCode | ✅ T20-FE 开工批复 | DoR 过审（Q1 行号锚 :330 实指裁准）；卡移 working 施工中 | 卡=working/T20-FE.md |
+| 2026-09-03 19:21 | ZCode | ✅ T20-FE 四门过门合流 | 行为面 0 红（红名单首次清零）170 绿新基线，e2e 5 MATCH；容差裁决出处澄清=Leo 弹窗直接批复（agent 绕 PM，已记录过程备注）；卡=done/T20-FE.md 待 Leo L 环 |
