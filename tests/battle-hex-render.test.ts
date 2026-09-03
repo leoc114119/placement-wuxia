@@ -36,7 +36,7 @@ import {
   type BattleHexAssets,
   type BattleHexView,
 } from '../ui/battle-hex-render';
-import { createBattleInput, pickSkillButton } from '../ui/battle-input';
+import { createBattleInput, pickCtrlButton, pickPlaqueButton, pickSkillButton } from '../ui/battle-input';
 import { createMockSession } from '../proto/battle_demo/mock_session';
 import type { BattleSnapshot, CombatantInput, HexPos, SnapshotActor } from '../types';
 
@@ -304,7 +304,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     expect(sent.length).toBe(2);
   });
 
-  it('点可移动格=移动；激活非轻功技能时点格=施放攻击；点无效格=取消', () => {
+  it('点可移动格=移动；激活技能点敌格=派 cast（T20 方案 B）；点无效格=取消', () => {
     const view = makeViewForInput();
     view.skillPop = 0; // 收起弧钮（pendingInput 时钮才弹；此处直接置 0 模拟未弹出）
     view.layout.skillBtns = [];
@@ -323,11 +323,12 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     let p = cellCenter({ q: 1, r: 9 });
     input.up(view, snap, p.x, p.y, 375, 667);
     expect(sent[0]).toMatchObject({ type: 'move', to: { q: 1, r: 9 } });
-    // ② 激活 te：点敌人=施放（skillId 带出）
+    // ② 激活 te：点敌逻辑格=派 cast（【T20-FE · 方案 B / ATK-2 v2.0】skill 态点格统一 cast，格上有敌=对敌
+    // 结算；方案 §2.5/:339 锚实指本行 :330——行号为写作时快照，经 git 考古语义唯一，PM 裁决 2026-09-03）
     snap.selectedSkill = 'te';
     p = cellCenter({ q: 3, r: 7 });
     input.up(view, snap, p.x, p.y, 375, 667);
-    expect(sent[1]).toMatchObject({ type: 'attack', targetId: 'e1', skillId: 'te' });
+    expect(sent[1]).toMatchObject({ type: 'cast', to: { q: 3, r: 7 }, skillId: 'te' });
     // ③ 激活 te：点无效格=取消
     p = cellCenter({ q: 6, r: 12 });
     input.up(view, snap, p.x, p.y, 375, 667);
@@ -455,6 +456,90 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     input.up(view, snap, 335, 605, 375, 667); // 第三钮
     expect(sent[2]).toEqual({ type: 'flee' });
     expect(CTRL_BUTTONS).toHaveLength(3);
+  });
+
+  it('D-13/HIT-1 fall-through（ctrl）：外接矩形内、标定矩形外的格中心点击=棋盘受理；图形内仍组件优先', () => {
+    const view = makeViewForInput();
+    // 取点布点（§七-19：点击点须为「外接矩形内、标定矩形外」的格中心）：屏内格中心分布（sx≥187.5）
+    // 与带间隙（art y 130..163）共同约束——ctrlRect.y 由 500 微调至 520（测试自造 mock，不碰生产常量），
+    // 使带间隙恰好含 row5 col1 格中心（换算 ay=142.4 ∈ [130,163]、ax=62.1 ∈ 钮 x 带）。
+    view.layout.ctrlRect = { x: 300, y: 520, w: 70, h: 140 };
+    const sent: Array<Record<string, unknown>> = [];
+    let mode: 'auto' | 'manual' = 'manual';
+    const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>), mode: () => mode });
+    const snap = makeSnapshot([hero, enemy]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    // 具体取点法：格 row5 col1（axial −1,5）中心屏坐标 hexToWorld(−1,5)+(187.5,333.5)=(319.5,564.5)；
+    // 「外接矩形内、标定矩形外」以与实现同源的双条件形式化：inRect(ctrlRect, p) ∧ pickCtrlButton(view,p)=null
+    const gapCell: HexPos = { q: -1, r: 5 };
+    const gapW = hexToWorld(gapCell.q, gapCell.r);
+    const p = { x: gapW.x + 375 / 2, y: gapW.y + 667 / 2 }; // (319.5, 564.5)
+    const rect = view.layout.ctrlRect;
+    if (!rect) throw new Error('ctrlRect 缺失（mock 布点问题）');
+    const inOuter = p.x >= rect.x && p.x <= rect.x + rect.w && p.y >= rect.y && p.y <= rect.y + rect.h;
+    expect(inOuter).toBe(true); // 前置①：外接矩形内
+    expect(pickCtrlButton(view, p.x, p.y)).toBeNull(); // 前置②：标定矩形外（带间隙 fall-through 环带）
+    snap.moveCells = [gapCell]; // 该格=合法移动格 → fall-through 后应走移动语义
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent).toEqual([{ type: 'move', to: { q: gapCell.q, r: gapCell.r } }]); // 棋盘真受理，未被组件吞
+    // 反向对照（HIT-1 正向）：钮实体内一点仍组件命中优先——(335,540) 换算 ax=111.5/ay=64 ∈ 钮1 标定矩形
+    sent.length = 0;
+    input.up(view, snap, 335, 540, 375, 667);
+    expect(sent).toEqual([{ type: 'setMode', mode: 'auto' }]);
+  });
+
+  it('D-13/HIT-1 fall-through（plaque）：装饰区（横杆/挂绳，不设热区）格中心点击=棋盘受理；牌面内仍组件优先', () => {
+    const view = makeViewForInput();
+    // 取点布点：屏内格中心 sx≥187.5 与 plaque 装饰区（art y<牌1顶−容差≈155）共同约束——plaqueRect
+    // 挪至 {x:124,y:400}（测试自造 mock；尺寸不变）使装饰带含 row2 col0 格中心（换算 ay=112.9<155.4）。
+    view.layout.plaqueRect = { x: 124, y: 400, w: 64, h: 156 };
+    const sent: Array<Record<string, unknown>> = [];
+    const plaques: string[] = [];
+    const input = createBattleInput({
+      dispatch: (r) => sent.push(r as Record<string, unknown>),
+      onPlaque: (label) => plaques.push(label),
+    });
+    const snap = makeSnapshot([hero, enemy]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    // 具体取点法：格 row2 col0（axial −1,2）中心 (187.5, 425.9)；「外接矩形内、标定矩形外」同式双条件：
+    // inRect(plaqueRect, p) ∧ pickPlaqueButton(view,p)=null（装饰件不设热区 → 装饰区整带皆环带）
+    const decorCell: HexPos = { q: -1, r: 2 };
+    const decorW = hexToWorld(decorCell.q, decorCell.r);
+    const p = { x: decorW.x + 375 / 2, y: decorW.y + 667 / 2 }; // (187.5, 425.9)
+    const rect = view.layout.plaqueRect;
+    if (!rect) throw new Error('plaqueRect 缺失（mock 布点问题）');
+    const inOuter = p.x >= rect.x && p.x <= rect.x + rect.w && p.y >= rect.y && p.y <= rect.y + rect.h;
+    expect(inOuter).toBe(true); // 前置①：外接矩形内
+    expect(pickPlaqueButton(view, p.x, p.y)).toBeNull(); // 前置②：装饰区无热区
+    snap.moveCells = [decorCell];
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent).toEqual([{ type: 'move', to: { q: decorCell.q, r: decorCell.r } }]); // 棋盘受理
+    expect(plaques).toEqual([]); // 未触发木牌占位反馈（装饰件不吞点击）
+    // 反向对照（HIT-1 正向）：牌1 面内点仍组件命中——(157.6, 456.9) 换算 art (162.5, 248.2) ∈ 牌1 标定矩形
+    sent.length = 0;
+    plaques.length = 0;
+    snap.moveCells = [];
+    input.up(view, snap, 157.6, 456.9, 375, 667);
+    expect(plaques).toEqual(['装备']);
+    expect(sent).toEqual([]);
+  });
+
+  it('pickCtrlButton/pickPlaqueButton 纯函数命中与 fall-through（pickSkillButton 先例对齐）', () => {
+    const view = makeViewForInput();
+    view.layout.ctrlRect = { x: 300, y: 520, w: 70, h: 140 };
+    view.layout.plaqueRect = { x: 124, y: 400, w: 64, h: 156 };
+    // ctrl：三钮图形内各返回 action（art 中心换算屏点）；带间隙/边缘 null（tol=0 裁决：标定矩形本体）
+    expect(pickCtrlButton(view, 335, 540)).toBe('mode'); // art (111.5, 64) ∈ 钮1
+    expect(pickCtrlButton(view, 335, 590.75)).toBe('speed'); // art (111.5, 226.4) ∈ 钮2
+    expect(pickCtrlButton(view, 335, 639.4)).toBe('flee'); // art (111.5, 381.6) ∈ 钮3
+    expect(pickCtrlButton(view, 319.5, 564.5)).toBeNull(); // 带间隙 art y=142.4 ∈ [130,163]
+    expect(pickCtrlButton(view, 299, 540)).toBeNull(); // 外接矩形外
+    // plaque：牌面内返回 label；装饰区 null（容差 0.15×短边 142.8≈21.4 art px，装饰区主体不被吞）
+    expect(pickPlaqueButton(view, 157.6, 456.9)).toBe('装备'); // art (162.5, 248.2) ∈ 牌1
+    expect(pickPlaqueButton(view, 157.6, 502.1)).toBe('武功'); // art (162.5, 445.4) ∈ 牌2
+    expect(pickPlaqueButton(view, 187.5, 425.9)).toBeNull(); // art (307.7, 112.9) 装饰区
   });
 
   it('pickSkillButton 纯函数命中', () => {

@@ -9,11 +9,14 @@
 // ─── 红名单（与 tests/battle-behavior.test.ts 文件头同源维护）───
 // | 用例  | 缺陷号 | 根因层 | 登记日 | 修复 commit |
 // |-------|--------|--------|--------|-------------|
-// | BE2   | N2     | 空红格零反馈（input 层 + 规格缺口 ATK-2/ATK-5 之间） | 09-02 | （未修 · 二批 P-2=c 特/绝格子施放转绿） |
-// | BE3   | N2     | 敌演出位≠逻辑格时点可见位 → 误取消选中（input 命中层） | 09-02 | （未修 · 批一已拦普攻态，本例=skill 态保持红，二批按格子施放新语义重写） |
-// | BE4   | N1     | ATK-3 覆写 walk → moveAnim 不启动 → 直线插值穿人（FE 演出触发+session 回退轨） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
+// | BE2🟢  | N2 | 空红格零反馈（input 层 + 规格缺口 ATK-2/ATK-5 之间） | 09-02 | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-6 v2.0 格子目标化重写=cast 空放受理预期绿） |
+// | BE3a🟢 | N2 | 敌演出位≠逻辑格时点可见位 → 误取消选中（input 命中层） | 09-02 | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-7/SEL-5② v2.0 拆双例：射程内=cast 受理，预期绿） |
+// | BE3b🟢 | N2 | 同上（拆双例） | 09-02 | T20-FE 09-03（本卡交付提交，hash 见 git log；射程外=cancelSkill 规范取消+无 skill 事件+资源零消耗，预期绿；e2e 用例 4→5） |
+// | BE4🟢  | N1 | ATK-3 覆写 walk → moveAnim 不启动 → 直线插值穿人（FE 演出触发+session 回退轨） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
 // BE1 = 绿锁（特技施放全链，受理/结算层无病的端到端证据）。
 // T19 批一（09-03）终态：BE1 绿锁 / BE2·BE3 预期红（二批）/ BE4 转预期绿。
+// T20-FE（09-03）终态：全部预期绿（BE2 按 ATK-6 v2.0 翻转；BE3 按 ATK-7/SEL-5② v2.0 拆 BE3a/BE3b，
+// 用例 4→5；规格依据=《战斗交互行为规格》v2.1 + 修复方案 §五对照表，PM 裁决放行）。
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,11 +37,11 @@ const consoleLines = [];
 page.on('console', (m) => consoleLines.push(`[${m.type()}] ${m.text()}`));
 page.on('pageerror', (e) => consoleLines.push(`[pageerror] ${e.message}`));
 
-const results = []; // {id, expect, actual, ok, detail}
+const results = []; // {id, expectRed, expect, actual, ok, match, detail}
 const report = (id, expectRed, ok, detail) => {
   const actual = ok ? '绿' : '红';
   const match = expectRed ? !ok : ok;
-  results.push({ id, expect: expectRed ? '红(登记缺陷)' : '绿(链路锁)', actual, match, detail });
+  results.push({ id, expectRed, expect: expectRed ? '红(登记缺陷)' : '绿(链路锁)', actual, match, detail });
   console.log(`${match ? 'MATCH' : 'MISMATCH'}  ${id} 预期=${expectRed ? '红' : '绿'} 实际=${actual} · ${detail}`);
 };
 
@@ -134,10 +137,21 @@ const clearEnemyBars = () =>
     }
   });
 
-// ═══ BE2（预期红 · N2 机制一）：选绝 → 点空红格 → 无任何可观测反馈 ═══
+/** 白盒清 hero 技能冷却（测试基建，与 placeFoe 同级）：BE2 施放 jue 写入 cd=5 会锁死后续用例的
+ * 技能选择（te/jue 双双置灰）——冷却资源跨用例耦合不是本卡断言对象，清零以隔离场景（§七-9 同源经验）。 */
+const clearHeroCooldowns = () =>
+  page.evaluate(() => {
+    const u = window.__demo.session._debug.units.find((x) => x.id === 'hero');
+    if (!u) return { err: 'no hero' };
+    for (const s of u.skills) u.cooldowns.set(s.id, 0);
+    return { ok: true };
+  });
+
+// ═══ BE2（预期绿 · N2 转绿 · ATK-6 v2.0）：选绝 → 点空红格 → cast 空放受理（资源全扣无伤害） ═══
 {
   await waitHeroTurn();
   await clearEnemyBars();
+  await clearHeroCooldowns();
   await waitPop();
   await tapSkill('jue'); // BE1 已施放特技（冷却 2 回合），此处用未消耗的绝
   const st0 = await snapState();
@@ -152,21 +166,81 @@ const clearEnemyBars = () =>
   await page.mouse.click(target.p.x, target.p.y);
   await page.waitForTimeout(800);
   const st1 = await snapState();
-  const toastTxt = await page.evaluate(() => document.getElementById('toast').textContent + '|' + document.getElementById('toast').style.opacity);
-  const observable = st1.selected !== st0.selected || st1.evN > st0.evN || st1.fxN > st0.fxN || /1/.test(toastTxt);
-  report('BE2 空红格点击有可观测反馈（N2）', true, observable,
-    `点空红格(${target.cell.q},${target.cell.r}) 选中${st0.selected}→${st1.selected} 事件${st0.evN}→${st1.evN} fx${st0.fxN}→${st1.fxN} toast=${toastTxt}`);
-  // 清场：取消选中，等下一回合
-  await page.evaluate(() => window.__demo.session.submit({ type: 'cancelSkill' }));
+  // 新断言（方案 §五 BE2 行 · 预期绿四件）：selected null + evN+1 + neili−1 + 敌 hp 不变——
+  // 施放受理本身即可观测反馈（toast 不再是反馈通道，§七-15）；evN+1 由 SP-2 确定性背书
+  //（clearEnemyBars 防敌自行行动污染事件流，同 BE1 等待窗）
+  const foeHpUnchanged = st1.foes.every((f) => {
+    const b = st0.foes.find((x) => x.id === f.id);
+    return !b || b.hp === f.hp;
+  });
+  const casted =
+    st1.selected === null && st1.evN === st0.evN + 1 &&
+    st1.hero.neili === st0.hero.neili - 1 && foeHpUnchanged;
+  report('BE2 空红格 cast 空放受理（N2 转绿）', false, casted,
+    `点空红格(${target.cell.q},${target.cell.r}) 选中${st0.selected}→${st1.selected} 事件${st0.evN}→${st1.evN} 内力${st0.hero.neili}→${st1.hero.neili} 敌hp不变=${foeHpUnchanged}`);
+  // 回合已随施放消耗（BAR-3/SEL-3），无需清场；下一块 waitHeroTurn 重等条满
 }
 
-// ═══ BE3（预期红 · N2 机制二）：敌演出位≠逻辑格 → 点其可见位置 → 选中被静默取消 ═══
+// ═══ BE3a（预期绿 · N2 转绿 · ATK-7 射程内臂）：敌演出位 ∈ 射程 → 点可见位 = cast 空放受理 ═══
 {
   await waitHeroTurn();
   await clearEnemyBars();
+  await clearHeroCooldowns();
   await waitPop();
   const hero = (await snapState()).hero;
-  // 敌摆在东 1 格（射程红格上），演出中途视觉滞后到东南 2 格（cube 距离 3 = 射程圆外）。
+  // 敌摆在东 1 格（射程红格上），演出中途视觉滞后到南 1 格（cube(hero→vis)=2 ≤ jue 射程 2，且 ≠ 敌 pos）。
+  // 布点三约束（方案 §七-16）：①cube ≤ jue 射程(2) ②≠ 敌逻辑格 ③画布内且避开 ctrl/plaque 实体与弧钮——
+  // 沿原 BE3 南向偏移收 1 格（原 (r+2) 射程外，本例取 (r+1) 入射程；更靠北远离右下 ctrl 热区）。
+  await placeFoe('e1', hero.pos.q + 1, hero.pos.r);
+  await tapSkill('jue');
+  await page.evaluate(() => {
+    const u = window.__demo.session._debug.units.find((x) => x.id === 'e1');
+    u.renderR = u.hex.r + 1;
+  });
+  await page.waitForTimeout(150); // 快照已带分离的 renderPos
+  const vis = await page.evaluate(() => {
+    const s = window.__demo.session.snapshot();
+    const e = s.actors.find((a) => a.id === 'e1');
+    const cube = (a, b) => (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs((a.q + a.r) - (b.q + b.r))) / 2;
+    const hero = s.actors.find((x) => x.id === 'hero');
+    const L = window.__demo.getView().layout;
+    const p = window.__demo.cellCss(e.renderPos.q, e.renderPos.r);
+    const inRect = (r) => r && p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+    const hitComponent = inRect(L.ctrlRect) || inRect(L.plaqueRect) ||
+      L.skillBtns.some((b) => { const rr = b.r * 1.3; return (p.x - b.x) ** 2 + (p.y - b.y) ** 2 <= rr * rr; });
+    return {
+      pos: e.pos, renderPos: e.renderPos, p,
+      c1_inRange: cube(hero.pos, e.renderPos) <= 2, // 约束①：可见位 ∈ 射程
+      c2_notFoe: !(e.renderPos.q === e.pos.q && e.renderPos.r === e.pos.r), // 约束②：≠ 敌逻辑格
+      c3_safe: p.x >= 0 && p.x <= 450 && p.y >= 0 && p.y <= 800 && !hitComponent, // 约束③：画布内+不落组件
+      inAttackCells: s.attackCells.some((c) => c.q === e.renderPos.q && c.r === e.renderPos.r),
+    };
+  });
+  if (!(vis.c1_inRange && vis.c2_notFoe && vis.c3_safe)) throw new Error('BE3a 布点三约束不满足：' + JSON.stringify(vis));
+  const st0 = await snapState();
+  if (!vis.inAttackCells) throw new Error('BE3a 可见格 ∉ attackCells：' + JSON.stringify(vis.renderPos));
+  await page.mouse.click(vis.p.x, vis.p.y);
+  await page.waitForTimeout(400);
+  const st1 = await snapState();
+  const foeHpUnchanged = st1.foes.every((f) => {
+    const b = st0.foes.find((x) => x.id === f.id);
+    return !b || b.hp === f.hp;
+  });
+  const casted =
+    st1.selected === null && st1.evN === st0.evN + 1 &&
+    st1.hero.neili === st0.hero.neili - 1 && foeHpUnchanged;
+  report('BE3a 演出位∈射程=cast 空放受理（N2 转绿）', false, casted,
+    `敌 pos=${JSON.stringify(vis.pos)} 可见位=${JSON.stringify(vis.renderPos)} 选中=${st1.selected} 事件${st0.evN}→${st1.evN} 内力${st0.hero.neili}→${st1.hero.neili} 敌hp不变=${foeHpUnchanged}`);
+}
+
+// ═══ BE3b（预期绿 · N2 转绿 · ATK-7 射程外臂/SEL-5②）：演出位 ∉ 射程（原布点）→ 取消=规范行为 ═══
+{
+  await waitHeroTurn();
+  await clearEnemyBars();
+  await clearHeroCooldowns();
+  await waitPop();
+  const hero = (await snapState()).hero;
+  // 原 BE3 布点原样：敌在东 1 格，演出中途视觉滞后到东南 2 格（cube 距离 3 > jue 射程 2 = 射程圆外）。
   // 可见位须在画布内且避开右下 ctrl 热区/头顶弧钮（09-02 取证：北向外格被镜头 clamp 挤出画布、
   // 南向远处会落入 ctrl 热区被截获为 setMode——均为额外缺陷面，见报告 §4.4）
   await placeFoe('e1', hero.pos.q + 1, hero.pos.r);
@@ -179,15 +253,29 @@ const clearEnemyBars = () =>
   const vis = await page.evaluate(() => {
     const s = window.__demo.session.snapshot();
     const e = s.actors.find((a) => a.id === 'e1');
-    return { pos: e.pos, renderPos: e.renderPos, p: window.__demo.cellCss(e.renderPos.q, e.renderPos.r) };
+    const cube = (a, b) => (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs((a.q + a.r) - (b.q + b.r))) / 2;
+    const hero = s.actors.find((x) => x.id === 'hero');
+    return {
+      pos: e.pos, renderPos: e.renderPos, p: window.__demo.cellCss(e.renderPos.q, e.renderPos.r),
+      outOfRange: cube(hero.pos, e.renderPos) > 2, // 前置：可见位 ∉ 射程（原取证布点）
+      notInAttack: !s.attackCells.some((c) => c.q === e.renderPos.q && c.r === e.renderPos.r),
+    };
   });
+  if (!(vis.outOfRange && vis.notInAttack)) throw new Error('BE3b 前置不满足（可见位应在射程外）：' + JSON.stringify(vis));
+  const st0 = await snapState();
   await page.mouse.click(vis.p.x, vis.p.y);
   await page.waitForTimeout(400);
-  const st = await snapState();
-  const kept = st.selected === 'jue';
-  report('BE3 点敌演出位不静默取消选中（N2）', true, kept,
-    `敌 pos=${JSON.stringify(vis.pos)} 可见位=${JSON.stringify(vis.renderPos)} 点击后选中=${st.selected}（期望保持 jue）`);
-  await page.evaluate(() => window.__demo.session.submit({ type: 'cancelSkill' }));
+  const st1 = await snapState();
+  const evTypes = await page.evaluate(
+    (n0) => window.__demo.session.events.slice(n0).map((e) => e.type),
+    [st0.evN],
+  );
+  // 新断言（方案 §五 BE3 行 · 预期绿三件，§七-17 防假绿）：selected null（规范取消）+ 无 skill 事件 + neili 不变
+  const canceled =
+    st1.selected === null && !evTypes.includes('skill') &&
+    st1.hero.neili === st0.hero.neili;
+  report('BE3b 演出位∉射程=规范取消（N2 转绿）', false, canceled,
+    `敌 pos=${JSON.stringify(vis.pos)} 可见位=${JSON.stringify(vis.renderPos)} 选中${st0.selected}→${st1.selected} 事件=${JSON.stringify(evTypes)} 内力${st0.hero.neili}→${st1.hero.neili}`);
   // 恢复手动（若本用例点击曾误触 ctrl setMode；防御性，正常应无操作）
   await page.evaluate(() => window.__demo.session.submit({ type: 'setMode', mode: 'manual' }));
 }
@@ -250,7 +338,8 @@ const clearEnemyBars = () =>
 const mismatch = results.filter((r) => !r.match);
 console.log('═══ 行为 e2e 汇总 ═══');
 for (const r of results) console.log(`${r.match ? 'MATCH' : 'MISMATCH'} ${r.id} 预期${r.expect} 实际${r.actual}`);
-console.log(`红名单在列：${results.filter((r) => r.expect.includes('登记')).length} 项；不符合预期：${mismatch.length} 项`);
+// 【T20-FE 口径同步】expectRed 全部翻转后「红名单在列」语义失效——改为登记缺陷/链路锁双向计数
+console.log(`预期红（登记缺陷）：${results.filter((r) => r.expectRed).length} 项；预期绿（链路锁）：${results.filter((r) => !r.expectRed).length} 项；不符合预期：${mismatch.length} 项`);
 if (dbgAny(consoleLines)) console.log('（附）线上 DBG 残留样本：', consoleLines.find((l) => l.includes('DBG[')));
 await browser.close();
 process.exit(mismatch.length ? 1 : 0);

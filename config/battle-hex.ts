@@ -225,17 +225,40 @@ export const COMPONENT_LAYOUT = {
 /** ctrl 组件美术标定尺寸（锚定/行映射用它，弱化对图片对象尺寸的依赖） */
 export const CTRL_ART = { w: 223, h: 448 } as const;
 
-/** ctrl_r_alpha.png（=CTRL_ART 尺寸）三钮行标定（measure.mjs 实测）→ ActionRequest 映射 */
-export const CTRL_BUTTONS: ReadonlyArray<{ y: number; h: number; action: 'mode' | 'speed' | 'flee' }> = [
-  { y: 2, h: 128, action: 'mode' }, // 托管
-  { y: 163, h: 126, action: 'speed' }, // 加速
-  { y: 319, h: 127, action: 'flee' }, // 逃跑
+/** plaque 组件美术标定尺寸（T20-FE D-13：pickPlaqueButton 的 art→屏换算用，与 CTRL_ART 对称） */
+export const PLAQUE_ART = { w: 310, h: 680 } as const;
+
+/**
+ * 组件热区容差（T20-FE D-13 / HIT-1）：标定矩形四边外扩 短边×ratio，分部件定值。
+ * 【2026-09-03 Leo/PM 裁决】方案 §4.2 单值 tolRatio=0.15 与 §2.4/§4.3/§九-5 冲突（ctrl 钮容差
+ * ≈19px art 会吞没钮间隙 33px 与左右边缘 2~5px，热区=外接矩形全覆盖、收缩量为负）——裁决：
+ * ctrl=0（满宽条带实体，标定矩形本体即热区，间隙+边缘自然 fall-through）；plaque=0.15
+ *（≈21px art ≈4.5px 屏，与弧钮 1.3 半径容差折算精度同量级）。ADR-004 口径展示参数，preview 手感可调。
+ */
+export const HIT_TOL = { ctrl: 0, plaque: 0.15 } as const;
+
+/**
+ * ctrl_r_alpha.png（=CTRL_ART 尺寸）三钮热区标定矩形（art 坐标系）→ ActionRequest 映射。
+ * T20-FE D-13 复量核定（行剖面 alpha>240，measure_hotzones.mjs）：实体 bbox 钮1 {x:3,w:218} /
+ * 钮2 {x:2,w:219} / 钮3 {x:2,w:219}，行宽下限 202——落库值取方案 §4.2 参考值（收 2~3px 安全边，
+ * 防素材边缘半透明噪点；容差 19px 外扩下手感无差）。装饰性边缘光晕不设热区。
+ */
+export const CTRL_BUTTONS: ReadonlyArray<{ x: number; y: number; w: number; h: number; action: 'mode' | 'speed' | 'flee' }> = [
+  { x: 5, y: 2, w: 216, h: 128, action: 'mode' }, // 托管
+  { x: 5, y: 163, w: 213, h: 126, action: 'speed' }, // 加速
+  { x: 5, y: 319, w: 213, h: 127, action: 'flee' }, // 逃跑
 ];
 
-/** plaque_l_alpha.png（310×680）两块木牌标签热区（牌面占比标定 2026-09-02；文字已烘焙在切图内） */
-export const PLAQUE_BUTTONS: ReadonlyArray<{ yRatio: number; hRatio: number; label: string }> = [
-  { yRatio: 0.26, hRatio: 0.21, label: '装备' },
-  { yRatio: 0.55, hRatio: 0.21, label: '武功' },
+/**
+ * plaque_l_alpha.png（=PLAQUE_ART 尺寸）两块木牌热区标定矩形（牌面占比；文字已烘焙在切图内）。
+ * T20-FE D-13 复量核定（最长连续实体 run 口径，系绳孔收腰防全行计数高估）：落库 x/w 取方案 §4.2
+ * 参考值 26/273（可点主体，左右透明边+侧穗不设热区）；y/hRatio 沿 2026-09-02 牌面标定不动
+ *（0.26/0.55、0.21 ≈ 方案 h:143px 口径；run 复核牌体带 y 177..306/367..504 落在现带内，收腰段保留可点）。
+ * 装饰件（顶部横杆/挂绳/流苏）不设热区——HIT-1「可点部件的实际图形」收窄解释（方案 §九-5）。
+ */
+export const PLAQUE_BUTTONS: ReadonlyArray<{ xRatio: number; yRatio: number; wRatio: number; hRatio: number; label: string }> = [
+  { xRatio: 26 / 310, yRatio: 0.26, wRatio: 273 / 310, hRatio: 0.21, label: '装备' },
+  { xRatio: 26 / 310, yRatio: 0.55, wRatio: 273 / 310, hRatio: 0.21, label: '武功' },
 ];
 
 // ===== 素材路径表（资源外置铁律：路径唯一出处=本表；版本号防缓存，preview 换图 bump） =====

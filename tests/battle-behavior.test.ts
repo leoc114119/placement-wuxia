@@ -10,10 +10,12 @@
 // |---------------------------------------|--------|-----------|----------|-------------|
 // | N1🟢 移动演出·路径演出必须启动          | N1     | session ATK-3 覆写 walk 演出（§3.2） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
 // | N1🟢 移动演出·绘制路径不得穿占格        | N1     | session 直线回退轨穿占格（§3.3） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
-// | N2🔴 空红格点击必须有可观测反馈         | N2     | input+规格 | 09-02    | （未修 · 二批 P-2=c 特/绝格子施放转绿） |
-// | N2🔴 敌演出位点击不得静默取消选中       | N2     | input 命中  | 09-02    | （未修 · 批一已拦普攻态，本例=skill 态保持红，二批按格子施放新语义重写） |
+// | N2🟢 空红格点击必须有可观测反馈         | N2     | input+规格 | 09-02    | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-2/ATK-6 v2.0 格子目标化重写=cast 空放受理断言） |
+// | N2🟢 敌演出位点击不得静默取消选中       | N2     | input 命中  | 09-02    | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-7/SEL-5② v2.0 拆双变体重写：射程内 cast 受理/射程外规范取消） |
 // 其余用例 = 绿锁（规格矩阵对号；红即回归，不是登记簿）。
 // T19 批一（09-03）终态：4 红 → 2 红（N2-①/N2-②）；N1×2 转绿见上表。
+// T20-FE（09-03）终态：2 红 → 0 红（N2-①②按规格 v2.0 重写转绿；规格依据=《战斗交互行为规格》v2.1
+// ATK-2/ATK-6/ATK-7/SEL-5② + 《战斗格子施放与热区修复方案》§五新旧断言对照表，PM 裁决放行）。
 //
 // 测试基建说明：place() 通过 session 公开的 _debug 白盒布点（绕过随机出生求确定性场景），
 // 断言只针对公共 API（snapshot/submit/events）与渲染公共函数（updateView/moveAnimDrawPosPx）。
@@ -319,8 +321,8 @@ d('N1🔴 移动演出（FE 演出层）', () => {
   });
 });
 
-d('N2🔴 技能施放交互（input 命中层 + 规格缺口）', () => {
-  it('空红格点击必须有可观测反馈：dispatch 或 onBlocked 至少其一', () => {
+d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命中层）', () => {
+  it('空红格点击=cast 空放受理：input 恰派 1 条 cast、资源全扣无伤害（N2-① · ATK-2/ATK-6 v2.0）', () => {
     const s = mkSession();
     place(s, 'hero', 7, 8);
     place(s, 'e1', 9, 8);
@@ -338,22 +340,38 @@ d('N2🔴 技能施放交互（input 命中层 + 规格缺口）', () => {
       const e2 = snap.actors.find((a) => a.id === 'e2')!;
       return !(c.q === e1.pos.q && c.r === e1.pos.r) && !(c.q === e2.pos.q && c.r === e2.pos.r);
     })!;
+    const neili0 = snap.actors.find((a) => a.id === 'hero')!.neili;
+    const hp01 = snap.actors.find((a) => a.id === 'e1')!.hp;
+    const hp02 = snap.actors.find((a) => a.id === 'e2')!.hp;
     const dispatches: ActionRequest[] = [];
-    let blocked = 0;
     const input = createBattleInput({
-      dispatch: (req) => dispatches.push(req),
-      onBlocked: () => blocked++,
+      dispatch: (req) => {
+        dispatches.push(req);
+        s.submit(req); // input 派发直连提交（session 终态断言前提：派发 ≠ 受理，须真实走 session）
+      },
     });
     const w = hexToWorld(empty.q, empty.r);
     input.up(view, s.snapshot(), w.x - view.camera.x + W / 2, w.y - view.camera.y + H / 2, W, H);
-    // 现象：18 个红格仅 2 格有敌，点空红格零派发零反馈（battle-input.ts attackCells 分支无空格语义）
-    expect(dispatches.length + blocked).toBeGreaterThan(0);
+    // 新断言（方案 §五 N2-① 行）：恰 1 条 cast（非 cancelSkill）——v2.0 下点射程内空格=合法施放
+    expect(dispatches).toEqual([{ type: 'cast', to: { q: empty.q, r: empty.r }, skillId: 'te' }]);
+    const after = s.snapshot();
+    expect(after.selectedSkill).toBe(null); // 施放受理 → 选中清除
+    expect(after.actors.find((a) => a.id === 'hero')!.actionBar).toBe(0); // BAR-3 行动条清零
+    expect(after.actors.find((a) => a.id === 'hero')!.neili).toBe(neili0 - 1); // R-09 镜像（视图口径 1）
+    expect(after.heroSkills.find((b) => b.id === 'te')!.disabled).toBe(true); // R-08 冷却写入（neili 60−1=59 ≫ 内力阈值，置灰唯冷却因）
+    expect(after.actors.find((a) => a.id === 'e1')!.hp).toBe(hp01); // 空放：格上无敌=无伤害结算
+    expect(after.actors.find((a) => a.id === 'e2')!.hp).toBe(hp02);
+    const skillEv = s.events.filter((e) => e.type === 'skill').pop();
+    expect(skillEv).toBeDefined(); // 事件尾=skill（可观测反馈本体，ATK-6 契约）
+    expect((skillEv as { targetId?: unknown }).targetId).toBeUndefined(); // 空放事件无 targetId
+    expect((skillEv as { damage?: unknown }).damage).toBeUndefined(); // 且无 damage
   });
 
-  it('敌演出位点击不得静默取消选中：renderPos≠pos 时点可见位置，selection 必须保持', () => {
+  it('敌演出位点击双变体：射程内=cast 空放受理 / 射程外=规范取消（N2-② · ATK-7/SEL-5② v2.0）', () => {
+    // ── 变体 (a)：renderPos 偏移至射程内格（≠ 敌逻辑格）→ 对格施放受理（空放）──
     const s = mkSession();
     place(s, 'hero', 7, 8);
-    place(s, 'e1', 9, 8);
+    place(s, 'e1', 9, 8); // pos axial(5,8)
     place(s, 'e2', 4, 12);
     ready(s);
     s.submit({ type: 'selectSkill', skillId: 'te' });
@@ -363,16 +381,57 @@ d('N2🔴 技能施放交互（input 命中层 + 规格缺口）', () => {
       updateView(view, s.snapshot(), 0.016, W, H);
     }
     const e1u = s._debug.units.find((x) => x.id === 'e1')!;
-    // 模拟移动演出中途（敌向西北走来、动画滞后两格）：视觉位在射程圆外、逻辑位在射程内红格上。
-    // 取 r+2：cube 距离 4 > 特射程 2 → 可见格 ∉ attackCells（命中层按 pos 匹配落空后的取消路径）
-    e1u.renderQ = e1u.hex.q;
-    e1u.renderR = e1u.hex.r + 2;
+    // 可见位 axial(4,9)（offset(8,9)）：cube(hero(3,8)→(4,9))=2 ≤ 特射程 2，且 ≠ 敌逻辑格（ATK-7 空放臂）
+    e1u.renderQ = 4;
+    e1u.renderR = 9;
+    const snapA = s.snapshot();
+    expect(snapA.attackCells.some((c) => c.q === 4 && c.r === 9)).toBe(true); // 前置：演出位格 ∈ 射程红格
+    const neiliA = snapA.actors.find((a) => a.id === 'hero')!.neili;
+    const hpA = snapA.actors.find((a) => a.id === 'e1')!.hp;
     const dispatches: ActionRequest[] = [];
-    const input = createBattleInput({ dispatch: (req) => dispatches.push(req) });
-    const w = hexToWorld(e1u.renderQ, e1u.renderR); // 玩家点的是“看到的位置”
-    input.up(view, s.snapshot(), w.x - view.camera.x + W / 2, w.y - view.camera.y + H / 2, W, H);
-    // 现象：命中按 pos 匹配落空 → 该格不在 attackCells → 误派发 cancelSkill → 选中静默丢失
-    expect(dispatches.filter((r) => r.type === 'cancelSkill')).toHaveLength(0);
-    expect(s.snapshot().selectedSkill).toBe('te');
+    const input = createBattleInput({
+      dispatch: (req) => {
+        dispatches.push(req);
+        s.submit(req);
+      },
+    });
+    const wA = hexToWorld(e1u.renderQ, e1u.renderR); // 玩家点的是“看到的位置”
+    input.up(view, s.snapshot(), wA.x - view.camera.x + W / 2, wA.y - view.camera.y + H / 2, W, H);
+    expect(dispatches).toEqual([{ type: 'cast', to: { q: 4, r: 9 }, skillId: 'te' }]); // 演出位∈射程=受理
+    const afterA = s.snapshot();
+    expect(afterA.selectedSkill).toBe(null); // 施放受理选中清
+    expect(afterA.actors.find((a) => a.id === 'e1')!.hp).toBe(hpA); // 格上无逻辑敌=空放无伤害
+    expect(afterA.actors.find((a) => a.id === 'hero')!.neili).toBe(neiliA - 1); // 资源照扣（ATK-6 全消耗）
+
+    // ── 变体 (b)：renderPos 偏移至射程外格（原取证布点 r+2，cube 距离 4 > 2）→ cancelSkill=规范取消 ──
+    // 新 session 防跨变体泄漏（place() 基建不重置 cooldowns/资源，方案 §七-9）
+    const s2 = mkSession();
+    place(s2, 'hero', 7, 8);
+    place(s2, 'e1', 9, 8);
+    place(s2, 'e2', 4, 12);
+    ready(s2);
+    s2.submit({ type: 'selectSkill', skillId: 'te' });
+    const view2 = createView();
+    for (let i = 0; i < 30; i++) {
+      s2.tick(0.016);
+      updateView(view2, s2.snapshot(), 0.016, W, H);
+    }
+    const e1v = s2._debug.units.find((x) => x.id === 'e1')!;
+    e1v.renderQ = e1v.hex.q;
+    e1v.renderR = e1v.hex.r + 2; // 可见位在射程圆外、逻辑位在射程内红格上（原 N2-② 取证布点）
+    const neiliB = s2.snapshot().actors.find((a) => a.id === 'hero')!.neili;
+    const dispatches2: ActionRequest[] = [];
+    const input2 = createBattleInput({
+      dispatch: (req) => {
+        dispatches2.push(req);
+        s2.submit(req); // 派发直连提交（取消生效断言前提）
+      },
+    });
+    const wB = hexToWorld(e1v.renderQ, e1v.renderR);
+    input2.up(view2, s2.snapshot(), wB.x - view2.camera.x + W / 2, wB.y - view2.camera.y + H / 2, W, H);
+    expect(dispatches2).toEqual([{ type: 'cancelSkill' }]); // 射程外=取消（SEL-5② 规范行为，派发可见非静默）
+    expect(s2.events.filter((e) => e.type === 'skill')).toHaveLength(0); // 无 skill 事件（§七-17 防假绿）
+    expect(s2.snapshot().selectedSkill).toBe(null); // 取消生效=选中清除
+    expect(s2.snapshot().actors.find((a) => a.id === 'hero')!.neili).toBe(neiliB); // 取消零消耗（与空放受理的分界）
   });
 });
