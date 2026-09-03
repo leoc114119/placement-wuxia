@@ -334,6 +334,7 @@ export interface BattleSnapshot {
 export type ActionRequest =
   | { type: 'move'; to: HexPos }
   | { type: 'attack'; targetId: string; skillId: string | null }
+  | { type: 'cast'; to: HexPos; skillId: string }   // 对格施放（ATK-2/6/7 v2.0）：to=目标格（axial），skillId=选中攻击技
   | { type: 'selectSkill'; skillId: string }
   | { type: 'cancelSkill' }
   | { type: 'setMode'; mode: BattleMode }

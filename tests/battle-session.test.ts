@@ -507,6 +507,257 @@ describe('[ATK-2] 技能施放：四查拒绝 + 合法结算（Q1 定版：无�
   });
 });
 
+// ══════════ 格子施放 cast（规格 §四 4.3 ATK-2/6/7 v2.0 · 方案《战斗格子施放与热区修复方案-v0.1》§3.2 · T20-BE） ══════════
+// 布局通式：p(7,8)、e0(9,8)（正东 2 格 = te tier1 射程边界内）、射程内空格 (6,8)/(8,8)、射程外 (11,8)（距离 4）。
+// te=sword→circle 全向（hex.ts:174），legalCells 含敌占格、不含自己格（rangeCells 跳过原点）。
+
+/** 白盒布点（自 tests/battle-behavior.test.ts 移植；T19 字段全套重置防用例间泄漏） */
+function place(s: HexBattleSession, id: string, col: number, row: number): void {
+  const u = s._debug.units.find((x) => x.id === id)!;
+  const hex = offsetToAxial(col, row);
+  u.hex = { ...hex };
+  u.renderQ = hex.q;
+  u.renderR = hex.r;
+  u.moveFromQ = hex.q;
+  u.moveFromR = hex.r;
+  u.moveT = 1;
+  u.isJump = false;
+  u.animState = 'idle';
+  u.animLeftMs = 0;
+  u.pendingAnim = null;
+  u.movePath = [];
+  u.bar = 0;
+  u.barWasMax = false;
+  u.dead = false;
+  if (u.hp <= 0) u.hp = 50;
+}
+
+/** 布点后拉满行动条并 tick 一帧（进入输入态；敌 bar=0 不同帧轮转） */
+function ready(s: HexBattleSession): void {
+  const hero = s._debug.units.find((x) => x.id === 'p')!;
+  hero.bar = 100;
+  s.tick(0.001);
+}
+
+/** cast 用例标准局：p 带 te（level20→tier1 射程2 circle）+ 敌 e0，白盒布点后进输入态（未激活） */
+function castBoard(): HexBattleSession {
+  const p = unit({
+    id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+    skills: [teSkill({ level: 20 })],
+  });
+  const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy' })]);
+  place(s, 'p', 7, 8);
+  place(s, 'e0', 9, 8);
+  ready(s);
+  return s;
+}
+
+/** 布点+激活 te（四查/门用例前置态） */
+function armedBoard(): HexBattleSession {
+  const s = castBoard();
+  expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+  return s;
+}
+
+/** 资源终态四项读法（空放/对敌全等锚的统一口径） */
+const castFinalFour = (s: HexBattleSession) => ({
+  neili: pu(s).neili,
+  cd: pu(s).cooldowns.get('te'),
+  bar: pu(s).bar,
+  selected: s.snapshot().selectedSkill,
+});
+
+describe('[ATK-2 对格] cast 有敌格：doAttack 既有路径（skill/miss 事件+资源终态）', () => {
+  it('选特→cast 敌格：事件 skill|miss+敌 hp 不升+四项终态（neili−1/cd 写初值/bar0/选中清）', () => {
+    const s = armedBoard();
+    const snap = s.snapshot();
+    const e0cell = snap.actors.find((a) => a.id === 'e0')!.pos;
+    expect(snap.attackCells.some((c) => c.q === e0cell.q && c.r === e0cell.r)).toBe(true); // 敌格 ∈ 高亮（显示=校验同源）
+    const hp0 = eu(s).hp;
+    expect(s.submit({ type: 'cast', to: e0cell, skillId: 'te' })).toBe(true);
+    // 命中/闪避走 core 骰子（F-04），行为锁只锁链路（沿 behavior ATK-2 绿锁口径）
+    expect(s.events.slice(-3).map((e) => e.type)).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^(skill|miss)$/)]),
+    );
+    expect(eu(s).hp).toBeLessThanOrEqual(hp0);
+    // 资源终态四项（R-09/R-08 副作用经 doAttack→resolveAction，与空放镜像对照）
+    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+  });
+});
+
+describe('[ATK-6] 空放：射程内空格=合法施放资源全扣（T20-BE）', () => {
+  /** 同 seed 同布局双场对照对：hit=cast 敌格 / air=cast 正西空格（资源终态四项全等锚） */
+  function castPair() {
+    const hit = castBoard();
+    const air = castBoard();
+    expect(hit.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(air.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    const hp0 = eu(air).hp;
+    const hitCell = hit.snapshot().actors.find((a) => a.id === 'e0')!.pos;
+    expect(hit.submit({ type: 'cast', to: hitCell, skillId: 'te' })).toBe(true);
+    expect(air.submit({ type: 'cast', to: offsetToAxial(6, 8), skillId: 'te' })).toBe(true);
+    return { hit, air, hp0 };
+  }
+
+  it('cast 射程内空格：事件尾 skill 无 targetId 无 damage+敌 hp 不变+charge 演出+faceToward 目标格', () => {
+    const { air, hp0 } = castPair();
+    const tail = air.events[air.events.length - 1];
+    expect(tail.type).toBe('skill'); // 空放事件=skill（事件类型零新增）
+    expect(tail.actorId).toBe('p');
+    expect(tail.skillId).toBe('te');
+    expect('targetId' in tail).toBe(false); // 键不存在断言（in 严于 ===undefined，防空放/对敌混淆假绿）
+    expect('damage' in tail).toBe(false);
+    expect(eu(air).hp).toBe(hp0); // 无伤害结算（resolveAction 不调的行为证据）
+    expect(pu(air).animState).toBe('charge'); // Q3：施放演出照播（charge→strike 既有链）
+    expect(pu(air).hexFacing).toEqual({ q: -1, r: 0 }); // faceToward 正西目标格（六向量化）
+    expect(pu(air).faceLeft).toBe(true); // 水平分量翻左（dx<0）
+    expect(castFinalFour(air)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+  });
+
+  it('空放与对敌施放资源终态四项全等（neili/冷却/bar/选中）——镜像不漂移', () => {
+    const { hit, air } = castPair();
+    expect(castFinalFour(air)).toEqual(castFinalFour(hit));
+    expect(castFinalFour(air)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+  });
+});
+
+describe('[ATK-6] cast 射程外=rejected(range)：选中保持零消耗（session 层不清选中）', () => {
+  it('射程外可动区格 → rejected(range) 恰 1 条；selectedSkill 保持+bar/neili/冷却不动', () => {
+    const s = armedBoard();
+    const far = offsetToAxial(11, 8); // 正东 4 格 > te 射程 2，∈ 可动区非占格
+    expect(s.snapshot().attackCells.some((c) => c.q === far.q && c.r === far.r)).toBe(false); // 前置：确在射程外
+    const n0 = s.events.length;
+    const neili0 = pu(s).neili;
+    expect(s.submit({ type: 'cast', to: far, skillId: 'te' })).toBe(false);
+    const added = s.events.slice(n0);
+    expect(added).toHaveLength(1);
+    expect(added[0]).toMatchObject({ type: 'rejected', reason: 'range' });
+    expect('targetId' in added[0]).toBe(false); // 格制拒绝无单位目标（与 attack 分支形状有意区分）
+    expect(s.snapshot().selectedSkill).toBe('te'); // 取消归 input 层 SEL-5②，session 只拒绝
+    expect(pu(s).bar).toBe(100); // 拒绝零消耗
+    expect(pu(s).neili).toBe(neili0);
+    expect(pu(s).cooldowns.get('te')).toBe(0);
+  });
+});
+
+describe('[ATK-6/Q2] cast 自己格=空放语义（特判并联不入高亮）', () => {
+  it('自己格 ∉ attackCells 但 cast 受理：事件尾 skill 无 targetId/无 damage+四项终态=空放+朝向保持', () => {
+    const s = armedBoard();
+    const heroCell = s.snapshot().actors.find((a) => a.id === 'p')!.pos;
+    // Q2 反面证据：自己格不入高亮（并联不并入，rangeCells 跳过原点）
+    expect(s.snapshot().attackCells.some((c) => c.q === heroCell.q && c.r === heroCell.r)).toBe(false);
+    const facing0 = { ...pu(s).hexFacing };
+    const e0hp0 = eu(s).hp;
+    expect(s.submit({ type: 'cast', to: heroCell, skillId: 'te' })).toBe(true); // 特判受理
+    const tail = s.events[s.events.length - 1];
+    expect(tail.type).toBe('skill');
+    expect('targetId' in tail).toBe(false);
+    expect('damage' in tail).toBe(false);
+    expect(eu(s).hp).toBe(e0hp0); // 敌 hp 不变
+    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+    expect(pu(s).hexFacing).toEqual(facing0); // faceToward 同格 v{0,0} 早退（朝向保持）
+  });
+});
+
+describe('[ATK-7] cast 无逻辑敌格=空放（命中以逻辑位判定）', () => {
+  it('敌演出位格 ∈ 射程 → cast 受理但该格无逻辑敌：敌 hp 不变+资源终态=空放', () => {
+    const s = armedBoard();
+    // 模拟移动演出中：e0 可见位偏移到射程内空格 (8,8)，逻辑 hex 保持 (9,8)
+    const e0u = s._debug.units.find((x) => x.id === 'e0')!;
+    const ghostCell = offsetToAxial(8, 8);
+    e0u.renderQ = ghostCell.q;
+    e0u.renderR = ghostCell.r;
+    const hp0 = e0u.hp;
+    expect(s.submit({ type: 'cast', to: ghostCell, skillId: 'te' })).toBe(true);
+    const tail = s.events[s.events.length - 1];
+    expect(tail.type).toBe('skill');
+    expect('targetId' in tail).toBe(false);
+    expect('damage' in tail).toBe(false);
+    expect(e0u.dead).toBe(false);
+    expect(e0u.hp).toBe(hp0); // 敌 hp 不变（ATK-7 命中以逻辑位判定的核心证据）
+    expect(e0u.hex).toEqual(offsetToAxial(9, 8)); // 逻辑位不动
+    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+  });
+});
+
+describe('[ATK-2 拒绝] cast 四查提交时重查（武器/冷却/内力 · 选中保持）', () => {
+  // 激活时 activate 已前置同条件三查（SEL-6），MVP 无激活后自然漂移源——
+  // _debug 白盒构造漂移测「提交时重查」防御分支（PM 裁决放行；activate 既有语义一行不动）
+  it('武器漂移（R-05）：激活后 weapon 改拳 → cast 拒绝 invalid', () => {
+    const s = armedBoard();
+    s._debug.player().weapon = 'fist'; // te=剑技
+    const n0 = s.events.length;
+    const neili0 = pu(s).neili;
+    expect(s.submit({ type: 'cast', to: offsetToAxial(8, 8), skillId: 'te' })).toBe(false);
+    const added = s.events.slice(n0);
+    expect(added).toHaveLength(1);
+    expect(added[0]).toMatchObject({ type: 'rejected', reason: 'invalid' });
+    expect(s.snapshot().selectedSkill).toBe('te'); // 选中保持（拒绝不清选中）
+    expect(pu(s).bar).toBe(100);
+    expect(pu(s).neili).toBe(neili0);
+    expect(pu(s).cooldowns.get('te')).toBe(0); // 不写冷却
+  });
+
+  it('冷却漂移（R-08）：激活后写入冷却 → cast 拒绝 invalid', () => {
+    const s = armedBoard();
+    s._debug.player().cooldowns.set('te', 1);
+    const n0 = s.events.length;
+    expect(s.submit({ type: 'cast', to: offsetToAxial(8, 8), skillId: 'te' })).toBe(false);
+    const added = s.events.slice(n0);
+    expect(added).toHaveLength(1);
+    expect(added[0]).toMatchObject({ type: 'rejected', reason: 'invalid' });
+    expect(s.snapshot().selectedSkill).toBe('te');
+    expect(pu(s).bar).toBe(100);
+    expect(pu(s).cooldowns.get('te')).toBe(1); // 漂移值不被 cast 触碰
+  });
+
+  it('内力漂移（R-09）：激活后内力清零 → cast 拒绝 invalid', () => {
+    const s = armedBoard();
+    s._debug.player().neili = 0;
+    const n0 = s.events.length;
+    expect(s.submit({ type: 'cast', to: offsetToAxial(8, 8), skillId: 'te' })).toBe(false);
+    const added = s.events.slice(n0);
+    expect(added).toHaveLength(1);
+    expect(added[0]).toMatchObject({ type: 'rejected', reason: 'invalid' });
+    expect(s.snapshot().selectedSkill).toBe('te');
+    expect(pu(s).bar).toBe(100);
+  });
+});
+
+describe('[ATK-6 门] cast 选中态门：无选中/qing 态/陈旧 skillId → rejected(invalid)', () => {
+  it('三情形均拒绝且零消耗；qing/陈旧 id 拒绝后选中保持（cast 不得激活技能）', () => {
+    // ①无选中（未激活直接 cast）
+    const s1 = castBoard();
+    const n1 = s1.events.length;
+    expect(s1.submit({ type: 'cast', to: offsetToAxial(8, 8), skillId: 'te' })).toBe(false);
+    expect(s1.events.slice(n1)).toHaveLength(1);
+    expect(s1.events[n1]).toMatchObject({ type: 'rejected', reason: 'invalid' });
+    expect(pu(s1).bar).toBe(100);
+    // ②qing 态（轻功激活后 cast → 门拒，选中保持 qing）
+    const p2 = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+      skills: [teSkill({ level: 20, cooldownTurns: 0 }), qingSkill()],
+    });
+    const s2 = makeSession(13, 'manual', p2, [unit({ id: 'e0', side: 'enemy' })]);
+    place(s2, 'p', 7, 8);
+    place(s2, 'e0', 9, 8);
+    ready(s2);
+    expect(s2.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const n2 = s2.events.length;
+    expect(s2.submit({ type: 'cast', to: offsetToAxial(8, 8), skillId: 'qing' })).toBe(false);
+    expect(s2.events.slice(n2)).toHaveLength(1);
+    expect(s2.events[n2]).toMatchObject({ type: 'rejected', reason: 'invalid' });
+    expect(s2.snapshot().selectedSkill).toBe('qing'); // 门不清选中
+    // ③陈旧 skillId（激活 te 后 cast 携带其他 id）
+    const s3 = armedBoard();
+    const n3 = s3.events.length;
+    expect(s3.submit({ type: 'cast', to: offsetToAxial(8, 8), skillId: 'jue' })).toBe(false);
+    expect(s3.events.slice(n3)).toHaveLength(1);
+    expect(s3.events[n3]).toMatchObject({ type: 'rejected', reason: 'invalid' });
+    expect(s3.snapshot().selectedSkill).toBe('te'); // 陈旧 id 拒绝不清选中
+  });
+});
+
 describe('[ATK-3] 移动附带普攻特例', () => {
   it('移动落点相邻敌 → basic 事件紧随 move 事件（不另耗回合）', () => {
     const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500 }), [

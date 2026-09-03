@@ -722,6 +722,54 @@ export function createHexBattle(opts: HexBattleOptions) {
       commitTurn(player);
       return true;
     }
+    // 【P-2=c 格子施放 · 方案 §3.2 单点插入（T20-BE）】cast 对格施放（ATK-2/6/7 v2.0）：
+    // 与 move/attack 同受上方 pendingInputNow 共享门（分支内不重复查门）。attack 分支保留不动
+    // （单位目标兼容入口）；input 层派发归 T20-FE。
+    if (req.type === 'cast') {
+      // 选中态门：无选中 / qing 态 / 陈旧 skillId → rejected(invalid)（cast 不得激活技能，激活只走 selectSkill）
+      if (!selection || selection.kind !== 'attack' || selection.skillId !== req.skillId) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'invalid' });
+        return false;
+      }
+      const s = player.skills.find((x) => x.id === req.skillId);
+      if (!s) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'invalid' });
+        return false;
+      }
+      // 四查之提交时重查（防激活后漂移）：R-05 武器匹配 / R-08 冷却 / R-09 内力（Q2 常量口径，禁 SkillDef.neiliCost）
+      if (
+        (s.weapon !== null && s.weapon !== player.weapon) ||
+        (player.cooldowns.get(s.id) ?? 0) > 0 ||
+        player.neili < NEILI_COST_PER_CAST
+      ) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'invalid' });
+        return false;
+      }
+      // 四查之射程：源=selection.legalCells（与快照 attackCells 同一产生点，显示=校验）+
+      // Q2 自己格特判【并联不并入】（高亮不含自己格，rangeCells 冻结不动）；射程外=rejected(range)，
+      // 不清选中（取消是 input 层 SEL-5② 职责，直接 cast=非法，SP-3）
+      const inRange = hexEq(req.to, player.hex) || selection.legalCells.some((p) => hexEq(p, req.to));
+      if (!inRange) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'range' });
+        return false;
+      }
+      // ATK-7：提交瞬间按逻辑位查格上存活敌（演出位/空格落空 → 空放）
+      const target = alive().find((x) => x.side !== player.side && hexEq(x.hex, req.to));
+      tickCooldowns(player); // 读后递减，与 attack 分支同位（四查后、结算前）
+      if (target) {
+        doAttack(player, target, s); // 既有路径：resolveAction（R-09/R-08 副作用）+ skill/miss 事件 + 演出
+      } else {
+        // ATK-6 空放=合法施放：resolveAction 不调（battle-core 零改动红线），session 逐字段镜像资源三件
+        // （与对敌施放资源终态四项全等：neili/冷却/bar/选中——用例 [ATK-6] 逐项锁）
+        player.neili -= NEILI_COST_PER_CAST; // R-09 镜像（skillView 同值，禁用 SkillDef.neiliCost）
+        if (s.cooldownTurns > 0) player.cooldowns.set(s.id, s.cooldownTurns); // R-08 镜像 core:246 条件式（写初值）
+        setAnim(player, 'charge'); // Q3：施放演出照播（charge→strike 既有 anim 链，无受击 FX）
+        faceToward(player, req.to); // 朝目标格出招（自己格=v{0,0} 早退，朝向保持）
+        emit({ type: 'skill', actorId: player.id, skillId: s.id }); // 空放事件=skill 无 targetId 无 damage
+      }
+      commitTurn(player); // BAR-3 清零 + SEL-3 选中清除
+      return true;
+    }
     return false;
   }
 
