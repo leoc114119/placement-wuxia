@@ -539,15 +539,17 @@ function ready(s: HexBattleSession): void {
   s.tick(0.001);
 }
 
-/** cast 用例标准局：p 带 te（level20→tier1 射程2 circle）+ 敌 e0，白盒布点后进输入态（未激活） */
-function castBoard(): HexBattleSession {
+/** cast 用例标准局：p 带 te（level20→tier1 射程2 circle）+ 敌 e0，白盒布点后进输入态（未激活）。
+ * 【T22 · 易错点1】布点 diff 落工厂签名：e0Col=9（默认，敌 ∈ 射程正东 2 格）/ e0Col=11
+ * （敌出射程 cube 4，与射程外用例同格）——布点变更收敛在签名上，零改 describe 不感知。 */
+function castBoard(e0Col = 9): HexBattleSession {
   const p = unit({
     id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
     skills: [teSkill({ level: 20 })],
   });
   const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy' })]);
   place(s, 'p', 7, 8);
-  place(s, 'e0', 9, 8);
+  place(s, 'e0', e0Col, 8);
   ready(s);
   return s;
 }
@@ -567,8 +569,8 @@ const castFinalFour = (s: HexBattleSession) => ({
   selected: s.snapshot().selectedSkill,
 });
 
-describe('[ATK-2 对格] cast 有敌格：doAttack 既有路径（skill/miss 事件+资源终态）', () => {
-  it('选特→cast 敌格：事件 skill|miss+敌 hp 不升+四项终态（neili−1/cd 写初值/bar0/选中清）', () => {
+describe('[ATK-2 对格] cast 有敌格：doAttack 既有路径（skill/miss 事件+资源终态）· AOE 退化单目标', () => {
+  it('选特→cast 敌格：事件 skill|miss+敌 hp 不升+四项终态（neili−1/cd 写初值/bar0/选中清）——v2.2 下射程内仅 e0，AOE 退化单目标，断言自 v2.0 起零改', () => {
     const s = armedBoard();
     const snap = s.snapshot();
     const e0cell = snap.actors.find((a) => a.id === 'e0')!.pos;
@@ -585,13 +587,21 @@ describe('[ATK-2 对格] cast 有敌格：doAttack 既有路径（skill/miss 事
   });
 });
 
-describe('[ATK-6] 空放：射程内空格=合法施放资源全扣（T20-BE）', () => {
-  /** 同 seed 同布局双场对照对：hit=cast 敌格 / air=cast 正西空格（资源终态四项全等锚） */
+describe('[ATK-6] 空放：射程内空格=合法施放资源全扣（T20-BE · v2.2 布点修正=真空放）', () => {
+  /** 同 seed 双场对照对（Q-T22-A 裁决案）：hit=cast 敌格（e0(9,8) ∈ 射程，AOE 单敌真值路径）/
+   * air=cast 正西空格（e0(11,8) 出射程，v2.2 真空放=射程内无存活敌）——资源终态四项全等锚
+   * 升级为「AOE 对敌 vs 空放镜像」终态全等（AOE 多目标仍恰扣一次的终态锁）。
+   * 【易错点2】点击格恒 (6,8)（p 正西 1 格）：faceToward 正西/faceLeft 演出断言与之耦合，改布点禁动点击格。 */
   function castPair() {
     const hit = castBoard();
-    const air = castBoard();
+    const air = castBoard(11); // v2.2：air 臂 e0 出射程（cube 4 > te 射程 2）
     expect(hit.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
     expect(air.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    // 前置自检（防未来射程参数漂移静默复活 AOE）：hit 场 e0 ∈ attackCells / air 场 e0 ∉
+    const hitE0 = hit.snapshot().actors.find((a) => a.id === 'e0')!.pos;
+    expect(hit.snapshot().attackCells.some((c) => c.q === hitE0.q && c.r === hitE0.r)).toBe(true);
+    const airE0 = air.snapshot().actors.find((a) => a.id === 'e0')!.pos;
+    expect(air.snapshot().attackCells.some((c) => c.q === airE0.q && c.r === airE0.r)).toBe(false);
     const hp0 = eu(air).hp;
     const hitCell = hit.snapshot().actors.find((a) => a.id === 'e0')!.pos;
     expect(hit.submit({ type: 'cast', to: hitCell, skillId: 'te' })).toBe(true);
@@ -614,7 +624,7 @@ describe('[ATK-6] 空放：射程内空格=合法施放资源全扣（T20-BE）'
     expect(castFinalFour(air)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
   });
 
-  it('空放与对敌施放资源终态四项全等（neili/冷却/bar/选中）——镜像不漂移', () => {
+  it('AOE 对敌与空放资源终态四项全等（neili/冷却/bar/选中）——镜像不漂移（v2.2：AOE 多目标仍恰扣一次的终态锁）', () => {
     const { hit, air } = castPair();
     expect(castFinalFour(air)).toEqual(castFinalFour(hit));
     expect(castFinalFour(air)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
@@ -640,9 +650,10 @@ describe('[ATK-6] cast 射程外=rejected(range)：选中保持零消耗（sessi
   });
 });
 
-describe('[ATK-6/Q2] cast 自己格=空放语义（特判并联不入高亮）', () => {
+describe('[ATK-6/Q2] cast 自己格=空放语义（特判并联不入高亮 · v2.2 布点修正=真空放）', () => {
   it('自己格 ∉ attackCells 但 cast 受理：事件尾 skill 无 targetId/无 damage+四项终态=空放+朝向保持', () => {
-    const s = armedBoard();
+    const s = castBoard(11); // v2.2 布点修正：e0(11,8) 出射程（cube 4），自己格 cast=真空放（射程内无存活敌）
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
     const heroCell = s.snapshot().actors.find((a) => a.id === 'p')!.pos;
     // Q2 反面证据：自己格不入高亮（并联不并入，rangeCells 跳过原点）
     expect(s.snapshot().attackCells.some((c) => c.q === heroCell.q && c.r === heroCell.r)).toBe(false);
@@ -659,8 +670,8 @@ describe('[ATK-6/Q2] cast 自己格=空放语义（特判并联不入高亮）',
   });
 });
 
-describe('[ATK-7] cast 无逻辑敌格=空放（命中以逻辑位判定）', () => {
-  it('敌演出位格 ∈ 射程 → cast 受理但该格无逻辑敌：敌 hp 不变+资源终态=空放', () => {
+describe('[ATK-7] 演出位∈射程=施放全范围生效（v2.2 简化：命中只看射程成员）', () => {
+  it('敌演出位格 ∈ 射程 → cast 受理且 AOE 按射程成员命中 e0：skill|miss 带 targetId+e0 hp≤hp0+逻辑位不动+四项终态', () => {
     const s = armedBoard();
     // 模拟移动演出中：e0 可见位偏移到射程内空格 (8,8)，逻辑 hex 保持 (9,8)
     const e0u = s._debug.units.find((x) => x.id === 'e0')!;
@@ -669,14 +680,15 @@ describe('[ATK-7] cast 无逻辑敌格=空放（命中以逻辑位判定）', ()
     e0u.renderR = ghostCell.r;
     const hp0 = e0u.hp;
     expect(s.submit({ type: 'cast', to: ghostCell, skillId: 'te' })).toBe(true);
+    // v2.2 断言翻转（ATK-7 简化/五点④）：点击演出位格=施放全范围——e0 逻辑位 (9,8) ∈ 射程被命中，
+    // 「命中按逻辑位」条款废止（v2.0 断言「敌 hp 不变/空事件」随之翻转）
     const tail = s.events[s.events.length - 1];
-    expect(tail.type).toBe('skill');
-    expect('targetId' in tail).toBe(false);
-    expect('damage' in tail).toBe(false);
+    expect(tail.type === 'skill' || tail.type === 'miss').toBe(true); // 结算事件（命中或被闪避，既有双形状）
+    expect((tail as { targetId?: string }).targetId).toBe('e0'); // 受击目标=射程成员（点击格 (8,8) 上无逻辑敌的直接证据）
     expect(e0u.dead).toBe(false);
-    expect(e0u.hp).toBe(hp0); // 敌 hp 不变（ATK-7 命中以逻辑位判定的核心证据）
-    expect(e0u.hex).toEqual(offsetToAxial(9, 8)); // 逻辑位不动
-    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+    expect(e0u.hp).toBeLessThanOrEqual(hp0); // 施放全范围生效（miss 偶发容错：≤ 而非 <）
+    expect(e0u.hex).toEqual(offsetToAxial(9, 8)); // 逻辑位不动（命中不依赖点击格与逻辑位——保留证据）
+    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null }); // resolveAction 真值路径
   });
 });
 
@@ -755,6 +767,110 @@ describe('[ATK-6 门] cast 选中态门：无选中/qing 态/陈旧 skillId → 
     expect(s3.events.slice(n3)).toHaveLength(1);
     expect(s3.events[n3]).toMatchObject({ type: 'rejected', reason: 'invalid' });
     expect(s3.snapshot().selectedSkill).toBe('te'); // 陈旧 id 拒绝不清选中
+  });
+});
+
+// ══════════ T22 新增（规格 v2.2 五点/AOE · 方案 §三 V1/V2/V6 对号） ══════════
+
+/** 任意单位 hp 读法（多敌分野/AI 同构用例） */
+const hpOf = (s: HexBattleSession, id: string) => s._debug.units.find((u) => u.id === id)!.hp;
+
+/** T22 多敌标准局：p(7,8) te level20（sword circle 射程2）+ e0(9,8)∈ / e1(8,9)∈ / e2(11,8)∉（cube 4） */
+function aoeBoard(): HexBattleSession {
+  const p = unit({
+    id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+    skills: [teSkill({ level: 20 })],
+  });
+  const s = makeSession(13, 'manual', p, [
+    unit({ id: 'e0', side: 'enemy' }),
+    unit({ id: 'e1', side: 'enemy' }),
+    unit({ id: 'e2', side: 'enemy' }),
+  ]);
+  place(s, 'p', 7, 8);
+  place(s, 'e0', 9, 8); // axial 距 2 ∈ 射程
+  place(s, 'e1', 8, 9); // axial 距 2 ∈ 射程
+  place(s, 'e2', 11, 8); // axial 距 4 ∉ 射程（与射程外用例同格）
+  ready(s);
+  expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+  return s;
+}
+
+describe('[ATK-2 AOE] 多敌分野：射程内全体受击+资源恰扣一次（v2.2 五点① / V1）', () => {
+  it('2 敌 ∈射程 + 1 敌 ∉射程 → cast 敌格：恰 2 条 skill|miss（targetId 按 all 声明序）+各自 hp≤hp0+射程外 hp 不变+四项终态单次', () => {
+    const s = aoeBoard();
+    const hp0 = { e0: hpOf(s, 'e0'), e1: hpOf(s, 'e1'), e2: hpOf(s, 'e2') };
+    const n0 = s.events.length;
+    const e0cell = s.snapshot().actors.find((a) => a.id === 'e0')!.pos;
+    expect(s.submit({ type: 'cast', to: e0cell, skillId: 'te' })).toBe(true);
+    const added = s.events.slice(n0);
+    const settled = added.filter((e) => e.type === 'skill' || e.type === 'miss');
+    expect(settled).toHaveLength(2); // 恰 2 条结算事件（射程内全体）
+    // targetId 连续序 = all 声明序（「禁 sort」的行为锁——只数条数防不住按距离排序的错误实现）
+    expect(settled.map((e) => (e as { targetId?: string }).targetId)).toEqual(['e0', 'e1']);
+    expect(hpOf(s, 'e0')).toBeLessThanOrEqual(hp0.e0); // 各自独立掷骰全额伤害（miss 偶发容错 ≤）
+    expect(hpOf(s, 'e1')).toBeLessThanOrEqual(hp0.e1);
+    expect(hpOf(s, 'e2')).toBe(hp0.e2); // 射程外敌不受击（分野另一半）
+    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null }); // 双目标仍恰扣一次
+    expect(added.some((e) => e.type === 'rejected' || e.type === 'move' || e.type === 'basic')).toBe(false); // cast 臂纯净
+  });
+});
+
+describe('[五点②] 点击格无关：同 seed 同布点双场，点射程内空格 vs 点敌格事件流全等（V2 / SP-2）', () => {
+  it('A 场 cast 空格 (6,8) / B 场 cast 敌格 (9,8) → 增量事件 slice JSON 全等（rng 消费同序同量）', () => {
+    // 显式 place 布点防出生漂移（方案 §四-12）；两场 cast 前 events 已全等（同 seed 同操作）
+    const mk = () => aoeBoard();
+    const a = mk();
+    const b = mk();
+    const nA = a.events.length;
+    const nB = b.events.length;
+    expect(a.events.slice(0, nA)).toEqual(b.events.slice(0, nB)); // 前置：cast 前事件流已全等
+    const e0cell = b.snapshot().actors.find((x) => x.id === 'e0')!.pos;
+    expect(a.submit({ type: 'cast', to: offsetToAxial(6, 8), skillId: 'te' })).toBe(true); // 射程内空格
+    expect(b.submit({ type: 'cast', to: e0cell, skillId: 'te' })).toBe(true); // 敌格
+    expect(a.events.slice(nA)).toEqual(b.events.slice(nB)); // 点击格不影响结算结果（直接锁）
+    const settled = a.events.slice(nA).filter((e) => e.type === 'skill' || e.type === 'miss');
+    expect(settled).toHaveLength(2); // 恰 2 条结算事件（无 rejected 混入）
+  });
+});
+
+describe('[AI 同构] 案 A：自动模式 AI 代行出技同构 AOE（V6 / 五点⑤「敌方同规则」）', () => {
+  it('2 敌 ∈ AI 技射程 → AI 出技 te：恰 2 条相邻结算事件（targetId=all 序）+资源一次+射程外敌不受击+未走位移臂', () => {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword',
+      skills: [teSkill({ level: 20 })],
+    });
+    const s = makeSession(7, 'auto', p, [
+      unit({ id: 'e0', side: 'enemy' }),
+      unit({ id: 'e1', side: 'enemy' }),
+      unit({ id: 'e2', side: 'enemy' }),
+    ]);
+    place(s, 'p', 7, 8);
+    place(s, 'e0', 9, 8);
+    place(s, 'e1', 8, 9);
+    place(s, 'e2', 11, 8);
+    const hp0 = { e0: hpOf(s, 'e0'), e1: hpOf(s, 'e1'), e2: hpOf(s, 'e2') };
+    // tick 至首个玩家结算事件即停（BAR-2 tie-break 玩家先；敌方 move/basic 事件 actorId≠p 不干扰）
+    let i0 = -1;
+    for (let i = 0; i < 1500 && i0 < 0; i++) {
+      s.tick(DT);
+      i0 = s.events.findIndex((e) => e.actorId === 'p' && (e.type === 'skill' || e.type === 'miss'));
+    }
+    expect(i0).toBeGreaterThanOrEqual(0);
+    // 前置自检（防轮转竞态静默改语义）：首动瞬间 e2 确在射程外（fillRate 变更会让此断言红 = fail loudly）
+    expect(cubeDistance(pu(s).hex, s._debug.units.find((u) => u.id === 'e2')!.hex)).toBeGreaterThan(2);
+    const first = s.events[i0];
+    expect(first.type === 'skill' || first.type === 'miss').toBe(true);
+    expect(first.skillId).toBe('te'); // planSkill 臂先于普攻/位移（miss log 亦带 skillId，core:271）
+    expect((first as { targetId?: string }).targetId).toBe('e0'); // all 声明序首目标
+    const second = s.events[i0 + 1];
+    expect(second.type === 'skill' || second.type === 'miss').toBe(true); // resolveAoe 同步循环相邻锁
+    expect((second as { targetId?: string }).targetId).toBe('e1');
+    expect(s.events.slice(0, i0).some((e) => e.type === 'move' && e.actorId === 'p')).toBe(false); // 未走位移臂
+    expect(pu(s).neili).toBe(100 - NEILI_COST_PER_CAST); // 资源一次（双目标）
+    expect(pu(s).cooldowns.get('te')).toBe(2); // R-08 写初值（幂等重复写无差异）
+    expect(hpOf(s, 'e0')).toBeLessThanOrEqual(hp0.e0);
+    expect(hpOf(s, 'e1')).toBeLessThanOrEqual(hp0.e1);
+    expect(hpOf(s, 'e2')).toBe(hp0.e2); // 射程外敌不受击
   });
 });
 

@@ -9,14 +9,17 @@
 // ─── 红名单（与 tests/battle-behavior.test.ts 文件头同源维护）───
 // | 用例  | 缺陷号 | 根因层 | 登记日 | 修复 commit |
 // |-------|--------|--------|--------|-------------|
-// | BE2🟢  | N2 | 空红格零反馈（input 层 + 规格缺口 ATK-2/ATK-5 之间） | 09-02 | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-6 v2.0 格子目标化重写=cast 空放受理预期绿） |
-// | BE3a🟢 | N2 | 敌演出位≠逻辑格时点可见位 → 误取消选中（input 命中层） | 09-02 | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-7/SEL-5② v2.0 拆双例：射程内=cast 受理，预期绿） |
+// | BE2🟢  | N2 | 空红格零反馈（input 层 + 规格缺口 ATK-2/ATK-5 之间） | 09-02 | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-6 v2.0 格子目标化重写=cast 空放受理预期绿）；T22 09-03 按 v2.2 改写：空放段前全体敌白盒出射程（空放=射程内无存活敌，方案 §四-8），断言本体保持 |
+// | BE3a🟢 | N2 | 敌演出位≠逻辑格时点可见位 → 误取消选中（input 命中层） | 09-02 | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-7/SEL-5② v2.0 拆双例：射程内=cast 受理，预期绿）；T22 09-03 按 ATK-7 v2.2 断言翻转=施放全范围生效（e1 受击）+ e2 白盒核位（Q-T22-B） |
 // | BE3b🟢 | N2 | 同上（拆双例） | 09-02 | T20-FE 09-03（本卡交付提交，hash 见 git log；射程外=cancelSkill 规范取消+无 skill 事件+资源零消耗，预期绿；e2e 用例 4→5） |
 // | BE4🟢  | N1 | ATK-3 覆写 walk → moveAnim 不启动 → 直线插值穿人（FE 演出触发+session 回退轨） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
 // BE1 = 绿锁（特技施放全链，受理/结算层无病的端到端证据）。
 // T19 批一（09-03）终态：BE1 绿锁 / BE2·BE3 预期红（二批）/ BE4 转预期绿。
 // T20-FE（09-03）终态：全部预期绿（BE2 按 ATK-6 v2.0 翻转；BE3 按 ATK-7/SEL-5② v2.0 拆 BE3a/BE3b，
 // 用例 4→5；规格依据=《战斗交互行为规格》v2.1 + 修复方案 §五对照表，PM 裁决放行）。
+// T22（09-03）终态：BE2/BE3a/HF2 随规格 v2.2 AOE 五点配套改写（BE2/HF2 空放段=全体敌出射程；
+// BE3a 断言翻转=施放全范围生效）；BE1/BE3b/BE4/HF1/HF3/HF4 零改自然 MATCH。规格依据=
+// 《战斗交互行为规格》v2.2 + 《特绝范围AOE修正方案-v0.1》§二.2，PM 裁决放行（Q-T22-A/B 采建议案）。
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -125,7 +128,7 @@ console.log(bootLogs.join('\n'));
   const casted =
     redHasFoe && evTypes.some((t) => t === 'skill' || t === 'miss') &&
     st.hero.neili === neili0 - 1 && st.selected === null;
-  report('BE1 特技施放全链（点静止敌格）', false, casted,
+  report('BE1 特技施放全链（点静止敌格=v2.2 AOE 退化单目标）', false, casted,
     `红格含敌格=${redHasFoe} 事件=${JSON.stringify(evTypes)} 内力${neili0}→${st.hero.neili} 敌hp${hp0}→${foe.hp} 选中=${st.selected}`);
 }
 
@@ -137,6 +140,17 @@ const clearEnemyBars = () =>
     }
   });
 
+/** 【T22 v2.2】白盒挪敌出射程（同排 cube 3 > jue/te 射程 2）：优先东向（offset col ≤ 11），
+ * 越界改西向——hero 出生带 col 4..7 恒东向；placeFoe 顺带清条。
+ * 用于空放段（v2.2 空放=射程内无存活敌，方案 §四-8）与 BE3a 的 e2 核位（Q-T22-B 裁决案）。 */
+const placeFoeFar = async (id, heroPos) => {
+  const heroCol = heroPos.q + Math.floor(heroPos.r / 2);
+  const east = heroCol + 3 <= 11;
+  const q = east ? heroPos.q + 3 : heroPos.q - 3;
+  await placeFoe(id, q, heroPos.r);
+  return { q, r: heroPos.r, east };
+};
+
 /** 白盒清 hero 技能冷却（测试基建，与 placeFoe 同级）：BE2 施放 jue 写入 cd=5 会锁死后续用例的
  * 技能选择（te/jue 双双置灰）——冷却资源跨用例耦合不是本卡断言对象，清零以隔离场景（§七-9 同源经验）。 */
 const clearHeroCooldowns = () =>
@@ -147,11 +161,16 @@ const clearHeroCooldowns = () =>
     return { ok: true };
   });
 
-// ═══ BE2（预期绿 · N2 转绿 · ATK-6 v2.0）：选绝 → 点空红格 → cast 空放受理（资源全扣无伤害） ═══
+// ═══ BE2（预期绿 · N2 转绿 · ATK-6 v2.2）：选绝 → 全体敌出射程 → 点空红格 → cast 空放受理（资源全扣无伤害） ═══
 {
   await waitHeroTurn();
   await clearEnemyBars();
   await clearHeroCooldowns();
+  // 【T22 v2.2】空放=射程内无存活敌（五点③）：施放前全体敌白盒出射程核位——e1 经 BE1 已摆入
+  // 射程、e2 经前序游走位置不可控（方案 §四-8：只找一个无敌空格不再构成空放前提）
+  const heroPosB2 = (await snapState()).hero.pos;
+  await placeFoeFar('e1', heroPosB2);
+  await placeFoeFar('e2', heroPosB2);
   await waitPop();
   await tapSkill('jue'); // BE1 已施放特技（冷却 2 回合），此处用未消耗的绝
   const st0 = await snapState();
@@ -181,7 +200,7 @@ const clearHeroCooldowns = () =>
   // 回合已随施放消耗（BAR-3/SEL-3），无需清场；下一块 waitHeroTurn 重等条满
 }
 
-// ═══ BE3a（预期绿 · N2 转绿 · ATK-7 射程内臂）：敌演出位 ∈ 射程 → 点可见位 = cast 空放受理 ═══
+// ═══ BE3a（预期绿 · N2 · ATK-7 v2.2 射程内臂）：敌演出位 ∈ 射程 → 点可见位 = 施放全范围生效 ═══
 {
   await waitHeroTurn();
   await clearEnemyBars();
@@ -192,6 +211,7 @@ const clearHeroCooldowns = () =>
   // 布点三约束（方案 §七-16）：①cube ≤ jue 射程(2) ②≠ 敌逻辑格 ③画布内且避开 ctrl/plaque 实体与弧钮——
   // 沿原 BE3 南向偏移收 1 格（原 (r+2) 射程外，本例取 (r+1) 入射程；更靠北远离右下 ctrl 热区）。
   await placeFoe('e1', hero.pos.q + 1, hero.pos.r);
+  await placeFoeFar('e2', hero.pos); // 【Q-T22-B 裁决案】e2 白盒出射程核位：保 evN+1 与「恰 1 条 targetId='e1' 结算事件」确定性
   await tapSkill('jue');
   await page.evaluate(() => {
     const u = window.__demo.session._debug.units.find((x) => x.id === 'e1');
@@ -222,15 +242,21 @@ const clearHeroCooldowns = () =>
   await page.mouse.click(vis.p.x, vis.p.y);
   await page.waitForTimeout(400);
   const st1 = await snapState();
-  const foeHpUnchanged = st1.foes.every((f) => {
-    const b = st0.foes.find((x) => x.id === f.id);
-    return !b || b.hp === f.hp;
-  });
+  // 【T22 v2.2 断言翻转（ATK-7 简化/五点④）】演出位∈射程=施放全范围生效——e1 逻辑位 ∈ 射程被 AOE 命中，
+  // 「敌 hp 不变」翻转「e1 hp ≤ hp0 + 恰 1 条 targetId='e1' 的 skill|miss」（miss 偶发容错 ≤；
+  // e2 已核位出射程 → evN+1 保持确定性）
+  const evSliceA = await page.evaluate((n0) =>
+    window.__demo.session.events.slice(n0).map((e) => ({ t: e.type, tgt: e.targetId ?? null })),
+  [st0.evN]);
+  const e1Settled = evSliceA.filter((e) => (e.t === 'skill' || e.t === 'miss') && e.tgt === 'e1');
+  const e1Before = st0.foes.find((x) => x.id === 'e1');
+  const e1After = st1.foes.find((f) => f.id === 'e1');
   const casted =
     st1.selected === null && st1.evN === st0.evN + 1 &&
-    st1.hero.neili === st0.hero.neili - 1 && foeHpUnchanged;
-  report('BE3a 演出位∈射程=cast 空放受理（N2 转绿）', false, casted,
-    `敌 pos=${JSON.stringify(vis.pos)} 可见位=${JSON.stringify(vis.renderPos)} 选中=${st1.selected} 事件${st0.evN}→${st1.evN} 内力${st0.hero.neili}→${st1.hero.neili} 敌hp不变=${foeHpUnchanged}`);
+    st1.hero.neili === st0.hero.neili - 1 &&
+    e1Settled.length === 1 && e1After.hp <= (e1Before ? e1Before.hp : 0);
+  report('BE3a 演出位∈射程=施放全范围生效（N2/T22 v2.2）', false, casted,
+    `敌 pos=${JSON.stringify(vis.pos)} 可见位=${JSON.stringify(vis.renderPos)} 选中=${st1.selected} 事件${st0.evN}→${st1.evN} 内力${st0.hero.neili}→${st1.hero.neili} e1结算事件=${e1Settled.length} e1hp${e1Before ? e1Before.hp : '?'}→${e1After ? e1After.hp : '?'}`);
 }
 
 // ═══ BE3b（预期绿 · N2 转绿 · ATK-7 射程外臂/SEL-5②）：演出位 ∉ 射程（原布点）→ 取消=规范行为 ═══
@@ -453,7 +479,10 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
       await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 4000 });
       const obs = await page.evaluate((n0) => {
         const v = window.__demo.getView();
-        const ev = window.__demo.session.events.slice(n0).find((e) => e.type === 'skill' || e.type === 'miss');
+        // 【T22 v2.2 · 方案 §四-9】多目标下首条事件可能是其他目标的 miss——取事件策略改 find targetId='e1'
+        const ev = window.__demo.session.events.slice(n0).find(
+          (e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1',
+        );
         return {
           ev: ev ? { type: ev.type, targetId: ev.targetId, damage: ev.damage ?? null } : null,
           texts: v.fx.filter((f) => f.kind === 'dmg').map((f) => f.text),
@@ -480,6 +509,13 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
     await clearHeroCooldowns();
     await waitPop();
     await tapSkill('jue');
+    // 【T22 v2.2 · 方案 §四-8】空放段前置：全体敌白盒出射程（e1 前半已摆入射程 + e2 游走位不可控
+    // → 射程内有敌时点红格=AOE 非空放，假红源）；placeFoe 顺带清条
+    const heroPosH2 = await page.evaluate(() =>
+      window.__demo.session.snapshot().actors.find((a) => a.id === 'hero').pos,
+    );
+    await placeFoeFar('e1', heroPosH2);
+    await placeFoeFar('e2', heroPosH2);
     const before = await page.evaluate(() => ({
       evN: window.__demo.session.events.length,
       dmgN: window.__demo.getView().fx.filter((f) => f.kind === 'dmg').length,

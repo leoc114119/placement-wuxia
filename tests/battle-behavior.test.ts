@@ -10,12 +10,15 @@
 // |---------------------------------------|--------|-----------|----------|-------------|
 // | N1🟢 移动演出·路径演出必须启动          | N1     | session ATK-3 覆写 walk 演出（§3.2） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
 // | N1🟢 移动演出·绘制路径不得穿占格        | N1     | session 直线回退轨穿占格（§3.3） | 09-02 | T19 批一 09-03（本卡交付提交，hash 见 git log） |
-// | N2🟢 空红格点击必须有可观测反馈         | N2     | input+规格 | 09-02    | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-2/ATK-6 v2.0 格子目标化重写=cast 空放受理断言） |
-// | N2🟢 敌演出位点击不得静默取消选中       | N2     | input 命中  | 09-02    | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-7/SEL-5② v2.0 拆双变体重写：射程内 cast 受理/射程外规范取消） |
+// | N2🟢 空红格点击必须有可观测反馈         | N2     | input+规格 | 09-02    | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-2/ATK-6 v2.0 格子目标化重写=cast 空放受理断言）；T22 09-03 按 v2.2 改布点（e1 出射程=真空放），断言体零改 |
+// | N2🟢 敌演出位点击不得静默取消选中       | N2     | input 命中  | 09-02    | T20-FE 09-03（本卡交付提交，hash 见 git log；按 ATK-7/SEL-5② v2.0 拆双变体重写：射程内 cast 受理/射程外规范取消）；T22 09-03 按 ATK-7 v2.2 翻转变体(a)=施放全范围生效（命中只看射程成员） |
 // 其余用例 = 绿锁（规格矩阵对号；红即回归，不是登记簿）。
 // T19 批一（09-03）终态：4 红 → 2 红（N2-①/N2-②）；N1×2 转绿见上表。
 // T20-FE（09-03）终态：2 红 → 0 红（N2-①②按规格 v2.0 重写转绿；规格依据=《战斗交互行为规格》v2.1
 // ATK-2/ATK-6/ATK-7/SEL-5② + 《战斗格子施放与热区修复方案》§五新旧断言对照表，PM 裁决放行）。
+// T22（09-03）终态：N2-①②随规格 v2.2 AOE 五点配套改写（①改布点敌出射程=真空放、②(a)断言翻转=
+// 施放全范围生效；②(b)取消路径零改）；规格依据=《战斗交互行为规格》v2.2 + 《特绝范围AOE修正方案-v0.1》
+// §二.2，PM 裁决放行（Q-T22-A/B 采建议案）。其余 12 例零改。
 //
 // 测试基建说明：place() 通过 session 公开的 _debug 白盒布点（绕过随机出生求确定性场景），
 // 断言只针对公共 API（snapshot/submit/events）与渲染公共函数（updateView/moveAnimDrawPosPx）。
@@ -322,10 +325,10 @@ d('N1🔴 移动演出（FE 演出层）', () => {
 });
 
 d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命中层）', () => {
-  it('空红格点击=cast 空放受理：input 恰派 1 条 cast、资源全扣无伤害（N2-① · ATK-2/ATK-6 v2.0）', () => {
+  it('空红格点击=cast 空放受理：input 恰派 1 条 cast、资源全扣无伤害（N2-① · ATK-2/ATK-6 v2.2 布点修正）', () => {
     const s = mkSession();
     place(s, 'hero', 7, 8);
-    place(s, 'e1', 9, 8);
+    place(s, 'e1', 11, 8); // 【T22 v2.2】空放=射程内无存活敌（五点③）：e1 挪出射程（cube 4 > 特射程 2）
     place(s, 'e2', 4, 12);
     ready(s);
     s.submit({ type: 'selectSkill', skillId: 'te' });
@@ -367,12 +370,12 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
     expect((skillEv as { damage?: unknown }).damage).toBeUndefined(); // 且无 damage
   });
 
-  it('敌演出位点击双变体：射程内=cast 空放受理 / 射程外=规范取消（N2-② · ATK-7/SEL-5② v2.0）', () => {
-    // ── 变体 (a)：renderPos 偏移至射程内格（≠ 敌逻辑格）→ 对格施放受理（空放）──
+  it('敌演出位点击双变体：射程内=施放全范围生效 / 射程外=规范取消（N2-② · ATK-7 v2.2 简化/SEL-5②）', () => {
+    // ── 变体 (a)：renderPos 偏移至射程内格（≠ 敌逻辑格）→ 施放全范围生效（T22 v2.2 断言翻转）──
     const s = mkSession();
     place(s, 'hero', 7, 8);
     place(s, 'e1', 9, 8); // pos axial(5,8)
-    place(s, 'e2', 4, 12);
+    place(s, 'e2', 4, 12); // cube 5 ∉ 射程（e1 为唯一射程内敌 → 恰 1 条结算事件）
     ready(s);
     s.submit({ type: 'selectSkill', skillId: 'te' });
     const view = createView();
@@ -381,13 +384,14 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
       updateView(view, s.snapshot(), 0.016, W, H);
     }
     const e1u = s._debug.units.find((x) => x.id === 'e1')!;
-    // 可见位 axial(4,9)（offset(8,9)）：cube(hero(3,8)→(4,9))=2 ≤ 特射程 2，且 ≠ 敌逻辑格（ATK-7 空放臂）
+    // 可见位 axial(4,9)（offset(8,9)）：cube(hero(3,8)→(4,9))=2 ≤ 特射程 2，且 ≠ 敌逻辑格（ATK-7 v2.2 生效臂）
     e1u.renderQ = 4;
     e1u.renderR = 9;
     const snapA = s.snapshot();
     expect(snapA.attackCells.some((c) => c.q === 4 && c.r === 9)).toBe(true); // 前置：演出位格 ∈ 射程红格
     const neiliA = snapA.actors.find((a) => a.id === 'hero')!.neili;
     const hpA = snapA.actors.find((a) => a.id === 'e1')!.hp;
+    const evA0 = s.events.length; // 结算事件基线
     const dispatches: ActionRequest[] = [];
     const input = createBattleInput({
       dispatch: (req) => {
@@ -400,8 +404,13 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
     expect(dispatches).toEqual([{ type: 'cast', to: { q: 4, r: 9 }, skillId: 'te' }]); // 演出位∈射程=受理
     const afterA = s.snapshot();
     expect(afterA.selectedSkill).toBe(null); // 施放受理选中清
-    expect(afterA.actors.find((a) => a.id === 'e1')!.hp).toBe(hpA); // 格上无逻辑敌=空放无伤害
-    expect(afterA.actors.find((a) => a.id === 'hero')!.neili).toBe(neiliA - 1); // 资源照扣（ATK-6 全消耗）
+    // v2.2 断言翻转（ATK-7 简化/五点④）：命中只看射程成员——e1 逻辑位 (9,8) ∈ 射程被 AOE 命中
+    const settleA = s.events.slice(evA0).filter((e) => e.type === 'skill' || e.type === 'miss');
+    expect(settleA).toHaveLength(1); // 恰 1 条结算事件（e1 唯一射程内敌）
+    expect((settleA[0] as { targetId?: string }).targetId).toBe('e1');
+    expect(afterA.actors.find((a) => a.id === 'e1')!.hp).toBeLessThanOrEqual(hpA); // 施放全范围生效（miss 偶发容错 ≤）
+    expect(e1u.hex).toEqual(offsetToAxial(9, 8)); // 逻辑位不动（命中不依赖点击格与逻辑位——保留证据）
+    expect(afterA.actors.find((a) => a.id === 'hero')!.neili).toBe(neiliA - 1); // 资源照扣（首目标真值）
 
     // ── 变体 (b)：renderPos 偏移至射程外格（原取证布点 r+2，cube 距离 4 > 2）→ cancelSkill=规范取消 ──
     // 新 session 防跨变体泄漏（place() 基建不重置 cooldowns/资源，方案 §七-9）

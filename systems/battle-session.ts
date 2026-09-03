@@ -353,9 +353,12 @@ export function createHexBattle(opts: HexBattleOptions) {
    * hex 度量换轨后射程已由 session 按 cube 距离预筛（Q1 批复适配），此处以 posNeutral 屏蔽之；
    * Proxy 仅拦截 get(pos)，其余读写全部转发真身（neili/cooldowns/hp 副作用契约原样生效）。
    * 无 swap、无手工双写、core 零改动。 */
-  /** 单次出手结算。skill 非 null 时按 Q2 口径以「视图技能」传入（neiliCost 视图=1，SkillDef 真值不动）。 */
-  function doAttack(actor: Runner, target: Runner, skill: SkillDef | null, quiet = false): void {
-    const skillView = skill ? { ...skill, neiliCost: NEILI_COST_PER_CAST } : null;
+  /** 单次出手结算。skill 非 null 时按 Q2 口径以「视图技能」传入（neiliCost 视图=1，SkillDef 真值不动）。
+   * 【ATK-2 v2.2 · T22】payCost（session 内部参数，非契约）：AOE 逐目标结算中首目标 true（视图=1，
+   * 走 resolveAction 真值扣费）、后续 false（视图=0，core:245 扣 0）——资源每次施放恰扣一次；
+   * 冷却 core:246 写初值幂等，重复调用无行为差异（方案 §二.1 改动一）。 */
+  function doAttack(actor: Runner, target: Runner, skill: SkillDef | null, quiet = false, payCost = true): void {
+    const skillView = skill ? { ...skill, neiliCost: payCost ? NEILI_COST_PER_CAST : 0 } : null;
     const outcome = resolveAction(actor, target, skillView, rng);
     if (outcome.kind !== 'blocked') {
       // 【T19/N1 主修 · 方案 §3.2】ATK-3 路径（quiet 且仍在移动演出中）不覆写 walk——攻击演出
@@ -395,6 +398,17 @@ export function createHexBattle(opts: HexBattleOptions) {
       emit({ type: 'death', actorId: target.id });
     }
     checkEnd();
+  }
+
+  /** 【ATK-2 v2.2 · T22】范围 AOE 逐目标结算（cast 与 aiAct 案 A 的单一产生点）：
+   * 首目标承担资源（R-09/R-08 经 resolveAction 真值路径，neiliCost 视图=1）；后续目标
+   * payCost=false（视图=0，core:245 扣 0）——资源每次施放恰扣一次。每目标独立掷骰
+   * （命中 F-04 → 闪避 → 暴击，1~3 次 rng）+ 各发 skill|miss 事件（既有形状）+ 各自死亡判定。
+   * targets 顺序由调用方定死（all 数组序一次快照，禁 sort——SP-2 确定性）。
+   * 循环内 doAttack 副作用幂等注记（锁）：setAnim('charge') 同值覆写=单次效果（animLeftMs
+   * 重置同值，同步循环等价单次）；faceToward 循环内逐目标执行，由调用方以点击格收尾定版。 */
+  function resolveAoe(actor: Runner, skill: SkillDef, targets: Runner[]): void {
+    for (let i = 0; i < targets.length; i++) doAttack(actor, targets[i], skill, false, i === 0);
   }
 
   // ---- 移动（病灶②：isJump 唯一产生点） ----
@@ -444,7 +458,10 @@ export function createHexBattle(opts: HexBattleOptions) {
     return true;
   }
 
-  function planSkill(actor: Runner): { skill: SkillDef; target: Runner } | null {
+  /** 【T22 案 A · 五点⑤「敌方同规则」】AI 代行出技计划：按品阶降序取首个有射程内目标的技能，
+   * 收集射程内**全体**存活敌（foesOf 保持 all 数组序，禁 sort——resolveAoe 目标序=SP-2 确定性）；
+   * 1v1 局 targets 退化单目标（既有 AI 用例零改保持绿）。 */
+  function planSkill(actor: Runner): { skill: SkillDef; targets: Runner[] } | null {
     const usable = actor.skills
       .filter(
         (s) =>
@@ -456,10 +473,8 @@ export function createHexBattle(opts: HexBattleOptions) {
     for (const s of usable) {
       const n = skillRange(s);
       const shape = rangeShapeOf(s.weapon ?? actor.weapon ?? 'fist');
-      const target = foesOf(actor)
-        .filter((f) => targetInRange(actor, f, n, shape))
-        .sort((a, b) => cubeDistance(actor.hex, a.hex) - cubeDistance(actor.hex, b.hex) || a.hp - b.hp)[0];
-      if (target) return { skill: s, target };
+      const targets = foesOf(actor).filter((f) => targetInRange(actor, f, n, shape));
+      if (targets.length > 0) return { skill: s, targets };
     }
     return null;
   }
@@ -472,7 +487,7 @@ export function createHexBattle(opts: HexBattleOptions) {
     const basicOk = targetInRange(actor, target, basicRange(actor), rangeShapeOf(actor.weapon ?? 'fist'));
     tickCooldowns(actor);
     if (plan) {
-      doAttack(actor, plan.target, plan.skill);
+      resolveAoe(actor, plan.skill, plan.targets); // 【案 A】AI 代行出技同构 AOE（1v1 退化单目标）
       return;
     }
     if (basicOk) {
@@ -753,14 +768,25 @@ export function createHexBattle(opts: HexBattleOptions) {
         emit({ type: 'rejected', actorId: player.id, reason: 'range' });
         return false;
       }
-      // ATK-7：提交瞬间按逻辑位查格上存活敌（演出位/空格落空 → 空放）
-      const target = alive().find((x) => x.side !== player.side && hexEq(x.hex, req.to));
+      // ★【ATK-2 v2.2 · T22】受击目标集合 = 射程形态格（selection.legalCells，显示=校验=结算三同源，
+      //   激活快照禁 cast 时重算——病灶③不复发）内的全体存活敌；all 数组序一次快照（SP-2：
+      //   rng 消费顺序 = 目标序 × 每目标独立掷骰 1~3 次，禁 sort/tie-break）。
+      //   演出位与点击格解耦（ATK-7 v2.2 简化）：命中只看射程成员，不依赖点击格与逻辑位。
+      const legalCells = selection.legalCells; // 激活快照局部引用（选中态门已保证非 null；回调内窄化失效）
+      const targets = all.filter(
+        (x) => x.side !== player.side && !x.dead &&
+          legalCells.some((p) => hexEq(p, x.hex)),
+      );
+
       tickCooldowns(player); // 读后递减，与 attack 分支同位（四查后、结算前）
-      if (target) {
-        doAttack(player, target, s); // 既有路径：resolveAction（R-09/R-08 副作用）+ skill/miss 事件 + 演出
+
+      if (targets.length > 0) {
+        resolveAoe(player, s, targets); // ★ 逐目标独立掷骰全额伤害，资源只在首目标扣一次
+        faceToward(player, req.to); // ★ 朝向定版=点击格（出手确认方向，覆盖循环内逐目标 faceToward；方案 §六-3）
       } else {
-        // ATK-6 空放=合法施放：resolveAction 不调（battle-core 零改动红线），session 逐字段镜像资源三件
-        // （与对敌施放资源终态四项全等：neili/冷却/bar/选中——用例 [ATK-6] 逐项锁）
+        // ATK-6 空放=合法施放（v2.2 平移：射程形态内无任何存活敌）：resolveAction 不调
+        // （battle-core 零改动红线），session 逐字段镜像资源三件
+        // （与 AOE 施放资源终态四项全等：neili/冷却/bar/选中——用例 [ATK-6] 逐项锁）
         player.neili -= NEILI_COST_PER_CAST; // R-09 镜像（skillView 同值，禁用 SkillDef.neiliCost）
         if (s.cooldownTurns > 0) player.cooldowns.set(s.id, s.cooldownTurns); // R-08 镜像 core:246 条件式（写初值）
         setAnim(player, 'charge'); // Q3：施放演出照播（charge→strike 既有 anim 链，无受击 FX）
