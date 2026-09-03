@@ -71,4 +71,5 @@ ls assets/_trial_<日期>/ 2>/dev/null || mkdir -p assets/_trial_<日期>   # �
 | `references/c10-icons.md` | 类10 图标样板 |
 | `references/c11-avatars.md` | 类11 头像双路线对照 |
 | `references/c12-vfx.md` | 类12 特效（N/A） |
+| `references/c13-battle45.md` | 类13 战斗帧 45° 俯视（T45 · 78 张专用） |
 | `references/common-pitfalls.md` | 通用异常处置表（先读） |
