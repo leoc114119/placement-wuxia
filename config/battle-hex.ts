@@ -192,6 +192,23 @@ export const FX = {
   maxRadius: 34,
 } as const;
 
+// ===== 受击反馈 DMG 参数组（T21 · 方案 §2.6 全表；ADR-004 只读展示参数，无结算公式——L 环真机手感可调） =====
+export const DMG = {
+  sec: 0.6, // 冒字寿命（s）
+  risePx: 24, // 上浮量（px）
+  fontPerH: 0.026, // 屏高定尺系数（667 屏 ≈ 17px；数字挂角色走屏高系，与 note 组件屏宽系刻意不同源——裁决①）
+  fillColor: '#ffffff', // 白字
+  strokeColor: '#1c1c1c', // 深描边
+  strokeWidth: 3, // 描边宽（px）
+  shakeSec: 0.2, // 震动时长（s）
+  shakePx: 3, // 震动幅度（±px）
+  shakeFreq: 55, // 震动频率（sin(t×freq)，rad/s）
+  staggerPx: 6, // 同位错位步长（px×命中序）
+  staggerWindowMs: 600, // 同位错位窗口（ms；滑动窗口，at=上一条 spawn 时刻——09-03 PM 裁 Q2）
+  flushDeadlineSec: 1.5, // 挂起冲刷兜底超时（s；> walk 300ms + 余量）
+  missText: '闪避', // miss 冒字文案（miss 不震动只冒字——§六确认点 1）
+} as const;
+
 // ===== 顶栏组件（L5；v8：定稿切图 + 代码压暗层 + 动态条/状态图标叠绘） =====
 export const TOPBAR = {
   artW: 1440,

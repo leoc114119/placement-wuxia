@@ -335,6 +335,273 @@ const clearHeroCooldowns = () =>
   await page.screenshot({ path: path.join(outDir, 'behavior_be4_n1_through.png') });
 }
 
+// ═══════ T21 受击反馈追加断言（09-03 PM 裁 Q1 增补授权：仅追加，既有 5 项与登记簿零改动）═══════
+// V1/V2/V4 e2e 观测断言（方案 §三）+ R9 reset 清理；观测面零新增（__demo.getView() 全量可读）。
+// 命中率按 core F-04 = 0.85（shizhan demo 档不抬命中率）——HF 用例以「未达样本即重试」去偶发，
+// 4 击全失手概率 ≈0.07%；白盒基建沿用 placeFoe/clearEnemyBars/clearHeroCooldowns 同级约定。
+/** rAF 逐帧录制器（HF3/V4 用；测试基建挂 window.__hfFrames，不碰 __demo） */
+const startHfRecorder = () =>
+  page.evaluate(() => {
+    window.__hfFrames = [];
+    const step = () => {
+      const s = window.__demo.session.snapshot();
+      const hero = s.actors.find((a) => a.id === 'hero');
+      const v = window.__demo.getView();
+      window.__hfFrames.push({
+        anim: hero.animState,
+        dmgN: v.fx.filter((f) => f.kind === 'dmg').length,
+        pendN: v.pendingHits.length,
+      });
+      if (window.__hfFrames.length < 240) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+
+/** 布点方向自适应（FIELD col 4..11）：敌默认摆主角东侧 dist 格，东缘放不下改西侧——
+ * 防 hero O3 随机出生偏东时出带（绿格不含 → HF3 前置崩；09-03 首跑实证 dest col 12 出带）。
+ * extra = 敌位之外还需同方向的格数（HF3 敌后落点 +1），方向判定一并计入 */
+const placeFoeBeside = async (id, hero, dist, extra = 0) => {
+  const col = hero.pos.q + Math.floor(hero.pos.r / 2);
+  const east = col + dist + extra <= 11;
+  const q = east ? hero.pos.q + dist : hero.pos.q - dist;
+  await placeFoe(id, q, hero.pos.r);
+  return { q, r: hero.pos.r, east };
+};
+
+/** 确定性重开：flee 提交（零结算规范通道）→ 结算遮罩 → 点击重开——新局 90s 时钟满额 */
+const forceReset = async () => {
+  await page.evaluate(() => {
+    if (window.__demo.session.snapshot().phase === 'fighting') window.__demo.session.submit({ type: 'flee' });
+  });
+  await page.waitForFunction(() => window.__demo.session.snapshot().phase !== 'fighting', null, { timeout: 4000 });
+  await page.mouse.click(225, 400); // 结算遮罩任意点（抬起触发 resetDemo）
+  await page.waitForFunction(() => window.__demo.session.snapshot().phase === 'fighting', null, { timeout: 4000 });
+  await page.waitForTimeout(300);
+};
+/** 结算遮罩在场则重开（90s 总时长尾规则 timeout-hp 会在 HF 重试期间打完整局——09-03 首跑实证） */
+const ensureFighting = async () => {
+  const ph = await page.evaluate(() => window.__demo.session.snapshot().phase);
+  if (ph !== 'fighting') await forceReset();
+};
+/** HF 轮次守卫：等主角回合（40s 超时=该局已被尾规则打完）→ 转下一轮由 ensureFighting 重开 */
+const waitHeroTurnGuarded = async () => {
+  try {
+    await waitHeroTurn();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF 中途撞 90s 尾规则
+
+// ═══ HF1（T21/V1 · 预期绿）：普攻命中 → dmg 冒字（text=String(damage) 直读）+ 受击者震动 ═══
+{
+  let ok = false;
+  let detail = '未取得样本';
+  for (let attempt = 1; attempt <= 4 && !ok; attempt++) {
+    await ensureFighting();
+    if (!(await waitHeroTurnGuarded())) continue;
+    await clearEnemyBars();
+    await waitPop();
+    const hero = (await snapState()).hero;
+    const ep = await placeFoeBeside('e1', hero, 1); // 普攻射程内相邻格，静止待击
+    const ev0 = await page.evaluate(() => window.__demo.session.events.length);
+    const p = await page.evaluate(([fq, fr]) => window.__demo.cellCss(fq, fr), [ep.q, ep.r]);
+    await page.mouse.click(p.x, p.y);
+    try {
+      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 4000 });
+      const obs = await page.evaluate((n0) => {
+        const v = window.__demo.getView();
+        const ev = window.__demo.session.events.slice(n0).find((e) => e.type === 'basic' || e.type === 'miss');
+        return {
+          ev: ev ? { type: ev.type, targetId: ev.targetId, damage: ev.damage ?? null } : null,
+          texts: v.fx.filter((f) => f.kind === 'dmg').map((f) => f.text),
+          shakes: [...v.shakes.keys()],
+          pendN: v.pendingHits.length,
+        };
+      }, ev0);
+      if (obs.ev && obs.ev.type === 'basic' && obs.ev.targetId === 'e1' &&
+          obs.texts.includes(String(obs.ev.damage)) && obs.shakes.includes('e1') && obs.pendN === 0) {
+        ok = true;
+        detail = `第${attempt}击 basic=${JSON.stringify(obs.ev)} 冒字=${JSON.stringify(obs.texts)} shakes=${JSON.stringify(obs.shakes)} pending=${obs.pendN}`;
+      } else if (obs.ev) {
+        detail = `第${attempt}击 ${obs.ev.type}（未达命中样本，重试）`;
+      }
+    } catch { detail = `第${attempt}击 未冒字（重试）`; }
+  }
+  report('HF1 普攻命中=dmg冒字(text=String(damage))+受击震动（T21/V1）', false, ok, detail);
+}
+
+// ═══ HF2（T21/V2 · 预期绿）：特技 cast 对敌同 V1；空放（点空红格）=零冒字零挂起 ═══
+{
+  let ok = false;
+  let detail = '未取得样本';
+  for (let attempt = 1; attempt <= 4 && !ok; attempt++) {
+    await ensureFighting();
+    if (!(await waitHeroTurnGuarded())) continue;
+    await clearEnemyBars();
+    await clearHeroCooldowns();
+    await waitPop();
+    const hero = (await snapState()).hero;
+    const ep = await placeFoeBeside('e1', hero, 2); // 特技射程内（cube 2，同 BE1 语义）
+    await tapSkill('te');
+    const ev0 = await page.evaluate(() => window.__demo.session.events.length);
+    const p = await page.evaluate(([fq, fr]) => window.__demo.cellCss(fq, fr), [ep.q, ep.r]);
+    await page.mouse.click(p.x, p.y);
+    try {
+      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 4000 });
+      const obs = await page.evaluate((n0) => {
+        const v = window.__demo.getView();
+        const ev = window.__demo.session.events.slice(n0).find((e) => e.type === 'skill' || e.type === 'miss');
+        return {
+          ev: ev ? { type: ev.type, targetId: ev.targetId, damage: ev.damage ?? null } : null,
+          texts: v.fx.filter((f) => f.kind === 'dmg').map((f) => f.text),
+          shakes: [...v.shakes.keys()],
+        };
+      }, ev0);
+      if (obs.ev && obs.ev.type === 'skill' && obs.ev.targetId === 'e1' &&
+          obs.texts.includes(String(obs.ev.damage)) && obs.shakes.includes('e1')) {
+        ok = true;
+        detail = `第${attempt}击 skill=${JSON.stringify(obs.ev)} 冒字=${JSON.stringify(obs.texts)} shakes=${JSON.stringify(obs.shakes)}`;
+      } else if (obs.ev) {
+        detail = `第${attempt}击 ${obs.ev.type}（未达命中样本，重试）`;
+      }
+    } catch { detail = `第${attempt}击 未冒字（重试）`; }
+  }
+  // V2 后半：空放（点空红格，cast 受理但无 targetId 无 damage）→ 事件面恰 1 条 skill 空放形状、
+  // pendingHits 恒空、窗口内 dmg 冒字零新增（clearEnemyBars 防敌行动污染，同 BE2 等待窗；两轮防尾规则）
+  let emptyOk = false;
+  let emptyDetail = '空放段未执行';
+  for (let e2a = 0; e2a < 2 && !emptyOk; e2a++) {
+    await ensureFighting();
+    if (!(await waitHeroTurnGuarded())) continue;
+    await clearEnemyBars();
+    await clearHeroCooldowns();
+    await waitPop();
+    await tapSkill('jue');
+    const before = await page.evaluate(() => ({
+      evN: window.__demo.session.events.length,
+      dmgN: window.__demo.getView().fx.filter((f) => f.kind === 'dmg').length,
+    }));
+    const target = await page.evaluate(() => {
+      const s = window.__demo.session.snapshot();
+      const foes = s.actors.filter((a) => a.side === 'enemy' && a.animState !== 'dead').map((a) => `${a.pos.q},${a.pos.r}`);
+      const empty = s.attackCells.find((c) => !foes.includes(`${c.q},${c.r}`));
+      return empty ? { cell: empty, p: window.__demo.cellCss(empty.q, empty.r) } : null;
+    });
+    if (!target) throw new Error('HF2 无空红格');
+    await page.mouse.click(target.p.x, target.p.y);
+    const dmgAtClick = await page.evaluate(() => window.__demo.getView().fx.filter((f) => f.kind === 'dmg').length);
+    await page.waitForTimeout(900);
+    const after = await page.evaluate(() => {
+      const v = window.__demo.getView();
+      return { dmgN: v.fx.filter((f) => f.kind === 'dmg').length, pendN: v.pendingHits.length };
+    });
+    const evSlice = await page.evaluate((n0) =>
+      window.__demo.session.events.slice(n0).map((e) => ({ t: e.type, tgt: e.targetId ?? null, dmg: e.damage ?? null })),
+    [before.evN]);
+    const onlyEmptySkill = evSlice.length === 1 && evSlice[0].t === 'skill' && evSlice[0].tgt === null && evSlice[0].dmg === null;
+    emptyOk = onlyEmptySkill && after.pendN === 0 && after.dmgN <= dmgAtClick;
+    emptyDetail = `空放事件=${JSON.stringify(evSlice)} pending=${after.pendN} dmg${dmgAtClick}→${after.dmgN}`;
+  }
+  report('HF2 特技对敌=dmg冒字；空放=零冒字零挂起（T21/V2）', false, ok && emptyOk, `${detail} · ${emptyDetail}`);
+}
+
+// ═══ HF3（T21/V4 · 预期绿）：ATK-3 移动附带普攻 → dmg 随补播 basic 出现（不早于快照 walk→basic 切换帧） ═══
+{
+  let ok = false;
+  let detail = '未取得样本';
+  for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
+    await ensureFighting();
+    if (!(await waitHeroTurnGuarded())) continue;
+    await clearEnemyBars();
+    await waitPop();
+    const hero = (await snapState()).hero;
+    const ep = await placeFoeBeside('e1', hero, 1, 1); // 敌相邻+敌后一格同向（BE4 同构布点触发 ATK-3）
+    await startHfRecorder();
+    const plan = await page.evaluate(([fq, fr]) => {
+      const s = window.__demo.session.snapshot();
+      const dest = { q: fq, r: fr };
+      return { dest, inMove: s.moveCells.some((c) => c.q === dest.q && c.r === dest.r), p: window.__demo.cellCss(dest.q, dest.r) };
+    }, [ep.east ? ep.q + 1 : ep.q - 1, ep.r]);
+    if (!plan.inMove) throw new Error('HF3 目标格不在绿格：' + JSON.stringify(plan));
+    const ev0 = await page.evaluate(() => window.__demo.session.events.length);
+    await page.mouse.click(plan.p.x, plan.p.y);
+    await page.waitForTimeout(2600); // 录满移动+补播攻击窗口（录制器 240 帧自停）
+    const frames = await page.evaluate(() => window.__hfFrames);
+    const evs = await page.evaluate((n0) =>
+      window.__demo.session.events.slice(n0).map((e) => ({ t: e.type, tgt: e.targetId ?? null, dmg: e.damage ?? null })),
+    [ev0]);
+    const basicEv = evs.find((e) => e.t === 'basic');
+    let switchIdx = -1;
+    let dmgIdx = -1;
+    for (let i = 0; i < frames.length; i++) {
+      if (dmgIdx < 0 && frames[i].dmgN > 0) dmgIdx = i;
+      if (i > 0 && switchIdx < 0 && frames[i - 1].anim === 'walk' && frames[i].anim === 'basic') switchIdx = i;
+    }
+    if (basicEv && basicEv.tgt === 'e1' && typeof basicEv.dmg === 'number' && switchIdx >= 0 && dmgIdx >= switchIdx) {
+      ok = true;
+      detail = `第${attempt}次 basic=${JSON.stringify(basicEv)} walk→basic切换帧=${switchIdx} dmg首现帧=${dmgIdx} 总帧=${frames.length}（断言基准=快照 animState，E3）`;
+    } else {
+      detail = `第${attempt}次 basic=${JSON.stringify(basicEv)} 切换帧=${switchIdx} dmg帧=${dmgIdx}（未达样本，重试）`;
+    }
+  }
+  report('HF3 ATK-3 移动附带普攻=dmg 随补播 basic 出现，不早于切换帧（T21/V4）', false, ok, detail);
+}
+
+// ═══ HF4（T21/R9 · 预期绿）：resetDemo 清理受击反馈三件（pendingHits/shakes/dmgStagger 不跨局） ═══
+{
+  // 前置：一次非致命命中 → dmgStagger 项持久可见 + shakes 当场采样（200ms 窗口，waitForFunction 即采）
+  let sampled = false;
+  let preDetail = '未采样';
+  for (let attempt = 1; attempt <= 4 && !sampled; attempt++) {
+    await ensureFighting();
+    if (!(await waitHeroTurnGuarded())) continue;
+    await clearEnemyBars();
+    await waitPop();
+    const hero = (await snapState()).hero;
+    const ep = await placeFoeBeside('e1', hero, 1);
+    const p = await page.evaluate(([fq, fr]) => window.__demo.cellCss(fq, fr), [ep.q, ep.r]);
+    await page.mouse.click(p.x, p.y);
+    try {
+      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 4000 });
+      const obs = await page.evaluate(() => {
+        const v = window.__demo.getView();
+        const hit = v.fx.find((f) => f.kind === 'dmg' && f.text !== '闪避');
+        return { hitText: hit ? hit.text : null, shakes: [...v.shakes.keys()], stag: v.dmgStagger.get('e1') ?? null };
+      });
+      if (obs.hitText && obs.shakes.includes('e1') && obs.stag) {
+        sampled = true;
+        preDetail = `第${attempt}击 冒字=${obs.hitText} shakes=${JSON.stringify(obs.shakes)} dmgStagger.e1=${JSON.stringify(obs.stag)}`;
+      }
+    } catch { /* miss → 重试 */ }
+  }
+  if (!sampled) throw new Error('HF4 前置失败：未取得命中样本');
+  // 进结算遮罩：flee 规范通道（零结算；击杀路径需同回合清两敌、跨回合引入 miss 偶发，非 R9 断言对象）
+  await page.evaluate(() => {
+    if (window.__demo.session.snapshot().phase === 'fighting') window.__demo.session.submit({ type: 'flee' });
+  });
+  await page.waitForFunction(() => window.__demo.session.snapshot().phase !== 'fighting', null, { timeout: 4000 });
+  const preReset = await page.evaluate(() => {
+    const v = window.__demo.getView();
+    return { stagN: v.dmgStagger.size, pendN: v.pendingHits.length, shakeN: v.shakes.size };
+  });
+  await page.mouse.click(225, 400); // 结算遮罩任意点（抬起触发 resetDemo）
+  await page.waitForTimeout(400);
+  const post = await page.evaluate(() => {
+    const v = window.__demo.getView();
+    return {
+      pendN: v.pendingHits.length, shakeN: v.shakes.size, stagN: v.dmgStagger.size,
+      fxN: v.fx.length, phase: window.__demo.session.snapshot().phase,
+    };
+  });
+  const ok = preReset.stagN > 0 && post.pendN === 0 && post.shakeN === 0 && post.stagN === 0 &&
+    post.fxN === 0 && post.phase === 'fighting';
+  report('HF4 resetDemo 清理受击反馈三件+fx 归零（T21/R9/E4）', false, ok,
+    `重开前 dmgStagger=${preReset.stagN} 项（${preDetail}）→ 重开后 pending=${post.pendN} shakes=${post.shakeN} stagger=${post.stagN} fx=${post.fxN} phase=${post.phase}`);
+}
+
 const mismatch = results.filter((r) => !r.match);
 console.log('═══ 行为 e2e 汇总 ═══');
 for (const r of results) console.log(`${r.match ? 'MATCH' : 'MISMATCH'} ${r.id} 预期${r.expect} 实际${r.actual}`);

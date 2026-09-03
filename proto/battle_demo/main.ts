@@ -3,11 +3,12 @@
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
 import type { CombatantInput } from '../../types';
-import { BATTLE_HEX_RES, REJECT_HINTS, hexToWorld } from '../../config/battle-hex';
+import { BATTLE_HEX_RES, DMG, REJECT_HINTS, hexToWorld } from '../../config/battle-hex';
 import { createBattleInput } from '../../ui/battle-input';
 import {
   createView,
   drawFrame,
+  enqueueHit,
   pieceHop,
   spawnNoteFx,
   updateView,
@@ -148,6 +149,9 @@ function resetDemo(): void {
   view.moveAnims.clear();
   view.camInit = false; // 重开重新定位镜头
   view.fx.length = 0;
+  view.pendingHits.length = 0; // T21/E4：重开残留清理（旧对局挂起/震动/错位序号不跨局冒出）
+  view.shakes.clear();
+  view.dmgStagger.clear();
   view.selectedCell = null;
   view.skillPop = 0;
   view.camDrag.x = 0;
@@ -252,15 +256,27 @@ function loop(t: number): void {
   session.tick(dt);
   const snap = session.snapshot();
   view.uiState = { mode: session._debug.mode(), speed: speedOn };
-  // rejected 事件消费（T15 R3）：拒绝可观测——actor 头顶冒字
+  // 事件消费（rejected 冒字 T15 R3 + T21 受击反馈白名单入队，方案 §2.2——其余一切不入队）
   const evs = session.events;
   for (; evCursor < evs.length; evCursor++) {
     const e = evs[evCursor];
-    if (e.type !== 'rejected' || !e.actorId) continue;
-    const actor = snap.actors.find((a) => a.id === e.actorId);
-    if (!actor) continue;
-    const w = hexToWorld(actor.renderPos.q, actor.renderPos.r);
-    spawnNoteFx(view, w.x, w.y, REJECT_HINTS[e.reason ?? 'invalid'] ?? '无法执行');
+    if (e.type === 'rejected') {
+      if (!e.actorId) continue;
+      const actor = snap.actors.find((a) => a.id === e.actorId);
+      if (!actor) continue;
+      const w = hexToWorld(actor.renderPos.q, actor.renderPos.r);
+      spawnNoteFx(view, w.x, w.y, REJECT_HINTS[e.reason ?? 'invalid'] ?? '无法执行');
+      continue;
+    }
+    // T21 白名单（§2.2）：basic/skill 且有 targetId 且 damage>0 → 冒数字+震动；
+    // miss 且有 targetId → 冒「闪避」不震（闪避=未受击）。fallback/blocked damage=0、
+    // 空放 skill（无 targetId 无 damage，session:768）、death/move/win/lose 等天然不入队。
+    // 数值铁律：text=String(e.damage) 直读事件字段禁任何换算（真值在 core，UI 只展示）。
+    if ((e.type === 'basic' || e.type === 'skill') && e.targetId && typeof e.damage === 'number' && e.damage > 0) {
+      enqueueHit(view, e.actorId ?? '', e.targetId, String(e.damage), true);
+    } else if (e.type === 'miss' && e.targetId) {
+      enqueueHit(view, e.actorId ?? '', e.targetId, DMG.missText, false);
+    }
   }
   updateView(view, snap, dt, W, H);
   drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view);

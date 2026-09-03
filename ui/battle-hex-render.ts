@@ -10,8 +10,9 @@ import {
   CAMERA,
   COMPONENT_LAYOUT,
   CTRL_ART,
-  FIELD,
   CTRL_BUTTONS,
+  DMG,
+  FIELD,
   FX,
   HIGHLIGHT,
   hexDist,
@@ -75,12 +76,23 @@ export interface MoveAnim {
 }
 
 interface FxItem {
-  kind: 'slash' | 'hit' | 'note';
+  kind: 'slash' | 'hit' | 'note' | 'dmg';
   x: number;
   y: number;
   t: number;
   sec: number;
-  text?: string; // note 专属：头顶冒字文案
+  text?: string; // note/dmg 专属：头顶冒字文案
+  dx?: number; // dmg 专属：同位错位横移（命中序×DMG.staggerPx，§2.4）
+}
+
+/** 受击反馈挂起条目（T21 §2.1/§2.2：宿主消费白名单事件后经 enqueueHit 入队，
+ * updateView 每帧按四条件冲刷（§2.3）；渲染层私有类型，不进 types.ts） */
+export interface PendingHit {
+  attackerId: string;
+  targetId: string;
+  text: string;
+  shake: boolean;
+  t: number; // 入队时刻（=view.time 同源；冲刷超时判定基准）
 }
 
 /** 演出视图状态（渲染层私有：相机/动画钟/特效/弹出进度/点选高亮）——不含任何结算数值 */
@@ -98,6 +110,10 @@ export interface BattleHexView {
    * 该单位离井 walk 前禁止再触发 walkRise（否则以中途小数为起点重启=左闪右闪根因） */
   moveDone: Set<string>;
   fx: FxItem[];
+  /** 受击反馈三件（T21 §2.1，渲染层私有演出态；session/types 零契约、数值零计算） */
+  pendingHits: PendingHit[]; // 挂起冲刷队列（宿主白名单事件入队，updateView 四条件冲刷）
+  shakes: Map<string, number>; // actorId → 震动已历时秒（衰减时钟 view 私有，session 无感知）
+  dmgStagger: Map<string, { at: number; seq: number }>; // targetId → 同位错位序号（滑动窗口 at=上一条 spawn）
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
   /** UI 状态反馈（宿主填充；托管/加速钮高亮显示——快照无此字段，演出态） */
@@ -116,6 +132,9 @@ export function createView(): BattleHexView {
     moveAnims: new Map(),
     moveDone: new Set(),
     fx: [],
+    pendingHits: [],
+    shakes: new Map(),
+    dmgStagger: new Map(),
     skillPop: 0,
     selectedCell: null,
     uiState: {},
@@ -396,6 +415,18 @@ export function spawnNoteFx(view: BattleHexView, x: number, y: number, text: str
   view.fx.push({ kind: 'note', x, y, t: 0, sec: 1.1, text });
 }
 
+/** 受击反馈入队（T21 §2.2/§一：入队机制归渲染层，宿主白名单判定后调用）。
+ * 入队不立即冒字——updateView 按四条件冲刷（§2.3）；t 取 view.time 同源（冲刷超时/错位窗口判定基准）。 */
+export function enqueueHit(
+  view: BattleHexView,
+  attackerId: string,
+  targetId: string,
+  text: string,
+  shake: boolean,
+): void {
+  view.pendingHits.push({ attackerId, targetId, text, shake, t: view.time });
+}
+
 /** 每帧推进视图状态。dt 秒。帧组播报铁律：状态切换=新组从组首帧重放（组间不跨）。 */
 export function updateView(
   view: BattleHexView,
@@ -405,6 +436,7 @@ export function updateView(
   height: number,
 ): void {
   view.time += dt;
+  const riseToAttack = new Set<string>(); // T21 冲刷条件 a：本帧切到 basic/strike 的攻击者（演出循环后统一冲刷）
   for (const a of snapshot.actors) {
     const prev = view.anim.get(a.id);
     const prevAnim = view.moveAnims.get(a.id);
@@ -462,7 +494,11 @@ export function updateView(
       const w = hexToWorld(a.renderPos.q, a.renderPos.r);
       if (prev && (a.animState === 'strike' || a.animState === 'basic')) {
         view.fx.push({ kind: 'slash', x: w.x, y: w.y, t: 0, sec: FX.slashSec });
+        riseToAttack.add(a.id); // T21：与 slash 同沿收集，pendingHits 在演出循环后按 §2.3 冲刷
       } else if (prev && a.animState === 'hit') {
+        // 【T21 受击反馈互指】受击反馈已改走事件驱动路径（main.ts 白名单入队 → pendingHits 冲刷 +
+        // shakes 震动，见本文件 §T21 注释）；下面这个 animState==='hit' 分支是休眠钩子——session 从不
+        // 产生 'hit' 态，属永不执行的既有验收代码，维持休眠不删不接。与 drawPieces 内同名休眠行互指。
         view.fx.push({ kind: 'hit', x: w.x, y: w.y, t: 0, sec: FX.hitSec });
       }
       view.anim.set(a.id, { state: a.animState, t: 0 });
@@ -477,6 +513,44 @@ export function updateView(
     if (f.t < f.sec) aliveFx.push(f);
   }
   view.fx = aliveFx;
+  // 震动衰减计时推进（T21 §2.5：到期删除——判定用历时≥shakeSec，禁 sin 幅度归零判定防浮点尾数；
+  // 先推进后冲刷：冲刷帧写入的起振值 0 不被同帧 dt 提前消耗）
+  for (const [id, elapsed] of view.shakes) {
+    const next = elapsed + dt;
+    if (next >= DMG.shakeSec) view.shakes.delete(id);
+    else view.shakes.set(id, next);
+  }
+  // ---- 受击反馈挂起冲刷（T21 §2.3：四条件满足其一即冲刷出队；定位按当帧快照 renderPos） ----
+  if (view.pendingHits.length > 0) {
+    const stillPending: PendingHit[] = [];
+    for (const ph of view.pendingHits) {
+      const attacker = snapshot.actors.find((a) => a.id === ph.attackerId);
+      const inAttackState = attacker ? attacker.animState === 'basic' || attacker.animState === 'strike' : false;
+      // a 上升沿 / b 已在态兜底 / c 超时（攻击者挂死防御）/ d 攻击者已 dead（hp 减少是既成事实）
+      const flush =
+        riseToAttack.has(ph.attackerId) ||
+        inAttackState ||
+        view.time - ph.t > DMG.flushDeadlineSec ||
+        attacker?.animState === 'dead';
+      if (!flush) {
+        stillPending.push(ph);
+        continue;
+      }
+      const target = snapshot.actors.find((a) => a.id === ph.targetId);
+      if (target) {
+        const w = hexToWorld(target.renderPos.q, target.renderPos.r);
+        // 同位错位（§2.4 · PM 裁决②+Q2 滑动窗口）：窗口内连续 spawn 按命中序横移，不合并；过期归零。
+        // 时间基准恒 view.time（与冲刷时钟同源，外部时钟会漂）。
+        const prev = view.dmgStagger.get(ph.targetId);
+        const seq = prev && (view.time - prev.at) * 1000 <= DMG.staggerWindowMs ? prev.seq + 1 : 0;
+        view.dmgStagger.set(ph.targetId, { at: view.time, seq });
+        view.fx.push({ kind: 'dmg', x: w.x, y: w.y, t: 0, sec: DMG.sec, text: ph.text, dx: seq * DMG.staggerPx });
+        // 震动：只震受击者且死亡不震（击杀一击=冒数字不震动，§2.3 单点判定；session doAttack 同步置 dead 不可逆）
+        if (ph.shake && target.animState !== 'dead') view.shakes.set(ph.targetId, 0);
+      }
+    }
+    view.pendingHits = stillPending;
+  }
   // 弧形四钮弹出进度（目标：主角行动条满等待输入）
   const popHero = snapshot.actors.find((a) => a.side === 'player');
   const popTarget =
@@ -732,8 +806,16 @@ function drawPieces(
       continue;
     }
     const hop = pieceHop(view, actor); // 轻功抛物线（演出期参数随距离插值）
+    // 【T21 受击反馈互指】T21 震动=事件驱动（view.shakes，参数组 DMG.shake*，下方 shakeDmg 附加偏移）；
+    // 下面这行 animState==='hit' 是休眠钩子——session 从不产生 'hit' 态，永不执行，维持休眠不删不接。
+    // 与 updateView 内 hit fx 分支互指（同注）。
     const shake = actor.animState === 'hit' ? Math.sin(view.time * 70) * 2 : 0;
-    const cx = sx + shake;
+    const shakeElapsed = view.shakes.get(actor.id);
+    const shakeDmg =
+      shakeElapsed !== undefined
+        ? Math.sin(shakeElapsed * DMG.shakeFreq) * DMG.shakePx * (1 - shakeElapsed / DMG.shakeSec)
+        : 0; // T21 §2.5：水平 ±3px 衰减 ~200ms，cx 附加偏移（不动 moveAnims 插值位）
+    const cx = sx + shake + shakeDmg;
     const top = syGround - h - hop;
     placed.push({ actor, cx, top, h, w });
     if (img) {
@@ -984,6 +1066,19 @@ function drawFx(
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(f.text ?? '', sx, Math.round(sy - TILE_H - 26 - p * 22)); // 头顶上浮
+    } else if (f.kind === 'dmg') {
+      // 伤害冒字（T21 §2.4）：白字深描边粗体，strokeText 先描 + fillText 后填（lineJoin='round' 防尖刺）；
+      // 定尺恒屏高 round(H×fontPerH)——数字挂角色走屏高/格高系，与 note 组件屏宽系刻意不同源（PM 裁决①）；
+      // 锚点沿 note 同族 TILE_H 抬升基准 + 上浮 risePx×p，渐隐 alpha 复用上方 1-p。
+      ctx.font = `bold ${Math.round(height * DMG.fontPerH)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = DMG.strokeColor;
+      ctx.lineWidth = DMG.strokeWidth;
+      ctx.strokeText(f.text ?? '', sx + (f.dx ?? 0), Math.round(sy - TILE_H - p * DMG.risePx));
+      ctx.fillStyle = DMG.fillColor;
+      ctx.fillText(f.text ?? '', sx + (f.dx ?? 0), Math.round(sy - TILE_H - p * DMG.risePx));
     } else if (f.kind === 'slash') {
       ctx.strokeStyle = FX.slashColor;
       ctx.lineWidth = 3;
