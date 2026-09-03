@@ -212,6 +212,14 @@ const clearEnemyBars = () =>
   if (!plan.inMove) throw new Error('BE4 目标格不在绿格：' + JSON.stringify(plan));
   await page.mouse.click(plan.p.x, plan.p.y);
   // 采样 1.5s：moveAnims 是否启动 + renderPos 是否穿过敌格 + DBG 残留证据
+  // 【首采延迟 80ms · T19 打回查修】结构论证：crossed 的 round(q)/round(r) 独立取整存在唯一
+  // aliasing 窗 = 段1 对角段（-1,11→0,10）lp∈[0.495,0.505]（renderPos=(-0.5,10.5) → round 拼出
+  // 敌格 (0,11)），真实时间 = 移动开始后 49.5~50.5ms（段长 100ms）；段2 纯 E 恒 round(r)=10≠11、
+  // 段3 纯 S 恒 round(q)=1≠0，数学安全。playwright 首采相位 ≈44ms（evaluate 启动开销恒定）恰好
+  // 落窗 → 偶发假阳性。首采延迟 80ms 后该窗已永久关闭（moveT 单调递增无回绕，首采 moveT≥0.21
+  // → lp≥0.63，距窗 ≥12ms >> 真实时钟抖动 σ≈3ms），其后所有帧结构恒安全，非概率凑绿；
+  // FE moveAnims 存活 0.6s（duration=0.3×dist），animStarted 采证不受损。
+  await page.waitForTimeout(80);
   const samples = [];
   for (let i = 0; i < 38; i++) {
     samples.push(
