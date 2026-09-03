@@ -173,3 +173,4 @@
 | 2026-09-03 13:36 | ZCode | ⏸ 暂停（Leo 令） | T20-BE DoR 交付已收到（基线七项吻合+cast diff 稿+用例 a-g 断言级+易错点 11 条），两条疑义（选中态门用例增补/_debug 白盒测法）未裁——Leo 指示高峰期暂停派单，恢复后 PM 先裁疑义再放行开工； shots/ 截图漂移系历史运行产物，未处理 | 卡=inbox/T20-BE.md |
 | 2026-09-03 18:01 | ZCode | ✅ T20-BE 开工批复 | DoR 过审（Q1 准增补门用例/Q2 准白盒测法）；卡移 working，施工中，交付不 push 停等中间门复验 | 卡=working/T20-BE.md |
 | 2026-09-03 18:20 | ZCode | ✅ T20-BE 中间门合流 | PM 复验六项全过，7a426ac push 合流；T20-FE 解锁 | 卡=done/T20-BE.md |
+| 2026-09-03 18:38 | ZCode | ✅ T20-FE 开工批复 | DoR 过审（Q1 行号锚 :330 实指裁准）；卡移 working 施工中 | 卡=working/T20-FE.md |
