@@ -1,0 +1,30 @@
+{
+  "sword_held": {
+    "anchor": [
+      166,
+      541
+    ],
+    "angle": 45,
+    "mode": "bottom-center",
+    "bbox": [
+      19,
+      46,
+      313,
+      541
+    ]
+  },
+  "sword_sheathed": {
+    "anchor": [
+      10,
+      310
+    ],
+    "angle": 90,
+    "mode": "left-center",
+    "bbox": [
+      10,
+      260,
+      320,
+      360
+    ]
+  }
+}

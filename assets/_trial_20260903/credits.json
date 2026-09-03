@@ -1,0 +1,65 @@
+[
+  {
+    "name": "anchor_noweapon",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:26",
+    "note": "c01 无武器锚试产 img2img"
+  },
+  {
+    "name": "battle_idle_fist_sheet",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:27",
+    "note": "c03 空拳战斗待机锚定表 img2img"
+  },
+  {
+    "name": "atk_fist_sheet",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:30",
+    "note": "c04 空拳出招锚定表 img2img（回退左格=idle_down）"
+  },
+  {
+    "name": "sword_sheathed",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:33",
+    "note": "c05 剑腰挂态单体生成（mxai 网页抠图转透明底）"
+  },
+  {
+    "name": "sword_held",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:33",
+    "note": "c05 剑手持态单体生成 45°（mxai 网页抠图转透明底）"
+  },
+  {
+    "name": "tileset_ai_sample",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:38",
+    "note": "c08 AI 瓦片样张（tileset_v2.txt 原文）"
+  },
+  {
+    "name": "topbar_battle_noword",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:39",
+    "note": "c09 战斗 topbar 无字重切 img2img"
+  },
+  {
+    "name": "icon_beibao",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:40",
+    "note": "c10 功能图标样板·背包（process 风格门 exit=0）"
+  },
+  {
+    "name": "avatar_shanzei_gen",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-03 12:42",
+    "note": "c11 头像路线B生成（路线A切图 0 分）"
+  }
+]
