@@ -32,6 +32,13 @@
   "model": "gpt-image-2",
   "cost": 2,
   "ts": "2026-09-05 T45-pilot 母版修正重出",
-  "note": "right 突刺母版 v2（修正工单：v1 刺击臂左右错）：img2img 16:9 三格（参照①battle_idle_right ②sketch_right_thrust_3step_v2[蓝粗臂=近观众侧刺击臂/灰淡臂=远侧] ③ref_right；prompt=prompts/pilot_right_thrust_v2.txt 工单定稿逐字）；1920x1088 一次过无重跑。试点累计 10 分（作废 8 + 本表在验 2）；转面 2 张待母版过验后另计"
+  "note": "【已作废】right 突刺母版 v2（刺击臂左右已修正，但刺出幅度被 Leo 判需改六七分伸展肘微屈）：img2img 16:9 三格；1920x1088 一次过"
+ },
+ {
+  "name": "pilot_right_thrust_v4",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-05 T45-pilot 母版v4重出",
+  "note": "right 突刺母版 v4（sketch v4 锁六七分伸展肘微屈，近侧臂条款沿用 v2 定稿）：img2img 16:9 三格（参照①battle_idle_right ②sketch_right_thrust_3step_v4 ③ref_right；prompt=prompts/pilot_right_thrust_v4.txt）；1920x1088 一次过无重跑。试点累计 12 分（作废 10 + 本表在验 2）；转面 2 张待母版过验后另计"
  }
 ]
