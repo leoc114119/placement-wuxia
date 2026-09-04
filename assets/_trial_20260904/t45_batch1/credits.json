@@ -82,5 +82,19 @@
   "cost": 2,
   "ts": "2026-09-04 T45-batch1",
   "note": "锚定表双参照 img2img aspect=3:2（2:1 被拒降级，见 measure_log._blocker；左格=battle_idle_down.png）"
+ },
+ {
+  "name": "cast_down_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1-patch",
+  "note": "施放帧修正（挥砍规格）：锚定表双参照 img2img aspect=3:2，左格=battle_idle_down.png"
+ },
+ {
+  "name": "cast_down_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1-patch",
+  "note": "施放帧修正（挥砍规格）：锚定表双参照 img2img aspect=3:2，左格=battle_idle_down.png"
  }
 ]
