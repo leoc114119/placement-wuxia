@@ -1,0 +1,88 @@
+{
+ "cast_down_1": {
+  "frame": "cast_down_1",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 27.936,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   178,
+   233,
+   420,
+   844
+  ],
+  "left_h": 611,
+  "right_env": [
+   34,
+   233,
+   321,
+   843
+  ],
+  "right_w": 287,
+  "right_h": 610,
+  "right_cc": 92003,
+  "height_ratio": 0.998,
+  "aspect": 0.47,
+  "gate": "height",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   56,
+   44,
+   176,
+   300
+  ],
+  "final_env": [
+   120,
+   256
+  ],
+  "final_centroid_x": 119.43,
+  "final_aspect": 0.469
+ },
+ "cast_down_2": {
+  "frame": "cast_down_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 18.978,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   134,
+   229,
+   421,
+   841
+  ],
+  "left_h": 612,
+  "right_env": [
+   117,
+   229,
+   395,
+   841
+  ],
+  "right_w": 278,
+  "right_h": 612,
+  "right_cc": 92572,
+  "height_ratio": 1.0,
+  "aspect": 0.454,
+  "gate": "height",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   60,
+   45,
+   176,
+   300
+  ],
+  "final_env": [
+   116,
+   255
+  ],
+  "final_centroid_x": 119.79,
+  "final_aspect": 0.455
+ }
+}

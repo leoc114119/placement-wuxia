@@ -110,5 +110,19 @@
   "cost": 2,
   "ts": "2026-09-04 T45-batch1-patch2",
   "note": "施放帧右手连击重出：锚定表双参照 img2img aspect=3:2，左格=battle_idle_down.png"
+ },
+ {
+  "name": "cast_down_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1-patch4",
+  "note": "施放帧高举劈砍重出：双格表双参照 img2img aspect=3:2，左格基准=battle_idle_down.png"
+ },
+ {
+  "name": "cast_down_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1-patch4",
+  "note": "施放帧高举劈砍重出：双格表双参照 img2img aspect=3:2，左格基准=cast_down_1.png"
  }
 ]
