@@ -126,6 +126,7 @@ project/
 - 素材目录:`assets/ui/`(**2026-08-31 起 UI 全面像素化**,新组件落 `assets/ui/pixel/`;旧水墨 UI 已归档 `assets/ui/archive/ink_ui_20260831/`)
 - 角色/场景风格:国风像素 HD-2D,角色锚 = `assets/ui/ref_pixel_char_v8.png`;UI 锚待 T11 产出 `ref_pixel_ui_v1.png`
 - 素材需求基线:`docs/reviews/MVP素材需求-CodeBuddy先行版-v0.1.md`(v0.3);素材交付必须组件级独立 PNG、像素网格对齐、AI 稿禁文字
+- **素材审查门(09-05 Leo 定)**:任何美术素材入库/接线前必过研发线 PM 审查(机械门检+目验),不过门不接线;门检口径见《战斗素材盘点与产用原则》§2.5/表 A(200d55076 系 commit);打回单附逐条缺陷清单
 
 ## 文档索引(开工前阅读相关设计文档)
 
