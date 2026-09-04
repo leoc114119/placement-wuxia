@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """mxai img2img 通用脚本（放置武侠）
-用法: python3 mxai_img2img.py <input.png> <out.png> [--prompt-file p.txt | --prompt "..."] [--model slug] [--aspect 9:16]
-不传 prompt 参数时回退到内置 PROMPT（角色形象类，风格锚 = assets/ui/ref_char_style_v1.png 的原始用法）
+用法:
+  多图: python3 mxai_img2img.py <ref1.png> [ref2.png ... ref6.png] --out out.png [--prompt-file p.txt] [--aspect X:Y]
+  旧式: python3 mxai_img2img.py <input.png> <out.png>               （单图双位置参数，向后兼容）
+- 参照底图 1~6 张（mxai 接口上限 6，Leo 2026-09-04 确认）：多图=画风/比例/视角多参照同时锁定
+- 不传 prompt 参数时回退到内置 PROMPT（角色形象类，风格锚 = assets/ui/ref_char_style_v1.png 的原始用法）
 """
 import base64, json, os, sys, time, urllib.request
 
@@ -39,8 +42,9 @@ def req(method, path, body=None, timeout=90):
 def main():
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("input")
-    ap.add_argument("out")
+    ap.add_argument("inputs", nargs="*",
+                    help="参照底图 1~6 张（接口上限 6）。旧式双位置用法（input out）向后兼容")
+    ap.add_argument("--out", dest="out", default=None)
     ap.add_argument("--prompt", default=None, help="内联 prompt；与 --prompt-file 二选一")
     ap.add_argument("--prompt-file", dest="prompt_file", default=None)
     ap.add_argument("--model", default="gpt-image-2",
@@ -48,6 +52,17 @@ def main():
     ap.add_argument("--aspect", default="9:16")
     ap.add_argument("--resolution", default="1K")
     a = ap.parse_args()
+
+    # 兼容旧式双位置用法（input out，无 --out）
+    if a.out is None:
+        if len(a.inputs) == 2:
+            src_list, out = a.inputs[:1], a.inputs[1]
+        else:
+            print("ERR: 多图用法需 --out 指定输出路径"); sys.exit(1)
+    else:
+        src_list, out = a.inputs, a.out
+    if not src_list or len(src_list) > 6:
+        print("ERR: 参照底图需 1~6 张（接口上限 6）"); sys.exit(1)
 
     if a.prompt_file:
         with open(a.prompt_file, encoding="utf-8") as f:
@@ -57,19 +72,20 @@ def main():
     else:
         prompt = PROMPT
 
-    src, out = a.input, a.out
     if not KEY:
         print("ERR: MX_AI_API_KEY 未设置"); sys.exit(1)
 
-    with open(src, "rb") as f:
-        b64 = base64.b64encode(f.read()).decode()
+    input_images = []
+    for src in src_list:
+        with open(src, "rb") as f:
+            input_images.append(f"data:image/png;base64,{base64.b64encode(f.read()).decode()}")
 
     st, r = req("POST", "/mcp/api/generate/image", {
         "prompt": prompt,
         "model": a.model,
         "aspect_ratio": a.aspect,
         "resolution": a.resolution,
-        "input_images": [f"data:image/png;base64,{b64}"],
+        "input_images": input_images,
     })
     if st != 200 or not r.get("serial_no"):
         print(f"[提交失败] {st}: {json.dumps(r, ensure_ascii=False)[:400]}"); sys.exit(1)
