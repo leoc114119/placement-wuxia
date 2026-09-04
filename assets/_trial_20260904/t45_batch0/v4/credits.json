@@ -1,0 +1,9 @@
+[
+  {
+    "name": "anchor45_hero_down_v4",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0-v4",
+    "note": "T45 首锚 v4 姿势修正 img2img（形象真源 q_anchor_v5_clean，3:4）；门检失败停上报：右手画出实剑柄+剑鞘（本口径剑不画入帧=机械失败），未重摇待 Leo"
+  }
+]
