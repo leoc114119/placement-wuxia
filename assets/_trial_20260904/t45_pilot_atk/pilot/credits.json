@@ -5,5 +5,12 @@
   "cost": 2,
   "ts": "2026-09-04 T45-pilot 试点1",
   "note": "动作母版序列表 img2img aspect=16:9 三格横排（参照①battle_idle_down 形象画风锚 ②sketch_down_punch_3step 动作简图；prompt 骨架逐字=prompts/pilot_down_matrix_v1.txt）；1920x1088 一次过，无重跑"
+ },
+ {
+  "name": "pilot_right_matrix",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-pilot 试点2",
+  "note": "跨向转面派生 img2img aspect=16:9 三格横排（参照①pilot_down_matrix_raw 动作真源 ②battle_idle_right 该向锚 ③ref_right 白模右侧朝向，2048x294 单尊横裁目验无红旗；prompt 骨架逐字=prompts/pilot_right_matrix_v1.txt）；1920x1088 一次过，无重跑。试点合计 4 分（预算 ≤8）"
  }
 ]
