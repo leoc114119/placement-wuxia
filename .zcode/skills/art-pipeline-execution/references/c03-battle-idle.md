@@ -19,7 +19,7 @@ cat assets/characters/hero/walk_v2/prompts/q_battle_idle_sheet2.txt   # 配方�
 | 1 | 选定左格 | 无武器锚优先；带剑帧回退须登记 | 左格文件确定 | — |
 | 2 | 构造 2 格表 | `make_sheet.py`（640×320，左格贴左格帧原点不缩放、右格纯白） | sheet.png | 尺寸 640×320 |
 | 3 | 生成试产 prompt | `q_battle_idle_sheet2.txt` 两处机械替换：「持剑战斗待机帧」→「战斗待机帧」；「长剑出鞘握在右手中（剑尖朝前斜下方），」→「双手握空拳成戒备姿势，」 | prompt 落盘 | diff 仅两处 |
-| 4 | img2img（**必传 --aspect**） | `python3 scripts/mxai_img2img.py <sheet> <out> --prompt-file <配方> --aspect 2:1`（2 分） | 2:1 档位缩放图 | **返回非 2:1 → E-GEN-06 停上报**（默认 9:16 重排=K3-1 已修，复发即 API 行为变化，上报） |
+| 4 | img2img（**必传 --aspect 3:2**） | `python3 scripts/mxai_img2img.py <sheet> <out> --prompt-file <配方> --aspect 3:2`（2 分） | 受理成功（09-04 批 1 实证；**gpt-image-2 拒绝 2:1**——"尺寸比例不合法"两次复现，故锚定表=3:2 画布 640×427 内嵌 640×320 双格条带） | 引擎可能重排双格位置 → check_left 必须用**内容对齐版**（定位左半区主体包络再比对，固定坐标裁剪失效） |
 | 5 | 左格保真校验 v2 | `check_left_v2.py`（下方脚本，缩放感知+容差） | `MEAN=x.x/255 PASS` | FAIL → 机械失败重跑 1 次 → 再犯上报附数值 |
 | 6 | 高度比校验 | 程序化：右主体包络高/左主体包络高 ∈ [0.9, 1.1] | 比值记录 | 出界 → 数据交 Leo（禁自判） |
 | 7 | credits 记账 | name/model/cost/ts/note | — | — |
