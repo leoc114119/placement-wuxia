@@ -110,5 +110,12 @@
   "cost": 2,
   "ts": "2026-09-05 T45-pilot 转面派生·Leo蓝箭头定案修正",
   "note": "Leo 亲绘蓝箭头标注图定方向后修正单：img2img 16:9（主输入=pilot_rightup_thrust_v4_raw，参2=sketch_rightup_direction_leo 蓝箭头真源，参3=battle_idle_rightup；prompt=prompts/pilot_rightup_thrust_v5.txt 工单逐字）；1920x1088 一次过无重跑；实测箭头终点高度分数0.311/斜率-20.7° vs v5拳位0.406/臂-9°——拳低约24px未完全达标，按工单停手出三方A/B停报（pilot_rightup_thrust_dir_ab_stop.png），禁自行加轮"
+ },
+ {
+  "name": "pilot_rightup_thrust_v6b",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-05 T45-pilot 转面派生·干净红箭头标注修正",
+  "note": "Leo 干净版标注（单红箭头，去多线干扰）修正单：img2img 16:9（主输入=pilot_rightup_thrust_v5_raw，参2=sketch_rightup_redarrow_leo；prompt=prompts/pilot_rightup_thrust_v6b.txt 工单逐字）；1920x1088 一次过无重跑；箭头尖端实测分数0.320(y≈126) vs v6b拳0.367(y≈137)仍差约11px未到尖端——按工单停手出对照图停报（pilot_rightup_thrust_v6b_stop_ab.png），禁自加轮；红箭头色泄漏0（warm像素为发饰/肤色，两版同在）"
  }
 ]
