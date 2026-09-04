@@ -1,0 +1,23 @@
+[
+  {
+    "name": "anchor45_right",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0prime",
+    "note": "T45 批0' 六向制右系锚·right 三参照img2img(画风idle_down+45度down锚+白模ref_right)+mxai抠图+240x320归一"
+  },
+  {
+    "name": "anchor45_rightup",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0prime",
+    "note": "T45 批0' 六向制右系锚·rightup 三参照img2img(画风idle_down+45度down锚+白模ref_rightup)+mxai抠图+240x320归一"
+  },
+  {
+    "name": "anchor45_rightdown",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0prime",
+    "note": "T45 批0' 六向制右系锚·rightdown 三参照img2img(画风idle_down+45度down锚+白模ref_rightdown)+mxai抠图+240x320归一"
+  }
+]
