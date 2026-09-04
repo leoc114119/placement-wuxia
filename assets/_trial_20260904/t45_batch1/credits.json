@@ -138,5 +138,12 @@
   "cost": 2,
   "ts": "2026-09-04 T45-batch1-patch6",
   "note": "劈停画面左下重出（画面坐标版 prompt）：640x320 双格表双参照 img2img aspect=3:2，左格基准=cast_down_1.png（链式锁手别）；prompt 任务书逐字"
+ },
+ {
+  "name": "cast_down_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1-patch7",
+  "note": "多参照单帧直出（弃双格表）：img2img 双底图（battle_idle_down+cast_down_1）aspect=3:4，prompt 任务书逐字"
  }
 ]
