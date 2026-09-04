@@ -1,0 +1,47 @@
+{
+ "cast_down_2": {
+  "frame": "cast_down_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "aspect": "3:2",
+  "check_left": 23.34,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   179,
+   111,
+   515,
+   825
+  ],
+  "left_h": 714,
+  "right_env_raw": [
+   940,
+   157,
+   1264,
+   871
+  ],
+  "right_w": 324,
+  "right_h": 714,
+  "right_cc": 124441,
+  "height_ratio_recorded": 1.0,
+  "aspect_recorded": 0.454,
+  "fist_side_raw": {
+   "centroid_x_raw": 1108.0,
+   "right_mid_raw": 1152.0,
+   "centroid_x_640": 461.7,
+   "right_mid_640": 480.0,
+   "env_raw": [
+    940,
+    157,
+    1264,
+    871
+   ],
+   "cc": 124441,
+   "side": "画面左半"
+  },
+  "result": "SKIP",
+  "reason": "mxai 抠图两次失败（E-CUT-01 上报）"
+ }
+}
