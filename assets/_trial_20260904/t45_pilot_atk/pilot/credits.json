@@ -53,6 +53,13 @@
   "model": "gpt-image-2",
   "cost": 2,
   "ts": "2026-09-05 T45-pilot 母版v6微调",
-  "note": "原图局部修正式 img2img（Leo 微调工单：手位降两成至上腹+前刺加长约两拳接近全伸）：主输入=pilot_right_thrust_v5_raw.png，第二参照=battle_idle_right；prompt=prompts/pilot_right_thrust_v6.txt 工单逐字；--aspect 16:9。脚本轮询两次超时（E-GEN-01 重跑 1 次后停），首单云端实际完成经 serial_no 轮询取回产物（1920x1088，四角 249~250 容差内）；重跑排队单 2095875527817564160 仍在云端队列，是否计费候核定。试点累计 16 分（作废/被替代 14 + 本表在验 2）；转面 2 张待母版过验后另计"
+  "note": "【已被 v7 替代】v6 手位/刺距到位（Leo 判整体不错），因刺距需回收约一拳出 v7；原图局部修正式 img2img 主输入=v5_raw；1920x1088；另有重跑排队单 2095875527817564160 挂账候核定"
+ },
+ {
+  "name": "pilot_right_thrust_v7",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-05 T45-pilot 母版v7微调",
+  "note": "原图局部修正式 img2img（Leo 微调工单：刺拳回收约一拳、介于 v5/v6 之间伸展度肘近全伸极微屈）：主输入=pilot_right_thrust_v6_raw.png，第二参照=battle_idle_right；prompt=prompts/pilot_right_thrust_v7.txt 工单逐字；--aspect 16:9 一次过（1536x864，四角 246~250 容差内）。试点累计 18 分（作废/被替代 16 + 本表在验 2）；转面 2 张待母版过验后另计"
  }
 ]
