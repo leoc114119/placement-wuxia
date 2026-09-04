@@ -152,5 +152,12 @@
   "cost": 2,
   "ts": "2026-09-04 T45-batch1-patch8",
   "note": "迈步劈砍版（Leo 口述词条：迈步+右臂从画面左上沿弧线劈停左大腿前）：img2img 双参照直出（battle_idle_down+cast_down_1）aspect=3:4，prompt 任务书逐字；serial_no=2095725787259867136"
+ },
+ {
+  "name": "cast_down_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1-patch9",
+  "note": "静态姿势直出版（无动作叙事，纯画面坐标姿势描述）：img2img 双参照（battle_idle_down+cast_down_1）aspect=3:4，prompt 任务书逐字；serial_no=2095728183767732224"
  }
 ]
