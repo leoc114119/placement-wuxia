@@ -289,15 +289,13 @@ export const CTRL_TEXT = {
   active: { mode: '自动', speed: '两倍' }, // 激活字（meta active_text）；逃跑=静态图不叠字
 } as const;
 
-/** ctrl 激活态样式（T23 · meta active_fx 落库；判定源=view.uiState 宿主镜像，渲染层禁直调 session._debug） */
+/**
+ * ctrl 激活态样式（判定源=view.uiState 宿主镜像，渲染层禁直调 session._debug）。
+ * Leo 09-04 L环拍板：去叠亮/柔光，激活态=金框+换字（meta active_fx 的 brighten/glow 五参数随之失效删除，仅存 gold_frame）。
+ */
 export const CTRL_ACTIVE = {
   goldFrame: 'rgba(255, 205, 95, 0.95)', // 金框（meta gold_frame [255,205,95]）
   frameWidthRatio: 4 / 216, // 金框线宽 @216（≈4）
-  brightenAlpha: 0.2, // 叠亮法暖色透明度（'lighter'+暖色 fillRect ≈ brightness 1.24；不用 ctx.filter，微信兼容弱）
-  brightenColor: '#ffcd5f', // 叠亮暖色（与金框同族）
-  glowAlpha: 0.22, // 外圈柔光透明度（meta glow_alpha 0.45 折算低透明外描边，目验可调）
-  glowWidthRatio: 2 / 216, // 柔光线宽 @216
-  glowPadRatio: 5 / 216, // 柔光外扩间距 @216
 } as const;
 
 /**

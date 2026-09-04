@@ -1112,19 +1112,10 @@ function drawComponents(
       const phLabel = b.action === 'mode' ? '托管' : b.action === 'speed' ? '加速' : '逃跑';
       ctx.fillText(phLabel, cx + cw * 0.5, by + bh / 2);
     }
-    // 激活态（T23 §2.4：叠亮+外圈柔光+金框；判定=view.uiState；现行绿 rim 段已整段删除——激活无绿点/绿框）
+    // 激活态（判定=view.uiState；Leo 09-04 L环拍板：去叠亮/柔光，激活态=金框+换字；绿 rim 段亦已整段删除——激活无绿点/绿框）
     const active = b.action === 'mode' ? modeActive : b.action === 'speed' ? speedActive : false;
     if (active) {
-      ctx.save();
-      ctx.globalCompositeOperation = 'lighter'; // 叠亮法：暖色低透明 ≈ brightness 1.24（不用 ctx.filter，微信兼容弱）
-      ctx.globalAlpha = CTRL_ACTIVE.brightenAlpha;
-      ctx.fillStyle = CTRL_ACTIVE.brightenColor;
-      ctx.fillRect(Math.round(bx), Math.round(by), Math.round(bw), Math.round(bh));
-      ctx.restore();
-      const pad = CTRL_ACTIVE.glowPadRatio * bw;
       ctx.strokeStyle = CTRL_ACTIVE.goldFrame;
-      ctx.lineWidth = CTRL_ACTIVE.glowWidthRatio * bw;
-      ctx.strokeRect(Math.round(bx - pad), Math.round(by - pad), Math.round(bw + pad * 2), Math.round(bh + pad * 2)); // 外圈柔光
       ctx.lineWidth = CTRL_ACTIVE.frameWidthRatio * bw;
       ctx.strokeRect(Math.round(bx), Math.round(by), Math.round(bw), Math.round(bh)); // 金框
     }
