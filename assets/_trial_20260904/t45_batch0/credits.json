@@ -1,0 +1,16 @@
+[
+  {
+    "name": "anchor45_hero_down",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0",
+    "note": "T45 批0 45°俯视首锚·主角down空拳 文生图+mxai抠图+240x320归一"
+  },
+  {
+    "name": "anchor45_shanzei_a_down",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0",
+    "note": "T45 批0 45°俯视首锚·山贼甲down持朴刀 文生图+mxai抠图+240x320归一"
+  }
+]
