@@ -17,6 +17,7 @@ import {
   DMG,
   ENV_WORLD,
   FIELD,
+  FONT_STACK,
   FX,
   HIGHLIGHT,
   hexDist,
@@ -997,7 +998,7 @@ function drawPieceHud(
     // 名字牌（我方淡绿/敌方淡红）
     ctx.fillStyle = HUD.nameBg;
     ctx.fillRect(Math.round(p.cx - HUD.barW / 2 - 2), Math.round(y0 - 7), HUD.barW + 4, 10);
-    ctx.font = `${HUD.nameFontPx}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.font = `${HUD.nameFontPx}px ${FONT_STACK}`;
     ctx.fillStyle = a.side === 'player' ? HUD.nameAlly : HUD.nameEnemy;
     ctx.fillText(a.name, Math.round(p.cx), Math.round(y0 - 2));
     // 绿行动条（0~100 展示口径）
@@ -1055,7 +1056,7 @@ function drawPieceHud(
     ctx.strokeStyle = snapshot.selectedSkill === id ? ARC_BTNS.rimColorSelected : ARC_BTNS.colorRim;
     ctx.stroke();
     ctx.fillStyle = disabled ? ARC_BTNS.colorTextDisabled : ARC_BTNS.colorText;
-    ctx.font = `bold ${Math.round(d * 0.52)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.font = `bold ${Math.round(d * 0.52)}px ${FONT_STACK}`;
     ctx.fillText(ARC_BTNS.labels[i], Math.round(bx), Math.round(by + 1));
     ctx.restore();
   }
@@ -1180,7 +1181,7 @@ function drawComponents(
       ctx.fillRect(Math.round(px + pw * 0.06), Math.round(by), Math.round(pw * 0.88), Math.round(bh));
       ctx.strokeRect(Math.round(px + pw * 0.06), Math.round(by), Math.round(pw * 0.88), Math.round(bh));
       ctx.fillStyle = '#ffd870';
-      ctx.font = `bold ${Math.round(pw * 0.22)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      ctx.font = `bold ${Math.round(pw * 0.22)}px ${FONT_STACK}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(b.label, px + pw * 0.5, by + bh / 2);
@@ -1221,7 +1222,7 @@ function drawComponents(
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#ffd870';
-      ctx.font = `bold ${Math.round(bh * 0.42)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      ctx.font = `bold ${Math.round(bh * 0.42)}px ${FONT_STACK}`;
       const phLabel = b.action === 'mode' ? '托管' : b.action === 'speed' ? '加速' : '逃跑';
       ctx.fillText(phLabel, cx + cw * 0.5, by + bh / 2);
     }
@@ -1271,7 +1272,7 @@ function drawFx(
     ctx.globalAlpha = 1 - p;
     if (f.kind === 'note') {
       ctx.fillStyle = '#ffb84a';
-      ctx.font = `bold ${Math.round(width * 0.032)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      ctx.font = `bold ${Math.round(width * 0.032)}px ${FONT_STACK}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(f.text ?? '', sx, Math.round(sy - TILE_H - 26 - p * 22)); // 头顶上浮
@@ -1279,7 +1280,7 @@ function drawFx(
       // 伤害冒字（T21 §2.4）：白字深描边粗体，strokeText 先描 + fillText 后填（lineJoin='round' 防尖刺）；
       // 定尺恒屏高 round(H×fontPerH)——数字挂角色走屏高/格高系，与 note 组件屏宽系刻意不同源（PM 裁决①）；
       // 锚点沿 note 同族 TILE_H 抬升基准 + 上浮 risePx×p，渐隐 alpha 复用上方 1-p。
-      ctx.font = `bold ${Math.round(height * DMG.fontPerH)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      ctx.font = `bold ${Math.round(height * DMG.fontPerH)}px ${FONT_STACK}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineJoin = 'round';
@@ -1312,10 +1313,10 @@ function drawPhaseOverlay(ctx: CanvasRenderingContext2D, snapshot: BattleSnapsho
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffe9b8';
-  ctx.font = `bold ${Math.round(width * 0.16)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.font = `bold ${Math.round(width * 0.16)}px ${FONT_STACK}`;
   const main = snapshot.phase === 'won' ? '胜' : snapshot.phase === 'lost' ? '败' : '已撤离';
   ctx.fillText(main, width / 2, height / 2 - width * 0.04);
-  ctx.font = `${Math.round(width * 0.04)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.font = `${Math.round(width * 0.04)}px ${FONT_STACK}`;
   ctx.fillStyle = '#d9c896';
   ctx.fillText('点击任意处重开演示', width / 2, height / 2 + width * 0.07);
 }

@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 declare const __dirname: string;
-import { DMG } from '../config/battle-hex';
+import { DMG, FONT_STACK } from '../config/battle-hex';
 import {
   createView,
   drawFrame,
@@ -124,7 +124,7 @@ describe('R1 普攻冒字+震动（V1/E6/E9）', () => {
     expect(Math.round(H * DMG.fontPerH)).toBe(17); // 方案 §2.6 注：667 屏 ≈ 17px
     const { ctx, ops } = makeProbeCtx();
     drawFrame({ ctx, width: 375, height: H, dt: 0.016 }, snap, EMPTY_ASSETS, view);
-    const dmgFont = `bold ${Math.round(H * DMG.fontPerH)}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    const dmgFont = `bold ${Math.round(H * DMG.fontPerH)}px ${FONT_STACK}`; // Leo 09-04 裁定：战斗文字统一宋体族
     expect(ops).toContain(`set:font=${dmgFont}`);
     const st = ops.indexOf('call:strokeText');
     expect(st).toBeGreaterThanOrEqual(0);

@@ -230,6 +230,11 @@ export const DMG = {
   missText: '闪避', // miss 冒字文案（miss 不震动只冒字——§六确认点 1）
 } as const;
 
+// ===== 战斗文字统一字体栈（Leo 09-04 裁定：战斗文字统一宋体族） =====
+/** 战斗界面代码字唯一字体栈（HUD 名字牌/弧形钮/木牌占位/ctrl 占位钮/rejected 冒字/DMG 冒字/结算遮罩）；
+ * 与 TOPBAR.fontStack / CTRL_TEXT.fontStack 同族（既有落库保留原位），微信端无系统宋体回退 serif（M4 目验） */
+export const FONT_STACK = '"Songti SC","STSong","SimSun",serif';
+
 // ===== 顶栏组件（L5；T23 实装：topbar_base.png 无字底图 + 代码条/名字/百分比/状态图标；
 // 常量组按 topbar_meta.json 重标定 2026-09-04——meta 双格式统一转 {x,y,w,h}：
 // bar_*_fill/name_bbox 原为 [x0,y0,x1,y1]、icon_* 原为 [x,y,w,h]、slots 原为 {x0,x1,y0,y1}，禁运行时读 json） =====
@@ -356,6 +361,7 @@ export const BATTLE_HEX_RES = {
     return `assets/ui/frames/battle/${dir}/${dir}_0${i}_transparent.png`;
   },
   frameCount: 8, // 00~07（BATTLE_FRAME.idle=7 需全量 8 帧）
-  /** 预载帧表键（联调 F3：敌方 spriteKey=configId，按 T15 敌型对齐；玩家恒 'hero'） */
-  spriteKinds: ['hero', 'npc-shanzei', 'npc-lang'],
+  /** 预载帧表键（联调 F3：敌方 spriteKey=configId，按 T15 敌型对齐；玩家恒 'hero'。
+   * Leo 09-04 裁定摘狼：设计无狼 NPC，演示阵容全山贼系——spr_lang/ 素材归档保留不删） */
+  spriteKinds: ['hero', 'npc-shanzei'],
 } as const;

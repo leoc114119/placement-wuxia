@@ -97,7 +97,7 @@ async function loadAssets(): Promise<BattleHexAssets> {
   return { env, topbar, plaque, ctrlFaces, statusIcons, frames };
 }
 
-// ===== 对局构造（联调：真 session；演示阵容=主角四技 vs 山贼+野狼，R-07 档位语义占位） =====
+// ===== 对局构造（联调：真 session；演示阵容=主角四技 vs 山贼双敌（Leo 09-04 裁定摘狼：设计无狼 NPC），R-07 档位语义占位） =====
 /** 演示技能表（id 与 ui ARC_BTNS.ids 对齐；数值走 SkillDef 结构由 core 结算，此处非真值来源） */
 const DEMO_SKILLS = [
   { id: 'te', name: '特', kind: 'special' as const, weapon: 'fist' as const, grade: 1.3 as const, growth: 1, level: 20, cooldownTurns: 2, neiliCost: 20 },
@@ -134,7 +134,7 @@ function makeSession() {
     player: demoUnit({ id: 'hero', side: 'player', name: '小虾米', skills: DEMO_SKILLS }),
     enemies: [
       demoUnit({ id: 'e1', side: 'enemy', name: 'npc-shanzei', hp: 70, maxHp: 70, atk: 8, jimin: 5 }),
-      demoUnit({ id: 'e2', side: 'enemy', name: 'npc-lang', hp: 60, maxHp: 60, atk: 9, jimin: 6 }),
+      demoUnit({ id: 'e2', side: 'enemy', name: 'npc-shanzei', hp: 60, maxHp: 60, atk: 9, jimin: 6 }),
     ],
     mode: 'manual',
     seed: 42,
