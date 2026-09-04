@@ -159,5 +159,19 @@
   "cost": 2,
   "ts": "2026-09-04 T45-batch1-patch9",
   "note": "静态姿势直出版（无动作叙事，纯画面坐标姿势描述）：img2img 双参照（battle_idle_down+cast_down_1）aspect=3:4，prompt 任务书逐字；serial_no=2095728183767732224"
+ },
+ {
+  "name": "cast_down_2_seed",
+  "model": "seedream-5.0-pro",
+  "cost": 6,
+  "ts": "2026-09-04 T45-cast11",
+  "note": "T45 换模型对照实验 B 版：双参照 img2img 3:4（参照1=battle_idle_down, 参照2=cast_down_1）；提交 1 次成功 serial_no=2095736708334096384"
+ },
+ {
+  "name": "cast_down_2_nano（未产出）",
+  "model": "nano-banana→gemini-2.5-flash-image",
+  "cost": 0,
+  "ts": "2026-09-04 T45-cast11",
+  "note": "A 版跳过：两 slug 均被 mxai 拒（HTTP 400 未识别的模型名称，无 serial_no 未受理不计费）；平台 /mcp/api/models 实查无 nano banana/gemini 图像模型"
  }
 ]
