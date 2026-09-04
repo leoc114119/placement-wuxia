@@ -11,6 +11,13 @@
   "model": "gpt-image-2",
   "cost": 2,
   "ts": "2026-09-04 T45-pilot 试点2",
-  "note": "跨向转面派生 img2img aspect=16:9 三格横排（参照①pilot_down_matrix_raw 动作真源 ②battle_idle_right 该向锚 ③ref_right 白模右侧朝向，2048x294 单尊横裁目验无红旗；prompt 骨架逐字=prompts/pilot_right_matrix_v1.txt）；1920x1088 一次过，无重跑。试点合计 4 分（预算 ≤8）"
+  "note": "【已作废留档】跨向转面派生（down 直拳母版源头作废连带作废；right 直拳版亦因动作设计推翻作废）；1920x1088 一次过"
+ },
+ {
+  "name": "pilot_right_thrust",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-05 T45-pilot right母版重出",
+  "note": "right 向剑术突刺母版序列表 img2img aspect=16:9 三格横排（参照①battle_idle_right 形象锚 ②sketch_right_thrust_3step 动作简图 ③ref_right 白模朝向；prompt=prompts/pilot_right_thrust_v1.txt，骨架=试点1+动作描述整体替换为剑术突刺定稿[Leo 09-05 推翻直拳设计]）；1920x1088 一次过无重跑。试点累计 6 分；追加转面阶段 2 张后总预算 ≤12 分"
  }
 ]
