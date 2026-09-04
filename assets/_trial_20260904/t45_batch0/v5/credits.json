@@ -1,0 +1,9 @@
+[
+  {
+    "name": "anchor45_hero_down_v5",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-v5 单发重出",
+    "note": "T45 首锚 v5 单发 img2img（家场景 v5 锚→45°俯视戒备，禁变瘦）+mxai抠图+240x320归一 aspect=0.430"
+  }
+]
