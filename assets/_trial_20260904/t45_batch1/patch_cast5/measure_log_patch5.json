@@ -1,0 +1,44 @@
+{
+ "cast_down_2": {
+  "frame": "cast_down_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "aspect": "3:2",
+  "check_left": 26.881,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   229,
+   171,
+   545,
+   832
+  ],
+  "left_h": 661,
+  "right_env": [
+   182,
+   186,
+   469,
+   841
+  ],
+  "right_w": 287,
+  "right_h": 655,
+  "right_cc": 105904,
+  "height_ratio_recorded": 0.991,
+  "aspect_recorded": 0.438,
+  "result": "OK",
+  "final_bbox": [
+   66,
+   45,
+   178,
+   300
+  ],
+  "final_env": [
+   112,
+   255
+  ],
+  "final_centroid_x": 120.34,
+  "final_aspect": 0.439
+ }
+}
