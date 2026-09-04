@@ -89,5 +89,12 @@
   "cost": 2,
   "ts": "2026-09-05 T45-pilot 转面派生",
   "note": "rightdown 正斜侧转面表 v2（母版 v8 定稿后重出）：img2img --aspect 16:9 三格（参照①pilot_right_thrust_v8_raw ②battle_idle_rightdown ③ref_rightdown；②按主会话拍板用目标向锚，任务书原文'参照③换'存在两读）；prompt=prompts/pilot_rightdown_thrust_v2.txt 任务书逐字；1920x1088 一次过无重跑；mxai 抠图 582x330 + LANCZOS 归一同管线"
+ },
+ {
+  "name": "pilot_rightup_thrust_v3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-05 T45-pilot 转面派生·格2局部修正",
+  "note": "Leo 终验返工单：v2 格2 刺出贴画面平面→改沿面朝方向(右上深处)带纵深；局部修正法 img2img 16:9（主输入=pilot_rightup_thrust_v2_raw，第二参照=battle_idle_rightup；prompt=prompts/pilot_rightup_thrust_v3.txt 工单逐字）；1920x1088 一次过无重跑；首轮待 Leo 停点目验（未启用第二轮加 rightdown 格2 参照）"
  }
 ]
