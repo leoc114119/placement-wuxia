@@ -209,26 +209,32 @@ export const DMG = {
   missText: '闪避', // miss 冒字文案（miss 不震动只冒字——§六确认点 1）
 } as const;
 
-// ===== 顶栏组件（L5；v8：定稿切图 + 代码压暗层 + 动态条/状态图标叠绘） =====
+// ===== 顶栏组件（L5；T23 实装：topbar_base.png 无字底图 + 代码条/名字/百分比/状态图标；
+// 常量组按 topbar_meta.json 重标定 2026-09-04——meta 双格式统一转 {x,y,w,h}：
+// bar_*_fill/name_bbox 原为 [x0,y0,x1,y1]、icon_* 原为 [x,y,w,h]、slots 原为 {x0,x1,y0,y1}，禁运行时读 json） =====
 export const TOPBAR = {
   artW: 1440,
   artH: 300,
-  dimAlpha: 0.25, // 代码压暗层（Leo：原稿过亮；目验可调）
-  // 以下为 topbar.png 像素系标定值（cutout/measure.mjs 实测 2026-09-02）
-  coverRed: { x: 318, y: 88, w: 534, h: 54 }, // 红条槽覆盖区（盖住烘焙血条后代码重画）
-  coverBlue: { x: 318, y: 146, w: 538, h: 54 }, // 蓝条槽覆盖区
-  barInset: 7, // 动态条内缩
-  barH: 40, // 动态条高（槽内）
-  hpColor: '#c0342c',
-  neiliColor: '#2c62c0',
-  slotBg: '#1a1410', // 槽底色
-  statusSlots: { x: 321, y: 208, w: 396, h: 70 }, // 状态图标槽×4 区域（Q1③：占位枚举色块渲染）
-  statusColors: {
-    poison: '#5fae32', // 中毒
-    bleed: '#c03028', // 流血
-    internal: '#8a4ad0', // 内伤
-    empty: '#241c12', // 空槽
-  } as Record<string, string>,
+  dimAlpha: 0.25, // 代码压暗层（Leo：原稿过亮；目验可调，零行为变更保留）
+  redFill: { x: 321, y: 94, w: 437, h: 43 }, // 血条槽（meta bar_red_fill [321,94,758,137] 实测原稿烘焙红填充严丝合缝）
+  blueFill: { x: 322, y: 153, w: 315, h: 42 }, // 内力条槽（meta bar_blue_fill [322,153,637,195]）
+  nameBox: { x: 322, y: 23, w: 149, h: 47 }, // 名字区（meta name_bbox [322,23,471,70]，左对齐垂直居中）
+  statusSlots: [
+    // 状态图标槽×4（meta slots {x0,x1,y0,y1} 转换；图标按槽中心对齐绘制）
+    { x: 321, y: 206, w: 84, h: 78 },
+    { x: 420, y: 206, w: 83, h: 78 },
+    { x: 517, y: 206, w: 78, h: 78 },
+    { x: 625, y: 206, w: 82, h: 78 },
+  ],
+  hpGradient: ['#e22a23', '#931a15'], // 血条纵向渐变 条顶→条底（开放点①默认：采样原稿，rgb(226,42,35)→rgb(147,26,21)）
+  neiliGradient: ['#1a94f4', '#064faf'], // 内力条纵向渐变（rgb(26,148,244)→rgb(6,79,175)）
+  nameFontPx: 44, // 名字字号（art px，×k 落屏）
+  pctFontPx: 34, // 百分比字号（art px）
+  pctPadRight: 6, // 百分比右对齐锚 = 填充末端 − 本值（art px，随填充末端移动复刻烘焙稿位）
+  textFill: 'rgb(242, 228, 192)', // 奶黄字（ctrl_face_text_meta 同族）
+  textStroke: 'rgb(42, 29, 18)', // 深描边（同族）
+  textStrokeWidth: 5, // 描边宽（art px，strokeText 先描后填）
+  fontStack: '"Songti SC","STSong","SimSun",serif', // 宋体栈（微信端无系统宋体回退 serif，M4 目验）
 } as const;
 
 // ===== 组件布局（L5；L 环反馈④：ctrl 改右下锚定+高度占比上限——任何窗口比例恒贴右下可见） =====
@@ -267,6 +273,34 @@ export const CTRL_BUTTONS: ReadonlyArray<{ x: number; y: number; w: number; h: n
 ];
 
 /**
+ * ctrl 代码字样式（T23 · ctrl_face_text_meta.json 落库 2026-09-04；ADR-004 只读展示参数）。
+ * 比例位以钮本体宽 216 为基准（切图=钮本体 1:1，meta 的 252×164 canvas 为设计画布溯源、代码不使用）；
+ * text_center [132,66] 为 Leo 09-04 右移定值（避开骷髅/双刀装饰图标，meta note），需求文档旧值 122 已勘误。
+ */
+export const CTRL_TEXT = {
+  fontStack: '"Songti SC","STSong","SimSun",serif', // 宋体（meta font Songti；微信端回退 serif，M4 目验）
+  sizeRatio: 50 / 216, // 字号 50 @钮本体 216 宽（等比 ×btnW）
+  fill: 'rgb(242, 228, 192)', // 奶黄
+  stroke: 'rgb(42, 29, 18)', // 深描边
+  strokeWidthRatio: 5 / 216, // 描边宽 5 @216（strokeText 先描后填）
+  shadowOffsetRatio: 3 / 216, // 阴影偏移 3 @216（深色错位垫底实现）
+  centerRatio: { x: 132 / 216, y: 66 / 216 }, // 文字中心在钮矩形内的比例位（meta text_center [132,66]）
+  normal: { mode: '托管', speed: '加速' }, // 常态字（meta normal_text）
+  active: { mode: '自动', speed: '两倍' }, // 激活字（meta active_text）；逃跑=静态图不叠字
+} as const;
+
+/** ctrl 激活态样式（T23 · meta active_fx 落库；判定源=view.uiState 宿主镜像，渲染层禁直调 session._debug） */
+export const CTRL_ACTIVE = {
+  goldFrame: 'rgba(255, 205, 95, 0.95)', // 金框（meta gold_frame [255,205,95]）
+  frameWidthRatio: 4 / 216, // 金框线宽 @216（≈4）
+  brightenAlpha: 0.2, // 叠亮法暖色透明度（'lighter'+暖色 fillRect ≈ brightness 1.24；不用 ctx.filter，微信兼容弱）
+  brightenColor: '#ffcd5f', // 叠亮暖色（与金框同族）
+  glowAlpha: 0.22, // 外圈柔光透明度（meta glow_alpha 0.45 折算低透明外描边，目验可调）
+  glowWidthRatio: 2 / 216, // 柔光线宽 @216
+  glowPadRatio: 5 / 216, // 柔光外扩间距 @216
+} as const;
+
+/**
  * plaque_l_alpha.png（=PLAQUE_ART 尺寸）两块木牌热区标定矩形（牌面占比；文字已烘焙在切图内）。
  * T20-FE D-13 复量核定（最长连续实体 run 口径，系绳孔收腰防全行计数高估）：落库 x/w 取方案 §4.2
  * 参考值 26/273（可点主体，左右透明边+侧穗不设热区）；y/hRatio 沿 2026-09-02 牌面标定不动
@@ -280,11 +314,23 @@ export const PLAQUE_BUTTONS: ReadonlyArray<{ xRatio: number; yRatio: number; wRa
 
 // ===== 素材路径表（资源外置铁律：路径唯一出处=本表；版本号防缓存，preview 换图 bump） =====
 export const BATTLE_HEX_RES = {
-  ver: 't16v2',
+  ver: 't23v1',
   env: 'assets/ui/pixel/battle/raw/battle_env_pure.png', // L0 纯环境底图（无格无 UI，1088×1920）
-  topbar: 'assets/ui/pixel/battle/components/topbar.png',
+  topbar: 'assets/ui/pixel/battle/components/topbar_base.png', // T23：无字底图（名字/百分比/条由代码绘制）
   plaque: 'assets/ui/pixel/battle/components/plaque_l_alpha.png',
-  ctrl: 'assets/ui/pixel/battle/components/ctrl_r_alpha.png',
+  /** T23：ctrl 三钮独立脸（切图=CTRL_BUTTONS 钮本体 1:1 预裁；缺图逐钮代码占位兜底） */
+  ctrlFaces: {
+    tuoguan: 'assets/ui/pixel/battle/components/ctrl_tuoguan_face.png',
+    jiasu: 'assets/ui/pixel/battle/components/ctrl_jiasu_face.png',
+    flee: 'assets/ui/pixel/battle/components/ctrl_flee.png',
+  },
+  /** T23：状态图标映射表（key 词表 poison/blood/skull，与 types.ts:290 冻结字段注释语义对齐；
+   * 传入 key 命中即点亮，MVP 快照恒空数组=空槽；第 4 槽无素材预留不映射） */
+  statusIcons: {
+    poison: 'assets/ui/pixel/battle/components/icon_status_poison.png',
+    blood: 'assets/ui/pixel/battle/components/icon_status_blood.png',
+    skull: 'assets/ui/pixel/battle/components/icon_status_skull.png',
+  },
   /** 占位帧表：沿用既有 battle/ 小表（frameSrc 与 ui/assets.ts 同源），T14 Q 版帧到位即换表 */
   frameSrc: (kind: string, i: number): string => {
     const dir = kind === 'hero' ? 'hero' : 'spr_' + kind.replace('npc-', '').replace(/-/g, '_');

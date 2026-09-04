@@ -638,6 +638,135 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
     `重开前 dmgStagger=${preReset.stagN} 项（${preDetail}）→ 重开后 pending=${post.pendN} shakes=${post.shakeN} stagger=${post.stagN} fx=${post.fxN} phase=${post.phase}`);
 }
 
+// ═══════ T23 战斗 UI 实装追加断言（09-04 · 仅追加 V1/V4 观测段；既有 9 项与登记簿零改动）═══════
+// 方案 §三 V1-V4 e2e 列：观测面=既有 __demo.getView().topbarHud（T23 渲染私有 last-drawn 镜像，零新钩子）。
+// V2（statusIcons 恒空）并入 V1 顶栏观测一并读出；V3 plaque「点击无反应」由单测形状锁（main.ts 无 onPlaque）
+// + input 层零 diff + 既有 plaque 热区用例等效覆盖（卡 §4 授权 e2e 仅 V1/V4 段）。
+await forceReset(); // T23 段开局新局：BE/HF 残留（托管态/速度镜像/冷却/挂起反馈）由 resetDemo 清零
+
+// ═══ T23-V1（预期绿）：顶栏真实数据——name/hpFrac/百分比与快照对表；受击掉血同步；特技扣内同步；V2 空槽观测 ═══
+{
+  const readHud = () =>
+    page.evaluate(() => {
+      const s = window.__demo.session.snapshot();
+      const hero = s.actors.find((a) => a.id === 'hero');
+      const hud = window.__demo.getView().topbarHud;
+      return {
+        name: hud.name, hpFrac: hud.hpFrac, neiliFrac: hud.neiliFrac,
+        hpPct: hud.hpPctText, neiliPct: hud.neiliPctText, statusN: hud.statusIcons.length,
+        hp: hero.hp, maxHp: hero.maxHp, neili: hero.neili, maxNeili: hero.maxNeili,
+      };
+    });
+  // hud 与快照同帧一致性（方案 §三 V1：name/frac<0.01/百分比文本三重对表；不假设满血——对表而非对绝对值）
+  const consistent = (h) =>
+    h.name === '小虾米' &&
+    Math.abs(h.hpFrac - h.hp / Math.max(1, h.maxHp)) < 0.01 &&
+    Math.abs(h.neiliFrac - h.neili / Math.max(1, h.maxNeili)) < 0.01 &&
+    h.hpPct === String(Math.round(h.hpFrac * 100)) + '%' &&
+    h.neiliPct === String(Math.round(h.neiliFrac * 100)) + '%';
+  await ensureFighting();
+  await waitHeroTurn();
+  const hud0 = await readHud();
+  await page.screenshot({ path: path.join(outDir, 't23_topbar_full.png') });
+  // 受击掉血：不 clearEnemyBars——等敌条自然填满反击；hpFrac 下降且与快照同帧一致
+  await page.waitForFunction((f0) => {
+    const s = window.__demo.session.snapshot();
+    const hero = s.actors.find((a) => a.id === 'hero');
+    const hud = window.__demo.getView().topbarHud;
+    return hud.hpFrac < f0 - 0.01 && Math.abs(hud.hpFrac - hero.hp / Math.max(1, hero.maxHp)) < 0.01;
+  }, hud0.hpFrac, { timeout: 40000 });
+  const hud1 = await readHud();
+  await page.screenshot({ path: path.join(outDir, 't23_topbar_damaged.png') });
+  // 特技扣内（demo 每次施放内力 -1，BE1 先例）：摆敌入 te 射程 → 施放 → neiliFrac 同步下降（重试去偶发）
+  let neiliDropped = false;
+  let castDetail = '未取得施放样本';
+  for (let attempt = 0; attempt < 3 && !neiliDropped; attempt++) {
+    await ensureFighting();
+    if (!(await waitHeroTurnGuarded())) continue;
+    await clearEnemyBars();
+    await clearHeroCooldowns();
+    await waitPop();
+    const hero = (await snapState()).hero;
+    const ep = await placeFoeBeside('e1', hero, 2);
+    await tapSkill('te');
+    const before = await readHud();
+    const p = await page.evaluate(([fq, fr]) => window.__demo.cellCss(fq, fr), [ep.q, ep.r]);
+    await page.mouse.click(p.x, p.y);
+    try {
+      await page.waitForFunction((n0) => {
+        const hud = window.__demo.getView().topbarHud;
+        return hud.neiliFrac < n0 - 0.005; // 0.01 步长留 FP 半步容差
+      }, before.neiliFrac, { timeout: 4000 });
+      neiliDropped = true;
+      castDetail = `第${attempt + 1}次施放内力下降已观测`;
+    } catch { castDetail = `第${attempt + 1}次施放未观测到内力下降（重试）`; }
+  }
+  const hud2 = await readHud();
+  const ok =
+    consistent(hud0) && hud0.statusN === 0 &&
+    hud1.hpFrac < hud0.hpFrac && consistent(hud1) &&
+    neiliDropped && consistent(hud2) && hud2.neiliFrac < hud1.neiliFrac;
+  report('T23-V1 顶栏真实数据（名字/双条 frac+百分比与快照对表；受击掉血/特技扣内同步；V2 空槽=0）', false, ok,
+    `name=${hud0.name} hpFrac=${hud0.hpFrac.toFixed(3)}↔${(hud0.hp / Math.max(1, hud0.maxHp)).toFixed(3)} pct=${hud0.hpPct}/${hud0.neiliPct} statusN=${hud0.statusN}；受击 hpFrac ${hud0.hpFrac.toFixed(3)}→${hud1.hpFrac.toFixed(3)}；施放 neiliFrac ${hud1.neiliFrac.toFixed(3)}→${hud2.neiliFrac.toFixed(3)}（${castDetail}）`);
+}
+
+// ═══ T23-V4（预期绿）：ctrl 三钮——托管点击↔自动（session 模式+topbarHud.ctrlActive 双写）；加速镜像；逃跑 fled ═══
+{
+  await ensureFighting();
+  if (!(await waitHeroTurnGuarded())) throw new Error('T23-V4 未取得主角回合（40s 内局已被尾规则打完）');
+  // 钮屏中心换算：layout.ctrlRect + art 比例；art 矩形粘贴自 config/battle-hex.ts CTRL_BUTTONS（t23v1）
+  //（e2e 为纯 mjs 不可 import TS；CTRL_ART=223×448 同源）
+  const BTN_ART = [[5, 2, 216, 128], [5, 163, 213, 126], [5, 319, 213, 127]];
+  const btnCenter = (i) =>
+    page.evaluate(([idx, arts]) => {
+      const r = window.__demo.getView().layout.ctrlRect;
+      const b = arts[idx];
+      return window.__demo.cssOf(r.x + ((b[0] + b[2] / 2) / 223) * r.w, r.y + ((b[1] + b[3] / 2) / 448) * r.h);
+    }, [i, BTN_ART]);
+  const readCtrl = () =>
+    page.evaluate(() => ({
+      mode: window.__demo.session._debug.mode(),
+      hud: window.__demo.getView().topbarHud.ctrlActive,
+      phase: window.__demo.session.snapshot().phase,
+    }));
+  await page.waitForTimeout(200); // 待一帧：topbarHud/ctrlRect 为 last-drawn
+  const base = await readCtrl();
+  await page.screenshot({ path: path.join(outDir, 't23_ctrl_normal.png') });
+  // 托管：点击 → mode=auto ∧ hud.mode=true；再点 → manual ∧ false
+  let p = await btnCenter(0);
+  await page.mouse.click(p.x, p.y);
+  await page.waitForTimeout(200);
+  const afterOn = await readCtrl();
+  await page.screenshot({ path: path.join(outDir, 't23_ctrl_active.png') });
+  p = await btnCenter(0);
+  await page.mouse.click(p.x, p.y);
+  await page.waitForTimeout(200);
+  const afterOff = await readCtrl();
+  // 加速：点击 → hud.speed=true；再点 → false（speed 真值=宿主镜像 speedOn，无 _debug 读口——既有链路）
+  p = await btnCenter(1);
+  await page.mouse.click(p.x, p.y);
+  await page.waitForTimeout(200);
+  const afterSpeedOn = await readCtrl();
+  p = await btnCenter(1);
+  await page.mouse.click(p.x, p.y);
+  await page.waitForTimeout(200);
+  const afterSpeedOff = await readCtrl();
+  // 逃跑 → phase fled
+  p = await btnCenter(2);
+  await page.mouse.click(p.x, p.y);
+  await page.waitForTimeout(400);
+  const afterFlee = await readCtrl();
+  const ok =
+    base.mode === 'manual' && base.hud.mode === false && base.hud.speed === false &&
+    afterOn.mode === 'auto' && afterOn.hud.mode === true &&
+    afterOff.mode === 'manual' && afterOff.hud.mode === false &&
+    afterSpeedOn.hud.speed === true && afterSpeedOff.hud.speed === false &&
+    afterFlee.phase === 'fled';
+  report('T23-V4 ctrl 三钮（托管↔自动 uiState 镜像双写一致；加速镜像；逃跑 fled）', false, ok,
+    `base=${JSON.stringify(base)} 托管on=${JSON.stringify(afterOn)} off=${JSON.stringify(afterOff)} 加速on=${JSON.stringify(afterSpeedOn.hud)} off=${JSON.stringify(afterSpeedOff.hud)} 逃跑phase=${afterFlee.phase}`);
+  await page.mouse.click(225, 400); // 结算遮罩点击重开（保持清洁状态退出）
+}
+
 const mismatch = results.filter((r) => !r.match);
 console.log('═══ 行为 e2e 汇总 ═══');
 for (const r of results) console.log(`${r.match ? 'MATCH' : 'MISMATCH'} ${r.id} 预期${r.expect} 实际${r.actual}`);

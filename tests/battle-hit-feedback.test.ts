@@ -22,7 +22,14 @@ import type { BattleSnapshot, SnapshotActor } from '../types';
 
 const ROOT = path.resolve(__dirname, '..');
 const H = 667; // 逻辑屏高（定尺断言基准，E6/F6：禁用 dpr 放大后的物理高）
-const EMPTY_ASSETS: BattleHexAssets = { env: null, topbar: null, plaque: null, ctrl: null, frames: new Map() };
+const EMPTY_ASSETS: BattleHexAssets = {
+  env: null,
+  topbar: null,
+  plaque: null,
+  ctrlFaces: { tuoguan: null, jiasu: null, flee: null },
+  statusIcons: new Map(),
+  frames: new Map(),
+}; // T23：BattleHexAssets 增 ctrlFaces/statusIcons（缺图降级形状不变）
 
 // ---------- 夹具 ----------
 function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {

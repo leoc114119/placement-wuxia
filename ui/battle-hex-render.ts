@@ -9,8 +9,10 @@ import {
   BOARD,
   CAMERA,
   COMPONENT_LAYOUT,
+  CTRL_ACTIVE,
   CTRL_ART,
   CTRL_BUTTONS,
+  CTRL_TEXT,
   DMG,
   FIELD,
   FX,
@@ -38,12 +40,22 @@ export interface ImgLike {
   height: number;
 }
 
+/** ctrl 三钮独立脸（T23 §2.4：tuoguan/jiasu/flee 各自加载；缺图逐钮代码占位兜底，L④ 锁热区照常产出） */
+export interface CtrlFaceAssets {
+  tuoguan: ImgLike | null;
+  jiasu: ImgLike | null;
+  flee: ImgLike | null;
+}
+
 /** 渲染资源包（加载器分环境实现：wx 侧 M4 接入，preview 侧 DOM loader） */
 export interface BattleHexAssets {
   env: ImgLike | null;
   topbar: ImgLike | null;
   plaque: ImgLike | null;
-  ctrl: ImgLike | null;
+  ctrlFaces: CtrlFaceAssets;
+  /** 状态图标（T23 §2.2：key 词表 poison/blood/skull = config BATTLE_HEX_RES.statusIcons 路径表键；
+   * 快照 statusIcons 传入 key 命中才画，恒空数组=空槽） */
+  statusIcons: Map<string, ImgLike | null>;
   /** spriteKey（config BATTLE_HEX_RES.spriteKinds）→ 帧数组（帧组播报按帧号取） */
   frames: Map<string, Array<ImgLike | null>>;
 }
@@ -118,6 +130,17 @@ export interface BattleHexView {
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
   /** UI 状态反馈（宿主填充；托管/加速钮高亮显示——快照无此字段，演出态） */
   uiState: { mode?: BattleMode; speed?: boolean };
+  /** T23 顶栏/ctrl 观测面（§2.6：渲染私有 last-drawn 镜像，drawComponents 每帧覆写；
+   * e2e 经既有 __demo.getView() 读取断言——不加钩子、不进 types.ts、零契约新增） */
+  topbarHud: {
+    name: string;
+    hpFrac: number;
+    neiliFrac: number;
+    hpPctText: string;
+    neiliPctText: string;
+    statusIcons: string[];
+    ctrlActive: { mode: boolean; speed: boolean };
+  };
   layout: HitLayout;
 }
 
@@ -138,6 +161,15 @@ export function createView(): BattleHexView {
     skillPop: 0,
     selectedCell: null,
     uiState: {},
+    topbarHud: {
+      name: '',
+      hpFrac: 0,
+      neiliFrac: 0,
+      hpPctText: '0%',
+      neiliPctText: '0%',
+      statusIcons: [],
+      ctrlActive: { mode: false, speed: false },
+    },
     layout: { skillBtns: [], ctrlRect: null, plaqueRect: null },
   };
 }
@@ -928,7 +960,7 @@ function drawComponents(
 ): void {
   view.layout.plaqueRect = null;
   view.layout.ctrlRect = null;
-  // 顶栏：切图全宽贴屏顶（v8 同构图）+ 代码压暗层（Leo：原稿过亮）+ 动态条/状态槽叠绘；缺图时代码兜底
+  // 顶栏（T23 §2.1）：topbar_base 无字底图全宽贴屏顶 + 代码压暗层（现状保留）+ 代码条/名字/百分比叠绘；缺图时代码兜底
   const tb = assets.topbar;
   const topH = (width * (tb ? tb.height : TOPBAR.artH)) / (tb ? tb.width : TOPBAR.artW);
   if (tb) drawImg(ctx, tb, 0, 0, width, topH);
@@ -939,41 +971,80 @@ function drawComponents(
   ctx.fillStyle = `rgba(0,0,0,${TOPBAR.dimAlpha})`;
   ctx.fillRect(0, 0, Math.round(width), Math.round(topH));
   const k = width / TOPBAR.artW;
+  // 观测面 last-drawn 镜像（T23 §2.6：每帧先复位再按本帧实况覆写）
+  const hud = view.topbarHud;
+  hud.name = '';
+  hud.hpFrac = 0;
+  hud.neiliFrac = 0;
+  hud.hpPctText = '0%';
+  hud.neiliPctText = '0%';
+  hud.statusIcons = [];
   const hero = snapshot.actors.find((a) => a.side === 'player');
   if (hero) {
-    const drawBar = (cover: { x: number; y: number; w: number; h: number }, frac: number, color: string): void => {
-      ctx.fillStyle = TOPBAR.slotBg;
-      ctx.fillRect(Math.round(cover.x * k), Math.round(cover.y * k), Math.round(cover.w * k), Math.round(cover.h * k));
-      const inset = TOPBAR.barInset * k;
-      ctx.fillStyle = color;
-      ctx.fillRect(
-        Math.round(cover.x * k + inset),
-        Math.round(cover.y * k + inset),
-        Math.round((cover.w * k - inset * 2) * Math.max(0, Math.min(1, frac))),
-        Math.round(TOPBAR.barH * k),
-      );
+    // 条填充：frac=clamp01(v/max)（max≤0 防除零，沿棋子 HUD :875 同防）；纵向采样渐变复刻原稿（开放点①默认）
+    const fracOf = (v: number, max: number): number => Math.max(0, Math.min(1, v / Math.max(1, max)));
+    hud.hpFrac = fracOf(hero.hp, hero.maxHp);
+    hud.neiliFrac = fracOf(hero.neili, hero.maxNeili);
+    const drawBar = (
+      rect: { x: number; y: number; w: number; h: number },
+      frac: number,
+      colors: readonly string[],
+    ): void => {
+      const grad = ctx.createLinearGradient(0, rect.y * k, 0, (rect.y + rect.h) * k);
+      grad.addColorStop(0, colors[0]);
+      grad.addColorStop(1, colors[1]);
+      ctx.fillStyle = grad;
+      ctx.fillRect(Math.round(rect.x * k), Math.round(rect.y * k), Math.round(rect.w * frac * k), Math.round(rect.h * k));
     };
-    drawBar(TOPBAR.coverRed, hero.hp / Math.max(1, hero.maxHp), TOPBAR.hpColor);
-    drawBar(TOPBAR.coverBlue, hero.neili / Math.max(1, hero.maxNeili), TOPBAR.neiliColor);
-    // 状态图标槽×4（横向四等分盖住烘焙图标；statusIcons 真值接入前恒空槽色）
-    const slot = TOPBAR.statusSlots;
-    const cell = slot.w / 4;
-    for (let i = 0; i < 4; i++) {
-      const icon = hero.statusIcons[i] ?? 'empty';
-      const color = TOPBAR.statusColors[icon] ?? TOPBAR.statusColors.empty;
-      ctx.fillStyle = TOPBAR.slotBg;
-      ctx.fillRect(
-        Math.round((slot.x + i * cell) * k),
-        Math.round(slot.y * k),
-        Math.round(cell * 0.9 * k),
-        Math.round(slot.h * k),
-      );
-      ctx.fillStyle = color;
-      ctx.fillRect(
-        Math.round((slot.x + i * cell + cell * 0.12) * k),
-        Math.round((slot.y + slot.h * 0.12) * k),
-        Math.round(cell * 0.66 * k),
-        Math.round(slot.h * 0.76 * k),
+    drawBar(TOPBAR.redFill, hud.hpFrac, TOPBAR.hpGradient);
+    drawBar(TOPBAR.blueFill, hud.neiliFrac, TOPBAR.neiliGradient);
+    // 名字/百分比：宋体奶黄+深描边（ctrl_face_text_meta 同族），strokeText 先描后填（DMG 冒字同手法，禁 measureText）
+    hud.name = hero.name;
+    hud.hpPctText = `${Math.round(hud.hpFrac * 100)}%`;
+    hud.neiliPctText = `${Math.round(hud.neiliFrac * 100)}%`;
+    const drawTopText = (text: string, x: number, y: number, fontPx: number, align: CanvasTextAlign): void => {
+      ctx.font = `${Math.round(fontPx * k)}px ${TOPBAR.fontStack}`;
+      ctx.textAlign = align;
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = TOPBAR.textStroke;
+      ctx.lineWidth = TOPBAR.textStrokeWidth * k;
+      ctx.strokeText(text, Math.round(x), Math.round(y));
+      ctx.fillStyle = TOPBAR.textFill;
+      ctx.fillText(text, Math.round(x), Math.round(y));
+    };
+    drawTopText(hero.name, TOPBAR.nameBox.x * k, (TOPBAR.nameBox.y + TOPBAR.nameBox.h / 2) * k, TOPBAR.nameFontPx, 'left');
+    // 百分比右对齐锚=填充末端 −pctPadRight（随填充末端移动=复刻烘焙稿位，§六-6）
+    drawTopText(
+      hud.hpPctText,
+      (TOPBAR.redFill.x + TOPBAR.redFill.w * hud.hpFrac - TOPBAR.pctPadRight) * k,
+      (TOPBAR.redFill.y + TOPBAR.redFill.h / 2) * k,
+      TOPBAR.pctFontPx,
+      'right',
+    );
+    drawTopText(
+      hud.neiliPctText,
+      (TOPBAR.blueFill.x + TOPBAR.blueFill.w * hud.neiliFrac - TOPBAR.pctPadRight) * k,
+      (TOPBAR.blueFill.y + TOPBAR.blueFill.h / 2) * k,
+      TOPBAR.pctFontPx,
+      'right',
+    );
+    // 状态图标×4（T23 §2.2：读冻结字段 statusIcons，key 命中映射才画、槽中心对齐、icon 实际尺寸×k；
+    // 空/未知 key 不画=base 空槽自然露出，不再画代码色块）
+    hud.statusIcons = hero.statusIcons.slice(0, TOPBAR.statusSlots.length);
+    for (let i = 0; i < TOPBAR.statusSlots.length; i++) {
+      const key = hero.statusIcons[i];
+      if (!key) continue;
+      const iconImg = assets.statusIcons.get(key) ?? null;
+      const slot = TOPBAR.statusSlots[i];
+      if (!iconImg || !slot) continue;
+      drawImg(
+        ctx,
+        iconImg,
+        (slot.x + slot.w / 2) * k - (iconImg.width * k) / 2,
+        (slot.y + slot.h / 2) * k - (iconImg.height * k) / 2,
+        iconImg.width * k,
+        iconImg.height * k,
       );
     }
   }
@@ -1004,22 +1075,31 @@ function drawComponents(
     }
   }
   view.layout.plaqueRect = { x: px, y: py, w: pw, h: ph };
-  // 右下托管/加速/逃跑（右下锚：L 环反馈④——任何窗口比例恒贴右下可见；缺图时代码占位钮）
-  const ct = assets.ctrl;
+  // 右下托管/加速/逃跑（右下锚：L 环反馈④——任何窗口比例恒贴右下可见；T23 §2.4 三钮独立脸+代码字+金框激活态；
+  // 布局/热区零改动：钮屏矩形换算与 CTRL_BUTTONS 标定同构，缺图逐钮代码占位兜底）
+  const faces = assets.ctrlFaces;
   const artAR = CTRL_ART.h / CTRL_ART.w; // 448/223（与图片解耦，防异常尺寸）
   const cw = Math.min(COMPONENT_LAYOUT.ctrl.wRatio * width, (COMPONENT_LAYOUT.ctrl.maxHRatio * height) / artAR);
   const ch = cw * artAR;
   const cx = Math.round(width - COMPONENT_LAYOUT.ctrl.rightRatio * width - cw);
   const cy = Math.round(height - COMPONENT_LAYOUT.ctrl.bottomRatio * height - ch);
-  if (ct) {
-    drawImg(ctx, ct, cx, cy, cw, ch);
-  } else {
-    // 占位钮：深木底圆角矩形+金字（视觉降级，功能不缺位）
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    for (const b of CTRL_BUTTONS) {
-      const by = cy + (b.y / 448) * ch;
-      const bh = (b.h / 448) * ch;
+  // 激活判定源=宿主每帧填充的 view.uiState（渲染层只收快照+view+assets，禁直调 session._debug）
+  const modeActive = view.uiState.mode === 'auto';
+  const speedActive = view.uiState.speed === true;
+  hud.ctrlActive.mode = modeActive;
+  hud.ctrlActive.speed = speedActive;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const b of CTRL_BUTTONS) {
+    const bx = cx + (b.x / CTRL_ART.w) * cw;
+    const by = cy + (b.y / CTRL_ART.h) * ch;
+    const bw = (b.w / CTRL_ART.w) * cw;
+    const bh = (b.h / CTRL_ART.h) * ch;
+    const face = b.action === 'mode' ? faces.tuoguan : b.action === 'speed' ? faces.jiasu : faces.flee;
+    if (face) {
+      drawImg(ctx, face, bx, by, bw, bh); // 切图=钮本体 1:1 预裁，铺满标定矩形（勿按 meta 252×164 canvas 缩放）
+    } else {
+      // 占位钮：深木底圆角矩形+金字（视觉降级，功能不缺位；L④ 用例锁「热区照常产出」——沿现行降级路径原文）
       ctx.fillStyle = '#3a2c18';
       ctx.strokeStyle = '#d4af37';
       ctx.lineWidth = 2;
@@ -1029,18 +1109,43 @@ function drawComponents(
       ctx.stroke();
       ctx.fillStyle = '#ffd870';
       ctx.font = `bold ${Math.round(bh * 0.42)}px "PingFang SC","Microsoft YaHei",sans-serif`;
-      const label = b.action === 'mode' ? '托管' : b.action === 'speed' ? '加速' : '逃跑';
-      ctx.fillText(label, cx + cw * 0.5, by + bh / 2);
+      const phLabel = b.action === 'mode' ? '托管' : b.action === 'speed' ? '加速' : '逃跑';
+      ctx.fillText(phLabel, cx + cw * 0.5, by + bh / 2);
     }
-  }
-  // 状态高亮（L 环二反馈②：托管中/加速中的可视反馈——状态来自宿主填充的演出态）
-  const rim =
-    view.uiState.mode === 'auto' ? 'rgba(255, 235, 160, 0.95)' : view.uiState.speed ? 'rgba(160, 240, 160, 0.9)' : null;
-  if (rim) {
-    const row = view.uiState.mode === 'auto' ? CTRL_BUTTONS[0] : CTRL_BUTTONS[1];
-    ctx.strokeStyle = rim;
-    ctx.lineWidth = 2.5;
-    ctx.strokeRect(cx + cw * 0.04, cy + (row.y / CTRL_ART.h) * ch, cw * 0.92, (row.h / CTRL_ART.h) * ch);
+    // 激活态（T23 §2.4：叠亮+外圈柔光+金框；判定=view.uiState；现行绿 rim 段已整段删除——激活无绿点/绿框）
+    const active = b.action === 'mode' ? modeActive : b.action === 'speed' ? speedActive : false;
+    if (active) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter'; // 叠亮法：暖色低透明 ≈ brightness 1.24（不用 ctx.filter，微信兼容弱）
+      ctx.globalAlpha = CTRL_ACTIVE.brightenAlpha;
+      ctx.fillStyle = CTRL_ACTIVE.brightenColor;
+      ctx.fillRect(Math.round(bx), Math.round(by), Math.round(bw), Math.round(bh));
+      ctx.restore();
+      const pad = CTRL_ACTIVE.glowPadRatio * bw;
+      ctx.strokeStyle = CTRL_ACTIVE.goldFrame;
+      ctx.lineWidth = CTRL_ACTIVE.glowWidthRatio * bw;
+      ctx.strokeRect(Math.round(bx - pad), Math.round(by - pad), Math.round(bw + pad * 2), Math.round(bh + pad * 2)); // 外圈柔光
+      ctx.lineWidth = CTRL_ACTIVE.frameWidthRatio * bw;
+      ctx.strokeRect(Math.round(bx), Math.round(by), Math.round(bw), Math.round(bh)); // 金框
+    }
+    // 代码字（仅托管/加速有脸时叠绘；逃跑=烘焙字静态图不叠字）：label=active?自动/两倍:托管/加速
+    if (face && (b.action === 'mode' || b.action === 'speed')) {
+      const label = active ? CTRL_TEXT.active[b.action] : CTRL_TEXT.normal[b.action];
+      const tx = bx + CTRL_TEXT.centerRatio.x * bw; // meta text_center [132,66]（右移避开骷髅/双刀，Leo 09-04）
+      const ty = by + CTRL_TEXT.centerRatio.y * bw;
+      const off = CTRL_TEXT.shadowOffsetRatio * bw;
+      ctx.font = `${Math.round(CTRL_TEXT.sizeRatio * bw)}px ${CTRL_TEXT.fontStack}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = CTRL_TEXT.stroke;
+      ctx.lineWidth = CTRL_TEXT.strokeWidthRatio * bw;
+      ctx.fillStyle = CTRL_TEXT.stroke; // 阴影垫底（meta shadow_offset 深色错位）
+      ctx.fillText(label, Math.round(tx + off), Math.round(ty + off));
+      ctx.strokeText(label, Math.round(tx), Math.round(ty));
+      ctx.fillStyle = CTRL_TEXT.fill;
+      ctx.fillText(label, Math.round(tx), Math.round(ty));
+    }
   }
   view.layout.ctrlRect = { x: cx, y: cy, w: cw, h: ch };
 }

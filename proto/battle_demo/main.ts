@@ -69,19 +69,32 @@ async function loadAssets(): Promise<BattleHexAssets> {
       }),
     );
   }
-  const [env, topbar, plaque, ctrl] = await Promise.all([
+  // T23：ctrl 三钮独立脸 + 状态图标三枚（key 词表 poison/blood/skull = config BATTLE_HEX_RES.statusIcons）
+  const faceEntries = Object.entries(BATTLE_HEX_RES.ctrlFaces) as Array<[string, string]>;
+  const faceJobs = faceEntries.map(async ([key, path]) => [key, await loadImg(q(path))] as const);
+  const iconEntries = Object.entries(BATTLE_HEX_RES.statusIcons) as Array<[string, string]>;
+  const iconJobs = iconEntries.map(async ([key, path]) => [key, await loadImg(q(path))] as const);
+  const [env, topbar, plaque, facePairs, iconPairs] = await Promise.all([
     loadImg(q(BATTLE_HEX_RES.env)),
     loadImg(q(BATTLE_HEX_RES.topbar)),
     loadImg(q(BATTLE_HEX_RES.plaque)),
-    loadImg(q(BATTLE_HEX_RES.ctrl)),
+    Promise.all(faceJobs),
+    Promise.all(iconJobs),
     ...frameJobs,
   ]);
+  const ctrlFaces: BattleHexAssets['ctrlFaces'] = { tuoguan: null, jiasu: null, flee: null };
+  for (const [key, img] of facePairs) {
+    if (key === 'tuoguan' || key === 'jiasu' || key === 'flee') ctrlFaces[key] = img;
+  }
+  const statusIcons = new Map<string, ImgLike | null>(iconPairs);
   const ok = (i: HTMLImageElement | null): string => (i ? 'ok' : 'MISS');
   console.log(
-    `[battle_demo] 资源：env=${ok(env)} topbar=${ok(topbar)} plaque=${ok(plaque)} ctrl=${ok(ctrl)} ` +
-      `帧=[${[...frames.entries()].map(([k, v]) => `${k}:${v.filter(Boolean).length}/${v.length}`).join(' ')}]`,
+    `[battle_demo] 资源：env=${ok(env)} topbar=${ok(topbar)} plaque=${ok(plaque)} ` +
+      `ctrlFaces=[${facePairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
+      `statusIcons=[${iconPairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
+      `帧=[${[...frames.entries()].map(([k2, v]) => `${k2}:${v.filter(Boolean).length}/${v.length}`).join(' ')}]`,
   );
-  return { env, topbar, plaque, ctrl, frames };
+  return { env, topbar, plaque, ctrlFaces, statusIcons, frames };
 }
 
 // ===== 对局构造（联调：真 session；演示阵容=主角四技 vs 山贼+野狼，R-07 档位语义占位） =====
@@ -129,7 +142,14 @@ function makeSession() {
 }
 
 const view = createView();
-let assets: BattleHexAssets = { env: null, topbar: null, plaque: null, ctrl: null, frames: new Map() };
+let assets: BattleHexAssets = {
+  env: null,
+  topbar: null,
+  plaque: null,
+  ctrlFaces: { tuoguan: null, jiasu: null, flee: null },
+  statusIcons: new Map(),
+  frames: new Map(),
+};
 
 const input = createBattleInput({
   dispatch: (req) => {
@@ -137,7 +157,7 @@ const input = createBattleInput({
     if (ok && req.type === 'toggleSpeed') speedOn = !speedOn; // 演出态：加速中可视反馈
   },
   onBlocked: (msg) => toast(msg),
-  onPlaque: (label) => toast(`${label}（演示占位）`),
+  // T23 开放点③默认：onPlaque 回调移除——牌面点击由 input 层静默吞掉（不穿透、无提示，纯占位）
   mode: () => session._debug.mode(),
 });
 

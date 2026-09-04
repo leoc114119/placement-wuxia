@@ -10,11 +10,14 @@ import {
   ANIM_FRAMES,
   ANIM_LOOP_GROUPS,
   ARC_BTNS,
+  COMPONENT_LAYOUT,
+  CTRL_ACTIVE,
   CTRL_ART,
   CTRL_BUTTONS,
   JUMP,
   ROW_H,
   TILE_W,
+  TOPBAR,
   hexDist,
   hexToWorld,
   jumpParamsFor,
@@ -570,6 +573,16 @@ function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {
   };
 }
 
+/** T23：全缺图资源包（BattleHexAssets 新结构；缺图降级路径共用，hit-feedback 测同款常量） */
+const EMPTY_ASSETS: BattleHexAssets = {
+  env: null,
+  topbar: null,
+  plaque: null,
+  ctrlFaces: { tuoguan: null, jiasu: null, flee: null },
+  statusIcons: new Map(),
+  frames: new Map(),
+};
+
 describe('渲染烟雾（Proxy ctx 计数）', () => {
   it('快照驱动全层绘制：格子/棋子/HUD/组件/结算遮罩均产生调用', () => {
     const calls: Record<string, number> = {};
@@ -609,7 +622,9 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
       env: img,
       topbar: { width: 1440, height: 300 },
       plaque: { width: 310, height: 757 },
-      ctrl: { width: 223, height: 448 },
+      // T23：三脸给实尺寸（切图=钮本体 1:1）走有脸分支；图标空 Map=恒空槽（MVP）
+      ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
+      statusIcons: new Map(),
       frames: new Map([
         ['hero', [img, img, img, img, img, img, img, img]],
         ['npc-shanzei', [img, img, img, img, img, img, img, img]],
@@ -618,8 +633,10 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     const view = createView();
     updateView(view, snap, 0.016, 375, 667);
     drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
-    expect(calls.drawImage).toBeGreaterThan(5); // env+棋子帧+三组件
-    expect(calls.fillText).toBeGreaterThanOrEqual(6); // 两名字+四钮字
+    expect(calls.drawImage).toBeGreaterThan(5); // env+棋子帧+三组件（T23 起 ctrl 逐钮三脸+顶栏）
+    // T23 语义更新（先例 ATK-2 :330 随卡改写）：两名字(2)+弧钮字(4)+顶栏三字(名字/两百分比=3)+ctrl 代码字
+    // （托管/加速各=阴影垫底+主字 2 次 fillText → 4）= 13
+    expect(calls.fillText).toBeGreaterThanOrEqual(13);
     expect(view.layout.skillBtns).toHaveLength(ARC_BTNS.ids.length);
     expect(view.layout.skillBtns.find((b) => b.id === 'jue')?.disabled).toBe(true); // 置灰=会话真值（F2）
     expect(view.layout.ctrlRect).not.toBeNull();
@@ -707,7 +724,7 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
       },
     );
     const snap = makeSnapshot([{ id: 'hero', name: '小虾米', animState: 'idle' }]);
-    const emptyAssets: BattleHexAssets = { env: null, topbar: null, plaque: null, ctrl: null, frames: new Map() };
+    const emptyAssets: BattleHexAssets = EMPTY_ASSETS; // T23：全缺图资源包（新结构共用常量）
     const view = createView();
     // 非常规比例（宽窗 640×480）：ctrl 恒贴右下且完整在屏内
     updateView(view, snap, 0.016, 640, 480);
@@ -731,7 +748,8 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     expect(pr).not.toBeNull();
     expect(pr!.x + pr!.w).toBeLessThanOrEqual(640);
     expect(pr!.y + pr!.h).toBeLessThanOrEqual(480);
-    expect(calls.fillText).toBeGreaterThanOrEqual(2); // 占位牌文字（装备/武功）
+    // T23 语义更新（先例 ATK-2 :330 随卡改写）：占位牌文字（装备/武功=2）+占位钮文字（托管/加速/逃跑=3）
+    expect(calls.fillText).toBeGreaterThanOrEqual(5);
   });
 
 
@@ -784,10 +802,211 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
       },
     );
     updateView(view, snap, 0.016, 375, 667);
-    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, { env: null, topbar: null, plaque: null, ctrl: null, frames: new Map() }, view);
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, EMPTY_ASSETS, view);
     expect(calls.fillText).toBeGreaterThanOrEqual(1); // 冒字绘制
     updateView(view, snap, 1.2, 375, 667); // 超寿命
     expect(view.fx.some((f) => f.kind === 'note')).toBe(false); // 消亡
+  });
+});
+
+// ---------- T23 战斗 UI 实装（顶栏真实化 + 状态图标接口 + ctrl 三钮独立；V1/V2/V4 单测列） ----------
+/** 实参探针（T23 新基建）：既有烟雾/hit-feedback 探针只记调用次数或属性写——V1 条宽 / V2 图标位 /
+ * V4 三脸坐标断言需方法实参级采样；strokeStyle 全帧集（金框正向 + 绿 rim 负向锁）与渐变两停色值同源记录。 */
+interface ArgProbe {
+  rects: Array<{ x: number; y: number; w: number; h: number }>;
+  imgs: Array<{ x: number; y: number; w: number; h: number }>;
+  texts: string[];
+  strokeStyles: string[];
+  gradients: Array<{ x0: number; y0: number; x1: number; y1: number; stops: Array<[number, string]> }>;
+}
+function makeArgProbeCtx(): { ctx: CanvasRenderingContext2D; probe: ArgProbe } {
+  const probe: ArgProbe = { rects: [], imgs: [], texts: [], strokeStyles: [], gradients: [] };
+  const num = (v: unknown): number => (typeof v === 'number' ? v : Number(v));
+  const base = {
+    canvas: { width: 375, height: 667 },
+    measureText: (): { width: number } => ({ width: 10 }),
+    createLinearGradient: (x0: number, y0: number, x1: number, y1: number) => {
+      const g = { x0, y0, x1, y1, stops: [] as Array<[number, string]> };
+      probe.gradients.push(g);
+      return { addColorStop: (o: number, c: string): void => void g.stops.push([o, String(c)]) };
+    },
+  } as unknown as CanvasRenderingContext2D;
+  const ctx = new Proxy(base, {
+    get(t, prop) {
+      const rec = t as unknown as Record<string | symbol, unknown>;
+      if (prop in rec) return rec[prop];
+      return (...args: unknown[]): void => {
+        if (prop === 'fillRect') probe.rects.push({ x: num(args[0]), y: num(args[1]), w: num(args[2]), h: num(args[3]) });
+        else if (prop === 'drawImage') probe.imgs.push({ x: num(args[1]), y: num(args[2]), w: num(args[3]), h: num(args[4]) });
+        else if (prop === 'fillText' || prop === 'strokeText') probe.texts.push(String(args[0]));
+      };
+    },
+    set(t, prop, v) {
+      if (prop === 'strokeStyle') probe.strokeStyles.push(String(v));
+      return true;
+    },
+  });
+  return { ctx, probe };
+}
+
+/** T23 有脸资源包（三脸尺寸=切图实测 216×128 / 213×126 / 213×127，与 CTRL_BUTTONS 逐钮同尺寸 1:1） */
+function makeFaceAssets(statusIcons: Array<[string, { width: number; height: number }]> = []): BattleHexAssets {
+  return {
+    env: null,
+    topbar: { width: 1440, height: 300 },
+    plaque: null,
+    ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
+    statusIcons: new Map(statusIcons),
+    frames: new Map(),
+  };
+}
+
+describe('T23 顶栏真实化（V1：代码条/名字/百分比 + topbarHud 镜像）', () => {
+  const K = 375 / TOPBAR.artW;
+  it('hp=50%/neili=30% 快照：血条填充宽=437×K×0.5±1、内力条=315×K×0.3±1、fillText 含名字与两百分比、渐变纵向两停色值', () => {
+    const snap = makeSnapshot([{ id: 'hero', name: '小虾米', hp: 50, maxHp: 100, neili: 30, maxNeili: 100 }]);
+    const view = createView();
+    const { ctx, probe } = makeArgProbeCtx();
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, makeFaceAssets(), view);
+    // 条矩形按 y/h/x 定位过滤（w 为被断量，防它层矩形混入）
+    const redBar = probe.rects.find(
+      (r) =>
+        Math.abs(r.x - TOPBAR.redFill.x * K) < 1.5 &&
+        Math.abs(r.y - TOPBAR.redFill.y * K) < 1.5 &&
+        Math.abs(r.h - TOPBAR.redFill.h * K) < 1.5,
+    );
+    expect(redBar).toBeDefined();
+    expect(Math.abs(redBar!.w - TOPBAR.redFill.w * 0.5 * K)).toBeLessThanOrEqual(1);
+    const blueBar = probe.rects.find(
+      (r) =>
+        Math.abs(r.x - TOPBAR.blueFill.x * K) < 1.5 &&
+        Math.abs(r.y - TOPBAR.blueFill.y * K) < 1.5 &&
+        Math.abs(r.h - TOPBAR.blueFill.h * K) < 1.5,
+    );
+    expect(blueBar).toBeDefined();
+    expect(Math.abs(blueBar!.w - TOPBAR.blueFill.w * 0.3 * K)).toBeLessThanOrEqual(1);
+    expect(probe.texts).toContain('小虾米');
+    expect(probe.texts).toContain('50%');
+    expect(probe.texts).toContain('30%');
+    const stops = probe.gradients.flatMap((g) => g.stops.map(([, c]) => c));
+    expect(stops).toContain('#e22a23'); // 血条 条顶（采样原稿 rgb(226,42,35)）
+    expect(stops).toContain('#931a15'); // 血条 条底
+    expect(stops).toContain('#1a94f4'); // 内力 条顶
+    expect(stops).toContain('#064faf'); // 内力 条底
+    for (const g of probe.gradients) {
+      expect(g.x0).toBe(0); // 纵向渐变（同 x，y0→y1）
+      expect(g.x1).toBe(0);
+      expect(g.y1).toBeGreaterThan(g.y0);
+    }
+    // 观测面镜像（§2.6 last-drawn）
+    expect(view.topbarHud).toMatchObject({ name: '小虾米', hpFrac: 0.5, neiliFrac: 0.3, hpPctText: '50%', neiliPctText: '30%' });
+  });
+
+  it('maxHp≤0/maxNeili≤0 防除零：沿 :875 Math.max(1,max) 同式——max=0 视为 1，clamp01 不产生 NaN/Infinity（本例 hp=10→满条 100%）', () => {
+    const snap = makeSnapshot([{ id: 'hero', name: '空血者', hp: 10, maxHp: 0, neili: 5, maxNeili: 0 }]);
+    const view = createView();
+    const { ctx, probe } = makeArgProbeCtx();
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, makeFaceAssets(), view);
+    const redBar = probe.rects.find(
+      (r) =>
+        Math.abs(r.x - TOPBAR.redFill.x * K) < 1.5 &&
+        Math.abs(r.y - TOPBAR.redFill.y * K) < 1.5 &&
+        Math.abs(r.h - TOPBAR.redFill.h * K) < 1.5,
+    );
+    expect(redBar).toBeDefined();
+    expect(redBar!.w).toBe(Math.round(TOPBAR.redFill.w * K)); // clamp01(10/1)=1 → 满宽
+    expect(Number.isFinite(view.topbarHud.hpFrac)).toBe(true);
+    expect(Number.isFinite(view.topbarHud.neiliFrac)).toBe(true);
+    expect(view.topbarHud.hpFrac).toBe(1);
+    expect(view.topbarHud.neiliFrac).toBe(1);
+    expect(view.topbarHud.hpPctText).toBe('100%');
+    expect(view.topbarHud.neiliPctText).toBe('100%');
+  });
+});
+
+describe('T23 状态图标接口（V2：命中才画、恒空=空槽、未知 key 不画）', () => {
+  it("['poison','blood'] → 两枚 drawImage 槽 0/1 中心对齐（icon 实际尺寸×K）；['', 'unknown'] → 与恒空基线零差", () => {
+    const K = 375 / TOPBAR.artW;
+    const run = (statusIcons: string[]): ArgProbe => {
+      const snap = makeSnapshot([{ id: 'hero', name: '小虾米', statusIcons }]);
+      const view = createView();
+      const { ctx, probe } = makeArgProbeCtx();
+      drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, makeFaceAssets([
+        ['poison', { width: 67, height: 67 }],
+        ['blood', { width: 72, height: 67 }],
+        ['skull', { width: 73, height: 67 }],
+      ]), view);
+      return probe;
+    };
+    const centers = TOPBAR.statusSlots.map((s) => ({ x: (s.x + s.w / 2) * K, y: (s.y + s.h / 2) * K }));
+    const probe2 = run(['poison', 'blood']);
+    for (let i = 0; i < 2; i++) {
+      const hit = probe2.imgs.find(
+        (m) => Math.abs(m.x + m.w / 2 - centers[i].x) <= 1 && Math.abs(m.y + m.h / 2 - centers[i].y) <= 1,
+      );
+      expect(hit).toBeDefined();
+    }
+    const probe0 = run([]);
+    const probeU = run(['', 'unknown']);
+    expect(probeU.imgs.length).toBe(probe0.imgs.length); // 未知 key 零额外 drawImage
+  });
+});
+
+describe('T23 ctrl 三钮独立（V4：三脸坐标对表 + 代码字 + 金框激活；绿 rim 负向锁）', () => {
+  // 与渲染层同式换算（config 驱动无硬编码）：375×667 下钮条几何
+  const ART_AR = CTRL_ART.h / CTRL_ART.w;
+  const CW = Math.min(COMPONENT_LAYOUT.ctrl.wRatio * 375, (COMPONENT_LAYOUT.ctrl.maxHRatio * 667) / ART_AR);
+  const CH = CW * ART_AR;
+  const CX = Math.round(375 - COMPONENT_LAYOUT.ctrl.rightRatio * 375 - CW);
+  const CY = Math.round(667 - COMPONENT_LAYOUT.ctrl.bottomRatio * 667 - CH);
+  const btnRect = (b: { x: number; y: number; w: number; h: number }): { x: number; y: number; w: number; h: number } => ({
+    x: CX + (b.x / CTRL_ART.w) * CW,
+    y: CY + (b.y / CTRL_ART.h) * CH,
+    w: (b.w / CTRL_ART.w) * CW,
+    h: (b.h / CTRL_ART.h) * CH,
+  });
+
+  it('三脸 drawImage 逐钮坐标对表（铺满 CTRL_BUTTONS 标定矩形=1:1 换图）；ctrlRect 布局不变', () => {
+    const snap = makeSnapshot([{ id: 'hero', name: '小虾米' }]);
+    const view = createView();
+    const { ctx, probe } = makeArgProbeCtx();
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, makeFaceAssets(), view);
+    for (const b of CTRL_BUTTONS) {
+      const r = btnRect(b);
+      const hit = probe.imgs.find(
+        (m) => Math.abs(m.x - r.x) <= 1 && Math.abs(m.y - r.y) <= 1 && Math.abs(m.w - r.w) <= 1 && Math.abs(m.h - r.h) <= 1,
+      );
+      expect(hit).toBeDefined();
+    }
+    expect(view.layout.ctrlRect).toEqual({ x: CX, y: CY, w: CW, h: CH });
+  });
+
+  it("uiState.mode='auto' → 『自动』+金框；speed=true → 『两倍』+『托管』常态字；常态无金框；绿 rim 串全帧零出现", () => {
+    const snap = makeSnapshot([{ id: 'hero', name: '小虾米' }]);
+    const view = createView();
+    view.uiState = { mode: 'auto' };
+    const { ctx, probe } = makeArgProbeCtx();
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, makeFaceAssets(), view);
+    expect(probe.texts).toContain('自动');
+    expect(probe.strokeStyles).toContain(CTRL_ACTIVE.goldFrame);
+    expect(view.topbarHud.ctrlActive).toEqual({ mode: true, speed: false });
+    // 加速激活（mode 回落 → 托管常态字）
+    view.uiState = { speed: true };
+    const run2 = makeArgProbeCtx();
+    drawFrame({ ctx: run2.ctx, width: 375, height: 667, dt: 0.016 }, snap, makeFaceAssets(), view);
+    expect(run2.probe.texts).toContain('两倍');
+    expect(run2.probe.texts).toContain('托管');
+    expect(view.topbarHud.ctrlActive).toEqual({ mode: false, speed: true });
+    // 绿 rim 负向锁：现行 'rgba(160, 240, 160, 0.9)' 在激活帧 strokeStyle 集零出现（整段删除的回归锁）
+    expect(probe.strokeStyles).not.toContain('rgba(160, 240, 160, 0.9)');
+    expect(run2.probe.strokeStyles).not.toContain('rgba(160, 240, 160, 0.9)');
+    // 常态：托管/加速、无金框
+    view.uiState = {};
+    const run3 = makeArgProbeCtx();
+    drawFrame({ ctx: run3.ctx, width: 375, height: 667, dt: 0.016 }, snap, makeFaceAssets(), view);
+    expect(run3.probe.texts).toContain('托管');
+    expect(run3.probe.texts).toContain('加速');
+    expect(run3.probe.strokeStyles).not.toContain(CTRL_ACTIVE.goldFrame);
   });
 });
 
@@ -851,7 +1070,7 @@ describe('T15 契约咬合（真实 session 快照 → 渲染全链）', () => {
         },
       },
     );
-    const assets: BattleHexAssets = { env: null, topbar: null, plaque: null, ctrl: null, frames: new Map() };
+    const assets: BattleHexAssets = EMPTY_ASSETS; // T23：全缺图资源包（新结构共用常量）
     const view = createView();
     updateView(view, snap, 0.016, 375, 667);
     drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
