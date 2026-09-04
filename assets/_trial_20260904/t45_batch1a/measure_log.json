@@ -1,0 +1,372 @@
+{
+ "_ruling_head_base": {
+  "issue": "任务书给死体宽锁基准 123px 与门定义口径（包络顶部 30% 最大行宽）对入库锚 battle_idle_right.png 程序化实测 119px 冲突；三向锚存档值 123/120/122 用任何候选口径（包络30%/含尾行/画布30%/alpha128/行计数/区域跨度）均无法复现，锚文件与存档提交 9bd0ed6 逐字节一致",
+  "ruling": "Leo 2026-09-04 经主会话现场裁定：采用实测 119px 为 right 向体宽锁基准",
+  "followup": "123px 存档值勘误登记（c13+任务书），随批 1a 交付上报"
+ },
+ "walk_right_1": {
+  "frame": "walk_right_1",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 19.583,
+  "corners_nonwhite": false,
+  "left_env": [
+   126,
+   230,
+   447,
+   844
+  ],
+  "left_h": 614,
+  "right_env": [
+   961,
+   227,
+   1342,
+   838
+  ],
+  "right_w": 381,
+  "right_h": 611,
+  "height_ratio": 0.995,
+  "height_pass": true,
+  "pose_delta": 129.55,
+  "gate": "aspect",
+  "result": "SKIP",
+  "reason": "宽高比门 FAIL 0.622（登记不重摇，候 Leo）",
+  "final_aspect": 0.622
+ },
+ "walk_right_2": {
+  "frame": "walk_right_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 22.915,
+  "corners_nonwhite": false,
+  "left_env": [
+   125,
+   228,
+   448,
+   841
+  ],
+  "left_h": 613,
+  "right_env": [
+   912,
+   227,
+   1274,
+   833
+  ],
+  "right_w": 362,
+  "right_h": 606,
+  "height_ratio": 0.989,
+  "height_pass": true,
+  "pose_delta": 142.45,
+  "gate": "aspect",
+  "result": "SKIP",
+  "reason": "宽高比门 FAIL 0.598（登记不重摇，候 Leo）",
+  "final_aspect": 0.598
+ },
+ "jump_right_1": {
+  "frame": "jump_right_1",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 16.147,
+  "corners_nonwhite": false,
+  "left_env": [
+   127,
+   233,
+   447,
+   845
+  ],
+  "left_h": 612,
+  "right_env": [
+   966,
+   399,
+   1298,
+   835
+  ],
+  "right_w": 332,
+  "right_h": 436,
+  "height_ratio": 0.712,
+  "height_pass": false,
+  "pose_delta": 140.57,
+  "gate": "height",
+  "result": "SKIP",
+  "reason": "raw 高度比门 FAIL 0.712（登记不重摇，候 Leo）"
+ },
+ "jump_right_2": {
+  "frame": "jump_right_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 22.586,
+  "corners_nonwhite": false,
+  "left_env": [
+   128,
+   233,
+   446,
+   846
+  ],
+  "left_h": 613,
+  "right_env": [
+   862,
+   145,
+   1275,
+   756
+  ],
+  "right_w": 413,
+  "right_h": 611,
+  "height_ratio": 0.997,
+  "height_pass": true,
+  "pose_delta": 118.57,
+  "gate": "height",
+  "body_width": {
+   "baseline": 119.0,
+   "head_w": 170,
+   "ratio": 1.4286,
+   "verdict": "FAIL_OUT_OF_BAND"
+  },
+  "result": "SKIP",
+  "reason": "体宽锁越界 FAIL ratio=1.4286（重跑经 retry_bw，限 1 次）"
+ },
+ "atk_right_1": {
+  "frame": "atk_right_1",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 17.475,
+  "corners_nonwhite": false,
+  "left_env": [
+   128,
+   233,
+   447,
+   845
+  ],
+  "left_h": 612,
+  "right_env": [
+   926,
+   235,
+   1349,
+   841
+  ],
+  "right_w": 423,
+  "right_h": 606,
+  "height_ratio": 0.99,
+  "height_pass": true,
+  "pose_delta": 125.9,
+  "gate": "aspect",
+  "result": "SKIP",
+  "reason": "宽高比门 FAIL 0.697（登记不重摇，候 Leo）",
+  "final_aspect": 0.697
+ },
+ "atk_right_2": {
+  "frame": "atk_right_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 16.701,
+  "corners_nonwhite": false,
+  "left_env": [
+   127,
+   230,
+   448,
+   842
+  ],
+  "left_h": 612,
+  "right_env": [
+   924,
+   268,
+   1370,
+   842
+  ],
+  "right_w": 446,
+  "right_h": 574,
+  "height_ratio": 0.938,
+  "height_pass": true,
+  "pose_delta": 110.55,
+  "gate": "aspect",
+  "result": "SKIP",
+  "reason": "宽高比门 FAIL 0.780（登记不重摇，候 Leo）",
+  "final_aspect": 0.78
+ },
+ "atk_right_3": {
+  "frame": "atk_right_3",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 19.321,
+  "corners_nonwhite": false,
+  "left_env": [
+   127,
+   226,
+   445,
+   832
+  ],
+  "left_h": 606,
+  "right_env": [
+   1008,
+   233,
+   1303,
+   831
+  ],
+  "right_w": 295,
+  "right_h": 598,
+  "height_ratio": 0.987,
+  "height_pass": true,
+  "pose_delta": 148.36,
+  "gate": "aspect",
+  "body_width": {
+   "baseline": 119.0,
+   "head_w": 105,
+   "ratio": 0.8824,
+   "verdict": "FAIL_OUT_OF_BAND"
+  },
+  "result": "SKIP",
+  "reason": "体宽锁越界 FAIL ratio=0.8824（重跑经 retry_bw，限 1 次）"
+ },
+ "cast_right_1": {
+  "frame": "cast_right_1",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 19.958,
+  "corners_nonwhite": false,
+  "left_env": [
+   127,
+   227,
+   449,
+   847
+  ],
+  "left_h": 620,
+  "right_env": [
+   926,
+   234,
+   1320,
+   847
+  ],
+  "right_w": 394,
+  "right_h": 613,
+  "height_ratio": 0.989,
+  "height_pass": true,
+  "pose_delta": 137.39,
+  "gate": "aspect",
+  "result": "SKIP",
+  "reason": "宽高比门 FAIL 0.639（登记不重摇，候 Leo）",
+  "final_aspect": 0.639
+ },
+ "cast_right_2": {
+  "frame": "cast_right_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 19.179,
+  "corners_nonwhite": false,
+  "left_env": [
+   127,
+   232,
+   448,
+   846
+  ],
+  "left_h": 614,
+  "right_env": [
+   905,
+   301,
+   1274,
+   843
+  ],
+  "right_w": 369,
+  "right_h": 542,
+  "height_ratio": 0.883,
+  "height_pass": false,
+  "pose_delta": 138.81,
+  "gate": "aspect",
+  "result": "SKIP",
+  "reason": "raw 高度比门 FAIL 0.883（登记不重摇，候 Leo）"
+ },
+ "cast_right_3": {
+  "frame": "cast_right_3",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 18.576,
+  "corners_nonwhite": false,
+  "left_env": [
+   126,
+   231,
+   448,
+   847
+  ],
+  "left_h": 616,
+  "right_env": [
+   990,
+   231,
+   1308,
+   847
+  ],
+  "right_w": 318,
+  "right_h": 616,
+  "height_ratio": 1.0,
+  "height_pass": true,
+  "pose_delta": 151.95,
+  "gate": "aspect",
+  "body_width": {
+   "baseline": 119.0,
+   "head_w": 116,
+   "ratio": 0.9748,
+   "verdict": "PASS"
+  },
+  "result": "OK",
+  "final_bbox": [
+   53,
+   44,
+   186,
+   300
+  ],
+  "final_env": [
+   133,
+   256
+  ],
+  "final_bottom_y": 300,
+  "final_centroid_x": 120.42,
+  "final_aspect": 0.52
+ },
+ "die_right": {
+  "frame": "die_right",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 16.976,
+  "corners_nonwhite": false,
+  "left_env": [
+   127,
+   233,
+   447,
+   846
+  ],
+  "left_h": 613,
+  "right_env": [
+   760,
+   604,
+   1412,
+   853
+  ],
+  "right_w": 652,
+  "right_h": 249,
+  "height_ratio": 0.406,
+  "height_pass": true,
+  "pose_delta": 166.02,
+  "gate": "none",
+  "result": "SKIP",
+  "reason": "E-CUT-01 抠图两次失败"
+ }
+}

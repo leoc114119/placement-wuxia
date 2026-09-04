@@ -1,0 +1,93 @@
+[
+ {
+  "name": "walk_right_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "walk_right_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "jump_right_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "jump_right_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "atk_right_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "atk_right_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "atk_right_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "cast_right_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "cast_right_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "cast_right_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "die_right",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "锚定表双格 img2img aspect=3:2（左格=battle_idle_right 锁死，右格=锚复制；单参照=双格表）"
+ },
+ {
+  "name": "jump_right_2",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "体宽锁越界整帧同命令重跑 1 次（任务书 §1 步 6；基准 119px）"
+ },
+ {
+  "name": "atk_right_3",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1a",
+  "note": "体宽锁越界整帧同命令重跑 1 次（任务书 §1 步 6；基准 119px）"
+ }
+]
