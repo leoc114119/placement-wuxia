@@ -96,5 +96,12 @@
   "cost": 2,
   "ts": "2026-09-05 T45-pilot 转面派生·格2局部修正",
   "note": "Leo 终验返工单：v2 格2 刺出贴画面平面→改沿面朝方向(右上深处)带纵深；局部修正法 img2img 16:9（主输入=pilot_rightup_thrust_v2_raw，第二参照=battle_idle_rightup；prompt=prompts/pilot_rightup_thrust_v3.txt 工单逐字）；1920x1088 一次过无重跑；首轮待 Leo 停点目验（未启用第二轮加 rightdown 格2 参照）"
+ },
+ {
+  "name": "pilot_rightup_thrust_v4",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-05 T45-pilot 转面派生·格2局部修正二轮",
+  "note": "Leo 判 v3 不过后二轮（预算内最后一轮）：拳往里收+高度降至肩胸带+近水平微上斜三处一次改；局部修正法 img2img 16:9（主输入=pilot_rightup_thrust_v3_raw，第二参照=battle_idle_rightup；prompt=prompts/pilot_rightup_thrust_v4.txt 工单逐字）；1536x864 一次过无重跑；刺出端y带125→151降26px落肩胸带；停点候验，若不过按工单出三方A/B停报禁第三轮"
  }
 ]
