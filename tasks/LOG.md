@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-04 | frontend | 📦 交付 战斗demo收口（摘狼+宋体） | Leo 09-04 两裁定落地：①spriteKinds 去 npc-lang+main.ts 敌 e2 改山贼系+shot ⑤/F3 断言随阵容适配（spr_lang 素材归档零碰/旧战斗路径与 types/npcs 零碰）②config 落 FONT_STACK 常量+render 8 处栈收敛宋体族+hit-feedback 用例断言随卡更新；typecheck/lint 零输出/test:battle 205 基线持平/behavior 14/14/shot 16 PASS（帧表 hero+shanzei 各 8/8）/e2e 11 MATCH/DBG=0；弧钮金字与 DMG 宋体截图已重摄目验过；d0ecf38 显式路径提交未 push 停等 PM 复验 |
 | 2026-09-04 | frontend | 📦 交付 战斗素材统一盘点审计 | Leo 09-04 指令落地（只读，零代码零素材改动）：产用原则七条立尺逐件过 47 件；判定=A 重产 6（顶栏/木牌/ctrl 三脸/状态图标/env 横幅/tileset）/B 代码兜底 5/C 缺口 9（上下点缀/T45 接线/Boss 45°/字体等）；疑点 5 条待拍板（env 代系/烘焙字两件/字体双轨等）；产出 docs/design/03-战斗系统/战斗素材盘点与产用原则-v0.1.md · threads/AUDIT-battle-assets-20260904.md；commit 未 push |
 | 2026-09-04 | frontend | 📦 交付 T24 | 战斗场景融合 FE 单卡（env 入世界系+v8 缺角+落地阴影+dirt 取色+顶面噪点）：主套件 205 绿（+6）/行为面 14/14/shot 16/e2e 11 MATCH/DBG=0/三零/红线+镜头三函数 diff=0；缺角密度 20.5% 实测；shot 拖动中帧留档；commit 未 push 停等 PM 复验 |
 | 2026-09-04 | frontend | 🤝 领单 T24 开工 | 战斗场景融合 FE 单卡：env 入世界系+v8 缺角+落地阴影+dirt 取色+顶面噪点+V1-V6；复述/用例清单/易错点见 threads/T24.md；红线=镜头三函数零 diff+e2e 零改 |
