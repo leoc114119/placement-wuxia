@@ -60,6 +60,20 @@
   "model": "gpt-image-2",
   "cost": 2,
   "ts": "2026-09-05 T45-pilot 母版v7微调",
-  "note": "原图局部修正式 img2img（Leo 微调工单：刺拳回收约一拳、介于 v5/v6 之间伸展度肘近全伸极微屈）：主输入=pilot_right_thrust_v6_raw.png，第二参照=battle_idle_right；prompt=prompts/pilot_right_thrust_v7.txt 工单逐字；--aspect 16:9 一次过（1536x864，四角 246~250 容差内）。试点累计 18 分（作废/被替代 16 + 本表在验 2）；转面 2 张待母版过验后另计"
+  "note": "【已被 v8 替代】v7 刺距回收到位但 Leo 判又过短且拳微弯；原图局部修正式 img2img 主输入=v6_raw；1536x864"
+ },
+ {
+  "name": "pilot_right_thrust_v8_attempt1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-05 T45-pilot 母版v8微调",
+  "note": "【作废：回收半拳未执行】程序化实测格2 刺出端右缘 171/env_w 146 ≈ v6(170/145)，修改未落实；E-GEN-04 机械性失败同命令重跑 1 次；1536x864"
+ },
+ {
+  "name": "pilot_right_thrust_v8",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-05 T45-pilot 母版v8微调(重跑采用)",
+  "note": "原图局部修正式 img2img（Leo 微调工单：较 v6 回收半拳、保持近直形态肘极微屈）：主输入=pilot_right_thrust_v6_raw.png，第二参照=battle_idle_right；prompt=prompts/pilot_right_thrust_v8.txt 工单逐字；--aspect 16:9；重跑单轮询超时后 serial_no 取回（1920x1088，四角 249）。实测格2 右缘 162/env_w 138 介于 v6(170/145)与 v7(150/126)之间符合半拳。试点累计 22 分（作废/被替代 20 + 本表在验 2）+ v6 重跑排队单 1 笔挂账；转面 2 张待母版过验后另计"
  }
 ]
