@@ -1,0 +1,9 @@
+[
+  {
+    "name": "anchor45_hero_down_v4c",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0-v4c",
+    "note": "T45 首锚 v4c 移剑+正握修正 img2img（参照 v4 raw，3:4）；生图 1 张 2 分，无重摇；mxai 抠图 1 次成功；归一门宽高比 0.3906<0.40 出界=FAIL 已记录（移剑后轮廓变窄，v4 带剑时 0.418），按任务书不重摇停上报待 Leo"
+  }
+]
