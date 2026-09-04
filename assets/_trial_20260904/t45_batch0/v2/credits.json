@@ -1,0 +1,16 @@
+[
+  {
+    "name": "anchor45_hero_down_v2a",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0-v2",
+    "note": "T45 v2修正对照·路线A img2img视角变换(源=q_anchor_v5_clean) 3:4 + mxai抠图 + 128x256归一(包络244/底贴y254)"
+  },
+  {
+    "name": "anchor45_hero_down_v2b",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch0-v2",
+    "note": "T45 v2修正对照·路线B 文生图画风全量+瘦高 3:4 + mxai抠图 + 128x256归一(包络244/底贴y254)"
+  }
+]
