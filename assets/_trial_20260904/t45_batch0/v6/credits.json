@@ -1,0 +1,9 @@
+[
+  {
+    "name": "anchor45_hero_down_v6",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-v6 双参照重出",
+    "note": "T45 首锚 v6 双参照 img2img（idle_down=画风形象比例真源+v2a_norm=45°视角姿势基准）+mxai抠图+240x320归一 aspect=0.396 多图接口受理成功"
+  }
+]
