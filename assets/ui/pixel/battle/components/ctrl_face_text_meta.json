@@ -1,0 +1,34 @@
+{
+ "font": "Songti",
+ "font_index": 0,
+ "size": 50,
+ "fill": [
+  242,
+  228,
+  192
+ ],
+ "stroke": [
+  42,
+  29,
+  18
+ ],
+ "stroke_width": 5,
+ "shadow_offset": 3,
+ "normal_text": {
+  "tuoguan": "托管",
+  "jiasu": "加速"
+ },
+ "active_text": {
+  "tuoguan": "自动",
+  "jiasu": "两倍"
+ },
+ "active_fx": {
+  "brightness": 1.24,
+  "gold_frame": [
+   255,
+   205,
+   95
+  ],
+  "glow_alpha": 0.45
+ }
+}
