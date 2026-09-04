@@ -19,5 +19,12 @@
     "cost": 2,
     "ts": "2026-09-04 T45-batch0prime",
     "note": "T45 批0' 六向制右系锚·rightdown 三参照img2img(画风idle_down+45度down锚+白模ref_rightdown)+mxai抠图+240x320归一"
+  },
+  {
+    "name": "t45_batch0sixdir_v2_post",
+    "model": "-",
+    "cost": 0,
+    "ts": "2026-09-04 T45-batch0prime-v2 后段",
+    "note": "v2 后段加工(零生成零计费): mxai抠图x3 + PIL归一240x320(视觉高256/脚底y1=300/质心x=120) + 程序门 + contact_sheet_0prime_v2; v2三张raw共6分(gpt-image-2 x3)已由主会话记账"
   }
 ]
