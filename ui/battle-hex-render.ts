@@ -7,6 +7,7 @@ import {
   ANIM_LOOP_GROUPS,
   ARC_BTNS,
   BOARD,
+  BOARD_SHAPE,
   CAMERA,
   COMPONENT_LAYOUT,
   CTRL_ACTIVE,
@@ -14,6 +15,7 @@ import {
   CTRL_BUTTONS,
   CTRL_TEXT,
   DMG,
+  ENV_WORLD,
   FIELD,
   FX,
   HIGHLIGHT,
@@ -22,8 +24,10 @@ import {
   HUD,
   PIECE,
   PLAQUE_BUTTONS,
+  SHADOW,
   TILE,
   TILE_H,
+  TILE_NOISE,
   TILE_SPRITES,
   TILE_W,
   ROW_H,
@@ -199,6 +203,47 @@ export function isMovableCell(p: HexPos): boolean {
   return off.col >= FIELD.colMin && off.col <= FIELD.colMax && off.row >= FIELD.rowMin && off.row <= FIELD.rowMax;
 }
 
+/** 格坐标确定性哈希（murmur 风格 finalizer；Math.imul 32 位乘法防超 2^53 精度丢失）。
+ * T24 双用：v8 缺角剔除闸门 + 顶面噪点 seed——同格同值、跨帧稳定不闪（方案 §四易错 5）。 */
+export function cellHash(q: number, r: number): number {
+  let h = (Math.imul(q, 0x27d4eb2d) ^ Math.imul(r, 0x165667b1) ^ 0x9e3779b9) | 0;
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+/** 距 FIELD 边的格环距（0=FIELD 内；1 起为外围 dirt 带；用于 dirt 两档色由内向外渐暗） */
+export function fieldRing(col: number, row: number): number {
+  return Math.max(FIELD.colMin - col, col - FIELD.colMax, FIELD.rowMin - row, row - FIELD.rowMax, 0);
+}
+
+/** v8 有机缺角边缘（Leo 09-04 翻案旧「整齐长方形战区」，方案 §2.2）：棋盘矩形**最外两圈**的
+ * 非可动 dirt 格按坐标哈希剔除（BOARD_SHAPE.notchPerMille ≈20%，确定性→逐帧稳定不闪）；
+ * **FIELD 内格绝不剔除**——出生锚（battle-session D1 SP-1：offset(4,13)/(11,2)）与出生带
+ *（锚 hex 距 ≤3 的可动区格）⊆ FIELD，一并受保护；纯渲染形状：isMovableCell 与输入命中零改动，
+ * 被剔格直接露出 env=齿边咬进地形。 */
+export function isBoardCell(q: number, r: number): boolean {
+  const off = axialToOffset({ q, r });
+  if (!off) return false;
+  if (isMovableCell({ q, r })) return true;
+  const ring = Math.min(off.col, BOARD.cols - 1 - off.col, off.row, BOARD.rows - 1 - off.row);
+  if (ring >= BOARD_SHAPE.rings) return true; // 非最外两圈不剔
+  return cellHash(q, r) % 1000 >= BOARD_SHAPE.notchPerMille; // 千分比闸门
+}
+
+/** 是否台面边缘格（六邻之一非台面格=外缘或缺角豁口，投落地阴影用） */
+function isEdgeCell(q: number, r: number): boolean {
+  return (
+    !isBoardCell(q + 1, r) ||
+    !isBoardCell(q + 1, r - 1) ||
+    !isBoardCell(q, r - 1) ||
+    !isBoardCell(q - 1, r) ||
+    !isBoardCell(q - 1, r + 1) ||
+    !isBoardCell(q, r + 1)
+  );
+}
+
 /** 棋盘世界包围盒（含六边形 extent 与立体厚度、边距）。
  * 角格：odd-r 下 r=15 行的 q ∈ [-7, 8]（q = col - ⌊15/2⌋）。 */
 export function boardBounds(): { minX: number; minY: number; maxX: number; maxY: number } {
@@ -363,6 +408,16 @@ export function movableBounds(): { minX: number; minY: number; maxX: number; max
     maxX: c1.x + TILE_W / 2 + pad + TILE_W * 0.5, // 东南奇数行错位半格余量
     maxY: c1.y + TILE_H / 2 + SIDE_DEPTH + pad,
   };
+}
+
+/** env 世界锚定矩形（T24 方案 §2.1）：movableBounds 外扩 (width/2+M, height/2+M)，M=ENV_WORLD.margin。
+ * width/height 必须用**当帧实际屏尺寸**（预览窗可拉伸，写死基准屏大窗露边——易错 1）：
+ * 镜头被钳制在 movableBounds 内 → 屏面在 world 系的投影必然 ⊆ envRect，任意拖动位置不露边。 */
+export function envWorldRect(width: number, height: number): { x: number; y: number; w: number; h: number } {
+  const b = movableBounds();
+  const mx = width / 2 + ENV_WORLD.margin;
+  const my = height / 2 + ENV_WORLD.margin;
+  return { x: b.minX - mx, y: b.minY - my, w: b.maxX - b.minX + 2 * mx, h: b.maxY - b.minY + 2 * my };
 }
 
 /** 镜头：跟随 cameraTargetId（MVP 简化：恒跟主角/行动者）+ 拖动偏移 + 聚焦包围盒 clamp（旧 T06 口径） */
@@ -631,9 +686,64 @@ function tilePath(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: numb
 
 // ============ L1 立体瓦片 / L2 高亮 ============
 
+/** 色值明度缩放（#rrggbb → rgb() 字符串；噪点 ±amp 用）。带缓存：帧内重复色不重算字符串。 */
+const tintCache = new Map<string, string>();
+function tintRgb(hex: string, mul: number): string {
+  const key = hex + '@' + mul;
+  const hit = tintCache.get(key);
+  if (hit) return hit;
+  const v = parseInt(hex.slice(1), 16);
+  const ch = (shift: number): number => Math.max(0, Math.min(255, Math.round(((v >> shift) & 0xff) * mul)));
+  const out = `rgb(${ch(16)}, ${ch(8)}, ${ch(0)})`;
+  tintCache.set(key, out);
+  return out;
+}
+
+/** 顶面静态噪点（T24 方案 §2.2；纯代码零素材，tileset 贴图到位后被 sprite 分支整体替换）：
+ * 候选网格 ∩ 六边形内 → 格哈希闸门（density）→ ±amp 明度 2px 点。
+ * mulberry32 序列以格哈希为 seed——同格逐帧同序列，静止不闪（易错 5，禁逐帧随机）。 */
+function drawTopNoise(ctx: CanvasRenderingContext2D, cx: number, cy: number, baseHex: string, seed: number): void {
+  const hw = TILE_W / 2 - 1;
+  const hh = TILE_H / 2 - 1;
+  const q4 = TILE_H / 4; // 竖直边半高（tilePath 同构：|dy|>q4 后宽度线性收缩到尖角）
+  let s = (seed ^ 0x9e3779b9) >>> 0;
+  const rnd = (): number => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  for (let gy = -hh + TILE_NOISE.step / 2; gy <= hh; gy += TILE_NOISE.step) {
+    for (let gx = -hw + TILE_NOISE.step / 2; gx <= hw; gx += TILE_NOISE.step) {
+      const ax = Math.abs(gx);
+      const ay = Math.abs(gy);
+      if (ay > q4 && ax > (hw * (hh - ay)) / (hh - q4)) continue; // 斜边收缩段外
+      if (rnd() >= TILE_NOISE.density) continue;
+      const light = rnd() < 0.5 ? 1 + TILE_NOISE.amp : 1 - TILE_NOISE.amp;
+      ctx.fillStyle = tintRgb(baseHex, light);
+      ctx.fillRect(
+        Math.round(cx + gx - TILE_NOISE.dotPx / 2),
+        Math.round(cy + gy - TILE_NOISE.dotPx / 2),
+        TILE_NOISE.dotPx,
+        TILE_NOISE.dotPx,
+      );
+    }
+  }
+}
+
 /** 单块压扁立体瓦片（临时代码版；TILE_SPRITES 素材到位即贴 sprite）：
- * 顶面尖角压扁形 + 下尖角/下斜边深色侧面（厚 SIDE_DEPTH）+ 上暗下亮光照描边。 */
-function drawTile(ctx: CanvasRenderingContext2D, cx: number, cy: number, movable: boolean): void {
+ * 顶面尖角压扁形 + 下尖角/下斜边深色侧面（厚 SIDE_DEPTH）+ 上暗下亮光照描边。
+ * T24：dirt 顶面两档色（fieldRing ≤ dirtInnerRings 用内档亮色，更远外档暗色——由内向外渐暗，
+ * 色值 env 离线采样见 config TILE 注释）；顶面平色后叠静态噪点（seed=格哈希）。 */
+function drawTile(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  movable: boolean,
+  ring: number,
+  seed: number,
+): void {
   const sprite = movable ? TILE_SPRITES.grass : TILE_SPRITES.dirt;
   if (sprite) {
     const img = tileSpriteImg(sprite);
@@ -666,10 +776,12 @@ function drawTile(ctx: CanvasRenderingContext2D, cx: number, cy: number, movable
     ctx.fillStyle = poly.color;
     ctx.fill();
   }
-  // 顶面
+  // 顶面（T24：dirt 拆 inner/outer 两档）
+  const baseHex = movable ? TILE.topGrass : ring <= TILE.dirtInnerRings ? TILE.topDirtInner : TILE.topDirtOuter;
   tilePath(ctx, cx, cy, TILE_W - 1, TILE_H - 1);
-  ctx.fillStyle = movable ? TILE.topGrass : TILE.topDirt;
+  ctx.fillStyle = baseHex;
   ctx.fill();
+  drawTopNoise(ctx, cx, cy, baseHex, seed); // 顶面质感（描边之下）
   // 光照描边：上尖两斜边暗（上暗）/ 下尖两斜边亮+底缘受光线（下亮）
   ctx.lineWidth = TILE.strokeWidth;
   ctx.strokeStyle = TILE.edgeDark;
@@ -716,9 +828,11 @@ function fillHex(
   ctx.stroke();
 }
 
-/** L1+L2：格子与高亮（仅绘视口内；数据来自快照，渲染只画不算；moveKind 换色——绿=走 / 金=轻功跳，联调 F1） */
 /** L1+L2：格子与高亮（仅绘视口内；数据来自快照，渲染只画不算；moveKind 换色——绿=走 / 金=轻功跳）。
- * 战区矩形裁剪：错位行的半格出界部分裁平 → 边缘整齐的长方形战区（Leo 要求，勿出锯齿菱形边）。 */
+ * 【Leo 09-04 翻案 v8 缺角】旧「战区矩形裁剪：错位行半格出界部分裁平 → 边缘整齐长方形战区」已撤——
+ * 原 rect clip 逻辑整段删除，改为 isBoardCell 逐格判定：最外两圈非可动 dirt 格坐标哈希剔除 ~20%，
+ * 边缘=不规则六边形齿边咬进 env 地形（被剔格露 env），画布自然出屏即裁。
+ * 落地阴影（T24 方案 §2.2）：边缘格（六邻有缺）在格体之前画下偏软阴影两层（SHADOW 组，底侧重）。 */
 function drawCells(
   ctx: CanvasRenderingContext2D,
   snapshot: BattleSnapshot,
@@ -736,36 +850,35 @@ function drawCells(
   const moveSet = new Set(snapshot.moveCells.map(keyOf));
   const attackSet = new Set(snapshot.attackCells.map(keyOf));
   const selKey = selected ? keyOf(selected) : null;
-  // 战区矩形（世界系外接框，长边含错位半格）
-  const b = boardBounds();
-  const zoneL = Math.round(b.minX - CAMERA.worldPad);
-  const zoneT = Math.round(b.minY - CAMERA.worldPad);
-  const zoneR = Math.round(b.maxX + CAMERA.worldPad);
-  const zoneB = Math.round(b.maxY + SIDE_DEPTH + CAMERA.worldPad);
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(
-    Math.round(zoneL - cam.x + width / 2),
-    Math.round(zoneT - cam.y + height / 2),
-    zoneR - zoneL,
-    zoneB - zoneT,
-  );
-  ctx.clip();
   for (let r = center.r - span; r <= center.r + span; r++) {
     for (let q = center.q - span; q <= center.q + span; q++) {
-      if (!axialToOffset({ q, r })) continue;
+      if (!isBoardCell(q, r)) continue;
       const w = hexToWorld(q, r);
       const sx = Math.round(w.x - cam.x + width / 2);
       const sy = Math.round(w.y - cam.y + height / 2);
       if (sx < -TILE_W * 2 || sx > width + TILE_W * 2 || sy < -TILE_H * 2 - SIDE_DEPTH || sy > height + TILE_H * 2) continue;
-      drawTile(ctx, sx, sy, isMovableCell({ q, r }));
+      const movable = isMovableCell({ q, r });
+      if (!movable && isEdgeCell(q, r)) drawEdgeShadow(ctx, sx, sy); // 台面向 env 投软阴影（格体之前）
+      const off = axialToOffset({ q, r })!;
+      drawTile(ctx, sx, sy, movable, fieldRing(off.col, off.row), cellHash(q, r));
       const key = `${q},${r}`;
       if (moveSet.has(key)) fillHex(ctx, sx, sy, moveFill, moveEdge);
       else if (attackSet.has(key)) fillHex(ctx, sx, sy, HIGHLIGHT.attack, HIGHLIGHT.attackEdge);
       if (selKey === key) fillHex(ctx, sx, sy, HIGHLIGHT.selected, HIGHLIGHT.selectedEdge);
     }
   }
-  ctx.restore();
+}
+
+/** 边缘格落地阴影（T24 方案 §2.2）：下偏两层软阴影——近层主影（offsetPx/alpha）+ 深偏影
+ * （offsetPx×bottomMul/alphaDeep，底侧重）；上大半随后被本格体覆盖，露出=下缘月牙，整板浮起。
+ * r 从本格升序绘制，下方格后画自然盖住上溢阴影——单循环内「先影后格」即得正确遮挡。 */
+function drawEdgeShadow(ctx: CanvasRenderingContext2D, sx: number, sy: number): void {
+  ctx.fillStyle = `rgba(${SHADOW.rgb}, ${SHADOW.alpha})`;
+  tilePath(ctx, sx, sy + SHADOW.offsetPx, TILE_W - 1, TILE_H - 1);
+  ctx.fill();
+  ctx.fillStyle = `rgba(${SHADOW.rgb}, ${SHADOW.alphaDeep})`;
+  tilePath(ctx, sx, Math.round(sy + SHADOW.offsetPx * SHADOW.bottomMul), TILE_W - 1, TILE_H - 1);
+  ctx.fill();
 }
 
 // ============ L3 棋子 / L4 HUD ============
@@ -1218,9 +1331,14 @@ export function drawFrame(
 ): void {
   const { ctx, width, height } = fc;
   const cam = view.camera;
-  // L0 环境底图：屏幕空间静态、不随镜头（75 v2.3 已验口径）；缺失降级纯色
-  if (assets.env) drawImg(ctx, assets.env, 0, 0, width, height);
-  else {
+  // L0 环境底图（T24 方案 §2.1 改**世界系**）：envRect=envWorldRect(当帧 width/height)，绘制
+  // sx=envRect.x−cam.x+width/2 与格子**同一 cam 同一变换式**（禁第三套换算——易错 3），env 随镜头 1:1 平移。
+  // 旧「屏幕空间静态、不随镜头（75 v2.3 已验口径）」已翻案：env 钉屏不随 cam=「拖动地不动、台面动」两张皮根因。
+  // 层级保持在最底且在一切 clip 之前（env 不受裁剪——易错 2）；缺失降级纯色。
+  if (assets.env) {
+    const er = envWorldRect(width, height);
+    drawImg(ctx, assets.env, er.x - cam.x + width / 2, er.y - cam.y + height / 2, er.w, er.h);
+  } else {
     ctx.fillStyle = '#1c2416';
     ctx.fillRect(0, 0, width, height);
   }

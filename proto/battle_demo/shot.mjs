@@ -226,6 +226,10 @@ await page.screenshot({ path: path.join(outDir, 'shot_5_basic_attack.png') });
 await page.mouse.move(225, 400);
 await page.mouse.down();
 await page.mouse.move(285, 340, { steps: 6 });
+await page.waitForTimeout(150); // 等 RAF 呈现拖动偏移态
+// T24：拖动中帧留档（cam 偏移态）——证明 env 随镜头 1:1 平移（方案 §三 V1 观感面）；
+// 仅留档不新增 check（shot 16 PASS 计数不变）
+await page.screenshot({ path: path.join(outDir, 'shot_t24_drag_env.png') });
 await page.mouse.up();
 await page.waitForTimeout(250);
 const camDragged = await page.evaluate(() => window.__demo.getView().camDrag.x);

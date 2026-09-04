@@ -10,12 +10,17 @@ import {
   ANIM_FRAMES,
   ANIM_LOOP_GROUPS,
   ARC_BTNS,
+  BOARD,
+  BOARD_SHAPE,
   COMPONENT_LAYOUT,
   CTRL_ACTIVE,
   CTRL_ART,
   CTRL_BUTTONS,
+  FIELD,
   JUMP,
   ROW_H,
+  SHADOW,
+  TILE,
   TILE_W,
   TOPBAR,
   hexDist,
@@ -25,13 +30,16 @@ import {
 import {
   axialToOffset,
   boardBounds,
+  cellHash,
   computeCamera,
   computeMovePath,
+  envWorldRect,
+  isBoardCell,
+  isMovableCell,
   movableBounds,
   moveAnimDrawPosPx,
   createView,
   drawFrame,
-  isMovableCell,
   pieceHop,
   spawnNoteFx,
   updateView,
@@ -106,7 +114,7 @@ describe('瓦片投影（尖角压扁 + 奇偶行错位，逻辑格不变）', (
   });
 
   it('boardBounds 覆盖 16×16 全图角格', () => {
-    const b = boardBounds(); // 仍导出：drawCells 战区裁剪用全图包围盒
+    const b = boardBounds(); // T24 起战区 clip 已撤：全图包围盒保留为几何基准（诊断/用例用）
     const c0 = hexToWorld(0, 0);
     const c15 = hexToWorld(8, 15); // 底行最右格（q = 15 - 7）
     expect(b.minX).toBeLessThan(c0.x);
@@ -814,13 +822,15 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
  * V4 三脸坐标断言需方法实参级采样；strokeStyle 全帧集（金框正向 + 绿 rim 负向锁）与渐变两停色值同源记录。 */
 interface ArgProbe {
   rects: Array<{ x: number; y: number; w: number; h: number }>;
-  imgs: Array<{ x: number; y: number; w: number; h: number }>;
+  imgs: Array<{ x: number; y: number; w: number; h: number; img?: unknown }>;
   texts: string[];
   strokeStyles: string[];
+  fillStyles: string[];
   gradients: Array<{ x0: number; y0: number; x1: number; y1: number; stops: Array<[number, string]> }>;
+  ops: string[]; // 绘制方法调用序（T24 V3 层级/clip 计数断言用）
 }
 function makeArgProbeCtx(): { ctx: CanvasRenderingContext2D; probe: ArgProbe } {
-  const probe: ArgProbe = { rects: [], imgs: [], texts: [], strokeStyles: [], gradients: [] };
+  const probe: ArgProbe = { rects: [], imgs: [], texts: [], strokeStyles: [], fillStyles: [], gradients: [], ops: [] };
   const num = (v: unknown): number => (typeof v === 'number' ? v : Number(v));
   const base = {
     canvas: { width: 375, height: 667 },
@@ -836,13 +846,15 @@ function makeArgProbeCtx(): { ctx: CanvasRenderingContext2D; probe: ArgProbe } {
       const rec = t as unknown as Record<string | symbol, unknown>;
       if (prop in rec) return rec[prop];
       return (...args: unknown[]): void => {
+        probe.ops.push(String(prop));
         if (prop === 'fillRect') probe.rects.push({ x: num(args[0]), y: num(args[1]), w: num(args[2]), h: num(args[3]) });
-        else if (prop === 'drawImage') probe.imgs.push({ x: num(args[1]), y: num(args[2]), w: num(args[3]), h: num(args[4]) });
+        else if (prop === 'drawImage') probe.imgs.push({ x: num(args[1]), y: num(args[2]), w: num(args[3]), h: num(args[4]), img: args[0] });
         else if (prop === 'fillText' || prop === 'strokeText') probe.texts.push(String(args[0]));
       };
     },
     set(t, prop, v) {
       if (prop === 'strokeStyle') probe.strokeStyles.push(String(v));
+      else if (prop === 'fillStyle') probe.fillStyles.push(String(v));
       return true;
     },
   });
@@ -1007,6 +1019,153 @@ describe('T23 ctrl 三钮独立（V4：三脸坐标对表 + 代码字 + 金框�
     expect(run3.probe.texts).toContain('托管');
     expect(run3.probe.texts).toContain('加速');
     expect(run3.probe.strokeStyles).not.toContain(CTRL_ACTIVE.goldFrame);
+  });
+});
+
+// ---------- T24 战斗场景融合（env 入世界系 + v8 缺角 + 台面落地；方案 §三 V 断言单测列） ----------
+describe('T24 场景融合（方案 §三）', () => {
+  const envImg = { width: 1088, height: 1920 }; // battle_env_pure.png 实际尺寸
+  const envAssets = (): BattleHexAssets => ({ ...EMPTY_ASSETS, env: envImg });
+  const heroSnap = (): BattleSnapshot =>
+    makeSnapshot([{ id: 'hero', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } }]);
+
+  it('V1 env 随动：cam 平移 Δ → env drawImage 实参同步平移 −Δ（1:1 同源、同 cam 变换式、cover 非满屏）', () => {
+    const er = envWorldRect(375, 667);
+    const draw = (cam: { x: number; y: number }): { x: number; y: number; w: number; h: number } => {
+      const view = createView();
+      view.camera = cam; // drawFrame 直读 view.camera 作为 cam（与格子同源）
+      const { ctx, probe } = makeArgProbeCtx();
+      drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, heroSnap(), envAssets(), view);
+      const m = probe.imgs.find((i) => i.img === envImg);
+      expect(m).toBeDefined();
+      return m!;
+    };
+    const a = draw({ x: 100, y: 50 });
+    const b = draw({ x: 160, y: 110 });
+    expect(b.x - a.x).toBe(-60); // Δcam=(60,60) → env sx/sy 各 −60（整数 cam 下 Math.round 无差）
+    expect(b.y - a.y).toBe(-60);
+    // 同一变换式核对：sx = er.x − cam.x + width/2（±1 容差=drawImg 取整）
+    expect(Math.abs(a.x - (er.x - 100 + 375 / 2))).toBeLessThanOrEqual(1);
+    expect(Math.abs(a.y - (er.y - 50 + 667 / 2))).toBeLessThanOrEqual(1);
+    // cover 式铺满 envRect（>屏宽=非满屏钉屏）
+    expect(Math.abs(a.w - er.w)).toBeLessThanOrEqual(1);
+    expect(a.w).toBeGreaterThan(375);
+    expect(a.h).toBeGreaterThan(667);
+  });
+
+  it('V2 全域覆盖：四档屏尺寸（含极端宽窗）×镜头钳制域四角，屏面 world 投影 ⊆ envRect（不露底色）', () => {
+    for (const [w, h] of [
+      [375, 667],
+      [900, 700],
+      [640, 480],
+      [1200, 400], // 极端宽窗：钳制退化为中心居中，也须被 envRect 覆盖
+    ]) {
+      const er = envWorldRect(w, h);
+      const snap = heroSnap();
+      snap.cameraTargetId = 'hero';
+      for (const [dx, dy] of [
+        [-9999, -9999],
+        [9999, -9999],
+        [-9999, 9999],
+        [9999, 9999],
+        [0, 0],
+      ]) {
+        const cam = computeCamera(snap, { x: dx, y: dy }, w, h);
+        expect(cam.x - w / 2).toBeGreaterThanOrEqual(er.x - 0.01);
+        expect(cam.x + w / 2).toBeLessThanOrEqual(er.x + er.w + 0.01);
+        expect(cam.y - h / 2).toBeGreaterThanOrEqual(er.y - 0.01);
+        expect(cam.y + h / 2).toBeLessThanOrEqual(er.y + er.h + 0.01);
+      }
+    }
+  });
+
+  it('V3 层级正确：env=全帧首个 drawImage 且在 clip 之前；战区矩形 clip 已撤（全帧 clip=1 仅屏幕裁剪）', () => {
+    const view = createView();
+    updateView(view, heroSnap(), 0.016, 375, 667); // 镜头首帧定位（真机位）
+    const { ctx, probe } = makeArgProbeCtx();
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, heroSnap(), envAssets(), view);
+    const envIdx = probe.imgs.findIndex((i) => i.img === envImg);
+    expect(envIdx).toBe(0); // env 是全帧第一个 drawImage（层级最底）
+    const firstClip = probe.ops.indexOf('clip');
+    expect(firstClip).toBeGreaterThan(-1);
+    expect(probe.ops.indexOf('drawImage')).toBeLessThan(firstClip); // env 在 clip 之前（不受战区/屏幕裁剪截断）
+    expect(probe.ops.filter((o) => o === 'clip')).toHaveLength(1); // 旧战区矩形 clip 已撤——回归锁（Leo 09-04 翻案）
+  });
+
+  it('V4 融合观感：dirt 两档色生效且内亮外暗；边缘阴影两层存在；噪点色批量出现且静态（两帧 fill 序列全等）', () => {
+    const draw = (): string[] => {
+      const view = createView();
+      updateView(view, heroSnap(), 0.016, 375, 667);
+      const { ctx, probe } = makeArgProbeCtx();
+      drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, heroSnap(), envAssets(), view);
+      return probe.fillStyles;
+    };
+    const fills = draw();
+    expect(fills).toContain(TILE.topDirtInner);
+    expect(fills).toContain(TILE.topDirtOuter);
+    // 由内向外渐暗：内档亮度 > 外档亮度（Rec.709 亮度）
+    const lum = (hex: string): number => {
+      const v = parseInt(hex.slice(1), 16);
+      return 0.2126 * ((v >> 16) & 0xff) + 0.7152 * ((v >> 8) & 0xff) + 0.0722 * (v & 0xff);
+    };
+    expect(lum(TILE.topDirtInner)).toBeGreaterThan(lum(TILE.topDirtOuter));
+    // 落地阴影两层（SHADOW 组原串，防浮点拼接漂移）
+    expect(fills).toContain(`rgba(${SHADOW.rgb}, ${SHADOW.alpha})`);
+    expect(fills).toContain(`rgba(${SHADOW.rgb}, ${SHADOW.alphaDeep})`);
+    // 噪点：tintRgb 产出 rgb() 色批量出现（2 变体 ×3 底色族）
+    const noiseFills = fills.filter((f) => /^rgb\(\d+, \d+, \d+\)$/.test(f));
+    expect(noiseFills.length).toBeGreaterThan(50);
+    // 静态不闪：同输入两帧 fillStyle 序列全等（seed=格哈希，禁逐帧随机）
+    expect(draw()).toEqual(fills);
+  });
+
+  it('v8 缺角形状锁：FIELD 全格/两出生锚不剔；剔除仅限最外两圈非可动格；密度实测 ∈ (10%, 30%)', () => {
+    let candidates = 0;
+    let removed = 0;
+    for (let row = 0; row < BOARD.rows; row++) {
+      for (let col = 0; col < BOARD.cols; col++) {
+        const q = col - Math.floor(row / 2);
+        const movable = isMovableCell({ q, r: row });
+        const outerTwo = Math.min(col, BOARD.cols - 1 - col, row, BOARD.rows - 1 - row) < BOARD_SHAPE.rings;
+        if (outerTwo && !movable) candidates++;
+        if (!isBoardCell(q, row)) {
+          removed++;
+          expect(movable).toBe(false); // 可动格绝不被剔
+          expect(outerTwo).toBe(true); // 剔除仅限最外两圈
+        }
+      }
+    }
+    expect(candidates).toBeGreaterThan(0);
+    expect(removed / candidates).toBeGreaterThan(0.1); // ~20% 密度带
+    expect(removed / candidates).toBeLessThan(0.3);
+    // FIELD 全格不剔（出生带=锚 hex 距 ≤3 的可动区格 ⊆ FIELD，battle-session D1 SP-1）
+    for (let row = FIELD.rowMin; row <= FIELD.rowMax; row++) {
+      for (let col = FIELD.colMin; col <= FIELD.colMax; col++) {
+        expect(isBoardCell(col - Math.floor(row / 2), row)).toBe(true);
+      }
+    }
+    expect(isBoardCell(4 - Math.floor(13 / 2), 13)).toBe(true); // 出生锚我方 offset(4,13)
+    expect(isBoardCell(11 - Math.floor(2 / 2), 2)).toBe(true); // 出生锚敌方 offset(11,2)
+  });
+
+  it('cellHash 确定性：同格跨调用稳定、异格离散；16×16 全板 isBoardCell 两轮全等（逐帧稳定）', () => {
+    expect(cellHash(3, 5)).toBe(cellHash(3, 5));
+    const seen = new Set<number>();
+    for (let r = 0; r < BOARD.rows; r++) {
+      for (let col = 0; col < BOARD.cols; col++) {
+        seen.add(cellHash(col - Math.floor(r / 2), r));
+      }
+    }
+    expect(seen.size).toBeGreaterThan(240); // 离散性：256 格哈希几乎不撞
+    const first: boolean[] = [];
+    const second: boolean[] = [];
+    for (let r = -2; r <= BOARD.rows + 2; r++) {
+      for (let q = -9; q <= 10; q++) {
+        first.push(isBoardCell(q, r));
+        second.push(isBoardCell(q, r));
+      }
+    }
+    expect(second).toEqual(first);
   });
 });
 

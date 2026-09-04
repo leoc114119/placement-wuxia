@@ -50,7 +50,7 @@ export const FIELD = {
 export const CAMERA = {
   viewportCells: 7, // 以镜头中心 hex 为准的视口宽（96 号）
   dragThresholdPx: 8, // 拖动生效判定（位移超过=拖镜头非点按，旧 T06 已验证）
-  worldPad: 40, // 战区裁剪包围盒四周留白（drawCells 用）
+  worldPad: 40, // 全图包围盒四周留白（boardBounds 用；T24 起战区矩形 clip 已撤，包围盒保留作几何基准）
   followPad: 96, // 镜头跟随聚焦：可动区外扩窄边（L 环二反馈①：土黄外围自然推出视口，绿区铺满主体）
   smoothingSec: 0.22, // 镜头平滑回拉时长常数（L 环追加③：仅主角条满时回拉，指数平滑 tau）
 } as const;
@@ -85,7 +85,11 @@ export function hexDist(a: { q: number; r: number }, b: { q: number; r: number }
 // ===== 瓦片配色（v8：草绿/土黄两族区域化分布，非棋盘交替；光照上暗下亮——底部光源氛围） =====
 export const TILE = {
   topGrass: '#7d9b4a', // 草地绿（可移动区）
-  topDirt: '#c49a52', // 土黄（可移动区外）
+  // T24 dirt 两档（方案 §2.2：由内向外渐暗，色值从 env 离线采样对齐——tools/sample_dirt_colors.mjs，
+  // 7×7 均值，禁运行时 getImageData）：inner=土路上段亮面 (705,790)；outer=土路下段暗面 (255,1460)
+  topDirtInner: '#8b703d',
+  topDirtOuter: '#514623',
+  dirtInnerRings: 1, // 距 FIELD 边 ≤ 本 ring 数（格环距）用内档，更远用外档（两档分界，shot 目验可调）
   side: '#57432a', // 侧面土层（左下段）
   sideShade: '#3e2f1c', // 侧面暗部（右下段，背光）
   sideLit: '#6b543a', // 侧面受光段（底缘，底部光源氛围）
@@ -94,6 +98,23 @@ export const TILE = {
   edgeDark: '#2e2418', // 背光边描边
   strokeWidth: 1.5,
 } as const;
+
+// ===== T24 场景融合参数组（方案 §2.3；ADR-004 只读展示参数，无结算公式） =====
+/** env 世界锚定矩形外扩余量：envRect = movableBounds 外扩 (width/2+margin, height/2+margin)，
+ * width/height 用当帧实际屏尺寸（预览窗可拉伸，禁写死基准屏——方案 §四易错 1） */
+export const ENV_WORLD = { margin: 80 } as const;
+
+/** v8 有机缺角边缘（Leo 09-04 翻案旧「整齐矩形」）：棋盘最外 rings 圈的非可动 dirt 格按
+ * 坐标哈希剔除 notchPerMille‰（确定性、逐帧稳定）；FIELD 内/出生锚区格绝不剔除 */
+export const BOARD_SHAPE = { rings: 2, notchPerMille: 200 } as const;
+
+/** 台面落地阴影（方案 §2.2）：边缘格逐格下偏软阴影两层——offsetPx 主影 + bottomMul 深偏影（底侧重，
+ * 上大半被格体覆盖露出下缘月牙）；rgb=暖深棕（配土黄台面） */
+export const SHADOW = { offsetPx: 6, alpha: 0.22, alphaDeep: 0.1, bottomMul: 1.6, rgb: '20, 12, 4' } as const;
+
+/** 顶面静态噪点（方案 §2.2）：同色系 ±amp 明度伪随机点阵，seed=格坐标哈希（静态不闪——易错 5）；
+ * step=候选网格间距 px、dotPx=点尺寸、density=候选命中密度（tileset 贴图到位自动替换本回退层，槽位保留） */
+export const TILE_NOISE = { amp: 0.03, density: 0.18, step: 11, dotPx: 2 } as const;
 
 // ===== 高亮层（L2：数据来自快照，渲染只画不算；moveKind 换色——绿=普通走位 / 金=轻功跳跃，联调 F1） =====
 export const HIGHLIGHT = {
@@ -312,7 +333,7 @@ export const PLAQUE_BUTTONS: ReadonlyArray<{ xRatio: number; yRatio: number; wRa
 
 // ===== 素材路径表（资源外置铁律：路径唯一出处=本表；版本号防缓存，preview 换图 bump） =====
 export const BATTLE_HEX_RES = {
-  ver: 't23v1',
+  ver: 't24v1',
   env: 'assets/ui/pixel/battle/raw/battle_env_pure.png', // L0 纯环境底图（无格无 UI，1088×1920）
   topbar: 'assets/ui/pixel/battle/components/topbar_base.png', // T23：无字底图（名字/百分比/条由代码绘制）
   plaque: 'assets/ui/pixel/battle/components/plaque_l_alpha.png',
