@@ -1,0 +1,64 @@
+{
+ "_blocker_aspect_2_1": {
+  "code": "E-GEN-01 变体（参数预检拒绝）",
+  "fact": "--aspect 2:1 被 mxai gpt-image-2 预检拒绝：{\"error\": \"GPT Image 尺寸比例不合法\"}，两次同命令重跑同错；无 serial_no 不计费；输入无关的确定性拒绝；仓库无 2:1 成功先例（c03/c04 raw 均 9:16=K3-1 失败品，v6 锚为 3:4）",
+  "conflict": "规范 v1.3/c13 的 K3-1 修复口径（img2img 必传 --aspect 2:1）与 API 实况冲突，2:1 从未被端到端验证过",
+  "disposal": "无人值守禁提问→最小偏差降级：3:2 画布 640×427 内嵌原 640×320 双格条带（上下白边 53px），模型 gpt-image-2/prompt 逐字/门/单价 2 分全不变；check_left_v2+目检双重验证布局；通过则锁定全批，失败登记停报；差异报 Leo 追认"
+ },
+ "walk_down_1": {
+  "result": "SKIP",
+  "reason": "check_left_v2 两次 FAIL（T=12 vs 引擎重绘地板≈21-23，系统性，见 _blocker_T12_engine_floor）",
+  "attempts": [
+   {
+    "raw": "raw/walk_down_1_fail1.png",
+    "size": [
+     1248,
+     832
+    ],
+    "check_left_euclid": 22.921,
+    "check_left_L1_3": 13.24
+   },
+   {
+    "raw": "raw/walk_down_1_raw.png",
+    "size": [
+     1536,
+     1024
+    ],
+    "check_left_euclid": 21.202,
+    "check_left_L1_3": 12.24
+   }
+  ],
+  "rerun": "check_left FAIL 同命令机械重跑 1 次（批准内）",
+  "left_env_fail1": [
+   145,
+   191,
+   340,
+   684
+  ],
+  "left_env_attempt2": [
+   178,
+   232,
+   419,
+   842
+  ],
+  "anchor_env": [
+   74,
+   45,
+   175,
+   300
+  ],
+  "visual_triage": "两 raw 目检：左格=锚忠实复制品，右格=迈步A 姿势正确，无文字无水印无武器"
+ },
+ "_fix_checkleft_method": {
+  "change": "check_left_v2 由固定坐标裁剪改为内容对齐比较（定位左半区最大连通域包络→LANCZOS 缩放至锚包络 101×255→白底合成锚→逐像素欧氏距离均值）",
+  "why1_重排": "3:2 受理后 gpt-image-2 保留双格语义但重排两格位置（walk_down_1 双样实证：角色不贴左缘），固定裁剪必然错位（原始 mean≈353 全为错位伪影）",
+  "why2_黑污染": "锚 RGBA 透明像素底层 RGB=黑（包络框内 34% 像素），RGBA→RGB 直接转换会把黑混入比较（mean≈177 伪影）；已改白底合成"
+ },
+ "_blocker_T12_engine_floor": {
+  "code": "E-GATE-02（门阈值与引擎行为结构性冲突，上报候裁）",
+  "fact": "内容对齐后忠实重绘地板 mean=21.2/22.9（两张独立生成一致；LANCZOS；内区 21.4≈边缘带 19.1=非均匀重绘噪声，色偏均值校正反升至 25.7/27.0 证明不可全局归一消除）；T=12 规范数值（规范自注「初值待校准」）对 gpt-image-2 重绘式引擎不可达",
+  "scope": "左格测量与右格姿势无关 → 对全部 11 帧普适；继续生图=预算内必全 FAIL、0 入库",
+  "disposal": "按无人值守铁律停在生成步骤：不再消耗预算生图（已耗 4 分=walk_down_1 首发+批准内机械重跑各 FAIL 登记），零成本交付物照产，报 Leo 工单裁决：①校准 T（参考数据：忠实≈21-23，建议结构门另议）或②改比对口径（L1/3 口径同数据=12.2/13.2 恰在 T=12 线上，供参考非放行）或③换引擎重验；裁决前不铺量",
+  "salvage": "walk_down_1 两张 raw 右格姿势正确、形象忠实、无文字无武器（目检），已存 raw/ 供裁决后直接抠图复用，无需重摇"
+ }
+}

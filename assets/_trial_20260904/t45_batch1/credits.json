@@ -1,0 +1,16 @@
+[
+ {
+  "name": "walk_down_1",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1",
+  "note": "锚定表双参照 img2img aspect=3:2（2:1 被拒降级，见 measure_log._blocker；左格=battle_idle_down.png）"
+ },
+ {
+  "name": "walk_down_1_rerun",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-batch1",
+  "note": "check_left FAIL 同命令重跑 1 次（E-ANCHOR-01 口径）"
+ }
+]
