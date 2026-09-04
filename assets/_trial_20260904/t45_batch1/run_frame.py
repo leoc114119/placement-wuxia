@@ -46,7 +46,7 @@ FRAMES = {
 
 WHITE_THRESH = 40   # 与纯白欧氏距离阈值（主体掩码）
 MIN_CC = 2000       # 右格最大连通域最小像素数（低于=主体缺失疑似）
-T_LEFT = 12.0       # check_left v2 阈值
+T_LEFT = 30.0       # check_left v2 阈值（Leo 09-04 校准 12→30：重绘地板 21.2/22.9 实测，拦大改放重绘噪声）
 H_BAND = (0.9, 1.1)       # 高度比门
 ASP_BAND = (0.38, 0.55)   # 宽高比门
 
@@ -188,6 +188,46 @@ def sh(cmd, env=None):
     return r.returncode
 
 
+# ---------- 门测量（gen 与 remeasure 共用） ----------
+def measure_gates(name, raw, mean, ok, rerun=None):
+    """d. 门测量（引擎会重排两格位置 → 左右各取整半幅、最大连通域定位主体包络）"""
+    spec = FRAMES[name]
+    img = Image.open(raw).convert("RGB")
+    W, H = img.size
+    corners(img, (0, 0, W // 2, H), "left")
+    corners(img, (W // 2, 0, W, H), "right")
+    L = cc_largest(img.crop((0, 0, W // 2, H)))
+    R = cc_largest(img.crop((W // 2, 0, W, H)))
+    if L is None or R is None or R[0] < MIN_CC:
+        rec = {"frame": name, "result": "SKIP", "reason": f"右格主体缺失/过小 cc={R[0] if R else 0}",
+               "check_left": round(mean, 3), "rerun": rerun}
+        log_write(rec)
+        print(f"[STOP] {name} 右格主体缺失（cc={R[0] if R else 0} < {MIN_CC}），登记跳过")
+        return rec
+    lh = L[1][3] - L[1][1]
+    rw = R[1][2] - R[1][0]
+    rh = R[1][3] - R[1][1]
+    hr = rh / lh if lh else 0
+    asp = rw / rh if rh else 0
+    gate = spec["gate"]
+    gok = True
+    if gate == "height":
+        gok = H_BAND[0] <= hr <= H_BAND[1]
+    elif gate == "aspect":
+        gok = ASP_BAND[0] <= asp <= ASP_BAND[1]
+    print(f"[gates] left_env={L[1]} h={lh} | right_env={R[1]} w={rw} h={rh} cc={R[0]} "
+          f"| height_ratio={hr:.3f} aspect={asp:.3f} gate={gate} {'PASS' if gok else 'FAIL'}")
+    rec = {"frame": name, "raw_size": [W, H], "check_left": round(mean, 3), "check_left_pass": ok,
+           "rerun": rerun, "left_env": list(L[1]), "left_h": lh,
+           "right_env": list(R[1]), "right_w": rw, "right_h": rh, "right_cc": R[0],
+           "height_ratio": round(hr, 3), "aspect": round(asp, 3),
+           "gate": gate, "gate_pass": gok,
+           "result": "GATED" if gok else "GATE_FAIL"}
+    log_write(rec)
+    print(f"[measure] {name} 完成，result={rec['result']}（GATED→可 finish；GATE_FAIL→登记不重摇）")
+    return rec
+
+
 # ---------- gen 阶段 ----------
 def stage_gen(name):
     spec = FRAMES[name]
@@ -259,39 +299,23 @@ def stage_gen(name):
             log_write(rec)
             print(f"[STOP] {name} check_left_v2 再犯，登记跳过该帧"); sys.exit(4)
 
-    # d. 门测量（引擎会重排两格位置 → 左右各取整半幅、最大连通域定位主体包络）
-    img = Image.open(raw).convert("RGB")
-    W, H = img.size
-    corners(img, (0, 0, W // 2, H), "left")
-    corners(img, (W // 2, 0, W, H), "right")
-    L = cc_largest(img.crop((0, 0, W // 2, H)))
-    R = cc_largest(img.crop((W // 2, 0, W, H)))
-    if L is None or R is None or R[0] < MIN_CC:
-        rec = {"frame": name, "result": "SKIP", "reason": f"右格主体缺失/过小 cc={R[0] if R else 0}",
-               "check_left": round(mean, 3), "rerun": rerun}
-        log_write(rec)
-        print(f"[STOP] {name} 右格主体缺失（cc={R[0] if R else 0} < {MIN_CC}），登记跳过"); sys.exit(4)
-    lh = L[1][3] - L[1][1]
-    rw = R[1][2] - R[1][0]
-    rh = R[1][3] - R[1][1]
-    hr = rh / lh if lh else 0
-    asp = rw / rh if rh else 0
-    gate = spec["gate"]
-    gok = True
-    if gate == "height":
-        gok = H_BAND[0] <= hr <= H_BAND[1]
-    elif gate == "aspect":
-        gok = ASP_BAND[0] <= asp <= ASP_BAND[1]
-    print(f"[gates] left_env={L[1]} h={lh} | right_env={R[1]} w={rw} h={rh} cc={R[0]} "
-          f"| height_ratio={hr:.3f} aspect={asp:.3f} gate={gate} {'PASS' if gok else 'FAIL'}")
-    rec = {"frame": name, "raw_size": [W, H], "check_left": round(mean, 3), "check_left_pass": ok,
-           "rerun": rerun, "left_env": list(L[1]), "left_h": lh,
-           "right_env": list(R[1]), "right_w": rw, "right_h": rh, "right_cc": R[0],
-           "height_ratio": round(hr, 3), "aspect": round(asp, 3),
-           "gate": gate, "gate_pass": gok,
-           "result": "GATED" if gok else "GATE_FAIL"}
-    log_write(rec)
-    print(f"[gen] {name} 完成，result={rec['result']}（GATED→可 finish；GATE_FAIL→登记不重摇）")
+    # d. 门测量
+    rec = measure_gates(name, raw, mean, ok, rerun)
+    if rec["result"] != "GATED":
+        sys.exit(4)
+
+
+# ---------- remeasure 阶段（现存 raw 补测：Leo 裁决零成本续用） ----------
+def stage_remeasure(name):
+    raw = os.path.join(B1, "raw", f"{name}_raw.png")
+    if not os.path.exists(raw):
+        print(f"[STOP] 现存 raw 不存在: {raw}"); sys.exit(4)
+    mean, ok = check_left(ANCHOR, raw)
+    if not ok:
+        print(f"[STOP] {name} check_left_v2 仍 FAIL（T={T_LEFT}），禁续用"); sys.exit(4)
+    rec = measure_gates(name, raw, mean, ok, rerun="Leo 裁决零成本续用（T 校准 12→30 追认）")
+    if rec["result"] != "GATED":
+        sys.exit(4)
 
 
 # ---------- finish 阶段 ----------
@@ -388,4 +412,4 @@ if __name__ == "__main__":
     stage, name = sys.argv[1], sys.argv[2]
     if name not in FRAMES:
         print(f"未知帧名 {name}"); sys.exit(1)
-    (stage_gen if stage == "gen" else stage_finish)(name)
+    {"gen": stage_gen, "finish": stage_finish, "remeasure": stage_remeasure}[stage](name)

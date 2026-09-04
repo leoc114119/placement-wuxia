@@ -6,48 +6,47 @@
   "disposal": "无人值守禁提问→最小偏差降级：3:2 画布 640×427 内嵌原 640×320 双格条带（上下白边 53px），模型 gpt-image-2/prompt 逐字/门/单价 2 分全不变；check_left_v2+目检双重验证布局；通过则锁定全批，失败登记停报；差异报 Leo 追认"
  },
  "walk_down_1": {
-  "result": "SKIP",
-  "reason": "check_left_v2 两次 FAIL（T=12 vs 引擎重绘地板≈21-23，系统性，见 _blocker_T12_engine_floor）",
-  "attempts": [
-   {
-    "raw": "raw/walk_down_1_fail1.png",
-    "size": [
-     1248,
-     832
-    ],
-    "check_left_euclid": 22.921,
-    "check_left_L1_3": 13.24
-   },
-   {
-    "raw": "raw/walk_down_1_raw.png",
-    "size": [
-     1536,
-     1024
-    ],
-    "check_left_euclid": 21.202,
-    "check_left_L1_3": 12.24
-   }
+  "frame": "walk_down_1",
+  "raw_size": [
+   1536,
+   1024
   ],
-  "rerun": "check_left FAIL 同命令机械重跑 1 次（批准内）",
-  "left_env_fail1": [
-   145,
-   191,
-   340,
-   684
-  ],
-  "left_env_attempt2": [
+  "check_left": 22.105,
+  "check_left_pass": true,
+  "rerun": "Leo 裁决零成本续用（T 校准 12→30 追认）",
+  "left_env": [
    178,
    232,
    419,
    842
   ],
-  "anchor_env": [
-   74,
-   45,
-   175,
+  "left_h": 610,
+  "right_env": [
+   321,
+   225,
+   558,
+   848
+  ],
+  "right_w": 237,
+  "right_h": 623,
+  "right_cc": 86619,
+  "height_ratio": 1.021,
+  "aspect": 0.38,
+  "gate": "aspect",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   75,
+   44,
+   172,
    300
   ],
-  "visual_triage": "两 raw 目检：左格=锚忠实复制品，右格=迈步A 姿势正确，无文字无水印无武器"
+  "final_env": [
+   97,
+   256
+  ],
+  "final_centroid_x": 120.22,
+  "final_aspect": 0.379
  },
  "_fix_checkleft_method": {
   "change": "check_left_v2 由固定坐标裁剪改为内容对齐比较（定位左半区最大连通域包络→LANCZOS 缩放至锚包络 101×255→白底合成锚→逐像素欧氏距离均值）",
@@ -60,5 +59,437 @@
   "scope": "左格测量与右格姿势无关 → 对全部 11 帧普适；继续生图=预算内必全 FAIL、0 入库",
   "disposal": "按无人值守铁律停在生成步骤：不再消耗预算生图（已耗 4 分=walk_down_1 首发+批准内机械重跑各 FAIL 登记），零成本交付物照产，报 Leo 工单裁决：①校准 T（参考数据：忠实≈21-23，建议结构门另议）或②改比对口径（L1/3 口径同数据=12.2/13.2 恰在 T=12 线上，供参考非放行）或③换引擎重验；裁决前不铺量",
   "salvage": "walk_down_1 两张 raw 右格姿势正确、形象忠实、无文字无武器（目检），已存 raw/ 供裁决后直接抠图复用，无需重摇"
+ },
+ "_ruling_20260904_leo": {
+  "source": "主会话校准落盘，规范/skill 同步 commit d2cd660",
+  "items": [
+   "3:2 降级（640×427 内嵌 640×320 条带）追认为正式口径",
+   "check_left_v2 T 校准 12→30（欧氏均值），内容对齐法追认为标准测量",
+   "walk_down_1 零成本续用现存 raw（check_left=21.202 那张）",
+   "续跑其余 10 帧，锁定参数不变，预算 20 分；门 FAIL 登记跳过续跑"
+  ]
+ },
+ "walk_down_2": {
+  "frame": "walk_down_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 27.722,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   179,
+   233,
+   419,
+   841
+  ],
+  "left_h": 608,
+  "right_env": [
+   343,
+   223,
+   583,
+   841
+  ],
+  "right_w": 240,
+  "right_h": 618,
+  "right_cc": 86881,
+  "height_ratio": 1.016,
+  "aspect": 0.388,
+  "gate": "aspect",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   75,
+   45,
+   174,
+   300
+  ],
+  "final_env": [
+   99,
+   255
+  ],
+  "final_centroid_x": 120.16,
+  "final_aspect": 0.388
+ },
+ "jump_down_1": {
+  "frame": "jump_down_1",
+  "raw_size": [
+   1248,
+   832
+  ],
+  "check_left": 21.354,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   145,
+   190,
+   340,
+   686
+  ],
+  "left_h": 496,
+  "right_env": [
+   78,
+   107,
+   392,
+   603
+  ],
+  "right_w": 314,
+  "right_h": 496,
+  "right_cc": 72113,
+  "height_ratio": 1.0,
+  "aspect": 0.633,
+  "gate": "height",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   40,
+   45,
+   201,
+   299
+  ],
+  "final_env": [
+   161,
+   254
+  ],
+  "final_centroid_x": 120.09,
+  "final_aspect": 0.634
+ },
+ "jump_down_2": {
+  "frame": "jump_down_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 22.788,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   178,
+   230,
+   420,
+   837
+  ],
+  "left_h": 607,
+  "right_env": [
+   6,
+   153,
+   451,
+   771
+  ],
+  "right_w": 445,
+  "right_h": 618,
+  "right_cc": 108236,
+  "height_ratio": 1.018,
+  "aspect": 0.72,
+  "gate": "height",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   23,
+   44,
+   207,
+   300
+  ],
+  "final_env": [
+   184,
+   256
+  ],
+  "final_centroid_x": 119.43,
+  "final_aspect": 0.719
+ },
+ "atk_down_1": {
+  "frame": "atk_down_1",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 27.059,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   177,
+   232,
+   420,
+   844
+  ],
+  "left_h": 612,
+  "right_env": [
+   141,
+   232,
+   421,
+   844
+  ],
+  "right_w": 280,
+  "right_h": 612,
+  "right_cc": 90158,
+  "height_ratio": 1.0,
+  "aspect": 0.458,
+  "gate": "height",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   59,
+   44,
+   175,
+   299
+  ],
+  "final_env": [
+   116,
+   255
+  ],
+  "final_centroid_x": 119.92,
+  "final_aspect": 0.455
+ },
+ "atk_down_2": {
+  "frame": "atk_down_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 26.928,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   178,
+   236,
+   417,
+   844
+  ],
+  "left_h": 608,
+  "right_env": [
+   288,
+   239,
+   535,
+   844
+  ],
+  "right_w": 247,
+  "right_h": 605,
+  "right_cc": 82561,
+  "height_ratio": 0.995,
+  "aspect": 0.408,
+  "gate": "height",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   72,
+   45,
+   176,
+   299
+  ],
+  "final_env": [
+   104,
+   254
+  ],
+  "final_centroid_x": 119.73,
+  "final_aspect": 0.409
+ },
+ "atk_down_3": {
+  "frame": "atk_down_3",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 25.708,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   178,
+   236,
+   417,
+   844
+  ],
+  "left_h": 608,
+  "right_env": [
+   277,
+   236,
+   517,
+   844
+  ],
+  "right_w": 240,
+  "right_h": 608,
+  "right_cc": 87876,
+  "height_ratio": 1.0,
+  "aspect": 0.395,
+  "gate": "aspect",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   74,
+   44,
+   174,
+   299
+  ],
+  "final_env": [
+   100,
+   255
+  ],
+  "final_centroid_x": 120.42,
+  "final_aspect": 0.392
+ },
+ "cast_down_1": {
+  "frame": "cast_down_1",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 24.597,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   179,
+   231,
+   419,
+   840
+  ],
+  "left_h": 609,
+  "right_env": [
+   54,
+   228,
+   312,
+   840
+  ],
+  "right_w": 258,
+  "right_h": 612,
+  "right_cc": 87762,
+  "height_ratio": 1.005,
+  "aspect": 0.422,
+  "gate": "aspect",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   66,
+   44,
+   174,
+   300
+  ],
+  "final_env": [
+   108,
+   256
+  ],
+  "final_centroid_x": 120.27,
+  "final_aspect": 0.422
+ },
+ "cast_down_2": {
+  "frame": "cast_down_2",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 25.064,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   178,
+   236,
+   417,
+   844
+  ],
+  "left_h": 608,
+  "right_env": [
+   168,
+   236,
+   408,
+   844
+  ],
+  "right_w": 240,
+  "right_h": 608,
+  "right_cc": 84636,
+  "height_ratio": 1.0,
+  "aspect": 0.395,
+  "gate": "height",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   73,
+   44,
+   174,
+   299
+  ],
+  "final_env": [
+   101,
+   255
+  ],
+  "final_centroid_x": 120.14,
+  "final_aspect": 0.396
+ },
+ "cast_down_3": {
+  "frame": "cast_down_3",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 27.185,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   178,
+   230,
+   417,
+   838
+  ],
+  "left_h": 608,
+  "right_env": [
+   348,
+   221,
+   581,
+   833
+  ],
+  "right_w": 233,
+  "right_h": 612,
+  "right_cc": 86118,
+  "height_ratio": 1.007,
+  "aspect": 0.381,
+  "gate": "aspect",
+  "gate_pass": true,
+  "result": "OK",
+  "final_bbox": [
+   76,
+   44,
+   173,
+   299
+  ],
+  "final_env": [
+   97,
+   255
+  ],
+  "final_centroid_x": 120.35,
+  "final_aspect": 0.38
+ },
+ "die_down": {
+  "frame": "die_down",
+  "raw_size": [
+   1536,
+   1024
+  ],
+  "check_left": 19.75,
+  "check_left_pass": true,
+  "rerun": null,
+  "left_env": [
+   178,
+   235,
+   418,
+   845
+  ],
+  "left_h": 610,
+  "right_env": [
+   9,
+   600,
+   481,
+   838
+  ],
+  "right_w": 472,
+  "right_h": 238,
+  "right_cc": 57809,
+  "height_ratio": 0.39,
+  "aspect": 1.983,
+  "gate": "none",
+  "gate_pass": true,
+  "result": "SKIP",
+  "reason": "归一溢出：包络高 256 需宽 505 > 240（横躺帧口径卡点，报 Leo）",
+  "cut_env": [
+   205,
+   104
+  ]
  }
 }

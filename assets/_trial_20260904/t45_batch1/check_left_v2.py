@@ -12,7 +12,7 @@ from collections import deque
 from PIL import Image
 
 src_path, raw_path = sys.argv[1], sys.argv[2]
-T = float(sys.argv[3]) if len(sys.argv) > 3 else 12.0
+T = float(sys.argv[3]) if len(sys.argv) > 3 else 30.0  # Leo 09-04 校准 12→30（重绘地板 21.2/22.9 实测）
 THRESH = 40  # 主体掩码：与纯白欧氏距离阈值
 
 src = Image.open(src_path).convert("RGBA")
