@@ -245,3 +245,4 @@
 | 2026-09-04 23:20 | Leo → ZCode | 📋 分工补充 | 美术线有问题直接和主架构沟通，PM 留意沟通情况（监督不传话） |
 | 2026-09-04 23:25 | ZCode | 📋 通道落地 | tasks/threads/ART-ARCH.md 建立（提问格式+PM 三监督点：口径一致/越界/悬空） |
 | 2026-09-04 | ZCode↔研发线 | ✅ T45 §8 接口四条答复（主架构定夺） | ①FACE-1 flat-top 勘误为 pointy-top+奇偶行错位布点（结论六向不变，已改战斗交互行为规格.md+更新记录）②§8.1=方案 A 左系 PNG 成品文件（渲染零分支/包体差异≈+3.7MB 同走分包/帧表六向平铺）③§8.3=方案 B 代码常量表 config/battle-frames-meta.ts（ADR-004 只读展示参数/三零门覆盖/manifest 誊录+diff 对表）④C1 点缀规格文档已存在（战斗上下点缀规格口径-v0.1.md，edcbb80，停等 Leo 审阅，素材未产/接线未开工，如实登记未代拟）；详据 tasks/answers/A1-T45-sixdir-interfaces.md + threads/ART-ARCH.md Q1；需求文档状态同步「§8 四条全闭·待 Leo 发单」；零代码零素材改动 | arch(T45) |
+| 2026-09-04 17:20 | Leo → ZCode | 🚀 T45 批 0' 发令（预算 290 确认） | Leo：「可以，开工吧」——预算总上限 290 拍板+批 0' 直派发令；§8 四接口全闭（主架构 cf02a0a：镜像=方案 A 成品 PNG/武器锚=方案 B 代码常量表）；直派 art-pipeline 按任务书执行（6 分/停点候 Leo 目验定锚） | 任务书 t45-batch0prime-sixdir-anchor.md
