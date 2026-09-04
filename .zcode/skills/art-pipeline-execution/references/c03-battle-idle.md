@@ -32,7 +32,7 @@ from PIL import Image, ImageChops
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else "assets/characters/hero/walk_q/frames/idle_down.png"
 RET = sys.argv[2] if len(sys.argv) > 2 else "assets/_trial_20260903/c03/battle_idle_fist_raw.png"
-T = 12  # RGB 距离均值阈值（/255），初值待复跑校准；调阈值=改门，须上报
+T = 30  # RGB 距离均值阈值（/255），09-04 批 1 实测校准：gpt-image-2 忠实重绘地板=21.2/22.9（两张独立一致，全局色偏不可归一），T=12 结构性过不了门（曾致批 1 停报）；T=30 拦大改放重绘噪声，配合高度比门双重防漂移
 
 src = Image.open(SRC).convert("RGB"); w, h = src.size
 ret = Image.open(RET).convert("RGB")
