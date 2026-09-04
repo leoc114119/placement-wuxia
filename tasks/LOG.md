@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-04 | frontend | 📦 交付 FACE-1 朝向规则修正 | 直通线单卡（方案 v0.1 PM 背书四裁定落地）：faceToward 吸附度量 axial 2D→cube 3D 点积+faceLeft=sign(2Δq+Δr)（§二.4 两口径缺陷随卡修正）+resolveAoe 入口 faceTargetOf（单遍历 min+保序 ties，平局恒掷 1 次于逐目标循环前）+循环后朝最近敌定版（AI 同规则⑤锁）+删 cast 有敌臂 ：785 点击格定版；空放 ：793 悬置原样（§六-1 待 Leo）/F1·F2·F6 未动/红线零碰；新增用例 6 条（①②-a②-b③a③b⑤，seed 对 5/7 实证 tie→e0={1,0}/e1={-1,0}，E 族 189/W 族 211 全枚举）；typecheck/lint/build 三零/test:battle 211（205+6）/behavior 14/14/shot 16/e2e 11 MATCH/DBG=0；bundle rebuild+verTag v1788523938694；②分歧臂布点按 §四-1 对照布点修正（原局两敌同吸附 E 不可观测，实证在案）；threads/FACE-1.md；commit 未 push 停等 PM 复验 |
 | 2026-09-04 | frontend | 📦 交付 战斗demo收口（摘狼+宋体） | Leo 09-04 两裁定落地：①spriteKinds 去 npc-lang+main.ts 敌 e2 改山贼系+shot ⑤/F3 断言随阵容适配（spr_lang 素材归档零碰/旧战斗路径与 types/npcs 零碰）②config 落 FONT_STACK 常量+render 8 处栈收敛宋体族+hit-feedback 用例断言随卡更新；typecheck/lint 零输出/test:battle 205 基线持平/behavior 14/14/shot 16 PASS（帧表 hero+shanzei 各 8/8）/e2e 11 MATCH/DBG=0；弧钮金字与 DMG 宋体截图已重摄目验过；d0ecf38 显式路径提交未 push 停等 PM 复验 |
 | 2026-09-04 | frontend | 📦 交付 战斗素材统一盘点审计 | Leo 09-04 指令落地（只读，零代码零素材改动）：产用原则七条立尺逐件过 47 件；判定=A 重产 6（顶栏/木牌/ctrl 三脸/状态图标/env 横幅/tileset）/B 代码兜底 5/C 缺口 9（上下点缀/T45 接线/Boss 45°/字体等）；疑点 5 条待拍板（env 代系/烘焙字两件/字体双轨等）；产出 docs/design/03-战斗系统/战斗素材盘点与产用原则-v0.1.md · threads/AUDIT-battle-assets-20260904.md；commit 未 push |
 | 2026-09-04 | frontend | 📦 交付 T24 | 战斗场景融合 FE 单卡（env 入世界系+v8 缺角+落地阴影+dirt 取色+顶面噪点）：主套件 205 绿（+6）/行为面 14/14/shot 16/e2e 11 MATCH/DBG=0/三零/红线+镜头三函数 diff=0；缺角密度 20.5% 实测；shot 拖动中帧留档；commit 未 push 停等 PM 复验 |

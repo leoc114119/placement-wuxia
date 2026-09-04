@@ -306,8 +306,15 @@ export function createHexBattle(opts: HexBattleOptions) {
     selection = null;
   }
 
-  /** 朝向更新：六向 facing = from→to 的 cube 最近方向（Q4 批复，锥形轴）；
-   * 立绘左右向按 offset 水平分量（dx≈0 保持防抖，T06 已验口径）。 */
+  /** 朝向更新：六向 facing = from→to 的 cube 最近方向（Q4 批复，锥形轴）。
+   * 【FACE-1 §二.4-A】吸附度量 = axial 平面 2D 点积 → **cube 3D 点积**（同 hex.ts dirIndexOf
+   * 度量、整数精确；session 自持 ~6 行不引其导出——hex 零改动红线）。axial 基非正交，2D 点积
+   * 不度量对齐度：(0,±1) 两族竖向邻格被误吸到斜向（§一.6-A 实证），cube 度量修复；
+   * 方向边界平局（如 (2,-1) 族两向等分点）以 dirs 序首胜（与 dirIndexOf 同判，§二.4 定版）。
+   * 【FACE-1 §二.4-B】立绘左右向 = 像素水平分量符号 sign(2Δq+Δr)：场内 r≥0 时像素 x/W =
+   * q + r/2 恒等，故 Δx 符号 = sign(2Δq+Δr)（奇偶行 (0,±1) 方向 Δcol=0 的「保持旧值」
+   * 缺陷由此消除）；=0（等分水平向量）保持旧值，防抖口径同 T06（faceToward 每行动一次，
+   * 非逐帧调用，无抖动面）。 */
   function faceToward(c: Runner, to: HexPos): void {
     const v = { q: to.q - c.hex.q, r: to.r - c.hex.r };
     if (v.q === 0 && v.r === 0) return;
@@ -319,19 +326,25 @@ export function createHexBattle(opts: HexBattleOptions) {
       { q: -1, r: 1 },
       { q: 0, r: 1 },
     ];
+    const vx = v.q;
+    const vz = v.r;
+    const vy = -vx - vz; // axial→cube：x=q, z=r, y=-x-z
     let best = dirs[0];
     let bestDot = -Infinity;
     for (const d of dirs) {
-      const dot = v.q * d.q + v.r * d.r;
+      const dx = d.q;
+      const dz = d.r;
+      const dy = -dx - dz;
+      const dot = vx * dx + vy * dy + vz * dz; // cube 3D 点积（整数精确，零浮点）
       if (dot > bestDot) {
         bestDot = dot;
         best = d;
       }
     }
     c.hexFacing = best;
-    const dx = axialToOffset(to).col - axialToOffset(c.hex).col;
-    if (dx > 0) c.faceLeft = false;
-    else if (dx < 0) c.faceLeft = true;
+    const sx = 2 * v.q + v.r; // 像素水平分量符号（∝ Δq + Δr/2）
+    if (sx > 0) c.faceLeft = false;
+    else if (sx < 0) c.faceLeft = true;
   }
 
   function setAnim(c: Runner, state: SnapshotActor['animState']): void {
@@ -400,15 +413,36 @@ export function createHexBattle(opts: HexBattleOptions) {
     checkEnd();
   }
 
+  /** 【FACE-1 §二.1 · faceTarget 唯一产生点】受击敌中 cube 距离最小者（平局判距=逻辑格 hex，
+   * §六-2 PM 裁定，与 ATK-7 命中口径同源）。单次遍历求 min + 保序收集平局（保持 all 数组序，
+   * 禁 sort——SP-2 目标序锁）；勿复用 pickTarget（hp 次键且 sort 破序，§四-5）。
+   * rng 纪律（规格③ + §六-4 恒掷 1 次）：ties==1 零消费；ties≥2 恰掷 1 次。消费点由调用方
+   * 固定在逐目标循环之前（=本次施放首次掷骰之前，§二.2 SP-2 时序论证：消费计数为状态
+   * 确定函数，同 seed 双场逐位全同）。 */
+  function faceTargetOf(actor: Runner, targets: Runner[]): Runner {
+    let dmin = Infinity;
+    for (const t of targets) {
+      const d = cubeDistance(actor.hex, t.hex);
+      if (d < dmin) dmin = d;
+    }
+    const ties = targets.filter((t) => cubeDistance(actor.hex, t.hex) === dmin);
+    if (ties.length === 1) return ties[0]; // rng 零消费
+    return ties[Math.floor(rng() * ties.length)]; // 平局恰掷 1 次（规格③随机取一）
+  }
+
   /** 【ATK-2 v2.2 · T22】范围 AOE 逐目标结算（cast 与 aiAct 案 A 的单一产生点）：
    * 首目标承担资源（R-09/R-08 经 resolveAction 真值路径，neiliCost 视图=1）；后续目标
    * payCost=false（视图=0，core:245 扣 0）——资源每次施放恰扣一次。每目标独立掷骰
    * （命中 F-04 → 闪避 → 暴击，1~3 次 rng）+ 各发 skill|miss 事件（既有形状）+ 各自死亡判定。
    * targets 顺序由调用方定死（all 数组序一次快照，禁 sort——SP-2 确定性）。
    * 循环内 doAttack 副作用幂等注记（锁）：setAnim('charge') 同值覆写=单次效果（animLeftMs
-   * 重置同值，同步循环等价单次）；faceToward 循环内逐目标执行，由调用方以点击格收尾定版。 */
+   * 重置同值，同步循环等价单次）；faceToward 循环内逐目标为不可观测中间态（submit/aiAct
+   * 同步块无快照采样，§一.1 注）——【FACE-1 §二.1】入口先定 faceTarget（rng 在循环前），
+   * 循环后 faceToward(actor, faceTarget.hex) 单点定版（朝最近受击敌；v2.2 点击格定版废止）。 */
   function resolveAoe(actor: Runner, skill: SkillDef, targets: Runner[]): void {
+    const faceTarget = faceTargetOf(actor, targets); // ★ FACE-1：faceTarget 产生单点，rng 先于逐目标掷骰
     for (let i = 0; i < targets.length; i++) doAttack(actor, targets[i], skill, false, i === 0);
+    faceToward(actor, faceTarget.hex); // ★ FACE-1：朝最近敌定版（AI 与玩家同规则，案 A 五点⑤）
   }
 
   // ---- 移动（病灶②：isJump 唯一产生点） ----
@@ -781,8 +815,9 @@ export function createHexBattle(opts: HexBattleOptions) {
       tickCooldowns(player); // 读后递减，与 attack 分支同位（四查后、结算前）
 
       if (targets.length > 0) {
-        resolveAoe(player, s, targets); // ★ 逐目标独立掷骰全额伤害，资源只在首目标扣一次
-        faceToward(player, req.to); // ★ 朝向定版=点击格（出手确认方向，覆盖循环内逐目标 faceToward；方案 §六-3）
+        resolveAoe(player, s, targets); // ★ 逐目标独立掷骰全额伤害，资源只在首目标扣一次；
+        // ★ FACE-1：朝向由 resolveAoe 内 faceTarget 定版（朝最近受击敌）——v2.2 T22 落库的
+        // faceToward(player, req.to)「点击格定版」随规格 v2.3 FACE-1 废止，此处不再覆盖
       } else {
         // ATK-6 空放=合法施放（v2.2 平移：射程形态内无任何存活敌）：resolveAction 不调
         // （battle-core 零改动红线），session 逐字段镜像资源三件

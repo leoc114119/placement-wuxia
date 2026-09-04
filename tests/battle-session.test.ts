@@ -874,6 +874,140 @@ describe('[AI 同构] 案 A：自动模式 AI 代行出技同构 AOE（V6 / 五�
   });
 });
 
+// ══════════ FACE-1 朝向规则（规格 v2.3 §4.3 · 方案《朝向规则修正方案-v0.1》§三.3 用例清单） ══════════
+// 朝向由受击敌位置决定：①单敌朝该敌 ②AOE 朝最近敌 ③同距 rng 随机（SP-2 内）④空放保持点击格
+// （既有 :612-625/:654-671 两处覆盖，悬置待 Leo 复核禁改）；吸附度量=cube 3D 点积（§二.4-A）、
+// faceLeft=sign(2Δq+Δr)（§二.4-B）。
+
+/** FACE-1 白盒局（对齐 castBoard 口径）：p(7,8) te level20（sword circle 射程2，普攻射程1）；
+ * 敌位入参 [col,row][]（all 声明序），布点+拉条进输入态（激活/出手由用例定）。 */
+function faceBoard(enemySpots: Array<[number, number]>, seed = 13): HexBattleSession {
+  const p = unit({
+    id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+    skills: [teSkill({ level: 20 })],
+  });
+  const s = makeSession(
+    seed, 'manual', p,
+    enemySpots.map(([col, row], i) => unit({ id: `e${i}`, side: 'enemy' })),
+  );
+  place(s, 'p', 7, 8);
+  enemySpots.forEach(([col, row], i) => place(s, `e${i}`, col, row));
+  ready(s);
+  return s;
+}
+const facingOf = (s: HexBattleSession, id: string) => s._debug.units.find((u) => u.id === id)!.hexFacing;
+const faceLeftOf = (s: HexBattleSession, id: string) => s._debug.units.find((u) => u.id === id)!.faceLeft;
+const castTe = (s: HexBattleSession, to: { q: number; r: number }) => {
+  expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+  expect(s.submit({ type: 'cast', to, skillId: 'te' })).toBe(true);
+};
+
+describe('[FACE-1 ①] AOE 朝最近敌（faceTarget 定版 · 点击格废止）', () => {
+  it('① e0 近(cube1 东)/e1 远(cube2 西) 均∈射程：cast 射程内空格 → hexFacing=吸附(p→e0)={1,0}；cast 远敌格仍朝 e0（旧「点击格定版」此处必 {-1,0}，直接锁）', () => {
+    // 布点取两敌**吸附向不同**（东/西）使「最近」可经 hexFacing 观测（同向则 tie/远近均不可分）
+    const spots: Array<[number, number]> = [[8, 8], [5, 8]]; // e0 正东 cube1 / e1 正西 cube2（非平局）
+    const a = faceBoard(spots);
+    castTe(a, offsetToAxial(6, 8)); // 射程内空格（p 正西 1）
+    const settledA = a.events.filter((e) => (e.type === 'skill' || e.type === 'miss') && e.actorId === 'p');
+    expect(settledA).toHaveLength(2); // AOE 双目标均结算
+    expect(settledA.map((e) => (e as { targetId?: string }).targetId)).toEqual(['e0', 'e1']); // all 序保序
+    expect(facingOf(a, 'p')).toEqual({ q: 1, r: 0 }); // 朝最近敌 e0（东），与点击格 (6,8) 无关
+    // 负断言（点击格废止的直接锁）：换场 cast 远敌格（西向 e1 格）——仍朝最近敌 e0
+    const b = faceBoard(spots);
+    const e1cell = b.snapshot().actors.find((x) => x.id === 'e1')!.pos;
+    castTe(b, e1cell);
+    expect(facingOf(b, 'p')).toEqual({ q: 1, r: 0 }); // 若实现朝点击格/末目标则 ={-1,0} 必红
+  });
+});
+
+describe('[FACE-1 ②] 同距平局 rng（规格③ · SP-2 确定性范围）', () => {
+  it('②-a aoeBoard 原局（e0/e1 同距 2 平局）同 seed 双场：增量事件全等 + hexFacing 全等（tie 同掷同数同值）', () => {
+    const a = aoeBoard();
+    const b = aoeBoard();
+    const nA = a.events.length;
+    const nB = b.events.length;
+    expect(a.submit({ type: 'cast', to: offsetToAxial(6, 8), skillId: 'te' })).toBe(true); // aoeBoard 已激活 te，勿重复 selectSkill（toggle 会取消选中）
+    expect(b.submit({ type: 'cast', to: offsetToAxial(6, 8), skillId: 'te' })).toBe(true);
+    expect(a.events.slice(nA)).toEqual(b.events.slice(nB)); // 同 seed 同操作 → 事件流逐位全等（SP-2）
+    expect(facingOf(a, 'p')).toEqual(facingOf(b, 'p')); // tie 掷点亦全等
+  });
+
+  it('②-b 对照布点双 seed 分臂（rng 消费间接证据，§四-1）：e0(9,8)东/e1(5,8)西 同距平局——seed 5 tie→e0 / seed 7 tie→e1（施工实证扫描选定，非手摆）', () => {
+    // 布点说明：aoeBoard 原局两敌同吸附 E（实证：seed13/7 hexFacing 恒 {1,0}），tie 取值无法经
+    // hexFacing 观测——按方案 §四-1「平局/非平局对照布点」锁法改用两敌吸附向不同的对照局；
+    // seed 对实证扫描（seed 1..400 全枚举）：E 族 189 个 / W 族 211 个、无第三态，取 5/7。
+    const mk = (seed: number) => {
+      const s = faceBoard([[9, 8], [5, 8]], seed); // e0 东距2（吸附 E）/ e1 西距2（吸附 W）
+      castTe(s, offsetToAxial(6, 8));
+      return s;
+    };
+    const s1 = mk(5);
+    const s2 = mk(7);
+    expect(facingOf(s1, 'p')).toEqual({ q: 1, r: 0 }); // tie→e0（实证值；勿按实现反推改布点）
+    expect(facingOf(s2, 'p')).toEqual({ q: -1, r: 0 }); // tie→e1（实证值）——异 seed 取值分歧=rng 恰被消费的间接证据
+    expect(facingOf(mk(5), 'p')).toEqual(facingOf(s1, 'p')); // 同 seed 复场恒同向（确定性背书）
+    expect(facingOf(mk(7), 'p')).toEqual(facingOf(s2, 'p'));
+  });
+});
+
+describe('[FACE-1 ③] 单敌朝该敌 + 竖向邻格吸附回归锚（§二.4）', () => {
+  it('③a 单敌非正东向（左下邻格）：cast 臂与 attack 臂（F1 共用路径）均朝该敌 {-1,1}', () => {
+    // offset(6,9) 相对 p(7,8) = axial (0,-1) 行错位左下邻格 → cube 吸附 {-1,1}（左下）
+    const a = faceBoard([[6, 9]]);
+    castTe(a, a.snapshot().actors.find((x) => x.id === 'e0')!.pos);
+    expect(facingOf(a, 'p')).toEqual({ q: -1, r: 1 });
+    const b = faceBoard([[6, 9]]);
+    expect(b.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true); // dist1 ≤ 普攻射程1
+    expect(facingOf(b, 'p')).toEqual({ q: -1, r: 1 }); // doAttack F1 faceToward 语义锁（§四-3 勿删的反向背书）
+  });
+
+  it('③b 竖向邻格吸附回归锚：attack 后 hexFacing 必须=(0,-1)/(0,1)（修复前 axial 2D 点积误吸斜向）+ faceLeft=sign(2Δq+Δr)（修复前 Δcol=0 保持旧值）', () => {
+    // 上邻格 offset(6,7)：row7 奇数行 q=col-3 → 与 p 同 q，axial Δ=(0,-1)。预置 faceLeft 证明写入
+    // （旧实现 Δcol=0 两向均「保持旧值」→ 预置值原样必红；修复后按符号翻转必绿）
+    const up = faceBoard([[6, 7]]);
+    up._debug.units.find((u) => u.id === 'p')!.faceLeft = false;
+    expect(up.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
+    expect(facingOf(up, 'p')).toEqual({ q: 0, r: -1 }); // 修复前误吸 {1,-1}（右上）——回归锁
+    expect(faceLeftOf(up, 'p')).toBe(true); // sign(2·0+(-1))=-1 → 左（修复前保持 false）
+    // 下邻格 offset(7,9)：row9 奇数行 q=col-4 → 与 p 同 q，axial Δ=(0,+1)
+    const down = faceBoard([[7, 9]]);
+    down._debug.units.find((u) => u.id === 'p')!.faceLeft = true;
+    expect(down.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
+    expect(facingOf(down, 'p')).toEqual({ q: 0, r: 1 }); // 修复前误吸 {-1,1}（左下）——回归锁
+    expect(faceLeftOf(down, 'p')).toBe(false); // sign(+1) → 右（修复前保持 true）
+  });
+});
+
+describe('[FACE-1 ⑤] 托管 AI 出技 AOE 朝最近敌（案 A 五点⑤ 敌方同构 · 可选项落地）', () => {
+  it('自动局 AI 代行出技：faceTarget=最近敌 e0（左下）→ 终态朝 {-1,1}（修复前 AI 臂无收尾=末目标 e1 朝向 {1,0}）', () => {
+    const p = unit({
+      id: 'p', side: 'player', jimin: 200, weapon: 'sword',
+      skills: [teSkill({ level: 20 })],
+    });
+    const s = makeSession(7, 'auto', p, [
+      unit({ id: 'e0', side: 'enemy' }),
+      unit({ id: 'e1', side: 'enemy' }),
+      unit({ id: 'e2', side: 'enemy' }),
+    ]);
+    place(s, 'p', 7, 8);
+    place(s, 'e0', 6, 9); // 最近 cube1 左下（吸附 {-1,1}）
+    place(s, 'e1', 9, 8); // 远 cube2 正东（吸附 {1,0}）
+    place(s, 'e2', 11, 8); // cube4 射程外
+    const hp0 = { e0: hpOf(s, 'e0'), e2: hpOf(s, 'e2') };
+    let i0 = -1;
+    for (let i = 0; i < 1500 && i0 < 0; i++) {
+      s.tick(DT);
+      i0 = s.events.findIndex((e) => e.actorId === 'p' && (e.type === 'skill' || e.type === 'miss'));
+    }
+    expect(i0).toBeGreaterThanOrEqual(0);
+    const settled = s.events.slice(i0, i0 + 2);
+    expect(settled.map((e) => (e as { targetId?: string }).targetId)).toEqual(['e0', 'e1']); // 双目标 all 序
+    expect(facingOf(s, 'p')).toEqual({ q: -1, r: 1 }); // 朝最近敌（faceTarget 收敛单点对 AI 臂同规则生效）
+    expect(hpOf(s, 'e0')).toBeLessThanOrEqual(hp0.e0);
+    expect(hpOf(s, 'e2')).toBe(hp0.e2); // 射程外不受击
+  });
+});
+
 describe('[ATK-3] 移动附带普攻特例', () => {
   it('移动落点相邻敌 → basic 事件紧随 move 事件（不另耗回合）', () => {
     const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500 }), [
