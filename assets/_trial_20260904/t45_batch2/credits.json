@@ -1,0 +1,16 @@
+[
+  {
+    "name": "anchor45_up",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch2a",
+    "note": "T45 批2a 45°俯视待机锚·主角up背面 三参照img2img(画风锚battle_idle_down+姿势示意图pose_up_side) + mxai抠图(超时重试1次) + 240x320归一"
+  },
+  {
+    "name": "anchor45_side",
+    "model": "gpt-image-2",
+    "cost": 2,
+    "ts": "2026-09-04 T45-batch2a",
+    "note": "T45 批2a 45°俯视待机锚·主角side侧面 三参照img2img(画风锚battle_idle_down+姿势示意图pose_up_side) + mxai抠图 + 240x320归一"
+  }
+]
