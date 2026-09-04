@@ -173,5 +173,19 @@
   "cost": 0,
   "ts": "2026-09-04 T45-cast11",
   "note": "A 版跳过：两 slug 均被 mxai 拒（HTTP 400 未识别的模型名称，无 serial_no 未受理不计费）；平台 /mcp/api/models 实查无 nano banana/gemini 图像模型"
+ },
+ {
+  "name": "cast_down_2_v12",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-patch12",
+  "note": "幅度写足版"
+ },
+ {
+  "name": "cast_down_2_v5_3ref",
+  "model": "gpt-image-2",
+  "cost": 2,
+  "ts": "2026-09-04 T45-patch12",
+  "note": "三参照（画风锚+比例锚+姿势示意图）"
  }
 ]
