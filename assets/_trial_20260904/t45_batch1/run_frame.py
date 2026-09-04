@@ -41,7 +41,7 @@ FRAMES = {
     "cast_down_2": {"pose": "施放释放：双掌向前推出、掌心朝前", "gate": "height"},
     "cast_down_3": {"pose": "施放收招：双掌收回、身体回正", "gate": "aspect"},
     "die_down":    {"pose": "死亡躺平：仰面躺平于地面、四肢自然舒展、闭眼", "gate": "none",
-                    "append": "躺平于地面，人物横置。"},
+                    "norm": "wide", "append": "躺平于地面，人物横置。"},
 }
 
 WHITE_THRESH = 40   # 与纯白欧氏距离阈值（主体掩码）
@@ -359,7 +359,8 @@ def stage_finish(name):
         log_write(rec)
         print(f"[STOP] {name} 抠图两次失败，登记跳过"); sys.exit(3)
 
-    # 归一 240×320：包络高 256、底边 y=300、质心 x=120（口径=锚实测：alpha>0 包络、质量质心）
+    # 归一 240×320：直立帧=包络高 256；横躺帧（Leo 09-04 裁决）=按宽适配包络宽 220（≤220）、
+    # 底边贴 y=300、质心 x=120，高随比例自然。口径=锚实测：alpha>0 包络、质量质心。
     cimg = Image.open(cut).convert("RGBA")
     a = cimg.getchannel("A")
     bbox = a.point(lambda v: 255 if v > 0 else 0).getbbox()
@@ -367,12 +368,13 @@ def stage_finish(name):
         rec["result"] = "SKIP"; rec["reason"] = "抠图结果全透明"; log_write(rec)
         print("[STOP] 抠图全透明"); sys.exit(3)
     ew, eh = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    s = 256.0 / eh
+    wide = spec.get("norm") == "wide"
+    s = (220.0 / ew) if wide else (256.0 / eh)
     nw, nh = round(ew * s), round(eh * s)
-    print(f"[norm] cut_env={ew}x{eh} scale={s:.4f} -> {nw}x{nh}")
-    if nw > 240:
+    print(f"[norm] cut_env={ew}x{eh} scale={s:.4f} -> {nw}x{nh}" + ("（横躺宽适配口径）" if wide else ""))
+    if nw > 240 or nh > 320:
         rec["result"] = "SKIP"
-        rec["reason"] = f"归一溢出：包络高 256 需宽 {nw} > 240（横躺帧口径卡点，报 Leo）"
+        rec["reason"] = f"归一溢出：适配后 {nw}x{nh} 超出 240x320 画布（报 Leo）"
         rec["cut_env"] = [ew, eh]
         log_write(rec)
         print(f"[STOP] {name} {rec['reason']}"); sys.exit(4)

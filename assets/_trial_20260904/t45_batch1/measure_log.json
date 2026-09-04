@@ -485,11 +485,29 @@
   "aspect": 1.983,
   "gate": "none",
   "gate_pass": true,
-  "result": "SKIP",
+  "result": "OK",
   "reason": "归一溢出：包络高 256 需宽 505 > 240（横躺帧口径卡点，报 Leo）",
   "cut_env": [
    205,
    104
-  ]
+  ],
+  "norm_ruling": "Leo 09-04：横躺帧按宽适配——包络宽 ≤220、底边贴 y=300、质心 x=120（原归一溢出卡点解除）",
+  "final_bbox": [
+   17,
+   189,
+   235,
+   299
+  ],
+  "final_env": [
+   218,
+   110
+  ],
+  "final_centroid_x": 119.53,
+  "final_aspect": 1.982
+ },
+ "_blocker_die_normalize": {
+  "code": "归一口径缺口（横躺帧）——已裁决解除",
+  "fact": "die_down 按任务书归一规则（包络高 256px）需宽 505 > 240 画布；cut 包络 205×104（横躺 aspect=1.97）",
+  "resolution": "Leo 09-04 裁决：按宽适配——包络宽 ≤220、底边贴 y=300、质心 x=120；已编码进 run_frame.py（norm=wide，批 2b/3b 死亡帧可复用），零成本归一入库"
  }
 }
