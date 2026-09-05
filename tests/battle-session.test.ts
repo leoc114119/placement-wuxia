@@ -1402,3 +1402,203 @@ describe('[T19/N1] 演出延后（方案 §3.2）与回退轨插值（§3.3）',
     expect(s.snapshot().pendingInput).toBe(false); // 行动已消耗（O1 二选一）
   });
 });
+
+// ══════════ 体检报告防御性加固（docs/reviews/全仓代码体检-主架构-Codex-v1.md A01/A02/A03 · PM 裁定：非法输入 fail-fast） ══════════
+// 纯新增用例，既有 211+14 零改写；行为契约=已验收行为零变更（快照出口断引用/空集 fail-fast/坏入口拒绝）。
+
+describe('[A01] 快照出口防御性复制：篡改返回快照不得影响后续快照与结算（体检 A01）', () => {
+  it('A01-1 attackCells 元素篡改（[0].q=999）：后续快照与基线逐格全等（元素对象已断引用）', () => {
+    const s = armedBoard();
+    const baseline = s.snapshot().attackCells;
+    expect(baseline.length).toBeGreaterThan(0); // 前置：te circle 射程2 非空
+    const s1 = s.snapshot();
+    s1.attackCells[0].q = 999; // 报告 A01 复现手法：经外泄引用改内部对象
+    const s2 = s.snapshot();
+    expect(s2.attackCells).toEqual(baseline); // 修复前：s2.attackCells[0].q 同步变 999
+  });
+
+  it('A01-2 attackCells 结构篡改（push/length=0）：后续快照长度与内容不变（数组已断引用）', () => {
+    const s = armedBoard();
+    const baseline = s.snapshot().attackCells;
+    const s1 = s.snapshot();
+    s1.attackCells.push({ q: 999, r: 999 }); // 伪造高亮格
+    const s3 = s.snapshot();
+    expect(s3.attackCells).toHaveLength(baseline.length);
+    expect(s3.attackCells).toEqual(baseline);
+    // length=0 手法单独验证（同一数组二次取证）
+    const s4 = s.snapshot();
+    s4.attackCells.length = 0; // 报告原文复现：满条激活 te 后置空 → 修复前下一次快照长度即 0
+    const s5 = s.snapshot();
+    expect(s5.attackCells).toEqual(baseline);
+  });
+
+  it('A01-3 篡改不反向影响 cast 结算：清空快照高亮后真射程格仍受理；push 假格后 cast 假格 rejected(range)（结算恒读内部唯一真值）', () => {
+    // 臂一：展示端清空快照 attackCells，cast 到真实射程内敌格 → 正常受理结算（病灶③显示=校验=结算内部同源不破坏）
+    const hit = armedBoard();
+    const e0cell = hit.snapshot().actors.find((a) => a.id === 'e0')!.pos;
+    const tampered1 = hit.snapshot();
+    tampered1.attackCells.length = 0; // 篡改快照
+    const hp0 = eu(hit).hp;
+    expect(hit.submit({ type: 'cast', to: e0cell, skillId: 'te' })).toBe(true);
+    expect(hit.events.slice(-3).map((e) => e.type)).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^(skill|miss)$/)]),
+    );
+    expect(eu(hit).hp).toBeLessThanOrEqual(hp0);
+    // 臂二：向快照 push 假格 {999,999}，cast 该假格 → rejected(range)（展示端无法把非法格拉进射程）
+    const air = armedBoard();
+    const tampered2 = air.snapshot();
+    tampered2.attackCells.push({ q: 999, r: 999 });
+    const n0 = air.events.length;
+    expect(air.submit({ type: 'cast', to: { q: 999, r: 999 }, skillId: 'te' })).toBe(false);
+    expect(air.events.slice(n0)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'range' }));
+  });
+
+  it('A01-4 moveCells 轻功金格隔离：元素+结构篡改后后续快照与基线全等；伪金格 move → rejected(invalid)（submit 校验读内部集合）', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, skills: [qingSkill()] }), [
+      unit({ id: 'e0', side: 'enemy' }),
+    ]);
+    expect(runToPending(s)).toBe(true);
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    expect(s.snapshot().moveKind).toBe('jump');
+    const baseline = s.snapshot().moveCells;
+    expect(baseline.length).toBeGreaterThan(0); // 前置：jimin 200 金格非空
+    const s1 = s.snapshot();
+    s1.moveCells[0].q = 999; // 元素篡改
+    s1.moveCells.push({ q: 999, r: 999 }); // 伪造金格
+    s1.moveCells.length = 0; // 清空
+    expect(s.snapshot().moveCells).toEqual(baseline); // 三手法后仍全等
+    // 伪金格不可提交：集合判定走内部 selection.legalCells（:267 出口断引用不影响校验同源）
+    const n0 = s.events.length;
+    expect(s.submit({ type: 'move', to: { q: 999, r: 999 } })).toBe(false);
+    expect(s.events.slice(n0)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+  });
+
+  it('A01-5 moveCells 无选中绿格隔离：篡改返回数组后下一次快照仍 ≡ 同参 reachable 全集', () => {
+    const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player' }), [unit({ id: 'e0', side: 'enemy' })]);
+    expect(runToPending(s)).toBe(true);
+    const expected = reachable(pu(s).hex, movePower(pu(s).skills), s._debug.units.filter((u) => !u.dead).map((u) => u.hex), inFieldOf(s));
+    const s1 = s.snapshot();
+    expect(s1.moveCells).toEqual(expected); // 前置：绿格=可达全集（MV-0 恒等式）
+    s1.moveCells.length = 0;
+    s1.moveCells.push({ q: 999, r: 999 });
+    expect(s.snapshot().moveCells).toEqual(expected); // 每次快照独立复制，篡改不外溢
+  });
+
+  it('A01-6 其余快照数组字段现状锁：actors[].pos/heroSkills 每帧新建对象，篡改不外溢（防回归）', () => {
+    const s = armedBoard(); // p 带 te → heroSkills 长度 1
+    const baselineActors = s.snapshot().actors;
+    expect(s.snapshot().heroSkills).toHaveLength(1);
+    const s1 = s.snapshot();
+    s1.actors.find((a) => a.id === 'p')!.pos.q = 999;
+    s1.heroSkills[0].id = 'hacked';
+    s1.actors[0].statusIcons.push('hacked' as never);
+    const s2 = s.snapshot();
+    expect(s2.actors).toEqual(baselineActors);
+    expect(s2.heroSkills[0].id).toBe('te');
+    expect(s2.actors.every((a) => a.statusIcons.length === 0)).toBe(true);
+  });
+});
+
+describe('[A02] faceTargetOf 非空守卫：空集 fail-fast、非空零扰动、空放臂不误伤（体检 A02 + FACE-1 备忘合并）', () => {
+  it('A02-1 空数组直接调用 → 抛 Error 消息含 "faceTargetOf: empty targets"（经 _debug 测试钩子直呼）', () => {
+    const s = castBoard();
+    expect(() => s._debug.faceTargetOf([])).toThrow('faceTargetOf: empty targets');
+  });
+
+  it('A02-2 非空调用守卫零扰动：单目标返回该 runner 本体（引用恒等，rng 零消费路径）', () => {
+    const s = castBoard();
+    const e0 = eu(s);
+    expect(s._debug.faceTargetOf([e0])).toBe(e0); // ties==1 早退分支原样
+  });
+
+  it('A02-3 ATK-6 空放臂不误触发守卫：敌出射程局 cast 空格仍受理（true+skill 无 targetId）——length>0 守卫与空放臂互指的行为证据', () => {
+    const air = castBoard(11); // e0(11,8) 出 te 射程（cube 4 > 2）→ cast=真空放，targets.length===0 不进 resolveAoe
+    expect(air.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    const tail0 = air.events.length;
+    expect(air.submit({ type: 'cast', to: offsetToAxial(6, 8), skillId: 'te' })).toBe(true); // 不抛
+    const tail = air.events[air.events.length - 1];
+    expect(tail.type).toBe('skill');
+    expect('targetId' in tail).toBe(false); // 空放事件形状不变
+    expect(air.events.length).toBe(tail0 + 1);
+  });
+});
+
+describe('[A03] 入口运行时校验：非法输入 fail-fast 抛 Error（体检 A03 · PM 裁定：不静默吞不兜底）', () => {
+  it('A03-1 tick 非法 dt（NaN/Infinity/-1/-0.001）各抛错且抛后 session 状态无损（clock 不动、后续合法 tick 正常）', () => {
+    const s = castBoard();
+    const c0 = s._debug.clock();
+    for (const bad of [Number.NaN, Infinity, -1, -0.001]) {
+      expect(() => s.tick(bad)).toThrow(/tick: dt must be a finite non-negative number/);
+    }
+    expect(s._debug.clock()).toBe(c0); // fail-fast 零半写
+    // 后续合法 tick 正常：auto 局时钟照常推进（castBoard 手动局处 pending 态，BAR-4 冻结时钟不可作推进证据）
+    const auto = makeSession(13, 'auto', unit({ id: 'p', side: 'player' }), [unit({ id: 'e0', side: 'enemy' })]);
+    expect(auto._debug.clock()).toBe(0);
+    auto.tick(0.001);
+    expect(auto._debug.clock()).toBeCloseTo(0.001, 10);
+  });
+
+  it('A03-2 边界合法：tick(0) 不抛且零前进（clock/bar 均不动）——「非负有限」收下界', () => {
+    const s = castBoard();
+    const c0 = s._debug.clock();
+    const bar0 = pu(s).bar;
+    expect(() => s.tick(0)).not.toThrow();
+    expect(s._debug.clock()).toBe(c0);
+    expect(pu(s).bar).toBe(bar0);
+  });
+
+  it('A03-3 阵容 id 重复 → 抛：玩家与敌重名、敌间重名各报 "duplicate combatant id"', () => {
+    expect(() =>
+      makeSession(13, 'manual', unit({ id: 'p', side: 'player' }), [unit({ id: 'p', side: 'enemy' })]),
+    ).toThrow('createHexBattle: duplicate combatant id "p"');
+    expect(() =>
+      makeSession(13, 'manual', unit({ id: 'p', side: 'player' }), [
+        unit({ id: 'e0', side: 'enemy' }),
+        unit({ id: 'e0', side: 'enemy' }),
+      ]),
+    ).toThrow('createHexBattle: duplicate combatant id "e0"');
+  });
+
+  it('A03-4 敌数超出生格容量 → 抛：100 敌报 "spawn capacity"；精确边界=容量恰收、容量+1 抛、满容量出生格两两互异', () => {
+    // 测试侧独立推导容量：敌锚=offset(11,2)（D1 SP-1），容量=可动区内锚距 ≤3 的格数
+    const anchor = offsetToAxial(11, 2);
+    const cap = (() => {
+      let n = 0;
+      for (let row = FIELD_ROW_MIN; row <= FIELD_ROW_MAX; row++) {
+        for (let col = FIELD_COL_MIN; col <= FIELD_COL_MAX; col++) {
+          if (cubeDistance(anchor, offsetToAxial(col, row)) <= 3) n++;
+        }
+      }
+      return n;
+    })();
+    expect(cap).toBeGreaterThanOrEqual(6); // 前置：合法 1~6 敌基线恒在容量内
+    // 超容量（报告复现输入 100 敌）
+    const many = Array.from({ length: 100 }, (_, i) => unit({ id: `e${i}`, side: 'enemy' }));
+    expect(() => makeSession(13, 'manual', unit({ id: 'p', side: 'player' }), many)).toThrow(
+      /createHexBattle: enemy count 100 exceeds spawn capacity/,
+    );
+    // 精确边界：容量=满编受理（出生格互异）、容量+1=抛
+    const full = Array.from({ length: cap }, (_, i) => unit({ id: `e${i}`, side: 'enemy' }));
+    const ok = makeSession(13, 'manual', unit({ id: 'p', side: 'player' }), full);
+    expect(ok._debug.units).toHaveLength(cap + 1);
+    const spawns = ok._debug.units.map((u) => `${u.hex.q},${u.hex.r}`);
+    expect(new Set(spawns).size).toBe(spawns.length); // 出生格两两互异（shuffleTake 不重叠的容量前提）
+    const over = Array.from({ length: cap + 1 }, (_, i) => unit({ id: `e${i}`, side: 'enemy' }));
+    expect(() => makeSession(13, 'manual', unit({ id: 'p', side: 'player' }), over)).toThrow(
+      new RegExp(`createHexBattle: enemy count ${cap + 1} exceeds spawn capacity ${cap}`),
+    );
+  });
+
+  it('A03-5 合法 6 敌基线不受影响：auto 局跑到终局零异常、phase ∈ won/lost（core rollEnemyCount 上限档）', () => {
+    const s = makeSession(7, 'auto', unit({ id: 'p', side: 'player' }), [
+      unit({ id: 'e0', side: 'enemy' }),
+      unit({ id: 'e1', side: 'enemy' }),
+      unit({ id: 'e2', side: 'enemy' }),
+      unit({ id: 'e3', side: 'enemy' }),
+      unit({ id: 'e4', side: 'enemy' }),
+      unit({ id: 'e5', side: 'enemy' }),
+    ]);
+    autoTillEnd(s);
+    expect(['won', 'lost']).toContain(s.phase);
+  });
+});

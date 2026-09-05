@@ -148,6 +148,14 @@ export interface HexBattleOptions {
 
 // ---------- 工厂 ----------
 
+/** 【体检 A01 · 快照出口防御性复制】数组浅拷贝 + 逐元素 {...p}——HexPos={q,r} 字面量两层即断
+ * 引用（报告 A01：单纯浅复制不能隔离元素修改），禁深递归（快照每帧重建，渲染热路径零浪费）。
+ * 只在快照出口调用；selection.legalCells 内部仍是唯一真值（病灶③「显示=校验=结算」三同源不
+ * 破坏：submit 校验与 cast 结算照读内部数组，仅快照出口断引用，展示端无法反向影响合法性）。 */
+function copyCells(cells: HexPos[]): HexPos[] {
+  return cells.map((p) => ({ ...p }));
+}
+
 export function createHexBattle(opts: HexBattleOptions) {
   // SP-2 确定性：单 rng 流、消费顺序固定（我方出生→敌方出生→战斗掷骰）
   const rng: Rng = makeRng(opts.seed ?? 20260902);
@@ -181,6 +189,23 @@ export function createHexBattle(opts: HexBattleOptions) {
   const ANCHOR_ENEMY = offsetToAxial(11, 2);
   const spawnBand = (anchor: HexPos): HexPos[] =>
     zoneCells([FIELD_COL_MIN, FIELD_COL_MAX], [FIELD_ROW_MIN, FIELD_ROW_MAX]).filter((p) => cubeDistance(anchor, p) <= 3);
+
+  // ---- 体检 A03 入口运行时校验（PM 裁定：非法输入 fail-fast 抛 Error，不静默吞不兜底） ----
+  // 置于任何 rng 消费/出生结算之前：坏输入零副作用（确定性契约不受校验影响）。
+  // 合法 1~6 敌基线（core rollEnemyCount 上限）远小于出生带容量，运算次序零变更。
+  {
+    const seenIds = new Set<string>();
+    for (const c of [opts.player, ...opts.enemies]) {
+      if (seenIds.has(c.id)) throw new Error(`createHexBattle: duplicate combatant id "${c.id}"`);
+      seenIds.add(c.id);
+    }
+    const enemyCapacity = spawnBand(ANCHOR_ENEMY).length;
+    if (opts.enemies.length > enemyCapacity) {
+      throw new Error(
+        `createHexBattle: enemy count ${opts.enemies.length} exceeds spawn capacity ${enemyCapacity}`,
+      );
+    }
+  }
 
   const shuffleTake = (cells: HexPos[], n: number): HexPos[] => {
     const a = cells.slice();
@@ -420,6 +445,11 @@ export function createHexBattle(opts: HexBattleOptions) {
    * 固定在逐目标循环之前（=本次施放首次掷骰之前，§二.2 SP-2 时序论证：消费计数为状态
    * 确定函数，同 seed 双场逐位全同）。 */
   function faceTargetOf(actor: Runner, targets: Runner[]): Runner {
+    // 【体检 A02 · FACE-1 备忘合并】入口非空断言（PM 裁定：空放路径不得静默吞——空输入旧路径
+    // 会消费 1 次 rng 并在 resolveAoe 尾部取 .hex 崩溃）。正常两调用链均不可达空：cast 臂被
+    // submit 的 targets.length>0 守卫滤空（ATK-6 空放走 else 臂镜像结算，不经本函数）；AI 臂
+    // planSkill 只返回非空计划。两守卫与本断言互为注释锚点，禁把空 AOE 静默当空放。
+    if (targets.length === 0) throw new Error('faceTargetOf: empty targets');
     let dmin = Infinity;
     for (const t of targets) {
       const d = cubeDistance(actor.hex, t.hex);
@@ -582,6 +612,12 @@ export function createHexBattle(opts: HexBattleOptions) {
     phase === 'fighting' && mode === 'manual' && !player.dead && player.bar >= BAR.max;
 
   function tick(realDtSec: number): void {
+    // 【体检 A03 入口校验 · PM 裁定 fail-fast】非有限或负 dt 直接抛（宿主边界坏输入禁静默禁兜底：
+    // NaN 曾直乘速率把 clock/actionBar 写成 NaN 且不可恢复）。校验先于 phase 门——终局后坏输入
+    // 同样暴露；合法 0 dt 不受影响（零前进仍走后续逻辑，既有行为零变更）。
+    if (!Number.isFinite(realDtSec) || realDtSec < 0) {
+      throw new Error(`tick: dt must be a finite non-negative number, got ${realDtSec}`);
+    }
     if (phase !== 'fighting') return;
     const speed = speedFast ? SPEED_FACTOR.fast : SPEED_FACTOR.normal;
     const dt = realDtSec * speed;
@@ -815,6 +851,7 @@ export function createHexBattle(opts: HexBattleOptions) {
       tickCooldowns(player); // 读后递减，与 attack 分支同位（四查后、结算前）
 
       if (targets.length > 0) {
+        // 空集禁入 resolveAoe（faceTargetOf 入口断言 fail-fast）——空放=下方 else 臂（ATK-6 合法施放），两处互指
         resolveAoe(player, s, targets); // ★ 逐目标独立掷骰全额伤害，资源只在首目标扣一次；
         // ★ FACE-1：朝向由 resolveAoe 内 faceTarget 定版（朝最近受击敌）——v2.2 T22 落库的
         // faceToward(player, req.to)「点击格定版」随规格 v2.3 FACE-1 废止，此处不再覆盖
@@ -839,9 +876,13 @@ export function createHexBattle(opts: HexBattleOptions) {
   function snapshot(): BattleSnapshot {
     const pending = pendingInputNow();
     const turnId = pending ? player.id : lastActedId;
-    const moveCells = pending ? legalMoveCells() : [];
+    // 【体检 A01】moveCells/attackCells 出口防御性复制（:267/:843 原直泄 selection.legalCells
+    // 内部引用——展示端篡改快照曾可反向影响 submit 校验与 cast 结算目标）。
+    // 其余数组字段既有事实=每帧新建对象（actors/heroSkills 均 map 产生、pos={...hex}、
+    // statusIcons=[] 字面量），本就无引用外泄，用例 A01-6 锁现状防回归。
+    const moveCells = pending ? copyCells(legalMoveCells()) : [];
     const attackCells =
-      pending && selection?.kind === 'attack' ? selection.legalCells : [];
+      pending && selection?.kind === 'attack' ? copyCells(selection.legalCells) : [];
     const heroSkills: SkillButtonInfo[] = player.dead
       ? []
       : player.skills.map((s) => {
@@ -906,6 +947,9 @@ export function createHexBattle(opts: HexBattleOptions) {
       clock: () => t,
       player: () => player,
       selection: () => selection,
+      // 【体检 A02 测试钩子】faceTargetOf 是闭包内函数、生产调用面不可达空（两守卫滤空）——
+      // 暴露 player 侧单参视图供守卫直呼断言（空数组抛错/非空返回本体），零生产行为面变化。
+      faceTargetOf: (targets: Runner[]) => faceTargetOf(player, targets),
     },
   };
 }
