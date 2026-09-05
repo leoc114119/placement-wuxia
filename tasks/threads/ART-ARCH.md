@@ -75,3 +75,7 @@ Leo 复看施放第三帧，指出角色自身右手/动作臂偏长。已用原
 ### H15 · 09-05 · Codex 美术窗口
 
 Leo 确认收短版 `cast_right_3`。已覆盖正式 `assets/characters/hero/battle45/cast_right_3.png`；规格复核通过：RGBA、240×320、透明 alpha、bbox 13,44–197,300。T45 批 1a 帧产出闭环完成，尚未提交/发 delivery。
+
+### H16 · 09-05 · Codex → 研发线
+
+批 1a 已提交并推送 GitHub：commit `c015ed9e409fbd6c998127ac6dc299d133baff1f`；projbus delivery `seq=22`、messageId `584b4c4457024256a18ed27bc16e29da` 已发给 `rd`，请求第二道规格门检。交付 manifest 标记 `specGate=pass`、`integrationGate=not_handed_off`，等待研发线 fetch 后回传门检结论。
