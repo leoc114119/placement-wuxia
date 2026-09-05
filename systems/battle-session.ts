@@ -537,7 +537,13 @@ export function createHexBattle(opts: HexBattleOptions) {
     for (const s of usable) {
       const n = skillRange(s);
       const shape = rangeShapeOf(s.weapon ?? actor.weapon ?? 'fist');
-      const targets = foesOf(actor).filter((f) => targetInRange(actor, f, n, shape));
+      // 【AI-1 v2.4】射程判定与玩家 activate（:324 rangeCells 唯一产生点）完全同源：格集合成员判定
+      // （ray=六向直线/cone=扇区），禁 targetInRange 的仅距离松判——消除「AI 打得到玩家打不到」的
+      // 格子分野（报告 Q01 反例：Δ(1,1) cube 距2 不在六向 ray 集，松判曾纳之）。SP-2：同 seed 双场
+      // 同函数同参 → 射程集合必然全等。circle/cone 与旧判定数学等价，ray 收紧即本卡全部行为变更；
+      // targetInRange 本体不动（普攻 :504/:551/:778/:801 四处消费点已验收行为零变更）。
+      const cells = rangeCells(actor.hex, shape, n, actor.hexFacing, inField);
+      const targets = foesOf(actor).filter((f) => cells.some((p) => hexEq(p, f.hex)));
       if (targets.length > 0) return { skill: s, targets };
     }
     return null;
@@ -713,6 +719,15 @@ export function createHexBattle(opts: HexBattleOptions) {
     }
     if (phase !== 'fighting') return false;
     if (req.type === 'selectSkill') {
+      // 【GATE-1 v2.4】入口门与 SEL-1 同门（manual + 条满 + 我方存活；phase 已由上方门保证）——
+      // 不满足发 rejected 并拒绝激活，禁静默激活（报告 Q03：原实现在 pendingInputNow 共享门之前
+      // 直通 activate，条未满/auto 均可静默激活）。API 级兜底：UI 层既有门不受影响，正常路径零变化。
+      // reason 分派：mode=资格层优先（非手动即无输入态资格，无论条态）→ 'mode'；否则条未满 → 'bar'。
+      // 「我方存活」在 manual 下不可达为假（dead 即 checkEnd 置 lost、被上方 phase 门拦截），不单列。
+      if (!pendingInputNow()) {
+        emit({ type: 'rejected', actorId: player.id, reason: mode === 'manual' ? 'bar' : 'mode' });
+        return false;
+      }
       return activate(req.skillId); // SEL-2 互斥 toggle / SEL-6 置灰拒激活（不消耗预算）
     }
     if (req.type === 'cancelSkill') {

@@ -13,7 +13,7 @@ import {
   type HexBattleSession,
 } from '../systems/battle-session';
 import { makeRng } from '../systems/battle-core';
-import { axialToOffset, cubeDistance, hexNeighbors, jumpReachable, movePower, offsetToAxial, reachable } from '../systems/hex';
+import { axialToOffset, cubeDistance, HEX_DIRS, hexNeighbors, jumpReachable, movePower, offsetToAxial, reachable } from '../systems/hex';
 import type { CombatantInput, SkillDef } from '../types';
 
 const DT = 0.1;
@@ -1600,5 +1600,135 @@ describe('[A03] 入口运行时校验：非法输入 fail-fast 抛 Error（体�
     ]);
     autoTillEnd(s);
     expect(['won', 'lost']).toContain(s.phase);
+  });
+});
+
+// ══════════ AI-1 / GATE-1(规格 v2.4 新增两条 · 体检 Q01/Q03 · Leo 裁决落卡) ══════════
+// AI-1:AI 出技射程过滤改用与玩家 activate 完全同源的 rangeCells 格集合成员判定(ray=六向直线/
+// cone=扇区,禁 targetInRange 仅距离松判);GATE-1:selectSkill 入口门与 SEL-1 同门,拒绝可观测。
+
+/** AI-1 白盒局:报告 Q01 反例原点 p(3,8)(axial -1,8),staff 技(ray 射形,tier1 半径2);
+ * 敌位入参 [col,row][](all 声明序)。auto=托管出技局 / manual=SP-2 双场对照臂。 */
+function aiRayBoard(enemySpots: Array<[number, number]>, mode: 'auto' | 'manual' = 'auto', seed = 7): HexBattleSession {
+  const p = unit({
+    id: 'p', side: 'player', jimin: 200, weapon: 'staff',
+    skills: [teSkill({ weapon: 'staff', level: 20 })],
+  });
+  const s = makeSession(seed, mode, p, enemySpots.map(([col, row], i) => unit({ id: `e${i}`, side: 'enemy' })));
+  place(s, 'p', 3, 8);
+  enemySpots.forEach(([col, row], i) => place(s, `e${i}`, col, row));
+  return s;
+}
+
+/** GATE-1 手动局:p(7,8) te level20(sword circle)+e0(9,8),白盒布点(条态/模式由用例控制) */
+function gateBoard(mode: 'auto' | 'manual'): HexBattleSession {
+  const p = unit({
+    id: 'p', side: 'player', jimin: 200, weapon: 'sword', neili: 50, maxNeili: 50,
+    skills: [teSkill({ level: 20 })],
+  });
+  const s = makeSession(13, mode, p, [unit({ id: 'e0', side: 'enemy' })]);
+  place(s, 'p', 7, 8);
+  place(s, 'e0', 9, 8);
+  return s;
+}
+
+const targetIds = (s: HexBattleSession, actorId: string) =>
+  s.events
+    .filter((e) => e.actorId === actorId && (e.type === 'skill' || e.type === 'miss'))
+    .map((e) => (e as { targetId?: string }).targetId);
+
+describe('[AI-1] AI 出技射形同规则(规格 v2.4 · 体检 Q01:禁仅距离松判)', () => {
+  it('AI1-1 报告反例复现:e0(4,9) cube 距2 但 Δ(1,1) ∉ 六向 ray 集 → AI 出技过滤后不含该格(首动臂=普攻非 te 技,全窗零 te 出技);修正前距离松判必纳之出技', () => {
+    const s = aiRayBoard([[4, 9]]);
+    // 布点自检(防 offset 换算漂移):cube 距恰 2、Δ 与 HEX_DIRS 任一向均不共线同向
+    const pHex = pu(s).hex;
+    const eHex = eu(s).hex;
+    expect(cubeDistance(pHex, eHex)).toBe(2);
+    const d = { q: eHex.q - pHex.q, r: eHex.r - pHex.r };
+    expect(HEX_DIRS.some((k) => d.q * k.r - d.r * k.q === 0 && d.q * k.q + d.r * k.r > 0)).toBe(false);
+    // tick 至 p 首个结算事件即停(jimin200 玩家先动)。臂级说明:basicRange(staff)=2 普攻够到
+    // cube2 反例格 → 修正后首动=普攻臂(普攻射程不在本卡,行为保留);修正前 planSkill 松判
+    // 纳 e0 → 首动=te 出技臂。两臂以「首个结算事件非出技」区分,出技过滤生效为核心断言。
+    let i0 = -1;
+    for (let i = 0; i < 1500 && i0 < 0; i++) {
+      s.tick(DT);
+      i0 = s.events.findIndex((e) => e.actorId === 'p' && ['skill', 'miss', 'basic'].includes(e.type));
+    }
+    expect(i0).toBeGreaterThanOrEqual(0);
+    const first = s.events[i0];
+    expect(first.type === 'basic' || first.type === 'miss').toBe(true); // 首动臂=普攻(非出技);修正前此红(=skill)
+    expect((first as { skillId?: string | null }).skillId ?? null).toBeNull();
+    for (const e of s.events) {
+      if (e.actorId === 'p' && (e.type === 'skill' || e.type === 'miss')) expect(e.skillId).not.toBe('te');
+    }
+  });
+
+  it('AI1-2 对照·真射线同距格照常纳入:e0(5,8) Δ(2,0) ∈ ray 半径2 集 → AI 照常出 te 技(targetId=e0);修正前后均绿(两判在此等价)', () => {
+    const s = aiRayBoard([[5, 8]]);
+    let i0 = -1;
+    for (let i = 0; i < 1500 && i0 < 0; i++) {
+      s.tick(DT);
+      i0 = s.events.findIndex((e) => e.actorId === 'p' && (e.type === 'skill' || e.type === 'miss'));
+    }
+    expect(i0).toBeGreaterThanOrEqual(0);
+    const first = s.events[i0];
+    expect(first.skillId).toBe('te'); // planSkill 臂先于普攻/位移
+    expect((first as { targetId?: string }).targetId).toBe('e0');
+  });
+
+  it('AI1-3 SP-2 双场射程集合全等:同 seed 同布点手动 attackCells∩敌格 ≡ 托管 AI 受击目标序(逐位全等,均不含反例格敌 e1)', () => {
+    const spots: Array<[number, number]> = [[5, 8], [4, 9], [4, 6]]; // e0 ∈ray(Δ2,0) / e1 反例 ∉ray(Δ1,1) / e2 ∈ray(Δ2,-2,东北射线格,可动区 col≥4)
+    // 手动臂:高亮(显示)=rangeCells 真值 → cast 射程内空格 (4,8)(p 正东 Δ(1,0))
+    const m = aiRayBoard(spots, 'manual');
+    ready(m);
+    expect(m.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    const cells = m.snapshot().attackCells;
+    const cellHas = (id: string) => {
+      const h = m._debug.units.find((u) => u.id === id)!.hex;
+      return cells.some((c) => c.q === h.q && c.r === h.r);
+    };
+    expect(cellHas('e0')).toBe(true);
+    expect(cellHas('e2')).toBe(true);
+    expect(cellHas('e1')).toBe(false); // 反例格不在玩家高亮(两场全等的基准面)
+    expect(m.submit({ type: 'cast', to: offsetToAxial(4, 8), skillId: 'te' })).toBe(true);
+    // 托管臂:同 seed 同布点,tick 至 p 首出技
+    const a = aiRayBoard(spots, 'auto');
+    let i0 = -1;
+    for (let i = 0; i < 1500 && i0 < 0; i++) {
+      a.tick(DT);
+      i0 = a.events.findIndex((e) => e.actorId === 'p' && (e.type === 'skill' || e.type === 'miss'));
+    }
+    expect(i0).toBeGreaterThanOrEqual(0);
+    expect(targetIds(a, 'p')).toEqual(targetIds(m, 'p')); // 出技受击目标序逐位全等(SP-2)
+    expect(targetIds(a, 'p')).toContain('e0');
+    expect(targetIds(a, 'p')).toContain('e2');
+    expect(targetIds(a, 'p')).not.toContain('e1'); // 反例格敌不受击(修正前距离松判必含 → 此断言修正前红)
+  });
+});
+
+describe('[GATE-1] selectSkill 入口门(规格 v2.4 · 体检 Q03:禁静默激活)', () => {
+  it('GATE1-1 manual 条未满 selectSkill → rejected(\'bar\') 且不激活(修正前静默激活返回 true)', () => {
+    const s = gateBoard('manual'); // place 重置 bar=0,未拉条 → 输入态未就绪
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(false);
+    expect(s.events.some((e) => e.type === 'rejected' && e.reason === 'bar')).toBe(true);
+    expect(s.snapshot().selectedSkill).toBe(null); // 禁静默激活
+    expect(s.snapshot().attackCells).toEqual([]);
+  });
+
+  it('GATE1-2 auto 模式 selectSkill → rejected(\'mode\') 且不激活(模式资格层优先,条满亦拒)', () => {
+    const s = gateBoard('auto');
+    s._debug.units.find((u) => u.id === 'p')!.bar = 100; // 条态拉满仍拒:auto 无输入态资格
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(false);
+    expect(s.events.some((e) => e.type === 'rejected' && e.reason === 'mode')).toBe(true);
+    expect(s.snapshot().selectedSkill).toBe(null);
+  });
+
+  it('GATE1-3 条满+manual 照常激活:返回 true、attackCells 非空、零新增 rejected(UI 正常路径零变化对照)', () => {
+    const s = castBoard(); // 既有辅助:place+ready(条满输入态)
+    const rejectedBefore = s.events.filter((e) => e.type === 'rejected').length;
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.snapshot().selectedSkill).toBe('te');
+    expect(s.snapshot().attackCells.length).toBeGreaterThan(0);
+    expect(s.events.filter((e) => e.type === 'rejected')).toHaveLength(rejectedBefore);
   });
 });

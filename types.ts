@@ -238,8 +238,9 @@ export interface BattleUiEvent {
   crit?: boolean;
   toX?: number;
   toY?: number;
-  /** rejected 专属：拒绝原因（bar=行动条未就绪/重积中；range=目标超出射程；invalid=非法格/目标） */
-  reason?: 'bar' | 'range' | 'invalid';
+  /** rejected 专属：拒绝原因（bar=行动条未就绪/重积中；range=目标超出射程；invalid=非法格/目标；
+   * mode=非手动模式无输入态资格【GATE-1 v2.4 · Leo 09-05 裁决放行本联合扩展，红线豁免随卡留痕】） */
+  reason?: 'bar' | 'range' | 'invalid' | 'mode';
 }
 
 /** 演出层对局结果（结算占位口径：胜负+统计；奖励/疗伤文案占位待 T07） */
