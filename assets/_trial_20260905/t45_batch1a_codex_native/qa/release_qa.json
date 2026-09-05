@@ -1,0 +1,28 @@
+{
+  "jobId": "t45_batch1a_codex_native_20260905",
+  "checkedAt": "2026-09-05",
+  "canvas": [240, 320],
+  "mode": "RGBA",
+  "alpha": "transparent background with non-empty foreground",
+  "baselineY": 300,
+  "visualHeight": 256,
+  "centroidX": "approximately 120",
+  "frames": [
+    "assets/characters/hero/battle45/die_down.png",
+    "assets/characters/hero/battle45/walk_right_1.png",
+    "assets/characters/hero/battle45/walk_right_2.png",
+    "assets/characters/hero/battle45/jump_right_1.png",
+    "assets/characters/hero/battle45/jump_right_2.png",
+    "assets/characters/hero/battle45/atk_right_1.png",
+    "assets/characters/hero/battle45/atk_right_2.png",
+    "assets/characters/hero/battle45/cast_right_1.png",
+    "assets/characters/hero/battle45/cast_right_2.png",
+    "assets/characters/hero/battle45/cast_right_3.png"
+  ],
+  "result": "pass",
+  "notes": [
+    "attack is the Leo-approved two-frame set; legacy atk_right_3 is excluded from this release",
+    "die_down is the approved shared six-direction fallback",
+    "cast_right_3 uses the Leo-approved shortened action arm revision"
+  ]
+}

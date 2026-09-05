@@ -1,0 +1,27 @@
+{
+  "jobId": "t45_batch1a_codex_native_20260905",
+  "task": "T45",
+  "batch": "1a",
+  "source": "Codex native ImageGen",
+  "artifactStage": "release",
+  "visualReview": "selected",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "approvedBy": "Leo",
+  "direction": "right",
+  "frameCount": 10,
+  "frames": [
+    "die_common",
+    "walk_right_1",
+    "walk_right_2",
+    "jump_right_1",
+    "jump_right_2",
+    "atk_right_1",
+    "atk_right_2",
+    "cast_right_1",
+    "cast_right_2",
+    "cast_right_3"
+  ],
+  "contact": "contact/batch1a_release_contact.png",
+  "qa": "qa/release_qa.json"
+}

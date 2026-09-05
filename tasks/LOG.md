@@ -305,3 +305,19 @@
 | 2026-09-05 | ZCode | 🔧 T45 发单笔误勘误 | 发单摘要误写「右系 18 张」（旧普攻三帧×六向口径残留）与 v2.0 全动作集冲突——美术线开工前拦下确认（零疑义纪律执行正确）；已总线确认：按 v2.0 §3 批 0prime 三向待机锚 3 张先行，定锚后 1a/1b/1c 其余 33 张，右系总计 36 张（12 帧×3 向） |
 | 2026-09-05 | Codex（art） | 🎨 T45 批 0' 原生候选完成，待 Leo 目验 | seq=18 确认三向待机锚；right/rightup/rightdown 各完成 1 次原生 img2img + 1 次限定语义去背景，归一后 240×320 RGBA、视觉高 256、脚底 y=300、质心 x=119.8/120.5/119.9；作业包 `assets/_trial_20260905/t45_batch0_codex_native/`，contact 与机械门报告已落盘；未覆盖正式资产，未发 1a。 |
 | 2026-09-05 | Codex（art） | ✅ T45 批 0' Leo 目验通过并入库 | 三向待机锚已写入 `assets/characters/hero/battle45/battle_idle_{right,rightup,rightdown}.png`；作业 manifest 状态 `release/selected/pass/not_handed_off`；待 rd fetch 后接收，未开启 1a。 |
+| 2026-09-05 | Codex（art） | ⏸️ T45 改为逐张确认，先收敛通用 die 帧 | Leo 决定死亡动作只保留一张、六向复用，1a 其余批量帧暂缓；原生去背景尝试改变主体比例/构图，未采纳；源图像素保留的透明候选 `assets/_trial_20260905/t45_die_common_codex_native/normalized/die_common.png` 已落盘，240×320 RGBA、宽210、底线y=300、质心x=119.7，待 Leo 目验。 |
+| 2026-09-05 | Codex（art） | ✅ 通用 die 帧获 Leo 确认并写入正式目录 | 候选透明版本合格，已写入 `assets/characters/hero/battle45/die_down.png`（240×320 RGBA，bbox 25,231–235,300；六向缺向统一回退使用）；未提交/未发交付，1a 其余动作仍暂停。 |
+| 2026-09-05 | Codex（art） | 👀 T45 转入行走帧逐张审看 | 先展示 `walk_right_1` 首轮候选，已从原生双格候选右半格切出并归一为 240×320 RGBA、视觉高256、底线y=300、质心x=119.9；尚未生成第二版或写入正式目录，待 Leo 判步态。 |
+| 2026-09-05 | Codex（art） | 🔧 T45 行走步幅修正并补看双帧相位 | 按 Leo 意见，`walk_right_1` 第 2 次原生编辑已收小步幅；`walk_right_2` 保留首轮候选用于左/右脚交替对照，二者均已归一规格，尚未入正式目录，待继续审看。 |
+| 2026-09-05 | Codex（art） | 🎨 T45 walk_right_2 右脚前候选完成 | 按 Leo 明确的“人物自身右脚在前+同样小步幅”，`walk_right_2` 已完成第 2 次也是最后一次原生编辑；归一规格 240×320 RGBA、视觉高256、底线y=300、质心x=119.6；对照 `assets/_trial_20260905/t45_batch1a_codex_native/contact/walk_pair_attempt2.png`，尚未入正式目录，待目验。 |
+| 2026-09-05 | Codex（art） | 🛑 T45 行走双帧肩高门暂停 | 头顶均 y=44、脚底均 y=300，但躯干/肩部连通块起始行约 y=157 vs y=153，差约4px；为避免循环上下抖动，双帧暂不入库。`walk_right_2` 已耗尽 2 次原生尝试，不再硬凑第三次；未经批准不做程序化硬拼。 |
+
+| 2026-09-05 | Codex（art） | ✅ T45 walk_right_2 协作微调通过并入库 | Leo 放宽协作调试阶段原生尝试上限；连续微调肩线至与 walk_right_1 约 1px 差，保持人物自身右脚在前/小步幅/脚底 y=300；透明化复核通过，正式写入 `assets/characters/hero/battle45/walk_right_2.png`（240×320 RGBA，bbox 37,44–196,300）；未提交/未发 delivery。 |
+
+| 2026-09-05 | Codex（art） | ✅ T45 行走双帧入库；👀 跳跃双帧待目验 | `walk_right_1_attempt2` 透明化复核通过，写入 `assets/characters/hero/battle45/walk_right_1.png`（240×320 RGBA，bbox 39,44–200,300），与已入库 walk_right_2 组成右向行走双帧；`jump_right_1/2` 已切出归一透明候选（视觉高256、底线y=300），对照 `assets/_trial_20260905/t45_batch1a_codex_native/contact/jump_pair_attempt1.png`，未入正式目录。 |
+
+| 2026-09-05 | Codex（art） | ✅ T45 跳跃双帧入库；👀 普攻起手待目验 | Leo 确认 jump_right_1/2 通过：第一帧为静止基础上的明确微屈膝小下沉，第二帧为双手下垂微开、双脚前后错开、微弓腿向右前冲飞；两帧透明化复核后写入 `assets/characters/hero/battle45/jump_right_{1,2}.png`（240×320 RGBA、视觉高256、脚底y=300）。`atk_right_1` 首轮候选已归一透明并生成 idle 对照 `assets/_trial_20260905/t45_batch1a_codex_native/contact/atk_right_1_compare_idle.png`，待目验。 |
+| 2026-09-05 | Codex（art） | ✅ T45 右向普攻双帧入库 | Leo 确认两帧通过：人物自身右手预备于右胸偏下→同手横过衣襟向画面右侧作胸下缘直刺，无武器；已写入 `assets/characters/hero/battle45/atk_right_{1,2}.png`。两图均 240×320 RGBA 透明底、顶端 y=44、脚底 y=300（bbox 45,44–193,300 / 46,44–217,300）；未提交、未发 delivery。 |
+| 2026-09-05 | Codex（art） | ✅ T45 右向施放三帧入库 | Leo 定稿“举起→角色自身左下甩→角色自身右下甩”；空手供渲染层后组武器，双脚固定、头部微侧。`cast_right_{1,2,3}.png` 已写入正式目录，均 240×320 RGBA 透明底、顶端 y=44、脚底 y=300（bbox 47,44–193,300 / 21,44–212,300 / 13,44–197,300）；Leo 指示本轮先停，未提交、未发 delivery。 |
+| 2026-09-05 | Codex（art） | ⏸️ T45 1a 施放第三帧待复核 | Leo 指出 `cast_right_3` 角色自身右手/动作臂偏长；已生成并归一收短候选，三帧对照为 `assets/_trial_20260905/t45_batch1a_codex_native/contact/cast_triplet_attempt5.png`。正式文件暂不覆盖，故 1a 尚未完成。 |
+| 2026-09-05 | Codex（art） | ✅ T45 批 1a 帧产出完成 | Leo 确认收短版 `cast_right_3`；已覆盖正式 `assets/characters/hero/battle45/cast_right_3.png`。规格复核通过：RGBA、240×320、透明 alpha、bbox 13,44–197,300。未提交/发 delivery，待后续研发规格门检。 |

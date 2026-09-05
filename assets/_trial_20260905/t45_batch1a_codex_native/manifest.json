@@ -1,0 +1,91 @@
+{
+  "jobId": "t45_batch1a_codex_native_20260905",
+  "task": "T45",
+  "batch": "1a",
+  "direction": "right",
+  "source": "Codex native ImageGen",
+  "artifactStage": "release",
+  "visualReview": "selected",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "approvedBy": "Leo",
+  "frameCount": 10,
+  "frames": [
+    {
+      "key": "die_common",
+      "frame": 1,
+      "releasePath": "assets/characters/hero/battle45/die_down.png",
+      "candidatePath": "../t45_die_common_codex_native/normalized/die_common.png",
+      "sha256": "315478da5cc2e5cc4680f60981a596cf7ee876b52e47eb0d987e5968778fc794",
+      "reuse": "six-direction shared fallback"
+    },
+    {
+      "key": "walk_right",
+      "frame": 1,
+      "releasePath": "assets/characters/hero/battle45/walk_right_1.png",
+      "candidatePath": "normalized/walk_right_1_attempt2.png",
+      "sha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff"
+    },
+    {
+      "key": "walk_right",
+      "frame": 2,
+      "releasePath": "assets/characters/hero/battle45/walk_right_2.png",
+      "candidatePath": "normalized/walk_right_2_attempt5.png",
+      "sha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166"
+    },
+    {
+      "key": "jump_right",
+      "frame": 1,
+      "releasePath": "assets/characters/hero/battle45/jump_right_1.png",
+      "candidatePath": "normalized/jump_right_1_attempt3.png",
+      "sha256": "f3e9814bbdc7ac8b9e2ad2d9b8fdd2320502c595302e9d9245a90425004aac4a"
+    },
+    {
+      "key": "jump_right",
+      "frame": 2,
+      "releasePath": "assets/characters/hero/battle45/jump_right_2.png",
+      "candidatePath": "normalized/jump_right_2_attempt2.png",
+      "sha256": "7203581346af8ef67c73429bc71c43f7ef7b894ec253bf9d3582277605999d92"
+    },
+    {
+      "key": "atk_right",
+      "frame": 1,
+      "releasePath": "assets/characters/hero/battle45/atk_right_1.png",
+      "candidatePath": "normalized/atk_right_1_attempt4.png",
+      "sha256": "27e813ac35ffcab7f86b77156fec15e745a45f183f481fcc9d40472a01bc6a13"
+    },
+    {
+      "key": "atk_right",
+      "frame": 2,
+      "releasePath": "assets/characters/hero/battle45/atk_right_2.png",
+      "candidatePath": "normalized/atk_right_2_attempt9_cut.png",
+      "sha256": "949e05763f06f03ef3ae7934e156fc26512d7c9ae26e125b1adea92f678e0ecd"
+    },
+    {
+      "key": "cast_right",
+      "frame": 1,
+      "releasePath": "assets/characters/hero/battle45/cast_right_1.png",
+      "candidatePath": "normalized/cast_right_1_attempt1.png",
+      "sha256": "22bb3f7a7a355bba3440b62f5e60be661c14a3a52246c39ff68634713b3c351d"
+    },
+    {
+      "key": "cast_right",
+      "frame": 2,
+      "releasePath": "assets/characters/hero/battle45/cast_right_2.png",
+      "candidatePath": "normalized/cast_right_2_attempt8.png",
+      "sha256": "a722a1d9faace4cff02d23cac99904b7567c3497dad24e9afb34c5bcb533989a"
+    },
+    {
+      "key": "cast_right",
+      "frame": 3,
+      "releasePath": "assets/characters/hero/battle45/cast_right_3.png",
+      "candidatePath": "normalized/cast_right_3_attempt5.png",
+      "sha256": "9f75dc98916a8a594ca77332ecac7087074098bfe47b6d543227397f516ed20e"
+    }
+  ],
+  "excludedLegacy": [
+    "assets/characters/hero/battle45/atk_right_3.png"
+  ],
+  "qa": "qa/release_qa.json",
+  "contact": "contact/batch1a_release_contact.png"
+}
