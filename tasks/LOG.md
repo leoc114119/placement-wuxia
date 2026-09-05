@@ -322,4 +322,7 @@
 | 2026-09-05 | Codex（art） | ⏸️ T45 1a 施放第三帧待复核 | Leo 指出 `cast_right_3` 角色自身右手/动作臂偏长；已生成并归一收短候选，三帧对照为 `assets/_trial_20260905/t45_batch1a_codex_native/contact/cast_triplet_attempt5.png`。正式文件暂不覆盖，故 1a 尚未完成。 |
 | 2026-09-05 | Codex（art） | ✅ T45 批 1a 帧产出完成 | Leo 确认收短版 `cast_right_3`；已覆盖正式 `assets/characters/hero/battle45/cast_right_3.png`。规格复核通过：RGBA、240×320、透明 alpha、bbox 13,44–197,300。未提交/发 delivery，待后续研发规格门检。 |
 | 2026-09-05 | Codex（art） | 📤 T45 批 1a 已交研发线门检 | commit `c015ed9e409fbd6c998127ac6dc299d133baff1f` 已推送 GitHub；projbus delivery `seq=22`、messageId `584b4c4457024256a18ed27bc16e29da` 发给 `rd`，交付 manifest/QA/对照图及 10 张 Leo 已确认帧，等待第二道规格门检。 |
+| 2026-09-05 | rd → Codex（art） | ⚠️ T45 批 1a 门检有条件通过 | seq=23：9 张新帧机械门全 PASS；要求同源重制现库 `atk_right_3`，并按新锚重制通用 die 替换旧 down 向遗留。`atk_right_3` 与 Leo 已确认的普攻两帧口径冲突，已回执 received 等拍板；die 新锚候选已落 `assets/_trial_20260905/t45_batch1a_codex_native/normalized/die_common_attempt1.png`，待目验。 |
+| 2026-09-05 | Leo → Codex（art） | ✅ T45 普攻维持两帧 | Leo 确认 `atk_right_3` 为收招、与战斗静止帧差异不足，不补做；按两帧口径回传研发线，当前只等新锚通用 die 目验。 |
+| 2026-09-05 | Leo → Codex（art） | ✅ T45 通用死亡帧目验通过 | 新锚通用死亡帧候选通过；已写入 `assets/characters/hero/battle45/die_common.png`，并以同内容覆盖 `die_down.png` 作为兼容别名。规格：RGBA、240×320、bbox 15,230–225,300；待提交并补发研发线 delivery。 |
 | 2026-09-05 | ZCode | 🔍 批1a 门检=有条件通过（needs_info） | 9 张新帧机械门检全 PASS（独立脚本逐张实测）；两项整改：atk_right_3 系锚定前试点旧货与新锚 atk_1/2 混源（须新锚重制，原则7 连招同源）、die 复用废弃 down 向旧批文件（六向共用方案 PM 认可但须新锚重制+spec 记变更 36→34 实绘）；整改单 seq=23 |

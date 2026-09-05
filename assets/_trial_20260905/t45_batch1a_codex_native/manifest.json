@@ -14,10 +14,11 @@
     {
       "key": "die_common",
       "frame": 1,
-      "releasePath": "assets/characters/hero/battle45/die_down.png",
+      "releasePath": "assets/characters/hero/battle45/die_common.png",
       "candidatePath": "../t45_die_common_codex_native/normalized/die_common.png",
-      "sha256": "315478da5cc2e5cc4680f60981a596cf7ee876b52e47eb0d987e5968778fc794",
-      "reuse": "six-direction shared fallback"
+      "sha256": "4e05497942f1a2fc0983beb226384ee4ea8273162c65acd95928157d169a309f",
+      "reuse": "six-direction shared common death frame",
+      "compatibilityAlias": "assets/characters/hero/battle45/die_down.png"
     },
     {
       "key": "walk_right",

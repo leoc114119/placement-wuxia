@@ -79,3 +79,15 @@ Leo 确认收短版 `cast_right_3`。已覆盖正式 `assets/characters/hero/bat
 ### H16 · 09-05 · Codex → 研发线
 
 批 1a 已提交并推送 GitHub：commit `c015ed9e409fbd6c998127ac6dc299d133baff1f`；projbus delivery `seq=22`、messageId `584b4c4457024256a18ed27bc16e29da` 已发给 `rd`，请求第二道规格门检。交付 manifest 标记 `specGate=pass`、`integrationGate=not_handed_off`，等待研发线 fetch 后回传门检结论。
+
+### H17 · 09-05 · 研发线门检回执与整改
+
+`rd` 回执（seq=23）判定批 1a 有条件通过：9 张新帧机械门全 PASS；要求同源重制现库 `atk_right_3`，并以新锚重制通用死亡帧替换旧 down 向遗留。`atk_right_3` 与 Leo 已确认的普攻两帧口径冲突，已回执 `received` 并停等拍板；死亡帧已用新待机锚+既有躺平构图完成原生候选 `assets/_trial_20260905/t45_batch1a_codex_native/normalized/die_common_attempt1.png`，待 Leo 目验。
+
+### H18 · 09-05 · Leo 口径确认
+
+Leo 确认普攻保持两帧；`atk_right_3` 只是收招、与战斗静止帧差异不足，不补做。后续按两帧口径向研发线回传，仅等待新锚通用死亡帧的目验确认。
+
+### H19 · 09-05 · 通用死亡帧定稿
+
+Leo 目验新锚通用死亡帧通过。候选已写入正式 `assets/characters/hero/battle45/die_common.png`；为兼容现有资源键，同内容同步覆盖 `die_down.png`。规格复核通过：RGBA、240×320、bbox 15,230–225,300；待提交并补发研发线 delivery。

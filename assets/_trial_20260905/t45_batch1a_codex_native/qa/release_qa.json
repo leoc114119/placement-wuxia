@@ -8,7 +8,7 @@
   "visualHeight": 256,
   "centroidX": "approximately 120",
   "frames": [
-    "assets/characters/hero/battle45/die_down.png",
+    "assets/characters/hero/battle45/die_common.png",
     "assets/characters/hero/battle45/walk_right_1.png",
     "assets/characters/hero/battle45/walk_right_2.png",
     "assets/characters/hero/battle45/jump_right_1.png",
@@ -22,7 +22,7 @@
   "result": "pass",
   "notes": [
     "attack is the Leo-approved two-frame set; legacy atk_right_3 is excluded from this release",
-    "die_down is the approved shared six-direction fallback",
+    "die_common is the approved shared six-direction frame; die_down is kept as a compatibility alias",
     "cast_right_3 uses the Leo-approved shortened action arm revision"
   ]
 }
