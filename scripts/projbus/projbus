@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+projbus — projbus 消息总线 CLI（宿主 Hook 只调 CLI，SPEC §一"Hook 适配器"）
+子命令：poll-context / turn-completed / reconcile-outbox / send / ack
+与 MCP（projbus_mcp.py）共用同一核心 projbus_core.py。
+
+DB 选择：--db 参数 > 环境变量 PROJBUS_DB > 默认 ~/.projbus/projbus.sqlite。
+git 相关操作（ack 门禁 / reconcile）的仓库根一律由 --repo 参数传入（默认当前目录）。
+"""
+import argparse
+import json
+import os
+import sys
+import time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import projbus_core as core  # noqa: E402
+
+
+def _dump(obj) -> None:
+    print(json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True))
+
+
+def _load_payload(args) -> dict:
+    raw = None
+    if args.payload is not None:
+        raw = args.payload
+    elif args.payload_file:
+        raw = sys.stdin.read() if args.payload_file == "-" else open(
+            args.payload_file, "r", encoding="utf-8").read()
+    if raw is None:
+        raise core.ProjbusError("payload 缺失：用 --payload '<json 对象>' 或 --payload-file PATH（- 为 stdin）")
+    try:
+        obj = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise core.ProjbusError("payload 不是合法 JSON: %s" % e)
+    if not isinstance(obj, dict):
+        raise core.ProjbusError("payload 必须是 JSON 对象")
+    return obj
+
+
+def _split_paths(s):
+    if not s:
+        return None
+    return [x.strip() for x in s.split(",") if x.strip()]
+
+
+# ---------------------------------------------------------------- 子命令
+
+def cmd_send(a) -> int:
+    msg, dup = core.send(db_path=a.db, project_id=a.project_id, sender=a.sender, to=a.to,
+                         kind=a.kind, payload=_load_payload(a),
+                         correlation_id=a.correlation_id, idempotency_key=a.idempotency_key,
+                         commit_sha=a.commit_sha, artifact_paths=_split_paths(a.artifact_paths))
+    _dump({"message_id": msg["message_id"], "seq": msg["seq"], "duplicate": dup,
+           "from": msg["sender"], "to": msg["recipient"], "kind": msg["kind"],
+           "commit_sha": msg["commit_sha"]})
+    return 0
+
+
+def cmd_ack(a) -> int:
+    msg = core.ack(db_path=a.db, message_id=a.message_id, state=a.state,
+                   observed_commit_sha=a.observed_commit_sha, note=a.note, repo_root=a.repo)
+    _dump({"message_id": msg["message_id"], "ack_state": msg["ack_state"],
+           "acked_at": msg["acked_at"], "note": msg["ack_note"],
+           "observed_sha": msg["ack_observed_sha"],
+           "accept_gate": msg.get("accept_gate")})
+    return 0
+
+
+def cmd_poll_context(a) -> int:
+    """输出格式（SPEC §2.6）：未读按 `[seq] from→to kind 主题 (sha)` 单行摘要 + 条数总计；空箱明确 `0 未读`。"""
+    msgs = core.poll(db_path=a.db, recipient=a.to, after_seq=a.after_seq, limit=a.limit,
+                     unack_only=True)
+    if a.json:
+        _dump({"to": a.to, "unread": len(msgs), "messages": msgs})
+        return 0
+    for m in msgs:
+        line = "[%d] %s→%s %s %s" % (m["seq"], m["sender"], m["recipient"], m["kind"],
+                                     core.msg_subject(m))
+        if m["commit_sha"]:
+            line += " (%s)" % m["commit_sha"][:8]
+        print(line)
+    print("共 %d 条未读" % len(msgs) if msgs else "0 未读")
+    return 0
+
+
+def cmd_turn_completed(a) -> int:
+    """turn_completed 脉冲（SPEC §2.2 保证层）：广播给除发送方外的全部注册角色。"""
+    targets = [r for r in core.ROLES if r != a.sender]
+    ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime())
+    results = []
+    for to in targets:
+        key = ("%s:%s" % (a.idempotency_key, to)) if a.idempotency_key \
+            else "turn:%s:%d:%s" % (a.sender, int(time.time() * 1000), to)
+        msg, dup = core.send(db_path=a.db, sender=a.sender, to=to, kind="turn_completed",
+                             payload={"subject": "turn completed: %s" % a.sender,
+                                      "note": a.note, "ts": ts},
+                             idempotency_key=key)
+        results.append({"to": to, "message_id": msg["message_id"], "seq": msg["seq"],
+                        "duplicate": dup})
+    for r in results:
+        print("turn_completed → %s: %s (seq=%d%s)" % (r["to"], r["message_id"], r["seq"],
+                                                      ", 幂等命中" if r["duplicate"] else ""))
+    return 0
+
+
+def cmd_reconcile(a) -> int:
+    summary = core.reconcile_outbox(db_path=a.db, repo_root=a.repo, sender=a.sender,
+                                    handoff_paths=_split_paths(a.paths))
+    _dump(summary)
+    return 0
+
+
+# ---------------------------------------------------------------- argparse
+
+def _add_db(p) -> None:
+    p.add_argument("--db", default=None, help="SQLite 路径（默认 ~/.projbus/projbus.sqlite，"
+                                              "亦可用环境变量 PROJBUS_DB）")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(prog="projbus", description="projbus 跨工具协作消息总线 CLI（SPEC v1.1）")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    p = sub.add_parser("send", help="发消息（幂等键去重 / kind 白名单 / 未注册收件人报错）")
+    p.add_argument("--from", dest="sender", required=True, help="发送方角色（rd/art/arch）")
+    p.add_argument("--to", required=True, help="收件人角色（rd/art/arch）")
+    p.add_argument("--kind", required=True, help="delivery/question/answer/acceptance/turn_completed")
+    p.add_argument("--project-id", default=core.DEFAULT_PROJECT)
+    p.add_argument("--payload", default=None, help="JSON 对象字符串")
+    p.add_argument("--payload-file", default=None, help="JSON 文件路径，'-' 读 stdin")
+    p.add_argument("--correlation-id", default=None)
+    p.add_argument("--idempotency-key", default=None, help="同 (project,to,key) 重复发送只入库一条")
+    p.add_argument("--commit-sha", default=None, help="交付 commit SHA（delivery 惯例携带）")
+    p.add_argument("--artifact-paths", default=None, help="逗号分隔的仓库相对路径")
+    _add_db(p)
+    p.set_defaults(fn=cmd_send)
+
+    p = sub.add_parser("ack", help="ACK 四态；accepted 需过 git 门禁（fetch 后核验 SHA 与 artifact）")
+    p.add_argument("--message-id", required=True)
+    p.add_argument("--state", required=True, help="received/accepted/rejected/needs_info")
+    p.add_argument("--observed-commit-sha", default=None, help="接收方核验到的 SHA（accepted 必填其一）")
+    p.add_argument("--note", default=None)
+    p.add_argument("--repo", default=os.getcwd(), help="仓库根（git 门禁用，默认当前目录）")
+    _add_db(p)
+    p.set_defaults(fn=cmd_ack)
+
+    p = sub.add_parser("poll-context", help="未读消息单行摘要（宿主 Hook 注入上下文用）")
+    p.add_argument("--to", required=True, help="收件人角色")
+    p.add_argument("--after-seq", type=int, default=0)
+    p.add_argument("--limit", type=int, default=50)
+    p.add_argument("--json", action="store_true", help="输出完整消息 JSON（扩展，默认人读摘要）")
+    _add_db(p)
+    p.set_defaults(fn=cmd_poll_context)
+
+    p = sub.add_parser("turn-completed", help="turn_completed 脉冲，广播给其他角色（保证层，SPEC §2.2）")
+    p.add_argument("--from", dest="sender", required=True, help="结束回合的角色")
+    p.add_argument("--note", default=None)
+    p.add_argument("--idempotency-key", default=None, help="自动按收件人加后缀")
+    _add_db(p)
+    p.set_defaults(fn=cmd_turn_completed)
+
+    p = sub.add_parser("reconcile-outbox", help="对账 git 与总线，代发缺失 delivery（自愈，SPEC §2.3）")
+    p.add_argument("--repo", default=os.getcwd(), help="仓库根（默认当前目录）")
+    p.add_argument("--sender", default="rd", help="代发消息的 from 角色（默认 rd）")
+    p.add_argument("--paths", default=",".join(core.DEFAULT_HANDOFF_PATHS),
+                   help="逗号分隔 handoff 路径（默认 tasks/LOG.md,tasks/threads/,assets/）")
+    _add_db(p)
+    p.set_defaults(fn=cmd_reconcile)
+
+    return ap
+
+
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
+    try:
+        return args.fn(args)
+    except core.ProjbusError as e:
+        print("ERROR: %s" % e, file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
