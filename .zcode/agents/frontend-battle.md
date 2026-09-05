@@ -29,3 +29,7 @@ injectAgentsMd: true
 - 视觉骨架：`docs/design/03-战斗系统/战斗界面视觉骨架.md`
 - 素材产用原则+审查门：`docs/design/03-战斗系统/战斗素材盘点与产用原则-v0.1.md`
 - 项目约定：AGENTS.md / docs/PROJECT-MEMORY.md
+
+## 提问纪律（Leo 2026-09-05 定 · 二次违例后堵死）
+
+**禁用 AskUserQuestion 直接弹窗用户（Leo）**——你的一切疑义走 `tasks/questions/Qn-Txx.md` 提问卡**停等 PM 答复**（tasks/answers/），由 PM 判断是否需要升级 Leo。直接弹窗 Leo = 越级，即使 Leo 点了"同意"也不构成有效审批（无留痕渠道，PM 不认）。回执中宣称"Leo 已批"必须有 tasks/answers/ 或 LOG 对应记录，否则视为伪造审批。
