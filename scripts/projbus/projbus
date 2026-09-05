@@ -6,6 +6,8 @@ projbus — projbus 消息总线 CLI（宿主 Hook 只调 CLI，SPEC §一"Hook 
 与 MCP（projbus_mcp.py）共用同一核心 projbus_core.py。
 
 DB 选择：--db 参数 > 环境变量 PROJBUS_DB > 默认 ~/.projbus/projbus.sqlite。
+身份选择：--from / --to 显式参数 > 环境变量 PROJBUS_ACTOR > 报错（必填身份不得静默猜）。
+项目选择：--project-id 显式参数 > 环境变量 PROJBUS_PROJECT_ID > 默认 placement-wuxia。
 git 相关操作（ack 门禁 / reconcile）的仓库根一律由 --repo 参数传入（默认当前目录）。
 """
 import argparse
@@ -49,7 +51,8 @@ def _split_paths(s):
 # ---------------------------------------------------------------- 子命令
 
 def cmd_send(a) -> int:
-    msg, dup = core.send(db_path=a.db, project_id=a.project_id, sender=a.sender, to=a.to,
+    msg, dup = core.send(db_path=a.db, project_id=core.resolve_project_id(a.project_id),
+                         sender=core.resolve_actor(a.sender, "from"), to=a.to,
                          kind=a.kind, payload=_load_payload(a),
                          correlation_id=a.correlation_id, idempotency_key=a.idempotency_key,
                          commit_sha=a.commit_sha, artifact_paths=_split_paths(a.artifact_paths))
@@ -71,10 +74,11 @@ def cmd_ack(a) -> int:
 
 def cmd_poll_context(a) -> int:
     """输出格式（SPEC §2.6）：未读按 `[seq] from→to kind 主题 (sha)` 单行摘要 + 条数总计；空箱明确 `0 未读`。"""
-    msgs = core.poll(db_path=a.db, recipient=a.to, after_seq=a.after_seq, limit=a.limit,
+    to = core.resolve_actor(a.to, "to")
+    msgs = core.poll(db_path=a.db, recipient=to, after_seq=a.after_seq, limit=a.limit,
                      unack_only=True)
     if a.json:
-        _dump({"to": a.to, "unread": len(msgs), "messages": msgs})
+        _dump({"to": to, "unread": len(msgs), "messages": msgs})
         return 0
     for m in msgs:
         line = "[%d] %s→%s %s %s" % (m["seq"], m["sender"], m["recipient"], m["kind"],
@@ -88,14 +92,15 @@ def cmd_poll_context(a) -> int:
 
 def cmd_turn_completed(a) -> int:
     """turn_completed 脉冲（SPEC §2.2 保证层）：广播给除发送方外的全部注册角色。"""
-    targets = [r for r in core.ROLES if r != a.sender]
+    sender = core.resolve_actor(a.sender, "from")
+    targets = [r for r in core.ROLES if r != sender]
     ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime())
     results = []
     for to in targets:
         key = ("%s:%s" % (a.idempotency_key, to)) if a.idempotency_key \
-            else "turn:%s:%d:%s" % (a.sender, int(time.time() * 1000), to)
-        msg, dup = core.send(db_path=a.db, sender=a.sender, to=to, kind="turn_completed",
-                             payload={"subject": "turn completed: %s" % a.sender,
+            else "turn:%s:%d:%s" % (sender, int(time.time() * 1000), to)
+        msg, dup = core.send(db_path=a.db, sender=sender, to=to, kind="turn_completed",
+                             payload={"subject": "turn completed: %s" % sender,
                                       "note": a.note, "ts": ts},
                              idempotency_key=key)
         results.append({"to": to, "message_id": msg["message_id"], "seq": msg["seq"],
@@ -125,10 +130,12 @@ def build_parser() -> argparse.ArgumentParser:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("send", help="发消息（幂等键去重 / kind 白名单 / 未注册收件人报错）")
-    p.add_argument("--from", dest="sender", required=True, help="发送方角色（rd/art/arch）")
+    p.add_argument("--from", dest="sender", default=None,
+                   help="发送方角色（rd/art/arch；缺省读环境变量 PROJBUS_ACTOR）")
     p.add_argument("--to", required=True, help="收件人角色（rd/art/arch）")
     p.add_argument("--kind", required=True, help="delivery/question/answer/acceptance/turn_completed")
-    p.add_argument("--project-id", default=core.DEFAULT_PROJECT)
+    p.add_argument("--project-id", default=None,
+                   help="project_id（缺省读环境变量 PROJBUS_PROJECT_ID，再缺省 placement-wuxia）")
     p.add_argument("--payload", default=None, help="JSON 对象字符串")
     p.add_argument("--payload-file", default=None, help="JSON 文件路径，'-' 读 stdin")
     p.add_argument("--correlation-id", default=None)
@@ -148,7 +155,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(fn=cmd_ack)
 
     p = sub.add_parser("poll-context", help="未读消息单行摘要（宿主 Hook 注入上下文用）")
-    p.add_argument("--to", required=True, help="收件人角色")
+    p.add_argument("--to", default=None,
+                   help="收件人角色（rd/art/arch；缺省读环境变量 PROJBUS_ACTOR）")
     p.add_argument("--after-seq", type=int, default=0)
     p.add_argument("--limit", type=int, default=50)
     p.add_argument("--json", action="store_true", help="输出完整消息 JSON（扩展，默认人读摘要）")
@@ -156,7 +164,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(fn=cmd_poll_context)
 
     p = sub.add_parser("turn-completed", help="turn_completed 脉冲，广播给其他角色（保证层，SPEC §2.2）")
-    p.add_argument("--from", dest="sender", required=True, help="结束回合的角色")
+    p.add_argument("--from", dest="sender", default=None,
+                   help="结束回合的角色（rd/art/arch；缺省读环境变量 PROJBUS_ACTOR）")
     p.add_argument("--note", default=None)
     p.add_argument("--idempotency-key", default=None, help="自动按收件人加后缀")
     _add_db(p)

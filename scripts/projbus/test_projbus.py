@@ -15,6 +15,7 @@ test_projbus.py — projbus 自动化测试（SPEC §一 验收 + §2.6 增补�
   §2.6 reconcile 账实差实证                        → TestReconcile
   §2.6 poll-context 输出格式                       → TestCliSmoke / TestInjectionDefense
   MCP 手搓协议（initialize/tools/list/tools/call） → TestMcpProtocol
+  身份/项目 env 回退（PROJBUS_ACTOR/PROJBUS_PROJECT_ID）→ TestEnvFallback / TestMcpProtocol
   schema 版本/迁移保护/权限 0700/0600              → TestStatusSchemaPerms
 
 所有测试均用临时 DB 路径（参数/env 注入），不污染真实 ~/.projbus。
@@ -38,23 +39,27 @@ import projbus_core as core  # noqa: E402
 PYTHON = sys.executable
 CLI = os.path.join(HERE, "projbus")
 MCP = os.path.join(HERE, "projbus_mcp.py")
-# 子进程环境：剔除 PROJBUS_DB，防止误连真实库；强制 UTF-8 输出
-ENVBASE = {k: v for k, v in os.environ.items() if k != "PROJBUS_DB"}
+# 子进程环境：剔除 PROJBUS_*（DB/身份/项目），防止开发者环境变量污染测试；强制 UTF-8 输出
+ENVBASE = {k: v for k, v in os.environ.items() if not k.startswith("PROJBUS_")}
 ENVBASE["PYTHONIOENCODING"] = "utf-8"
 
 
-def cli_env(db_path=None, home=None) -> dict:
+def cli_env(db_path=None, home=None, actor=None, project_id=None) -> dict:
     env = dict(ENVBASE)
     if db_path:
         env["PROJBUS_DB"] = db_path
     if home:
         env["HOME"] = home
+    if actor:
+        env["PROJBUS_ACTOR"] = actor
+    if project_id:
+        env["PROJBUS_PROJECT_ID"] = project_id
     return env
 
 
-def run_cli(args, db_path=None, home=None, timeout=120):
+def run_cli(args, db_path=None, home=None, actor=None, project_id=None, timeout=120):
     return subprocess.run([PYTHON, CLI] + args, capture_output=True, text=True,
-                          env=cli_env(db_path, home), timeout=timeout)
+                          env=cli_env(db_path, home, actor, project_id), timeout=timeout)
 
 
 def git(repo, *args, timeout=30):
@@ -463,6 +468,88 @@ class TestStatusSchemaPerms(BusTestBase):
         self.assertEqual(len(lines), 2)  # 广播给 art / arch
 
 
+# ---------------------------------------------------------------- 身份/项目 env 回退（PROJBUS_ACTOR / PROJBUS_PROJECT_ID）
+
+class TestEnvFallback(BusTestBase):
+    """D7：CLI 身份解析优先级 = 显式参数 > env PROJBUS_ACTOR > 报错（必填不得静默猜）；
+    project_id = 显式参数 > env PROJBUS_PROJECT_ID > 默认 placement-wuxia。
+    env 只提供取值，注册表校验不放宽（SPEC §2.1：rd/art/arch）。"""
+
+    PAYLOAD = '{"subject": "env 回退"}'
+
+    def test_send_without_from_uses_env_actor(self):
+        r = run_cli(["send", "--to", "rd", "--kind", "question", "--payload", self.PAYLOAD],
+                    db_path=self.db, actor="art")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        out = json.loads(r.stdout)
+        self.assertEqual(out["from"], "art")
+        m = core.get_message(db_path=self.db, message_id=out["message_id"])
+        self.assertEqual(m["sender"], "art")
+        self.assertEqual(m["project_id"], "placement-wuxia")  # 未设 PROJBUS_PROJECT_ID → 默认
+
+    def test_poll_context_without_to_uses_env_actor(self):
+        core.send(db_path=self.db, sender="art", to="rd", kind="question",
+                  payload={"subject": "q1"}, idempotency_key="env-poll-1")
+        r = run_cli(["poll-context"], db_path=self.db, actor="rd")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("art→rd question q1", r.stdout)
+        self.assertIn("共 1 条未读", r.stdout)
+
+    def test_turn_completed_without_from_uses_env_actor(self):
+        r = run_cli(["turn-completed"], db_path=self.db, actor="rd")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        lines = r.stdout.strip().splitlines()      # 广播给 art / arch 两个角色
+        self.assertEqual(len(lines), 2)
+        self.assertIn("turn_completed → art:", lines[0])
+        msgs = core.poll(db_path=self.db, recipient="arch")
+        self.assertEqual(len(msgs), 1)
+        self.assertEqual(msgs[0]["sender"], "rd")
+
+    def test_explicit_arg_beats_env_actor(self):
+        r = run_cli(["send", "--from", "rd", "--to", "art", "--kind", "question",
+                     "--payload", self.PAYLOAD], db_path=self.db, actor="art")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["from"], "rd")
+
+    def test_missing_actor_fails_with_clear_message(self):
+        """env 不设且无显式参数 → 明确报错（含 PROJBUS_ACTOR 指引），三处必填身份全覆盖。"""
+        for args in (["send", "--to", "rd", "--kind", "question", "--payload", self.PAYLOAD],
+                     ["poll-context"],
+                     ["turn-completed"]):
+            r = run_cli(args, db_path=self.db)
+            self.assertEqual(r.returncode, 1, (args, r.stdout, r.stderr))
+            self.assertIn("PROJBUS_ACTOR", r.stderr)
+            self.assertIn("缺少必填身份", r.stderr)
+
+    def test_blank_env_actor_treated_as_unset(self):
+        r = run_cli(["send", "--to", "rd", "--kind", "question", "--payload", self.PAYLOAD],
+                    db_path=self.db, actor="   ")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("PROJBUS_ACTOR", r.stderr)
+
+    def test_env_actor_still_must_be_registered_role(self):
+        """env 提供的取值仍过注册表校验：宿主注入的必须是 rd/art/arch（非宿主名如 codex）。"""
+        r = run_cli(["send", "--to", "rd", "--kind", "question", "--payload", self.PAYLOAD],
+                    db_path=self.db, actor="codex")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("未注册", r.stderr)
+
+    def test_project_id_env_fallback_and_precedence(self):
+        base = ["send", "--from", "art", "--to", "rd", "--kind", "question",
+                "--payload", self.PAYLOAD]
+        # env 设非法 project → 报错：证明 env 被读取且仍走注册表校验
+        r = run_cli(base, db_path=self.db, project_id="other-game")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("未注册 project_id", r.stderr)
+        # 显式参数 > env：env 非法但显式合法 → 成功
+        r = run_cli(base + ["--project-id", "placement-wuxia"],
+                    db_path=self.db, project_id="other-game")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        mid = json.loads(r.stdout)["message_id"]
+        self.assertEqual(core.get_message(db_path=self.db, message_id=mid)["project_id"],
+                         "placement-wuxia")
+
+
 # ---------------------------------------------------------------- 注入防御（§2.6）
 
 class TestInjectionDefense(BusTestBase):
@@ -498,10 +585,11 @@ class TestInjectionDefense(BusTestBase):
 # ---------------------------------------------------------------- MCP 手搓协议（§2.4 / §2.6）
 
 class _McpSession:
-    def __init__(self, db):
+    def __init__(self, db, actor=None, project_id=None):
         self.p = subprocess.Popen([PYTHON, MCP], stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                  env=cli_env(db_path=db), cwd=HERE)
+                                  env=cli_env(db_path=db, actor=actor, project_id=project_id),
+                                  cwd=HERE)
         self.q = queue.Queue()
         threading.Thread(target=self._pump, daemon=True).start()
 
@@ -608,6 +696,32 @@ class TestMcpProtocol(BusTestBase):
                                           "kind": "delivery", "payload": {"subject": "x"}})
             self.assertTrue(r["result"]["isError"])
             self.assertIn("未注册", r["result"]["content"][0]["text"])
+        finally:
+            s.close()
+
+    def test_mcp_env_actor_fallback(self):
+        """D7：宿主 env 注入 PROJBUS_ACTOR 后，tools/call 可不传 from / recipient（poll 同规）。"""
+        s = _McpSession(self.db, actor="art")
+        try:
+            s.rpc({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+            # send 不传 from：sender 取 env（art）
+            r = self._call(s, 2, "send", {"to": "rd", "kind": "question",
+                                          "payload": {"subject": "MCP env 回退"},
+                                          "idempotency_key": "env-mcp-1"})
+            sent = self._result(r)
+            self.assertFalse(sent["duplicate"])
+            self.assertEqual(sent["message"]["sender"], "art")
+            # 造一条发往 art 的消息，再 poll 不传 recipient：取 env（art）
+            self._call(s, 3, "send", {"from": "rd", "to": "art", "kind": "answer",
+                                      "payload": {"subject": "回给 art"},
+                                      "idempotency_key": "env-mcp-2"})
+            r = self._call(s, 4, "poll", {})
+            polled = self._result(r)
+            self.assertEqual([m["sender"] for m in polled["messages"]], ["rd"])
+            # to 仍必填（对端身份不属于调用方，不做 env 回退）
+            r = self._call(s, 5, "send", {"kind": "question", "payload": {"subject": "缺 to"}})
+            self.assertTrue(r["result"].get("isError"))
+            self.assertIn("缺少必填参数: to", r["result"]["content"][0]["text"])
         finally:
             s.close()
 

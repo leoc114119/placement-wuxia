@@ -8,6 +8,9 @@ projbus_mcp.py — projbus MCP stdio 入口（SPEC §一 + §2.4 运行时裁定
   - MCP 只是同一核心的代理接口：业务全在 projbus_core.py（宿主 Hook 走 CLI，不走本文件）
 
 DB 选择：环境变量 PROJBUS_DB > 默认 ~/.projbus/projbus.sqlite。
+身份/项目回退（与 CLI 同规）：send.from / poll.recipient 缺省读环境变量 PROJBUS_ACTOR，
+优先级=显式参数 > env > 报错（必填身份不得静默猜）；send.project_id 缺省读
+PROJBUS_PROJECT_ID > 默认 placement-wuxia。env 值仍过注册表校验（SPEC §2.1）。
 ack accepted 的仓库根由工具参数 repo_root 传入（默认调用方 cwd）。
 """
 import json
@@ -29,36 +32,38 @@ TOOLS = [
         "description": "发送 projbus 消息。kind 白名单=delivery/question/answer/acceptance/turn_completed；"
                        "to 必须是注册角色 rd/art/arch；payload 必须是 JSON 对象且≤16KB"
                        "（验收报告正文不进总线，只传 commit SHA/文件路径/摘要）；"
-                       "同 (project,to,idempotency_key) 重复调用幂等去重。",
+                       "同 (project,to,idempotency_key) 重复调用幂等去重。"
+                       "from 缺省读环境变量 PROJBUS_ACTOR。",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "from": {**_ROLE, "description": "发送方角色"},
+                "from": {**_ROLE, "description": "发送方角色；缺省读环境变量 PROJBUS_ACTOR"},
                 "to": {**_ROLE, "description": "收件人角色"},
                 "kind": {"type": "string", "enum": list(core.KINDS)},
                 "payload": {"type": "object", "description": "JSON 对象；约定含 subject（主题）"},
-                "project_id": {"type": "string", "description": "默认 placement-wuxia"},
+                "project_id": {"type": "string",
+                               "description": "缺省读环境变量 PROJBUS_PROJECT_ID，再缺省 placement-wuxia"},
                 "correlation_id": _S,
                 "idempotency_key": _S,
                 "commit_sha": {"type": "string", "description": "delivery 惯例携带的交付 commit SHA"},
                 "artifact_paths": {"type": "array", "items": _S,
                                    "description": "仓库相对路径列表"},
             },
-            "required": ["from", "to", "kind", "payload"],
+            "required": ["to", "kind", "payload"],
         },
     },
     {
         "name": "poll",
         "description": "非破坏读收件箱：返回 recipient 收件箱中 seq>after_seq 的消息（升序，≤limit 条）；"
-                       "未 ACK 的消息可重复返回。ack 用 ack 工具，四态 received/accepted/rejected/needs_info。",
+                       "未 ACK 的消息可重复返回。ack 用 ack 工具，四态 received/accepted/rejected/needs_info。"
+                       "recipient 缺省读环境变量 PROJBUS_ACTOR。",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "recipient": {**_ROLE, "description": "收件人角色"},
+                "recipient": {**_ROLE, "description": "收件人角色；缺省读环境变量 PROJBUS_ACTOR"},
                 "after_seq": {"type": "integer", "minimum": 0, "default": 0},
                 "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 50},
             },
-            "required": ["recipient"],
         },
     },
     {
@@ -98,10 +103,11 @@ def _require(args: dict, *keys: str) -> None:
 
 
 def tool_send(args: dict) -> dict:
-    _require(args, "from", "to", "kind", "payload")
+    _require(args, "to", "kind", "payload")
     msg, dup = core.send(
-        project_id=args.get("project_id") or core.DEFAULT_PROJECT,
-        sender=args["from"], to=args["to"], kind=args["kind"], payload=args["payload"],
+        project_id=core.resolve_project_id(args.get("project_id")),
+        sender=core.resolve_actor(args.get("from"), "from"),
+        to=args["to"], kind=args["kind"], payload=args["payload"],
         correlation_id=args.get("correlation_id"),
         idempotency_key=args.get("idempotency_key"),
         commit_sha=args.get("commit_sha"),
@@ -110,8 +116,7 @@ def tool_send(args: dict) -> dict:
 
 
 def tool_poll(args: dict) -> dict:
-    _require(args, "recipient")
-    return {"messages": core.poll(recipient=args["recipient"],
+    return {"messages": core.poll(recipient=core.resolve_actor(args.get("recipient"), "recipient"),
                                   after_seq=args.get("after_seq", 0),
                                   limit=args.get("limit", 50))}
 

@@ -23,6 +23,10 @@ projbus 只负责通知、协商与 ACK。不读 transcript、不做 HTTP/wait/�
      （sha 前缀互认），缺则代发（payload 带 reconciled:true，idempotency_key=reconcile:<sha>:<to>，
      广播给除发送方外全部角色），全部处理完才推进游标；中途失败不推游标，靠幂等键安全重试。
   D6 运行时 = Python3 标准库零依赖（SPEC §2.4 裁定：手搓 MCP，禁引包）。
+  D7 身份/项目 env 回退（CLI/MCP 入口层共用 resolve_actor/resolve_project_id）：
+     --from/--to(recipient) 缺省读环境变量 PROJBUS_ACTOR，优先级=显式参数 > env > 报错
+     （身份必填、无隐式默认、不得静默猜）；project_id 缺省读 PROJBUS_PROJECT_ID >
+     默认 placement-wuxia。env 只提供取值，注册表校验不放宽（SPEC §2.1）。
 """
 
 from __future__ import annotations
@@ -73,6 +77,32 @@ def resolve_db_path(db_path=None) -> str:
     if env:
         return env
     return os.path.join(os.path.expanduser("~"), ".projbus", "projbus.sqlite")
+
+
+def resolve_actor(explicit, field: str) -> str:
+    """身份解析（D7，CLI/MCP 入口共用）：显式参数 > 环境变量 PROJBUS_ACTOR > 报错。
+    必填身份无隐式默认，不得静默猜；env 值同样要过注册表校验（core.send/poll 内 _check_role），
+    不因 env 回退而放宽 SPEC §2.1。"""
+    v = str(explicit).strip() if explicit else ""
+    if v:
+        return v
+    v = (os.environ.get("PROJBUS_ACTOR") or "").strip()
+    if v:
+        return v
+    raise ProjbusError("缺少必填身份 %s：显式参数与环境变量 PROJBUS_ACTOR 均未提供"
+                       "（注册角色=%s，SPEC §2.1）" % (field, "/".join(ROLES)))
+
+
+def resolve_project_id(explicit=None) -> str:
+    """project_id 解析（D7，CLI/MCP 入口共用）：显式参数 > 环境变量 PROJBUS_PROJECT_ID >
+    默认 placement-wuxia。env 值仍要过 _check_project 注册表校验。"""
+    v = str(explicit).strip() if explicit else ""
+    if v:
+        return v
+    v = (os.environ.get("PROJBUS_PROJECT_ID") or "").strip()
+    if v:
+        return v
+    return DEFAULT_PROJECT
 
 
 def _ensure_storage(db_path: str) -> None:
