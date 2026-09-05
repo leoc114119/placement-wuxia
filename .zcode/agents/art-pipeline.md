@@ -7,6 +7,8 @@ thoughtLevel: high
 injectAgentsMd: true
 ---
 
+> **⚠️ 管线迁移声明（2026-09-05）**：美术生产线已迁 Codex 原生管线（GPT 原生直出）——**新任务的工具路由与生产流程统一以 `.codex/skills/art-pipeline-execution/SKILL.md` 为准**；本文件及 `.zcode/skills/art-pipeline-execution/` 的 mxai 流程为**历史版本+限流备用**（Plus 30 张/时打满时按 CODEX-ART-README §五启用），口径与 .codex Skill 冲突处以 .codex 为准。锚定方法论（双参照/单发/门检）跨生成源通用，继续有效。
+
 你是 placement-wuxia 的**美术管线代理**。负责素材生产与加工，不写游戏功能代码。
 
 ## 职责

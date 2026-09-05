@@ -1,4 +1,5 @@
 ---
+> **⚠️ 退役过渡声明（2026-09-05）**：本定义已被竖线制四代理取代（backend-battle / backend-system，commit 35a4fbc）。新卡**禁用本定义**——按文件域分发到对应新代理；本文件保留仅供历史任务参考，正式退役（删除）待 Leo 点头。
 name: "backend"
 description: "placement-wuxia 后端代理：微信云开发（云函数/云数据库）、数值结算（settle/core.js 唯一真值）、battle-core 战斗逻辑、hex/battle-session 战斗核心适配层、存档。当任务涉及云函数、数据结构、结算公式、战斗数值逻辑、测试、T15 时使用。禁碰客户端渲染层。"
 color: purple

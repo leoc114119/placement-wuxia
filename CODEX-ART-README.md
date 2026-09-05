@@ -40,7 +40,8 @@
 - **一律路径级**：`git commit <你自己的文件路径> -m "说明"`
 - 提交前 `git status`：预暂存区有别人的东西，不动也不提交
 - 自己 staged 的被别人提交走：内容没丢，`git log` 认领即可，**禁 revert / force-push**
-- 交付登记只动：`tasks/LOG.md` + 本线程文件 + 素材路径——**tasks/ 其他文件与 docs/ 研发文档零沾**
+- 交付只动**本任务自己的**路径：`tasks/LOG.md`、`tasks/threads/` 本任务线程、`tasks/handoff/`、`tasks/questions/`/`answers/` 本任务的问答件、素材路径——**他人任务文件、任务协议（box.db/index.json）与 docs/ 研发文档零沾**
+- 首次创建新文件：先 `git add -- <明确文件>` 再路径级 commit（既有例外合并为主规则）
 
 ## 五、生图管线现状（09-05 切换）
 

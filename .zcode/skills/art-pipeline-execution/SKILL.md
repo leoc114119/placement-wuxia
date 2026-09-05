@@ -1,4 +1,5 @@
 ---
+> **🔴 冻结声明（2026-09-05 治理审计）**：本手册为 **mxai 时代历史版本**——新美术任务一律走 `.codex/skills/art-pipeline-execution/SKILL.md`（Codex 原生管线）。本文件仅作：①历史流程记录 ②Plus 限流时 mxai 备用线的参考。已知内部矛盾（c01 替换/删除、c03/c04 aspect 2:1 vs 3:2、c13 文生图互斥等）登记为历史缺陷，**不再修订**；备用线启用时以 CODEX-ART-README 与最新复盘为准。
 name: art-pipeline-execution
 description: 放置武侠美术管线执行手册（12 类试产/生产通用）——每类前置检查、逐步命令、预期输出、校验点、异常分支表；执行美术生成任务的代理开工必读，与《美术素材生成流程规范》配套使用
 metadata:

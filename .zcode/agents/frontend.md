@@ -1,4 +1,5 @@
 ---
+> **⚠️ 退役过渡声明（2026-09-05）**：本定义已被竖线制四代理取代（frontend-battle / frontend-scene，commit 35a4fbc）。新卡**禁用本定义**——按文件域分发到对应新代理；本文件保留仅供历史任务参考，正式退役（删除）待 Leo 点头。
 name: "frontend"
 description: "placement-wuxia 前端代理：微信小游戏客户端实现（TypeScript + 原生 Canvas 2D 渲染、UI 界面、场景/战斗表现层、原型转正式工程）。当任务涉及客户端渲染、UI 接线、界面实现、素材接入时使用。禁碰后端结算与数值公式。"
 color: blue
