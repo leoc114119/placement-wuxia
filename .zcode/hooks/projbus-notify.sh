@@ -28,5 +28,9 @@ for role in rd art arch; do
 done
 
 if [ "$total_new" -gt 0 ]; then
+  # 主通道=系统音（afplay 不依赖通知中心权限，launchd 后台可用）；osascript 视觉通知为尽力通道
+  afplay /System/Library/Sounds/Glass.aiff >/dev/null 2>&1 || true
+  sleep 0.4
+  afplay /System/Library/Sounds/Glass.aiff >/dev/null 2>&1 || true
   osascript -e "display notification \"${notify_text}（projbus）\" with title \"projbus 总线有新消息\" sound name \"Glass\"" >/dev/null 2>&1 || true
 fi
