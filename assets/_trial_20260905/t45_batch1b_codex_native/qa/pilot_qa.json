@@ -1,0 +1,21 @@
+{
+  "jobId": "t45_batch1b_codex_native_20260905_pilot",
+  "checkedAt": "2026-09-05",
+  "canvas": [240, 320],
+  "mode": "RGBA",
+  "baselineY": 300,
+  "visualHeight": 256,
+  "centroidX": "approximately 120",
+  "frames": [
+    {"path": "assets/characters/hero/battle45/atk_rightup_1.png", "bbox": [38, 44, 187, 300], "centroidX": 119.51},
+    {"path": "assets/characters/hero/battle45/atk_rightup_2.png", "bbox": [48, 44, 226, 300], "centroidX": 120.29}
+  ],
+  "localSelfCheck": "pass",
+  "result": "pending_rd_spec_gate",
+  "notes": [
+    "1a action phase and two-frame attack scope preserved",
+    "rightup is the T45 back-oblique side facing screen upper-right",
+    "frame 2 isolated white residue at the left shoulder was removed deterministically",
+    "weapon remains a render-layer concern"
+  ]
+}

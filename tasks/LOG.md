@@ -325,6 +325,9 @@
 | 2026-09-05 | rd → Codex（art） | ⚠️ T45 批 1a 门检有条件通过 | seq=23：9 张新帧机械门全 PASS；要求同源重制现库 `atk_right_3`，并按新锚重制通用 die 替换旧 down 向遗留。`atk_right_3` 与 Leo 已确认的普攻两帧口径冲突，已回执 received 等拍板；die 新锚候选已落 `assets/_trial_20260905/t45_batch1a_codex_native/normalized/die_common_attempt1.png`，待目验。 |
 | 2026-09-05 | Leo → Codex（art） | ✅ T45 普攻维持两帧 | Leo 确认 `atk_right_3` 为收招、与战斗静止帧差异不足，不补做；按两帧口径回传研发线，当前只等新锚通用 die 目验。 |
 | 2026-09-05 | Leo → Codex（art） | ✅ T45 通用死亡帧目验通过 | 新锚通用死亡帧候选通过；已写入 `assets/characters/hero/battle45/die_common.png`，并以同内容覆盖 `die_down.png` 作为兼容别名。规格：RGBA、240×320、bbox 15,230–225,300；待提交并补发研发线 delivery。 |
+| 2026-09-05 | Codex（art） | 🎨 T45 批 1b 右上普攻小闭环候选 | 以 1a 普攻两帧为动作母版，配合 `battle_idle_rightup.png` 与右上朝向参照完成 `atk_rightup_1/2` 首轮原生候选；归一 240×320 RGBA，对照 `assets/_trial_20260905/t45_batch1b_codex_native/contact/atk_rightup_pair_attempt1.png`，待 Leo 目验。 |
+| 2026-09-05 | Leo → Codex（art） | 🔧 T45 1b 第二帧局部去白残留 | `atk_rightup_2` 左肩后发现孤立背景白块；已仅做局部确定性透明清理，不重绘主体。修正版 `assets/_trial_20260905/t45_batch1b_codex_native/contact/atk_rightup_pair_attempt1_cut.png`，待复看。 |
+| 2026-09-05 | Leo → Codex（art） | ✅ T45 1b 右上普攻小闭环通过 | 修正版 `atk_rightup_1/2` 已目验通过并写入正式目录（240×320 RGBA、脚底 y=300、质心约 x=120）；批 1b pilot manifest/QA/contact 已落盘，等待研发线机械门，其他右上动作暂缓。 |
 | 2026-09-05 | ZCode | 🔍 批1a 门检=有条件通过（needs_info） | 9 张新帧机械门检全 PASS（独立脚本逐张实测）；两项整改：atk_right_3 系锚定前试点旧货与新锚 atk_1/2 混源（须新锚重制，原则7 连招同源）、die 复用废弃 down 向旧批文件（六向共用方案 PM 认可但须新锚重制+spec 记变更 36→34 实绘）；整改单 seq=23 |
 | 2026-09-05 | ZCode | ✅ 批1a 过门收官+帧规范 v1.3（456f11d） | Leo 两裁落账：普攻 3→2（atk_3 整改项自然消解）、死亡六向共用（新锚 die_down 重制验收过）；总量 78→67（主角31+山贼36）；批1a=right 向全动作集 10 帧过门（Leo 目验+PM 机械门检双过）；1b 放行（seq=25）；美术线请同步 v2.0 记账 |
 | 2026-09-05 | Leo → ZCode | 📋 1b/1c 节奏细化 | 不按整批按动作逐个输出（行走→跳→普攻→施法，各过 Leo 目验再下一动作）；已总线通知 art（seq=26），山贼批次同节奏 |

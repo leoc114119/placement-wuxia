@@ -1,0 +1,36 @@
+{
+  "jobId": "t45_batch1b_codex_native_20260905_pilot",
+  "task": "T45",
+  "batch": "1b-pilot",
+  "direction": "rightup",
+  "source": "Codex native ImageGen using batch 1a action references",
+  "artifactStage": "release",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "approvedBy": "Leo",
+  "frameCount": 2,
+  "frames": [
+    {
+      "key": "atk_rightup",
+      "frame": 1,
+      "releasePath": "assets/characters/hero/battle45/atk_rightup_1.png",
+      "candidatePath": "normalized/atk_rightup_1_attempt1.png",
+      "sha256": "dbe19b78988688563633d3530c41b874be3ca48746cb1a14a4bce06793c3a431"
+    },
+    {
+      "key": "atk_rightup",
+      "frame": 2,
+      "releasePath": "assets/characters/hero/battle45/atk_rightup_2.png",
+      "candidatePath": "normalized/atk_rightup_2_attempt1_cut.png",
+      "sha256": "82655a03bab1d27da8321d04b6e750739269e69e687b69c9e244227a7412ae6e",
+      "cleanup": "local isolated white-residue cutout at left shoulder"
+    }
+  ],
+  "sharedReuse": "die_common is shared from batch 1a; no new death frame",
+  "excludedLegacy": [
+    "assets/characters/hero/battle45/atk_rightup_3.png"
+  ],
+  "qa": "qa/pilot_qa.json",
+  "contact": "contact/atk_rightup_pilot_release.png"
+}

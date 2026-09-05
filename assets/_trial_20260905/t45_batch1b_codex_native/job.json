@@ -1,0 +1,14 @@
+{
+  "jobId": "t45_batch1b_codex_native_20260905_pilot",
+  "task": "T45",
+  "batch": "1b-pilot",
+  "source": "Codex native ImageGen using batch 1a action references",
+  "artifactStage": "release",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "direction": "rightup",
+  "frames": ["atk_rightup_1", "atk_rightup_2"],
+  "contact": "contact/atk_rightup_pilot_release.png",
+  "qa": "qa/pilot_qa.json"
+}

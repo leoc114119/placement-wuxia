@@ -91,3 +91,15 @@ Leo 确认普攻保持两帧；`atk_right_3` 只是收招、与战斗静止帧�
 ### H19 · 09-05 · 通用死亡帧定稿
 
 Leo 目验新锚通用死亡帧通过。候选已写入正式 `assets/characters/hero/battle45/die_common.png`；为兼容现有资源键，同内容同步覆盖 `die_down.png`。规格复核通过：RGBA、240×320、bbox 15,230–225,300；待提交并补发研发线 delivery。
+
+### H20 · 09-05 · T45 批 1b 右上普攻小闭环
+
+Leo 同意开始 1b：以 1a 普攻两帧为动作母版，配合 `battle_idle_rightup.png` 与右上朝向参照做转面。`atk_rightup_1/2` 已各完成首轮原生候选，归一为 240×320 RGBA，三帧对照 `assets/_trial_20260905/t45_batch1b_codex_native/contact/atk_rightup_pair_attempt1.png`；尚未入正式目录，待 Leo 目验。
+
+### H21 · 09-05 · T45 1b 第二帧局部去白残留
+
+Leo 指出 `atk_rightup_2` 左肩后有背景白块未扣净。已对该孤立白块做局部确定性透明清理，未重绘人物；修正版为 `normalized/atk_rightup_2_attempt1_cut.png`，对照为 `contact/atk_rightup_pair_attempt1_cut.png`，尚未入正式目录，待复看。
+
+### H22 · 09-05 · T45 1b 右上普攻小闭环通过
+
+Leo 确认修正版 `atk_rightup_1/2` 通过。已写入正式 `assets/characters/hero/battle45/atk_rightup_{1,2}.png`，均为 240×320 RGBA、脚底 y=300、质心约 x=120；批 1b pilot manifest/QA/contact 已落盘，`specGate` 等待研发线机械门，其他右上动作暂不铺量。
