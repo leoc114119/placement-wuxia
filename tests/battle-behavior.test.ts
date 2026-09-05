@@ -354,6 +354,7 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
       },
     });
     const w = hexToWorld(empty.q, empty.r);
+    input.down(view, s.snapshot(), w.x - view.camera.x + W / 2, w.y - view.camera.y + H / 2, W, H); // A07：tap=down+up 配对
     input.up(view, s.snapshot(), w.x - view.camera.x + W / 2, w.y - view.camera.y + H / 2, W, H);
     // 新断言（方案 §五 N2-① 行）：恰 1 条 cast（非 cancelSkill）——v2.0 下点射程内空格=合法施放
     expect(dispatches).toEqual([{ type: 'cast', to: { q: empty.q, r: empty.r }, skillId: 'te' }]);
@@ -400,6 +401,7 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
       },
     });
     const wA = hexToWorld(e1u.renderQ, e1u.renderR); // 玩家点的是“看到的位置”
+    input.down(view, s.snapshot(), wA.x - view.camera.x + W / 2, wA.y - view.camera.y + H / 2, W, H); // A07：tap=down+up 配对
     input.up(view, s.snapshot(), wA.x - view.camera.x + W / 2, wA.y - view.camera.y + H / 2, W, H);
     expect(dispatches).toEqual([{ type: 'cast', to: { q: 4, r: 9 }, skillId: 'te' }]); // 演出位∈射程=受理
     const afterA = s.snapshot();
@@ -437,6 +439,7 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
       },
     });
     const wB = hexToWorld(e1v.renderQ, e1v.renderR);
+    input2.down(view2, s2.snapshot(), wB.x - view2.camera.x + W / 2, wB.y - view2.camera.y + H / 2, W, H); // A07：tap=down+up 配对
     input2.up(view2, s2.snapshot(), wB.x - view2.camera.x + W / 2, wB.y - view2.camera.y + H / 2, W, H);
     expect(dispatches2).toEqual([{ type: 'cancelSkill' }]); // 射程外=取消（SEL-5② 规范行为，派发可见非静默）
     expect(s2.events.filter((e) => e.type === 'skill')).toHaveLength(0); // 无 skill 事件（§七-17 防假绿）

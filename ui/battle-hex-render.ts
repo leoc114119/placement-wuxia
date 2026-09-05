@@ -670,6 +670,30 @@ function drawImg(
   );
 }
 
+/** 圆角矩形路径（A06 能力检测）：优先 ctx.roundRect；旧基础库无此方法时走 arcTo 手工等价路径
+ * （手法与 ui/battle-render.ts / ui/render.ts 既有私有副本同式，各自独立不跨文件 import）。
+ * 调用方负责 beginPath；本函数只产路径（fill/stroke 仍归调用方）。 */
+function roundRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
+}
+
 /** 尖角压扁六边形路径（pointy-top：上下尖角、左右竖直边；宽 TILE_W × 高 TILE_H） */
 function tilePath(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number): void {
   const hw = w / 2;
@@ -1218,7 +1242,7 @@ function drawComponents(
       ctx.strokeStyle = '#d4af37';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(cx + cw * 0.04, by, cw * 0.92, bh, 6);
+      roundRectPath(ctx, cx + cw * 0.04, by, cw * 0.92, bh, 6); // A06：能力检测内聚（缺 roundRect 走 arcTo 手工路径，几何等价）
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#ffd870';

@@ -4,7 +4,7 @@
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
 import type { CombatantInput } from '../../types';
 import { BATTLE_HEX_RES, DMG, REJECT_HINTS, hexToWorld } from '../../config/battle-hex';
-import { createBattleInput } from '../../ui/battle-input';
+import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
   createView,
   drawFrame,
@@ -162,6 +162,7 @@ const input = createBattleInput({
 });
 
 function resetDemo(): void {
+  input.reset(); // A07：重开清输入拖动态（结算瞬间按住/拖镜不跨局残留）
   session = makeSession();
   evCursor = 0;
   speedOn = false;
@@ -183,18 +184,22 @@ function toLogical(e: PointerEvent): { x: number; y: number } {
   return { x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H };
 }
 
+// ===== 指针生命周期（A07）：同指针配对 + pointercancel/失焦重置 =====
+const ptr = createPointerTracker();
 canvas.addEventListener('pointerdown', (e) => {
+  if (!ptr.down(e.pointerId)) return; // 多指交叉：非活动指忽略（同 id 重复 down=丢失 up 的自愈重锚）
   const p = toLogical(e);
   const snap = session.snapshot();
   if (snap.phase !== 'fighting') return; // 结算遮罩期点击=重开（抬起触发）
   input.down(view, snap, p.x, p.y, W, H);
 });
 canvas.addEventListener('pointermove', (e) => {
-  if (!input.pointer.down) return;
+  if (!ptr.owns(e.pointerId) || !input.pointer.down) return; // 配对：非活动指的 move 忽略
   const p = toLogical(e);
   input.move(view, p.x, p.y);
 });
 canvas.addEventListener('pointerup', (e) => {
+  if (!ptr.release(e.pointerId)) return; // 配对：id 不匹配/无活动指的 up 忽略（非配对释放不产生点击）
   const p = toLogical(e);
   const snap = session.snapshot();
   if (snap.phase !== 'fighting') {
@@ -202,6 +207,14 @@ canvas.addEventListener('pointerup', (e) => {
     return;
   }
   input.up(view, snap, p.x, p.y, W, H);
+});
+canvas.addEventListener('pointercancel', (e) => {
+  if (!ptr.release(e.pointerId)) return; // 非活动指的 cancel 忽略
+  input.reset(); // A07：cancel=系统接管异常终止——视作未发生的按下：清拖动态，不产生点击
+});
+window.addEventListener('blur', () => {
+  ptr.reset(); // A07：失焦清指针归属
+  input.reset(); // 清拖动态（拖镜中失焦不残留 dragging）
 });
 document.addEventListener('dragstart', (e) => e.preventDefault());
 

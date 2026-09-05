@@ -31,8 +31,56 @@ export interface BattleInput {
   down(view: BattleHexView, snapshot: BattleSnapshot, x: number, y: number, width: number, height: number): void;
   /** 移动（逻辑坐标；拖动超阈值平移镜头） */
   move(view: BattleHexView, x: number, y: number): void;
-  /** 抬起（逻辑坐标；拖动结束不触发点选） */
+  /** 抬起（逻辑坐标；拖动结束不触发点选；无有效 down 的 up=忽略——A07 非配对释放不产生点击） */
   up(view: BattleHexView, snapshot: BattleSnapshot, x: number, y: number, width: number, height: number): void;
+  /** 异常终止重置（pointercancel/失焦/重开；A07）：清内部拖动态，不派发任何请求/点击 */
+  reset(): void;
+}
+
+/**
+ * 指针身份归属（A07 同指针配对）：宿主按 pointerId 配对 down/move/up/cancel，
+ * 防窗口外释放/多指交叉留下脏拖动态或产生非配对点击。
+ * - down：首指受理；**他指活动中收到第二指 down=忽略**（返回 false）；
+ *   同 id 重复 down 视作丢失 up 的自愈重锚（桌面鼠标丢失 up 后可恢复，触屏同一触点不会二次 down）。
+ * - move：仅活动指放行；up/cancel：活动指匹配才结算并清归属。
+ * - reset：窗口失焦（blur）等强制清空。
+ */
+export interface PointerTracker {
+  /** 当前活动指 id（null=无活动指） */
+  readonly activeId: number | null;
+  /** 按下受理：返回 false=忽略（多指第二指） */
+  down(id: number): boolean;
+  /** move 归属过滤：仅活动指返回 true */
+  owns(id: number): boolean;
+  /** up/cancel 结算：活动指匹配→清归属并返回 true；不匹配/无活动指→false（忽略） */
+  release(id: number): boolean;
+  /** 强制重置（blur 等） */
+  reset(): void;
+}
+
+export function createPointerTracker(): PointerTracker {
+  let activeId: number | null = null;
+  return {
+    get activeId(): number | null {
+      return activeId;
+    },
+    down(id: number): boolean {
+      if (activeId !== null && activeId !== id) return false; // 多指交叉：非活动指忽略
+      activeId = id; // 首指受理；同 id 重复 down=丢失 up 的自愈（重锚）
+      return true;
+    },
+    owns(id: number): boolean {
+      return activeId !== null && activeId === id;
+    },
+    release(id: number): boolean {
+      if (activeId === null || activeId !== id) return false;
+      activeId = null;
+      return true;
+    },
+    reset(): void {
+      activeId = null;
+    },
+  };
 }
 
 const sameCell = (a: HexPos, b: HexPos): boolean => a.q === b.q && a.r === b.r;
@@ -114,6 +162,9 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
   }
 
   function up(view: BattleHexView, snapshot: BattleSnapshot, x: number, y: number, width: number, height: number): void {
+    // A07 核实结论：原实现无 down 守卫（move 有）→ 无有效 down 的 up 会真处理点击（体检报告属实），
+    // 本卡按派发口径改为忽略——非配对释放不产生点击；用例锁死该语义。
+    if (!pointer.down) return;
     const wasDragging = pointer.dragging;
     pointer.down = false;
     pointer.dragging = false;
@@ -224,5 +275,11 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
     }
   }
 
-  return { pointer, down, move, up };
+  /** A07：异常终止重置（pointercancel/失焦/重开）——只清拖动态，不派发任何请求/点击 */
+  function reset(): void {
+    pointer.down = false;
+    pointer.dragging = false;
+  }
+
+  return { pointer, down, move, up, reset };
 }

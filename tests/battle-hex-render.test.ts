@@ -47,7 +47,7 @@ import {
   type BattleHexAssets,
   type BattleHexView,
 } from '../ui/battle-hex-render';
-import { createBattleInput, pickCtrlButton, pickPlaqueButton, pickSkillButton } from '../ui/battle-input';
+import { createBattleInput, createPointerTracker, pickCtrlButton, pickPlaqueButton, pickSkillButton } from '../ui/battle-input';
 import { createMockSession } from '../proto/battle_demo/mock_session';
 import type { BattleSnapshot, CombatantInput, HexPos, SnapshotActor } from '../types';
 
@@ -303,13 +303,16 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     const snap = makeSnapshot([hero, enemy]);
     snap.pendingInput = true;
     snap.turnActorId = 'hero';
+    input.down(view, snap, 100, 100, 375, 667); // A07：tap=down+up 配对（语义零变化，下同）
     input.up(view, snap, 100, 100, 375, 667);
     expect(sent).toEqual([{ type: 'selectSkill', skillId: 'te' }]);
     snap.selectedSkill = 'te';
+    input.down(view, snap, 100, 100, 375, 667);
     input.up(view, snap, 100, 100, 375, 667);
     expect(sent[1]).toEqual({ type: 'cancelSkill' });
     let blocked = '';
     const input2 = createBattleInput({ dispatch: () => {}, onBlocked: (m) => (blocked = m) });
+    input2.down(view, snap, 140, 100, 375, 667);
     input2.up(view, snap, 140, 100, 375, 667); // jue 置灰
     expect(blocked).toContain('冷却');
     expect(sent.length).toBe(2);
@@ -332,16 +335,19 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     };
     // ① 无技能：点移动格
     let p = cellCenter({ q: 1, r: 9 });
+    input.down(view, snap, p.x, p.y, 375, 667);
     input.up(view, snap, p.x, p.y, 375, 667);
     expect(sent[0]).toMatchObject({ type: 'move', to: { q: 1, r: 9 } });
     // ② 激活 te：点敌逻辑格=派 cast（【T20-FE · 方案 B / ATK-2 v2.0】skill 态点格统一 cast，格上有敌=对敌
     // 结算；方案 §2.5/:339 锚实指本行 :330——行号为写作时快照，经 git 考古语义唯一，PM 裁决 2026-09-03）
     snap.selectedSkill = 'te';
     p = cellCenter({ q: 3, r: 7 });
+    input.down(view, snap, p.x, p.y, 375, 667);
     input.up(view, snap, p.x, p.y, 375, 667);
     expect(sent[1]).toMatchObject({ type: 'cast', to: { q: 3, r: 7 }, skillId: 'te' });
     // ③ 激活 te：点无效格=取消
     p = cellCenter({ q: 6, r: 12 });
+    input.down(view, snap, p.x, p.y, 375, 667);
     input.up(view, snap, p.x, p.y, 375, 667);
     expect(sent[2]).toEqual({ type: 'cancelSkill' });
   });
@@ -367,6 +373,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     snap.pendingInput = true;
     snap.turnActorId = 'hero';
     const w = hexToWorld(5, 6);
+    input.down(view, snap, w.x + 375 / 2, w.y + 667 / 2, 375, 667);
     input.up(view, snap, w.x + 375 / 2, w.y + 667 / 2, 375, 667);
     expect(sent).toEqual([{ type: 'attack', targetId: 'e1', skillId: null }]);
   });
@@ -400,6 +407,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     };
     const p = center(vis);
     // ① 拦截面：零派发 + onBlocked('目标移动中')、选中保持（本就无选中）
+    input.down(view, snap, p.x, p.y, 375, 667);
     input.up(view, snap, p.x, p.y, 375, 667);
     expect(sent).toEqual([]);
     expect(blocked).toBe('目标移动中');
@@ -407,6 +415,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     blocked = '';
     const moverInSnap = snap.actors.find((a) => a.id === 'e1')!; // makeSnapshot 是拷贝，须改快照内份身
     moverInSnap.animState = 'dead';
+    input.down(view, snap, p.x, p.y, 375, 667);
     input.up(view, snap, p.x, p.y, 375, 667);
     expect(sent).toEqual([]);
     expect(blocked).toBe('');
@@ -418,6 +427,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     snap.actors = [hero, mover, ally];
     const avis = worldToHex(hexToWorld(ally.renderPos.q, ally.renderPos.r).x, hexToWorld(ally.renderPos.q, ally.renderPos.r).y);
     const ap = center(avis);
+    input.down(view, snap, ap.x, ap.y, 375, 667);
     input.up(view, snap, ap.x, ap.y, 375, 667);
     expect(sent).toEqual([]);
     expect(blocked).toBe('');
@@ -445,6 +455,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     const vis = worldToHex(hexToWorld(4.2, 6.5).x, hexToWorld(4.2, 6.5).y);
     snap.moveCells = [vis]; // 演出位量化格恰为合法移动格
     const w = hexToWorld(vis.q, vis.r);
+    input.down(view, snap, w.x + 375 / 2, w.y + 667 / 2, 375, 667);
     input.up(view, snap, w.x + 375 / 2, w.y + 667 / 2, 375, 667); // camera 未驱动=0,0
     expect(sent).toEqual([{ type: 'move', to: { q: vis.q, r: vis.r } }]);
     expect(blocked).toBe('');
@@ -460,10 +471,13 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     });
     const snap = makeSnapshot([hero]);
     // 行高 448/140：三钮 art y 2..130 / 163..289 / 319..446 → ctrl rect 顶起 0/35%/71% 处
+    input.down(view, snap, 335, 505, 375, 667);
     input.up(view, snap, 335, 505, 375, 667); // 第一钮
     expect(sent[0]).toMatchObject({ type: 'setMode', mode: 'auto' });
+    input.down(view, snap, 335, 555, 375, 667);
     input.up(view, snap, 335, 555, 375, 667); // 第二钮
     expect(sent[1]).toEqual({ type: 'toggleSpeed' });
+    input.down(view, snap, 335, 605, 375, 667);
     input.up(view, snap, 335, 605, 375, 667); // 第三钮
     expect(sent[2]).toEqual({ type: 'flee' });
     expect(CTRL_BUTTONS).toHaveLength(3);
@@ -492,10 +506,12 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     expect(inOuter).toBe(true); // 前置①：外接矩形内
     expect(pickCtrlButton(view, p.x, p.y)).toBeNull(); // 前置②：标定矩形外（带间隙 fall-through 环带）
     snap.moveCells = [gapCell]; // 该格=合法移动格 → fall-through 后应走移动语义
+    input.down(view, snap, p.x, p.y, 375, 667);
     input.up(view, snap, p.x, p.y, 375, 667);
     expect(sent).toEqual([{ type: 'move', to: { q: gapCell.q, r: gapCell.r } }]); // 棋盘真受理，未被组件吞
     // 反向对照（HIT-1 正向）：钮实体内一点仍组件命中优先——(335,540) 换算 ax=111.5/ay=64 ∈ 钮1 标定矩形
     sent.length = 0;
+    input.down(view, snap, 335, 540, 375, 667);
     input.up(view, snap, 335, 540, 375, 667);
     expect(sent).toEqual([{ type: 'setMode', mode: 'auto' }]);
   });
@@ -525,6 +541,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     expect(inOuter).toBe(true); // 前置①：外接矩形内
     expect(pickPlaqueButton(view, p.x, p.y)).toBeNull(); // 前置②：装饰区无热区
     snap.moveCells = [decorCell];
+    input.down(view, snap, p.x, p.y, 375, 667);
     input.up(view, snap, p.x, p.y, 375, 667);
     expect(sent).toEqual([{ type: 'move', to: { q: decorCell.q, r: decorCell.r } }]); // 棋盘受理
     expect(plaques).toEqual([]); // 未触发木牌占位反馈（装饰件不吞点击）
@@ -532,6 +549,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     sent.length = 0;
     plaques.length = 0;
     snap.moveCells = [];
+    input.down(view, snap, 157.6, 456.9, 375, 667);
     input.up(view, snap, 157.6, 456.9, 375, 667);
     expect(plaques).toEqual(['装备']);
     expect(sent).toEqual([]);
@@ -590,6 +608,207 @@ const EMPTY_ASSETS: BattleHexAssets = {
   statusIcons: new Map(),
   frames: new Map(),
 };
+
+// ---------- A06 roundRect 能力检测（缺图降级占位钮，兼容旧基础库） ----------
+/** 路径记录 ctx：withRoundRect=false 时显式缺席 roundRect（旧基础库），其余未声明方法自动补空实现 */
+function makePathRecordingCtx(withRoundRect: boolean): {
+  ctx: CanvasRenderingContext2D;
+  calls: Array<{ op: string; args: unknown[] }>;
+} {
+  const calls: Array<{ op: string; args: unknown[] }> = [];
+  const tracked = new Set(['beginPath', 'moveTo', 'arcTo', 'closePath', 'roundRect', 'fill', 'stroke', 'fillText']);
+  const ctx = new Proxy(
+    {
+      canvas: { width: 640, height: 480 },
+      measureText: () => ({ width: 10 }),
+      createLinearGradient: () => ({ addColorStop: () => {} }),
+      // 有 roundRect 时登记记录版（args 采样用）；无时不声明——get 显式返回 undefined=能力缺席
+      ...(withRoundRect
+        ? {
+            roundRect: (...a: unknown[]) => {
+              calls.push({ op: 'roundRect', args: a });
+            },
+          }
+        : {}),
+    } as unknown as CanvasRenderingContext2D,
+    {
+      get(t, prop) {
+        if (prop === 'roundRect' && !withRoundRect) return undefined; // A06：能力检测须命中缺席分支
+        const rec = t as unknown as Record<string | symbol, unknown>;
+        if (prop in rec) return rec[prop];
+        const name = String(prop);
+        return (...args: unknown[]) => {
+          if (tracked.has(name)) calls.push({ op: name, args });
+        };
+      },
+      set() {
+        return true;
+      },
+    },
+  );
+  return { ctx, calls };
+}
+
+describe('A06 roundRect 能力检测（缺图降级占位钮）', () => {
+  it('ctx 无 roundRect（旧基础库）：缺脸占位钮走 arcTo 手工路径不抛异常，几何=圆角矩形采样（矩形角偏移 rad），热区/占位字照常', () => {
+    const { ctx, calls } = makePathRecordingCtx(false);
+    const snap = makeSnapshot([{ id: 'hero', name: '小虾米', animState: 'idle' }]);
+    const view = createView();
+    updateView(view, snap, 0.016, 640, 480);
+    expect(() => drawFrame({ ctx, width: 640, height: 480, dt: 0.016 }, snap, EMPTY_ASSETS, view)).not.toThrow();
+    const cr = view.layout.ctrlRect;
+    expect(cr).not.toBeNull(); // 热区照常产出（L④ 口径不受 A06 影响）
+    // 全帧仅占位钮使用 arcTo：每钮 4 段（手工路径），无 roundRect 调用
+    const arcs = calls.filter((c) => c.op === 'arcTo');
+    expect(calls.some((c) => c.op === 'roundRect')).toBe(false);
+    expect(arcs).toHaveLength(CTRL_BUTTONS.length * 4);
+    const near = (v: number, e: number): boolean => Math.abs(v - e) < 1e-6;
+    // 逐钮几何采样：x=cx+cw*0.04、w=cw*0.92、rad=min(6, w/2, bh/2)；arcTo 锚点=矩形四角 ± rad
+    let ai = 0;
+    for (const b of CTRL_BUTTONS) {
+      const by = cr!.y + (b.y / CTRL_ART.h) * cr!.h;
+      const bh = (b.h / CTRL_ART.h) * cr!.h;
+      const x = cr!.x + cr!.w * 0.04;
+      const w = cr!.w * 0.92;
+      const rad = Math.min(6, w / 2, bh / 2);
+      const anchors = [
+        [x + w, by, x + w, by + bh, rad],
+        [x + w, by + bh, x, by + bh, rad],
+        [x, by + bh, x, by, rad],
+        [x, by, x + w, by, rad],
+      ];
+      for (const [ax1, ay1, ax2, ay2, ar] of anchors) {
+        const got = arcs[ai++].args as number[];
+        expect(near(got[0], ax1) && near(got[1], ay1) && near(got[2], ax2) && near(got[3], ay2) && near(got[4], ar)).toBe(true);
+      }
+      // 路径起点 = 左上角圆弧起点 (x+rad, by)
+      const moves = calls.filter((c) => c.op === 'moveTo').map((c) => c.args as number[]);
+      expect(moves.some((m) => near(m[0], x + rad) && near(m[1], by))).toBe(true);
+    }
+    // 占位字仍绘制（功能不缺位）
+    const texts = calls.filter((c) => c.op === 'fillText').map((c) => String(c.args[0]));
+    expect(texts).toEqual(expect.arrayContaining(['托管', '加速', '逃跑']));
+  });
+
+  it('ctx 有 roundRect：能力检测直通零行为变化——逐钮参数锁定 (cx+cw*0.04, by, cw*0.92, bh, 6) 且零 arcTo', () => {
+    const { ctx, calls } = makePathRecordingCtx(true);
+    const snap = makeSnapshot([{ id: 'hero', name: '小虾米', animState: 'idle' }]);
+    const view = createView();
+    updateView(view, snap, 0.016, 640, 480);
+    drawFrame({ ctx, width: 640, height: 480, dt: 0.016 }, snap, EMPTY_ASSETS, view);
+    const cr = view.layout.ctrlRect;
+    expect(cr).not.toBeNull();
+    const rrs = calls.filter((c) => c.op === 'roundRect');
+    expect(rrs).toHaveLength(CTRL_BUTTONS.length);
+    expect(calls.some((c) => c.op === 'arcTo')).toBe(false); // 有 roundRect 不走手工路径
+    let i = 0;
+    for (const b of CTRL_BUTTONS) {
+      const by = cr!.y + (b.y / CTRL_ART.h) * cr!.h;
+      const bh = (b.h / CTRL_ART.h) * cr!.h;
+      expect(rrs[i++].args).toEqual([cr!.x + cr!.w * 0.04, by, cr!.w * 0.92, bh, 6]);
+    }
+  });
+});
+
+// ---------- A07 指针生命周期（同指针配对 + cancel/blur 重置 + 无 down up 忽略） ----------
+describe('A07 指针生命周期（同指针配对 + cancel/blur 重置 + 无 down up 忽略）', () => {
+  const heroA: SnapshotActor = {
+    id: 'hero', side: 'player', name: '小虾米', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
+    hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
+  };
+  const enemyA: SnapshotActor = {
+    id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 3, r: 7 }, renderPos: { q: 3, r: 7 },
+    hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
+  };
+
+  it('无有效 down 的 up=忽略：零派发、状态不变（A07 核实：原实现真处理点击 → 本卡改忽略并锁死）', () => {
+    const view = makeViewForInput();
+    const sent: Array<Record<string, unknown>> = [];
+    const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>) });
+    const snap = makeSnapshot([heroA, enemyA]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    input.up(view, snap, 100, 100, 375, 667); // 直接 up（无 down）：弧钮 te 位置
+    expect(sent).toEqual([]); // 非配对释放不产生点击
+    expect(input.pointer.down).toBe(false);
+    expect(input.pointer.dragging).toBe(false);
+  });
+
+  it('tracker 配对：首指受理、第二指 down 忽略、id 不匹配 move/up 忽略、匹配 release 清归属', () => {
+    const t = createPointerTracker();
+    expect(t.activeId).toBeNull();
+    expect(t.down(7)).toBe(true); // 首指受理
+    expect(t.activeId).toBe(7);
+    expect(t.down(8)).toBe(false); // 多指交叉：第二指忽略
+    expect(t.owns(7)).toBe(true);
+    expect(t.owns(8)).toBe(false); // 非活动指 move 忽略
+    expect(t.release(8)).toBe(false); // id 不匹配 up 忽略
+    expect(t.release(99)).toBe(false); // 无关 id 不影响活动态
+    expect(t.activeId).toBe(7);
+    expect(t.release(7)).toBe(true); // 匹配 up=结算并清归属
+    expect(t.activeId).toBeNull();
+    expect(t.owns(7)).toBe(false);
+    expect(t.release(7)).toBe(false); // 迟到重复 up=忽略
+  });
+
+  it('tracker 同 id 重复 down=丢失 up 自愈重锚（桌面鼠标 pointerId 恒定）；他指仍被拒', () => {
+    const t = createPointerTracker();
+    expect(t.down(1)).toBe(true);
+    expect(t.down(1)).toBe(true); // 同 id 重复 down（丢失 up 后再按）
+    expect(t.down(2)).toBe(false);
+  });
+
+  it('cancel 组合语义（宿主接线同款）：拖动中 cancel → 拖动态清零、move 不再平移、迟到 up 零点击、新指正常', () => {
+    const view = makeViewForInput();
+    const sent: Array<Record<string, unknown>> = [];
+    const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>) });
+    const ptr = createPointerTracker();
+    const snap = makeSnapshot([heroA, enemyA]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    // down(5) → 拖动超阈（camDrag 平移，L⑤ 既有口径零回归锚）
+    ptr.down(5);
+    input.down(view, snap, 100, 100, 375, 667);
+    input.move(view, 130, 120);
+    expect(input.pointer.dragging).toBe(true);
+    expect(view.camDrag.x).toBe(-30);
+    // pointercancel(5)：tracker release 匹配 → input.reset()
+    expect(ptr.release(5)).toBe(true);
+    input.reset();
+    expect(input.pointer.down).toBe(false);
+    expect(input.pointer.dragging).toBe(false);
+    // cancel 后 move 不再平移（守卫 pointer.down）
+    input.move(view, 150, 140);
+    expect(view.camDrag.x).toBe(-30);
+    // 迟到 up(5)：tracker 已清 → 忽略；即便误调 input.up 亦被无 down 守卫拦截 → 零派发
+    expect(ptr.release(5)).toBe(false);
+    input.up(view, snap, 130, 120, 375, 667);
+    expect(sent).toEqual([]);
+    // 新一指 down(9) 正常受理 → 点击恢复派发（弧钮 te）
+    expect(ptr.down(9)).toBe(true);
+    input.down(view, snap, 100, 100, 375, 667);
+    input.up(view, snap, 100, 100, 375, 667);
+    expect(sent).toEqual([{ type: 'selectSkill', skillId: 'te' }]);
+  });
+
+  it('blur 语义：tracker.reset + input.reset 全清（拖镜中失焦不残留）', () => {
+    const view = makeViewForInput();
+    const input = createBattleInput({ dispatch: () => {} });
+    const ptr = createPointerTracker();
+    const snap = makeSnapshot([heroA]);
+    ptr.down(3);
+    input.down(view, snap, 100, 100, 375, 667);
+    input.move(view, 130, 120);
+    expect(input.pointer.dragging).toBe(true);
+    ptr.reset(); // 宿主 blur 处理器同款组合
+    input.reset();
+    expect(ptr.activeId).toBeNull();
+    expect(input.pointer.down).toBe(false);
+    expect(input.pointer.dragging).toBe(false);
+  });
+});
 
 describe('渲染烟雾（Proxy ctx 计数）', () => {
   it('快照驱动全层绘制：格子/棋子/HUD/组件/结算遮罩均产生调用', () => {
