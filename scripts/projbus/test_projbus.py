@@ -11,11 +11,13 @@ test_projbus.py — projbus 自动化测试（SPEC §一 验收 + §2.6 增补�
   §一 ACK 前可重复读 / ACK 后状态正确              → TestSendPollAckBasics + TestAckGate
   §一 两进程并发 send 50 无丢失无损坏              → TestConcurrency
   §一 未 fetch 到 commit 不能 ack accepted         → TestAckGate
+  v1.1.1 P1 remote fetch 失败即拒绝 accepted       → TestAckGate（含 fetch 成功放行对照）
   §2.6 注入防御实证                                → TestInjectionDefense
   §2.6 reconcile 账实差实证                        → TestReconcile
   §2.6 poll-context 输出格式                       → TestCliSmoke / TestInjectionDefense
   MCP 手搓协议（initialize/tools/list/tools/call） → TestMcpProtocol
   身份/项目 env 回退（PROJBUS_ACTOR/PROJBUS_PROJECT_ID）→ TestEnvFallback / TestMcpProtocol
+  v1.1.1 P2 turn-completed/reconcile --project-id  → TestEnvFallback
   schema 版本/迁移保护/权限 0700/0600              → TestStatusSchemaPerms
 
 所有测试均用临时 DB 路径（参数/env 注入），不污染真实 ~/.projbus。
@@ -258,6 +260,38 @@ class TestAckGate(BusTestBase):
         out = core.ack(db_path=self.db, message_id=msg["message_id"], state="needs_info",
                        note="sha 拉不到，请发送方确认 push")
         self.assertEqual(out["ack_state"], "needs_info")
+
+    def test_accept_rejected_when_fetch_fails_even_if_commit_local(self):
+        """v1.1.1 P1 回归：remote 存在且 git fetch 失败 → 立即拒绝 accepted，
+        即便本地 cat-file 能找到该 commit 对象（SPEC §一：fetch 成功是前置条件）。"""
+        # 人为使 fetch 必败且可自动化：remote 指向一个不存在的本地路径
+        # （git 视为本地仓库路径 → 确定性 "does not appear to be a git repository"，全程无网络）
+        bad_origin = os.path.join(self.tmp, "no-such-origin.git")
+        git(self.repo, "remote", "add", "origin", bad_origin)
+        self.assertEqual(git(self.repo, "remote").stdout.split(), ["origin"])  # 前置：remote 存在
+        self.assertEqual(git(self.repo, "rev-parse", "--verify", self.sha + "^{commit}").returncode,
+                         0)  # 前置：该 commit 对象本地已存在（修复前此处即被放行）
+        msg = self._send_delivery(sha=self.sha)
+        with self.assertRaisesRegex(core.ProjbusError, "fetch 失败"):
+            core.ack(db_path=self.db, message_id=msg["message_id"], state="accepted",
+                     repo_root=self.repo)
+        # 门禁拒绝后消息未被写成 accepted，可改走 needs_info
+        out = core.ack(db_path=self.db, message_id=msg["message_id"], state="needs_info",
+                       note="fetch 失败，待恢复后重验")
+        self.assertEqual(out["ack_state"], "needs_info")
+
+    def test_accept_allowed_when_fetch_succeeds_with_remote(self):
+        """v1.1.1 P1 对照：remote 存在且 fetch 成功 → accepted 正常放行（门禁未过度收紧）。"""
+        origin = os.path.join(self.tmp, "origin.git")
+        self.assertEqual(git(self.repo, "init", "--bare", origin).returncode, 0)
+        git(self.repo, "remote", "add", "origin", origin)
+        r = git(self.repo, "push", "origin", "main")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        msg = self._send_delivery(sha=self.sha)
+        out = core.ack(db_path=self.db, message_id=msg["message_id"], state="accepted",
+                       repo_root=self.repo)
+        self.assertEqual(out["ack_state"], "accepted")
+        self.assertTrue(out["accept_gate"]["fetch_ok"])
 
     def test_accept_rejected_when_artifact_missing_in_commit(self):
         msg = self._send_delivery(sha=self.sha, paths=("docs/missing.md",))
@@ -526,6 +560,53 @@ class TestEnvFallback(BusTestBase):
                     db_path=self.db, actor="   ")
         self.assertEqual(r.returncode, 1)
         self.assertIn("PROJBUS_ACTOR", r.stderr)
+
+    def test_turn_completed_project_id_precedence(self):
+        """v1.1.1 P2：turn-completed 的 project_id = 显式 --project-id > PROJBUS_PROJECT_ID > 默认。"""
+        # env 设非法 project → 报错：证明 env 被读取且仍走注册表校验（未静默回落默认）
+        r = run_cli(["turn-completed", "--from", "rd"], db_path=self.db, project_id="other-game")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("未注册 project_id", r.stderr)
+        self.assertEqual(core.poll(db_path=self.db, recipient="art"), [])  # 报错前未发出任何消息
+        # 显式参数 > env：env 非法但显式合法 → 成功，且消息落库带显式 project_id
+        r = run_cli(["turn-completed", "--from", "rd", "--project-id", "placement-wuxia"],
+                    db_path=self.db, project_id="other-game")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(len(r.stdout.strip().splitlines()), 2)  # 广播给 art / arch
+        for role in ("art", "arch"):
+            msgs = core.poll(db_path=self.db, recipient=role)
+            self.assertEqual(len(msgs), 1)
+            self.assertEqual(msgs[0]["project_id"], "placement-wuxia")
+
+    def test_reconcile_outbox_project_id_precedence(self):
+        """v1.1.1 P2：reconcile-outbox 的 project_id = 显式 --project-id > PROJBUS_PROJECT_ID > 默认；
+        代发的 delivery 与游标均按解析出的 project_id 记账。"""
+        repo = make_repo(self.tmp)
+        # env 非法 → 报错：证明 env 参与解析且过注册表校验
+        r = run_cli(["reconcile-outbox", "--repo", repo], db_path=self.db, project_id="other-game")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("未注册 project_id", r.stderr)
+        # 显式 > env → 基线成功，游标 key 使用显式 project_id
+        r = run_cli(["reconcile-outbox", "--repo", repo, "--project-id", "placement-wuxia"],
+                    db_path=self.db, project_id="other-game")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertTrue(json.loads(r.stdout)["baseline"])
+        conn = sqlite3.connect(self.db)
+        row = conn.execute(
+            "SELECT value FROM projbus_meta WHERE key='reconcile_cursor:placement-wuxia'"
+        ).fetchone()
+        conn.close()
+        self.assertIsNotNone(row)
+        # 账实差 → 补发的 delivery 落库带显式 project_id
+        commit_file(repo, "tasks/LOG.md", "P2 交接\n", "handoff: p2 显式 project")
+        r = run_cli(["reconcile-outbox", "--repo", repo, "--project-id", "placement-wuxia"],
+                    db_path=self.db, project_id="other-game")
+        self.assertEqual(json.loads(r.stdout)["deliveries_created"], 1)
+        for role in ("art", "arch"):
+            msgs = core.poll(db_path=self.db, recipient=role)
+            self.assertEqual(len(msgs), 1)
+            self.assertEqual(msgs[0]["project_id"], "placement-wuxia")
+            self.assertTrue(msgs[0]["reconciled"])
 
     def test_env_actor_still_must_be_registered_role(self):
         """env 提供的取值仍过注册表校验：宿主注入的必须是 rd/art/arch（非宿主名如 codex）。"""

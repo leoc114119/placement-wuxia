@@ -7,7 +7,8 @@ projbus — projbus 消息总线 CLI（宿主 Hook 只调 CLI，SPEC §一"Hook 
 
 DB 选择：--db 参数 > 环境变量 PROJBUS_DB > 默认 ~/.projbus/projbus.sqlite。
 身份选择：--from / --to 显式参数 > 环境变量 PROJBUS_ACTOR > 报错（必填身份不得静默猜）。
-项目选择：--project-id 显式参数 > 环境变量 PROJBUS_PROJECT_ID > 默认 placement-wuxia。
+项目选择：--project-id 显式参数 > 环境变量 PROJBUS_PROJECT_ID > 默认 placement-wuxia
+（send / turn-completed / reconcile-outbox 三处同规）。
 git 相关操作（ack 门禁 / reconcile）的仓库根一律由 --repo 参数传入（默认当前目录）。
 """
 import argparse
@@ -93,13 +94,15 @@ def cmd_poll_context(a) -> int:
 def cmd_turn_completed(a) -> int:
     """turn_completed 脉冲（SPEC §2.2 保证层）：广播给除发送方外的全部注册角色。"""
     sender = core.resolve_actor(a.sender, "from")
+    project_id = core.resolve_project_id(a.project_id)
     targets = [r for r in core.ROLES if r != sender]
     ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime())
     results = []
     for to in targets:
         key = ("%s:%s" % (a.idempotency_key, to)) if a.idempotency_key \
             else "turn:%s:%d:%s" % (sender, int(time.time() * 1000), to)
-        msg, dup = core.send(db_path=a.db, sender=sender, to=to, kind="turn_completed",
+        msg, dup = core.send(db_path=a.db, project_id=project_id, sender=sender, to=to,
+                             kind="turn_completed",
                              payload={"subject": "turn completed: %s" % sender,
                                       "note": a.note, "ts": ts},
                              idempotency_key=key)
@@ -113,6 +116,7 @@ def cmd_turn_completed(a) -> int:
 
 def cmd_reconcile(a) -> int:
     summary = core.reconcile_outbox(db_path=a.db, repo_root=a.repo, sender=a.sender,
+                                    project_id=core.resolve_project_id(a.project_id),
                                     handoff_paths=_split_paths(a.paths))
     _dump(summary)
     return 0
@@ -166,6 +170,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("turn-completed", help="turn_completed 脉冲，广播给其他角色（保证层，SPEC §2.2）")
     p.add_argument("--from", dest="sender", default=None,
                    help="结束回合的角色（rd/art/arch；缺省读环境变量 PROJBUS_ACTOR）")
+    p.add_argument("--project-id", default=None,
+                   help="project_id（缺省读环境变量 PROJBUS_PROJECT_ID，再缺省 placement-wuxia）")
     p.add_argument("--note", default=None)
     p.add_argument("--idempotency-key", default=None, help="自动按收件人加后缀")
     _add_db(p)
@@ -174,6 +180,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("reconcile-outbox", help="对账 git 与总线，代发缺失 delivery（自愈，SPEC §2.3）")
     p.add_argument("--repo", default=os.getcwd(), help="仓库根（默认当前目录）")
     p.add_argument("--sender", default="rd", help="代发消息的 from 角色（默认 rd）")
+    p.add_argument("--project-id", default=None,
+                   help="project_id（缺省读环境变量 PROJBUS_PROJECT_ID，再缺省 placement-wuxia）")
     p.add_argument("--paths", default=",".join(core.DEFAULT_HANDOFF_PATHS),
                    help="逗号分隔 handoff 路径（默认 tasks/LOG.md,tasks/threads/,assets/）")
     _add_db(p)

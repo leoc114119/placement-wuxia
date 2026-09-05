@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 projbus_core.py — projbus 跨工具协作消息总线 · 核心（单文件）
-规格真源：scripts/projbus/SPEC.md v1.1（§一 Codex MCP-01 原文 + §二 PM 增补 + §三 实现约束）
+规格真源：scripts/projbus/SPEC.md v1.1.1（§一 Codex MCP-01 原文 + §二 PM 增补 + §三 实现约束 + 变更记录）
 
 职责：本机（同机同 OS 用户）SQLite 运输层。git commit/push + handoff 文件仍是唯一事实源，
 projbus 只负责通知、协商与 ACK。不读 transcript、不做 HTTP/wait/自动 merge。
@@ -14,9 +14,12 @@ projbus 只负责通知、协商与 ACK。不读 transcript、不做 HTTP/wait/�
   D3 payload 必须是 JSON 对象且 ≤16KB（SPEC §一"payload 大小受限""验收正文不进总线"）；
      上限值 SPEC 未定死，取 16384 字节，常量 MAX_PAYLOAD_BYTES 单点可调。
   D4 ack accepted 门禁（SPEC §一）：subprocess 跑 git、仓库根由参数传入；
-     步骤 = 有 remote 则 git fetch --all --prune（失败仅记录）→ `git cat-file -e <sha>^{commit}`
-     必须通过（= 接收方 fetch 到了该 commit）→ 每个 artifact 路径 `git cat-file -e <sha>:<path>`
-     必须存在。任一不过即拒绝 accepted。commit 是否在 remote 跟踪分支上仅作信息返回，不作硬门禁。
+     步骤 = 有 remote 则 git fetch --all --prune，**返回非 0 立即拒绝 accepted**
+     （v1.1.1 修复：fetch 成功是前置条件，本地 cat-file 能找到该 commit 对象也不豁免，
+     否则本地遗留/伪造对象可绕过远端核验）→ `git cat-file -e <sha>^{commit}` 必须通过
+     → 每个 artifact 路径 `git cat-file -e <sha>:<path>` 必须存在。任一不过即拒绝 accepted。
+     无 remote 的裸仓库场景按 SPEC 语境不出现（两宿主均为正常 clone），维持跳过 fetch 并如实记录。
+     commit 是否在 remote 跟踪分支上仅作信息返回，不作硬门禁。
   D5 reconcile-outbox（SPEC §2.3）：游标存 DB meta（reconcile_cursor:<project_id>）；
      首次运行 = 基线（cursor:=HEAD，不补发历史，防止洪水）；之后每次
      `git log <cursor>..HEAD -- <handoff 路径>` 逐条（老→新）核对总线是否已有同 sha 的 delivery
@@ -44,7 +47,7 @@ from datetime import datetime, timezone
 # ---------------------------------------------------------------- 常量（注册表/限额）
 
 SCHEMA_VERSION = 1
-SERVER_VERSION = "1.1.0"
+SERVER_VERSION = "1.1.1"
 
 ROLES = ("rd", "art", "arch")                     # SPEC §2.1 角色注册表（固定）
 PROJECTS = ("placement-wuxia",)                   # SPEC §2.1 project_id 现仅此一个
@@ -413,17 +416,22 @@ def _git(repo_root: str, *args, timeout: int = 30) -> subprocess.CompletedProces
 
 
 def _verify_commit_for_accept(repo_root, sha: str, artifact_paths) -> dict:
-    """ack accepted 门禁（D4）。不通过即抛 ProjbusError，通过则返回核验信息（随 ack 结果返回）。"""
+    """ack accepted 门禁（D4，v1.1.1 修复）。不通过即抛 ProjbusError，通过则返回核验信息。
+    有 remote 时 fetch 失败 = 立即拒绝 accepted（SPEC §一：fetch 成功是前置条件，
+    即便本地 cat-file 能找到该 SHA 也不放行）。"""
     if not repo_root or not os.path.isdir(repo_root):
         raise ProjbusError("ack accepted 需要 repo_root（仓库根）参数指向真实目录")
     sha = _check_sha(sha, "commit_sha")
     remotes = [x.strip() for x in _git(repo_root, "remote").stdout.split() if x.strip()]
-    fetch_ok, fetch_note = True, ""
     if remotes:
         p = _git(repo_root, "fetch", "--all", "--prune", "--quiet", timeout=60)
-        fetch_ok = (p.returncode == 0)
-        if not fetch_ok:
-            fetch_note = ((p.stderr or "").strip() or "fetch 失败")[:300]
+        if p.returncode != 0:
+            detail = ((p.stderr or "").strip() or "无 stderr 输出")[:300]
+            raise ProjbusError(
+                "git fetch 失败，不允许 ack accepted（SPEC §一：仅在 git fetch 成功后、"
+                "确认 SHA 与文件存在时才允许 accepted；本地已有该 commit 对象亦不豁免）"
+                " remote=%s: %s" % (", ".join(remotes), detail))
+        fetch_note = "fetch 成功"
     else:
         fetch_note = "无 remote 配置，fetch 跳过"
     if _git(repo_root, "cat-file", "-e", "%s^{commit}" % sha).returncode != 0:
@@ -437,7 +445,7 @@ def _verify_commit_for_accept(repo_root, sha: str, artifact_paths) -> dict:
                            % (sha[:8], ", ".join(missing)))
     branches = [b.strip() for b in _git(repo_root, "branch", "-r", "--contains", sha).stdout.splitlines()
                 if b.strip()]
-    return {"sha": sha, "subject": subject[:200], "fetch_ok": fetch_ok, "fetch_note": fetch_note,
+    return {"sha": sha, "subject": subject[:200], "fetch_ok": True, "fetch_note": fetch_note,
             "remote_branches": branches}
 
 

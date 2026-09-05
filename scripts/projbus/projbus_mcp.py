@@ -69,7 +69,8 @@ TOOLS = [
     {
         "name": "ack",
         "description": "确认消息。state=received/accepted/rejected/needs_info。"
-                       "accepted 门禁：用 subprocess 在 repo_root 跑 git fetch，确认 commit SHA 存在"
+                       "accepted 门禁：repo_root 有 remote 时必须 git fetch 成功（失败即拒绝，"
+                       "即便本地已有该 commit 对象），并确认 commit SHA 存在"
                        "且 artifact_paths 在该 commit 中全部存在，否则拒绝。",
         "inputSchema": {
             "type": "object",
@@ -169,7 +170,7 @@ def handle(req: dict):
             "protocolVersion": params.get("protocolVersion") or PROTOCOL_VERSION,
             "capabilities": {"tools": {}},
             "serverInfo": {"name": "projbus", "version": core.SERVER_VERSION},
-            "instructions": "projbus 跨工具协作消息总线（SPEC v1.1）。通知/协商/ACK 专用；"
+            "instructions": "projbus 跨工具协作消息总线（SPEC v1.1.1）。通知/协商/ACK 专用；"
                             "git commit+push+handoff 文件仍是唯一事实源；不自动 merge，不执行消息正文。",
         })
     if method == "ping":

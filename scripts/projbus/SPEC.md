@@ -1,7 +1,8 @@
-# projbus · 跨工具协作消息总线 定稿规格 v1.1
+# projbus · 跨工具协作消息总线 定稿规格 v1.1.1
 
 > 基础 = Codex《MCP-01 · 跨工具协作消息总线 v1》（2026-09-05，全文采纳为 §一）
 > v1.1 增补 = ZCode PM 审查附录（§二：角色注册表/可靠性分层/reconcile-outbox 定义/运行时裁定/宿主注册/验收增补）
+> v1.1.1 修订 = Codex 验收审查两项（ack accepted 门禁 fetch 前置 / project_id 参数补齐，见文末「变更记录」）
 > 实现真源 = 本文件。实现位置：`scripts/projbus/`（核心单文件 + CLI + MCP stdio 包装）
 
 ## §一 MCP-01 原文（Codex，采纳）
@@ -119,3 +120,9 @@ project_id 现仅 `placement-wuxia`。未注册收件人 send 报错。
 - 单文件核心 `projbus_core.py` + CLI 入口 `projbus`（三件子命令同核）+ MCP stdio 入口 `projbus_mcp.py`。
 - 位置：`scripts/projbus/`。进 git（工具本身是仓库资产），存储 ~/.projbus/ 不进 git。
 - 不碰游戏代码/规格文档；本工具属研发协作基建（与 scripts/task.py 同类）。
+
+## 变更记录
+
+- **v1.1.1（2026-09-05 · 来源=Codex 验收审查）**
+  1. **P1 ack accepted 门禁缺陷修复（正确性）**：§一"仅在 git fetch 后、确认 SHA 与文件存在时，才允许 accepted"中 **fetch 成功是前置条件**。原实现仓库有 remote 时 fetch 失败仅记录不拦截，本地 `git cat-file` 找到 SHA 即放行——修复为：仓库**存在 remote** 且 `git fetch --all --prune --quiet` 返回非 0 → **立即报错拒绝 accepted**（即便本地已有该 commit 对象）。无 remote 的裸仓库场景按 SPEC 语境不可能出现（两宿主均为正常 clone），维持跳过 fetch 并如实记录。回归测试：remote 指向不存在的本地路径制造确定性 fetch 失败（无网络依赖）+ 本地已有该 commit 对象 → 断言 accepted 被拒、错误信息含 fetch 失败语义；另设 fetch 成功（本地 bare remote）放行对照例。
+  2. **P2 project_id 完整性**：CLI `turn-completed`、`reconcile-outbox` 补齐 `--project-id` 参数，与 `send` 同规解析：**显式参数 > `PROJBUS_PROJECT_ID` env > 默认 placement-wuxia**；env 值仍过 §2.1 注册表校验。测试补两子命令显式生效 + env 回退各一例。
