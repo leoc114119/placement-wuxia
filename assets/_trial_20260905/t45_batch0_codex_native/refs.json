@@ -1,0 +1,18 @@
+{
+  "task": "T45 batch 0 prime",
+  "confirmation_seq": 18,
+  "references": {
+    "identity_style": "assets/characters/hero/walk_q/frames/idle_down.png",
+    "direction_sheet": "assets/characters/hero/refs/pose_run_5x8.png",
+    "targets": {
+      "right": "assets/characters/hero/battle45/battle_idle_right.png",
+      "rightup": "assets/characters/hero/battle45/battle_idle_rightup.png",
+      "rightdown": "assets/characters/hero/battle45/battle_idle_rightdown.png"
+    }
+  },
+  "responsibilities": {
+    "identity_style": "五官、发型发饰、服饰配色、像素风",
+    "direction_sheet": "右系三向朝向与身体纵深",
+    "targets": "构图、站姿、脚位、人物尺度"
+  }
+}

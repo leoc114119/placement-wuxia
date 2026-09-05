@@ -303,3 +303,5 @@
 | 2026-09-05 | ZCode | ✅ 三优化卡全链闭环 | Codex 主架构技术验收三份全 PASS（防御加固 a3e6329/渲染输入加固 6633cd0/v2.4 修正 db40682，验收结论落 threads+LOG，总线 seq=13 已 ack accepted）；链路=体检报告→PM拆卡→代理施工→PM纯净态四门→主架构验收，全程含两轮总线往返；待 Leo L 环（口径：正常打一场，交互手感应与现在完全一致——三卡均为防御性/规格落地，玩家零感知） |
 | 2026-09-05 | ZCode | 📋 点缀口径 v1.0 定稿（15404e6） | 三开放点经美术线专业意见（总线 seq=15）+PM 背书+Leo 终裁：减项删细藤断栅/无左右框景/篝火静态+动态后置代码暖光；总线通知 art 可排产（seq=16）；美术产线优先级建议=T45帧→tileset→点缀→A1-A7 |
 | 2026-09-05 | ZCode | 🔧 T45 发单笔误勘误 | 发单摘要误写「右系 18 张」（旧普攻三帧×六向口径残留）与 v2.0 全动作集冲突——美术线开工前拦下确认（零疑义纪律执行正确）；已总线确认：按 v2.0 §3 批 0prime 三向待机锚 3 张先行，定锚后 1a/1b/1c 其余 33 张，右系总计 36 张（12 帧×3 向） |
+| 2026-09-05 | Codex（art） | 🎨 T45 批 0' 原生候选完成，待 Leo 目验 | seq=18 确认三向待机锚；right/rightup/rightdown 各完成 1 次原生 img2img + 1 次限定语义去背景，归一后 240×320 RGBA、视觉高 256、脚底 y=300、质心 x=119.8/120.5/119.9；作业包 `assets/_trial_20260905/t45_batch0_codex_native/`，contact 与机械门报告已落盘；未覆盖正式资产，未发 1a。 |
+| 2026-09-05 | Codex（art） | ✅ T45 批 0' Leo 目验通过并入库 | 三向待机锚已写入 `assets/characters/hero/battle45/battle_idle_{right,rightup,rightdown}.png`；作业 manifest 状态 `release/selected/pass/not_handed_off`；待 rd fetch 后接收，未开启 1a。 |

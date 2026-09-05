@@ -1,0 +1,93 @@
+{
+  "alpha_threshold": 32,
+  "canvas": [
+    240,
+    320
+  ],
+  "target_height": 256,
+  "baseline_y": 300,
+  "center_x": 120,
+  "frames": [
+    {
+      "name": "right",
+      "source_bbox_alpha_ge32": [
+        148,
+        11,
+        880,
+        1312
+      ],
+      "scale": 0.196772,
+      "output": "assets/_trial_20260905/t45_batch0_codex_native/normalized/battle_idle_right.png",
+      "bbox_alpha_ge32": [
+        47,
+        44,
+        191,
+        300
+      ],
+      "bbox_any_alpha": [
+        47,
+        44,
+        191,
+        300
+      ],
+      "char_h_ge32": 256,
+      "feet_y_ge32": 300,
+      "centroid_x_ge32": 119.84,
+      "issues": []
+    },
+    {
+      "name": "rightup",
+      "source_bbox_alpha_ge32": [
+        185,
+        77,
+        916,
+        1435
+      ],
+      "scale": 0.188513,
+      "output": "assets/_trial_20260905/t45_batch0_codex_native/normalized/battle_idle_rightup.png",
+      "bbox_alpha_ge32": [
+        50,
+        44,
+        188,
+        300
+      ],
+      "bbox_any_alpha": [
+        50,
+        44,
+        188,
+        300
+      ],
+      "char_h_ge32": 256,
+      "feet_y_ge32": 300,
+      "centroid_x_ge32": 120.49,
+      "issues": []
+    },
+    {
+      "name": "rightdown",
+      "source_bbox_alpha_ge32": [
+        171,
+        91,
+        827,
+        1348
+      ],
+      "scale": 0.20366,
+      "output": "assets/_trial_20260905/t45_batch0_codex_native/normalized/battle_idle_rightdown.png",
+      "bbox_alpha_ge32": [
+        48,
+        44,
+        182,
+        300
+      ],
+      "bbox_any_alpha": [
+        48,
+        44,
+        182,
+        300
+      ],
+      "char_h_ge32": 256,
+      "feet_y_ge32": 300,
+      "centroid_x_ge32": 119.93,
+      "issues": []
+    }
+  ]
+}

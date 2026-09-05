@@ -1,0 +1,38 @@
+{
+  "jobId": "t45_batch0_codex_native_20260905",
+  "task": "T45",
+  "batch": "0prime",
+  "visualReview": "selected",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "approvedBy": "Leo",
+  "source": "Codex native ImageGen",
+  "frames": [
+    {
+      "direction": "right",
+      "releasePath": "assets/characters/hero/battle45/battle_idle_right.png",
+      "candidatePath": "normalized/battle_idle_right.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_right.png",
+      "attempts": 2,
+      "mirrorPolicy": "source anchor; left系待后续确定性镜像"
+    },
+    {
+      "direction": "rightup",
+      "releasePath": "assets/characters/hero/battle45/battle_idle_rightup.png",
+      "candidatePath": "normalized/battle_idle_rightup.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_rightup.png",
+      "attempts": 2,
+      "mirrorPolicy": "source anchor; left系待后续确定性镜像"
+    },
+    {
+      "direction": "rightdown",
+      "releasePath": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+      "candidatePath": "normalized/battle_idle_rightdown.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+      "attempts": 2,
+      "mirrorPolicy": "source anchor; left系待后续确定性镜像"
+    }
+  ],
+  "qa": "qa/normalize_report.json",
+  "contact": "contact/batch0_prime_native_vs_formal.png"
+}

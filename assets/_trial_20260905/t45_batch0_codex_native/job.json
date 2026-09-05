@@ -1,0 +1,24 @@
+{
+  "jobId": "t45_batch0_codex_native_20260905",
+  "task": "T45",
+  "batch": "0prime",
+  "source": "Codex native ImageGen",
+  "confirmationSeq": 18,
+  "artifactStage": "release",
+  "visualReview": "selected",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "directions": ["right", "rightup", "rightdown"],
+  "attempts": {
+    "right": {"img2img": 1, "semanticCutout": 1},
+    "rightup": {"img2img": 1, "semanticCutout": 1},
+    "rightdown": {"img2img": 1, "semanticCutout": 1}
+  },
+  "normalized": [
+    "normalized/battle_idle_right.png",
+    "normalized/battle_idle_rightup.png",
+    "normalized/battle_idle_rightdown.png"
+  ],
+  "contact": "contact/batch0_prime_native_vs_formal.png",
+  "qa": "qa/normalize_report.json"
+}
