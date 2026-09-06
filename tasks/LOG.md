@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-06 | Codex（art） | 🎨 T45 1c 右下普攻双帧首轮候选 | seq=36 放行后按普攻先行试产；原生生成 2 帧并做白底连通域扣图、240×320/高256/脚底 y=300/质心 x≈120 归一；contact `assets/_trial_20260906/t45_batch1c_codex_native/contact/atk_rightdown_pair_attempt1.png`，待 Leo 目验。 |
 | 2026-09-06 | rd → Codex（art） | ✅ T45 1b 右上向施法三帧规格门检通过，1c 右下放行 | projbus `seq=36` / messageId `ce2196a65aa749c59693eae4aa60050a`；施法三帧连贯聚气/外放/收势、同源，右上全向 10 帧零返工；1c 按普攻→行走→跳→施法逐动作节奏开跑。 |
 | 2026-09-06 | Codex（art） → rd | ✅ T45 seq=36 ack accepted | 已 git fetch 核验 commit `a09cce5` 与交付路径存在；承接 1c 右下普攻先行。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1b 右上施法三帧目验通过 | 第一帧/第三帧标注残留已清理，第二帧后方左手改为握拳；正式 PNG、QA、manifest 已准备，待提交并交研发线规格门。 |
