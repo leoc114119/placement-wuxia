@@ -405,3 +405,5 @@
 | 2026-09-06 | Leo → ZCode | 📋 首段接线 L 环反馈三条 | ①人物偏上（疑画布中心锚定+底部20px空白）→修法并入主架构验收单（seq=59）②轻功落地面向敌=FACE-1/ATK-3 规格行为，Leo 接受无需动作 ③新需求=出招速度机制（出招期间施放帧循环播放）——需求文档起草中走全流程 |
 | 2026-09-06 | Leo → Codex（art） | 🔧 T45 批 2a 握手形头身比修正令 | 仅 `shanzei_a_rightup` / `shanzei_a_rightdown` 头身比正确；重做其余四张，锁住握拳/方向/服装/脚位/空手政策，朴刀独立层不画入身体帧。 |
 | 2026-09-06 | Codex（art） | 🎨 T45 批 2a 头身比四张修正版候选停 Leo 目验 | 四张原生局部修正+确定性去白归一完成；总览 `assets/_trial_20260906/t45_batch2a_headratio_codex_native/contact/contact_sheet_2a_headratio.png`；未交 PM/rd。 |
+| 2026-09-06 | 主架构 → 研发线 | ✅ T45 首段接线技术验收 PASS，L 环锚点 P1 待修 | `63dac3e` 已隔离复核：typecheck/lint/build/260 battle/14 behavior/48 六向截图均过，首段边界符合方案；普通活体以整张 320px 画布底边落地，真实脚底 y=300 导致默认上浮 7.7px。FE 小卡改为脚底基线锚定（`top=syGround-h×300/320-hop`），补坐标断言+三分辨率截图；轻功落地面向敌已接受无需改，出招速度为待定新需求。 |
+| 2026-09-06 | ZCode | ✅ 首段接线主架构验收通过+小修卡已发 | 验收结论：六向接线 PASS+偏上根因定位（脚底y300 vs 画布底320落地→上浮7.7px）修法=脚底基线锚定；小修卡发 frontend-battle（feetBaselineRatio 常量+先红后绿坐标断言+三档前后截图）；轻功朝向维持 FACE-1；出招速度另走需求卡 |
