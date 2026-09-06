@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-06 | Codex（art） → rd | 📤 T45 1c 右下普攻用户候选已交规格门 | commit `8c0ed05` 已推送；projbus `seq=37` / messageId `d499e5b3db754f31ac9ae352217a0214`；按角色自身右手口径交付，等待研发线 PM 规格门。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1c 右下普攻手位口径修订 | 口径改为角色自身右手出拳，不再按画面左右描述；当前用户候选已按角色解剖侧通过视觉候选，`A2-T45-rightdown-hand.md`，候选 selected，规格门待研发线 PM。 |
 | 2026-09-06 | Leo → Codex（art） | 🎨 T45 1c 右下普攻用户候选待规格确认 | 候选 `codex-clipboard-623ae1cf-49c8-4680-a5f9-e4645bfca453.png` 的右下三分之四角度通过视觉候选检查；已归一 `assets/_trial_20260906/t45_batch1c_codex_native/normalized/atk_rightdown_2_user_candidate1.png`，但画面右侧手出拳，与现行画面左侧手出拳口径冲突；未入正式目录，待明确是否改口径。 |
 | 2026-09-06 | Codex（art） | ⚠️ T45 1c 右下普攻第 5 次原生尝试仍未达手位门 | 按 Leo 直接纠正“交换当前出拳手”生成并归一 `assets/_trial_20260906/t45_batch1c_codex_native/raw/atk_rightdown_2_attempt5.png`；模型仍输出画面右侧手出拳，动作门 FAIL；对照 `contact/atk_rightdown_pair_attempt5.png`，不入正式目录，待圈选/姿势示意图。 |
