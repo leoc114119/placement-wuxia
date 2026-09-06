@@ -386,3 +386,4 @@
 | 2026-09-06 | Codex（art） | 🧹 T45 右下施法第2帧发尾清边完成 | 发尾 ROI 确定性清理 93 px，未改动作；formal frame2、manifest/QA/contact 已更新，准备提交规格门。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1c 右下施法三帧交规格门 | commit `9f0d8ba`；projbus `seq=45` / messageId `65da9362e12c4fc8be8c188c407ec9ad`；三帧正式路径、manifest/QA/contact 已交付，等待研发线 PM 规格门。 |
 | 2026-09-06 | ZCode | 🎉 T45 主角右系 31 张全量收官（9f0d8ba） | 1c 施法三帧门检 PASS；自批 0'（09-05）至今日内三向全齐，逐动作小闭环全程零欠账；放行批 2a'（山贼双敌三向锚 6 张）；接线方案主架构已预约（seq=44）起草中 |
+| 2026-09-06 | Leo → ZCode | 📋 NPC 武功演出裁定 | NPC/敌方触发武功用普攻帧演出（Leo 口谕"好像也没什么问题"）——帧表映射层做敌型 cast→atk 降级映射，session 零改动；MVP 山贼 skills=[] 暂不触发；将来敌型要真施法动画=补 cast 帧组换映射即可；已纳入接线方案需求 |
