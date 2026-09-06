@@ -334,6 +334,7 @@
 | 2026-09-05 | ZCode | ✅ 1b 右上普攻小闭环门检 PASS（d92a050） | 两帧机械全过+视角正确（背斜侧）+两帧记账对 v1.3；按动作逐个输出节奏跑通首环（普攻→下一动作行走）；ack accepted |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1b 右上行走第二帧目验通过并入库 | 采用 Leo 提供的右上后背斜行走候选，确认透明背景、人物比例与脚位可用；归一写入 `assets/characters/hero/battle45/walk_rightup_2.png`（240×320 RGBA，bbox 38,44–201,300，alpha 0–255）；右上行走第一帧仍待成对确认，未提交/未发 delivery。 |
 | 2026-09-06 | Leo → Codex（art） | ⏸️ T45 今日收工，明日续接 | 当前停点：右上行走第二帧已通过并入库，第一帧待成对确认；未提交、未发研发门检。后续可用 Photoshop 做局部脚位交换/蒙版修整，保持朝向、五官、比例与规格不变。 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 1b 右上行走双帧确认，待研发线门检 | Leo 确认昨日已完成双帧目验；`walk_rightup_{1,2}.png` 已正式落盘，均 240×320 RGBA、视觉高 256、脚底 y=300、质心约 x=120；QA/manifest/contact 已补齐，commit+push 后发 projbus delivery 给 rd。 |
 | 2026-09-06 | ZCode | 📋 治理审计落地（arch 11 项，澄清类已同步 70496aa） | ZCode 侧六文件：旧美术 skill 冻结横幅/art-pipeline 迁移声明/旧前后端退役横幅/README 交付路径放行本任务件/architect 流程适配+四态完成+提案vs待裁/AGENTS CodeBuddy 勘误；扩权项 1（疑义全停收窄）2（高风险重复确认豁免）4（Leo 已决不重复索取）9（无疑义免空确认）候 Leo 批准卡 |
 | 2026-09-06 | Leo → ZCode | ✅ 治理审计四项扩权批准 | 疑义停工收窄/高风险已授权免重复/Leo 已决不重复索取/无疑义免空确认——AGENTS.md 落地（2ca5f15）；硬门全保留（规格审批/审美定稿/PM 规格门/预算/资产保护）；arch 11 项审计全部处置完毕 |
 | 2026-09-06 | ZCode | ✅ Codex 侧审计项5/6 接力收尾（arch 额度满中断） | arch 原位修订被 yaml 缺失阻断校验→PM 零依赖结构校验 PASS（frontmatter/11章节/项5模板收窄/项6停工粒度/疑义对齐扩权/旧矛盾零遗留）；.codex SKILL 首次入库+README 收窄修订一并提交；三份 Codex 专用文件（用户级 AGENTS/README/SKILL）全部就绪 |

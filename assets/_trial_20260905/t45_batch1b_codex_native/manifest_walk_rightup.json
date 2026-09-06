@@ -1,0 +1,20 @@
+{
+  "jobId": "t45_batch1b_codex_native_20260906_walk",
+  "task": "T45",
+  "batch": "1b-walk",
+  "direction": "rightup",
+  "artifactStage": "release",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "approvedBy": "Leo",
+  "frameCount": 2,
+  "releasePaths": [
+    "assets/characters/hero/battle45/walk_rightup_1.png",
+    "assets/characters/hero/battle45/walk_rightup_2.png"
+  ],
+  "qa": "qa/walk_rightup_qa.json",
+  "contact": "contact/walk_rightup_pair_final_review.png",
+  "sourceNotes": "frame 1 existing rightup walk candidate; frame 2 Leo-provided candidate with deterministic normalization",
+  "generationPolicy": "no new generation in this closure; local normalization and alpha verification only"
+}

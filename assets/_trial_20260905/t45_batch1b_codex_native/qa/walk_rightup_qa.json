@@ -1,0 +1,36 @@
+{
+  "jobId": "t45_batch1b_codex_native_20260906_walk",
+  "task": "T45",
+  "batch": "1b-walk",
+  "direction": "rightup",
+  "checkedAt": "2026-09-06",
+  "canvas": [240, 320],
+  "mode": "RGBA",
+  "alphaExtrema": [0, 255],
+  "baselineY": 300,
+  "visualHeight": 256,
+  "centroidX": "approximately 120",
+  "frames": [
+    {
+      "frame": 1,
+      "path": "assets/characters/hero/battle45/walk_rightup_1.png",
+      "bbox": [35, 44, 192, 300],
+      "sha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1"
+    },
+    {
+      "frame": 2,
+      "path": "assets/characters/hero/battle45/walk_rightup_2.png",
+      "bbox": [38, 44, 201, 300],
+      "sha256": "1e65c48d8a0ac271244b1beb1103a33ceace4653fd4885381ed4019afa62e421"
+    }
+  ],
+  "localSelfCheck": "pass",
+  "visualReview": "Leo confirmed both frames",
+  "specGate": "pending_rd_spec_gate",
+  "integrationGate": "not_handed_off",
+  "notes": [
+    "two-frame walk phase alternates the character's feet",
+    "rightup is the back-oblique facing upper-right",
+    "no weapon, text, shadow, or opaque background"
+  ]
+}
