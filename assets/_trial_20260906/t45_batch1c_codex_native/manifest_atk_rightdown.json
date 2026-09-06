@@ -37,5 +37,29 @@
     "oldLeftMirrorsRemoved": true
   },
   "cleanupStatus": "complete",
-  "releaseAuthorizedByUser": true
+  "releaseAuthorizedByUser": true,
+  "globalReleaseCleanup": {
+    "deleted": [
+      "assets/characters/hero/battle45/atk_right_3.png",
+      "assets/characters/hero/battle45/atk_rightup_3.png",
+      "assets/characters/hero/battle45/die_down.png"
+    ],
+    "keptCanonical": "assets/characters/hero/battle45/die_common.png",
+    "backupDir": "assets/characters/hero/battle45/backup",
+    "backupPaths": [
+      "assets/characters/hero/battle45/backup/atk_down_1.png",
+      "assets/characters/hero/battle45/backup/atk_down_2.png",
+      "assets/characters/hero/battle45/backup/atk_down_3.png",
+      "assets/characters/hero/battle45/backup/battle_idle_down.png",
+      "assets/characters/hero/battle45/backup/battle_idle_down_breath.png",
+      "assets/characters/hero/battle45/backup/cast_down_1.png",
+      "assets/characters/hero/battle45/backup/cast_down_2.png",
+      "assets/characters/hero/battle45/backup/cast_down_3.png",
+      "assets/characters/hero/battle45/backup/jump_down_1.png",
+      "assets/characters/hero/battle45/backup/jump_down_2.png",
+      "assets/characters/hero/battle45/backup/walk_down_1.png",
+      "assets/characters/hero/battle45/backup/walk_down_2.png"
+    ],
+    "backupCount": 12
+  }
 }

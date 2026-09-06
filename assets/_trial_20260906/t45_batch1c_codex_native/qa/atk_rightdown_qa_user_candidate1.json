@@ -43,5 +43,13 @@
     "oldRightdown3Removed": true,
     "oldLeftMirrorsRemoved": true
   },
-  "releaseAuthorizedByUser": true
+  "releaseAuthorizedByUser": true,
+  "globalReleaseChecks": {
+    "atk_right_3_removed": true,
+    "atk_rightup_3_removed": true,
+    "die_common_exists": true,
+    "die_down_removed": true,
+    "down_backup_count": 12,
+    "down_release_count": 0
+  }
 }
