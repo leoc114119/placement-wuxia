@@ -18,19 +18,30 @@
     320
   ],
   "outputBBox": [
-    59,
+    73,
     44,
-    181,
+    195,
     300
   ],
   "visualHeight": 256,
   "widthHeightRatio": 0.4765625,
   "ratioPass": true,
   "feetY": 300,
-  "centroidX": 120.0,
+  "centroidX": 119.8,
   "alphaExtrema": [
     0,
     255
   ],
-  "hasWeapon": false
+  "hasWeapon": false,
+  "seq72Correction": {
+    "pmReportedBefore": {
+      "bboxLeft": 59,
+      "centroidX": 105.8
+    },
+    "shiftX": 14,
+    "afterForegroundMetric": "full-resolution pixels with alpha > 32",
+    "afterCentroidX": 119.8,
+    "noRedraw": true,
+    "backup": "assets/_trial_20260906/t45_batch2a_codex_native/qa/shanzei_a_right_before_seq72.png"
+  }
 }

@@ -444,6 +444,7 @@
 | 2026-09-06 | Codex（art） | 📝 T45 全天复盘与 skill v1.1 落地 | `docs/reviews/T45-Codex原生美术全天复盘-2026-09-06.md`；覆盖主角动作、镜像、山贼六锚返工、逐张闭环、透明门与双门状态，`.codex/skills/art-pipeline-execution/SKILL.md` 同步可执行规则。 |
 | 2026-09-06 | Codex（art） | ✅ T45 批 2a `seq=72` 已接收并校准 QA 口径 | PM 判 5/6 PASS，甲·右全像素 `alpha>32` 质心 x=105.8 打回；已 ACK received，复盘/skill 固化全分辨率前景质心算法，后续只补该单帧。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 全天复盘与 skill v1.1 已交付 | commit `65a4747`，分支 `codex/t45-shanzei-idle-anchor-candidates`；projbus `seq=73`，交付复盘、skill 与留痕，甲·右补帧另续。 |
+| 2026-09-06 | Codex（art） | 🛠️ T45 seq=72 甲·右整改单完成 | PM 数值对应已 superseded 旧批次文件；已按 +14px 平移并复验质心119.8211，修正证据 `assets/_trial_20260906/t45_batch2a_codex_native/qa/recenter_seq72_qa.json`，统一逐张 manifest 保持原样，待 rd 按正确入口重跑规格门。 |
 | 2026-09-06 | ZCode | 📋 出招速度需求 v1.0 定稿→主架构方案已约（seq=63） | Leo 二轮四裁落文（循环=时长本身/两段落点/普攻1s/3s→0.5s 数值框架）；语义级变更走完整链（方案→Leo拍板→发卡） |
 | 2026-09-06 | ZCode | 📋 武功 schema v0.2：castSpeed 出招系数入战斗层 | Leo 裁定=个体差异属性非统一曲线（轻招<1/绝学可 2）；内功加成速度=全体字段（随内功等级↑，初始 0.2）归内功系统 schema；两字段求和÷3000ms、和封顶≤6 |
 | 2026-09-06 | ZCode | 🔍 批 2a 锚候选门检：5/6 PASS，甲·右打回 | 全像素精扫发现甲·右躯干偏左（质心 105.8 应 ~120，偏 14px）——归一脚本对姿势性偏斜无纠偏能力（已知局限）；其余五张全 PASS（甲独眼/乙红巾形象立住、空拳确认）；整改单已发（平移回中或重出+QA 口径对齐全像素精扫） |

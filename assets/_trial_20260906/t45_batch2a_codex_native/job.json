@@ -15,7 +15,16 @@
   },
   "candidateCount": 6,
   "weaponPolicy": "all body frames empty-hand; standalone saber separate",
-  "next": "Leo visual gate before PM spec delivery",
+  "next": "Legacy batch retained for audit; unified single-frame selection manifest is canonical",
   "supersededBy": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/",
-  "supersedeReason": "Leo requested both visible hands become empty gripping fists for later weapon attachment; old open/relaxed-hand candidates are retained only as rollback references."
+  "supersedeReason": "Leo requested both visible hands become empty gripping fists for later weapon attachment; old open/relaxed-hand candidates are retained only as rollback references.",
+  "seq72Correction": {
+    "status": "deterministic_shift_applied",
+    "shiftX": 14,
+    "target": "shanzei_a_right",
+    "pmBeforeCentroidX": 105.8,
+    "afterCentroidX": 119.8,
+    "runtimeRelease": false,
+    "note": "This legacy batch remains superseded; re-run the PM gate against the unified single-frame selection manifest before runtime release."
+  }
 }

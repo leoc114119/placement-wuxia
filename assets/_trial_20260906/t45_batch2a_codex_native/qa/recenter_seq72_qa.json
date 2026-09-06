@@ -1,0 +1,31 @@
+{
+  "task": "T45",
+  "target": "shanzei_a_right",
+  "sourceBefore": "assets/_trial_20260906/t45_batch2a_codex_native/qa/shanzei_a_right_before_seq72.png",
+  "output": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_a_right.png",
+  "reason": "rd/projbus seq=72 returned this frame for horizontal centering",
+  "operation": "deterministic horizontal translation",
+  "shiftX": 14,
+  "before": {
+    "bbox": [59, 44, 181, 300],
+    "centroidX": 105.8211,
+    "pmReportedCentroidX": 105.8,
+    "sha256": "e5835436751fc47a51c4a8d2992232e368da3f4a50d1f08cd2ae5364cd8e2191"
+  },
+  "after": {
+    "size": [240, 320],
+    "mode": "RGBA",
+    "bbox": [73, 44, 195, 300],
+    "visualHeight": 256,
+    "feetY": 300,
+    "centroidX": 119.8211,
+    "alphaThreshold": 32,
+    "alphaExtrema": [0, 255],
+    "perimeterNonzero": 0,
+    "sha256": "8dd4107d5028c02f8d476fae9d1125a2f4870e27449823e7d208d07352c31cc6"
+  },
+  "noRedraw": true,
+  "runtimeRelease": false,
+  "legacyBatch": true,
+  "canonicalSelectionManifest": "assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/manifest.json"
+}

@@ -21,21 +21,22 @@
         320
       ],
       "outputBBox": [
-        59,
+        73,
         44,
-        181,
+        195,
         300
       ],
       "visualHeight": 256,
       "widthHeightRatio": 0.4765625,
       "ratioPass": true,
       "feetY": 300,
-      "centroidX": 120.0,
+      "centroidX": 119.8,
       "alphaExtrema": [
         0,
         255
       ],
-      "hasWeapon": false
+      "hasWeapon": false,
+      "seq72Correction": "deterministic horizontal shift +14px; full-resolution alpha>32 foreground centroid 105.8→119.8"
     },
     {
       "key": "shanzei_a_rightup",

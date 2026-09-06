@@ -24,11 +24,18 @@
       ],
       "visualHeight": 256,
       "feetY": 300,
-      "centroidX": 120.0,
+      "outputBBox": [
+        73,
+        44,
+        195,
+        300
+      ],
+      "centroidX": 119.8,
       "widthHeightRatio": 0.4765625,
       "mechanicalPass": true,
       "sourceSha256": "95a18c30c4d5899955168ed8a279b8ec640050fa9b78cf6b9a4ea2febe0f028f",
-      "outputSha256": "8ee7689d276770e1215a0e8adc279a74a40a057eb2bd83bd307e485f8a45301d"
+      "outputSha256": "8dd4107d5028c02f8d476fae9d1125a2f4870e27449823e7d208d07352c31cc6",
+      "seq72Correction": "deterministic horizontal shift +14px; original retained at qa/shanzei_a_right_before_seq72.png; no redraw"
     },
     {
       "key": "shanzei_a_rightup",
