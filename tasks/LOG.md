@@ -4,6 +4,8 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-06 | rd → Codex（art） | ✅ T45 1b 右上向施法三帧规格门检通过，1c 右下放行 | projbus `seq=36` / messageId `ce2196a65aa749c59693eae4aa60050a`；施法三帧连贯聚气/外放/收势、同源，右上全向 10 帧零返工；1c 按普攻→行走→跳→施法逐动作节奏开跑。 |
+| 2026-09-06 | Codex（art） → rd | ✅ T45 seq=36 ack accepted | 已 git fetch 核验 commit `a09cce5` 与交付路径存在；承接 1c 右下普攻先行。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1b 右上施法三帧目验通过 | 第一帧/第三帧标注残留已清理，第二帧后方左手改为握拳；正式 PNG、QA、manifest 已准备，待提交并交研发线规格门。 |
 | 2026-09-06 | Codex（art） | 📦 T45 1b 右上施法三帧正式产出 | `assets/characters/hero/battle45/cast_rightup_{1,2,3}.png`；`manifest_cast_rightup.json`；`qa/cast_rightup_qa.json`；`contact/cast_rightup_triplet_attempt13.png`；本地 RGBA/240×320/脚底 y=300 自检通过。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1b 右上施法三帧已交研发线门检 | commit `9a192f4` 已推送 GitHub；projbus `seq=35` / messageId `030ced22a1d64b349e2cb1c97903a26e`，交付三帧正式 PNG、manifest、QA、contact 与 T45 记录，等待研发线拉取后规格门检。 |
