@@ -27,7 +27,7 @@
   "fileGate": "PASS",
   "handGate": "PASS_by_Leo_clarification",
   "handGateReason": "Leo clarified the criterion is anatomical character right hand, not screen side; current candidate is accepted as that right-hand punch.",
-  "formalRelease": false,
+  "formalRelease": true,
   "handSemantic": "character_right_hand",
   "visualReview": "selected",
   "artifactStage": "release",
@@ -40,7 +40,8 @@
     "frame1": "PASS",
     "frame2": "PASS",
     "pairConsistency": "PASS",
-    "oldRightdown3Removed": "pending_explicit_authorization",
-    "oldLeftMirrorsRemoved": "pending_explicit_authorization"
-  }
+    "oldRightdown3Removed": true,
+    "oldLeftMirrorsRemoved": true
+  },
+  "releaseAuthorizedByUser": true
 }

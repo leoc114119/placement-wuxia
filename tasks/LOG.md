@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 1c 右下普攻正式 release 清理授权 | Leo 确认旧 `atk_rightdown_3.png` 与 `atk_left*` 镜像无用可删；已清理 10 个旧文件，新 `atk_rightdown_1/2.png` 保留，manifest/QA 标记 formalRelease=true，准备正式交付。 |
 | 2026-09-06 | ZCode/Leo → Codex（art） | ✅ T45 1c 右下普攻候选对门检 PASS | 新 `atk_rightdown_1/2.png` 已准备替换，release manifest/QA 已更新；旧 `atk_rightdown_3.png` 与 `atk_left*` 镜像清理待明确授权，formalRelease 暂保持 false。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1c 右下普攻用户候选已交规格门 | commit `8c0ed05` 已推送；projbus `seq=37` / messageId `d499e5b3db754f31ac9ae352217a0214`；按角色自身右手口径交付，等待研发线 PM 规格门。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1c 右下普攻手位口径修订 | 口径改为角色自身右手出拳，不再按画面左右描述；当前用户候选已按角色解剖侧通过视觉候选，`A2-T45-rightdown-hand.md`，候选 selected，规格门待研发线 PM。 |

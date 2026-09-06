@@ -15,7 +15,7 @@
   "qa": "qa/atk_rightdown_qa_user_candidate1.json",
   "contact": "contact/atk_rightdown_pair_user_candidate1.png",
   "generationPolicy": "one native generation per frame using right attack mother frames plus rightdown identity/orientation references; cutout, normalization and QA deterministic",
-  "formalRelease": false,
+  "formalRelease": true,
   "handSemantic": "character_right_hand",
   "handScreenProjection": "screen_right_for_this_candidate",
   "releasePaths": [
@@ -33,8 +33,9 @@
     "frame1": "PASS",
     "frame2": "PASS",
     "pairConsistency": "PASS",
-    "oldRightdown3Removed": false,
-    "oldLeftMirrorsRemoved": false
+    "oldRightdown3Removed": true,
+    "oldLeftMirrorsRemoved": true
   },
-  "cleanupStatus": "pending_explicit_authorization_for_delete"
+  "cleanupStatus": "complete",
+  "releaseAuthorizedByUser": true
 }
