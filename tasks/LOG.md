@@ -436,3 +436,7 @@
 | 2026-09-06 | Codex（art） | 🎨 T45 山贼甲右下逐张候选待目验 | 作业 `assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/`；A 右/右上已选，右下文件门 PASS，三向对照待 Leo 定稿。 |
 | 2026-09-06 | Codex（art） | 🎨 T45 山贼甲右下第2次方向纠正候选待目验 | 采用新甲右身份锚+旧甲右下姿势参考图，方向已改为右下；作业 `assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/`，文件门 PASS，待 Leo 选定。 |
 | 2026-09-06 | ZCode | 📋 出招速度需求文档 v0.1 成稿 | Leo 六点对齐落文（两段式=出招速度附加产物，均外伤无打断）；AS-1~8 行为草案；语义级变更标注（session 两段错时结算→主架构方案+Leo 拍板链）；三开放点（循环帧集/收招时长归属/普攻延长量）候 Leo 圈 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 山贼甲右下候选通过，六锚候选齐套待规格门 | 统一清单 `assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/manifest.json`，交接 `tasks/handoff/T45-batch2a-six-unarmed-idle-anchors-candidate-2026-09-06.md`；待 rd PM 第二道门检。 |
+| 2026-09-06 | Codex（art） → rd | 📤 T45 六张山贼空手待机锚交规格门 | commit `fc07941` 已推隔离分支 `codex/t45-shanzei-idle-anchor-candidates`；projbus `seq=65`，候选清单与 handoff 已交，等待 rd 第二道门检。 |
+| 2026-09-06 | Codex（art） | 📝 T45 主角色参照生成 NPC 锚经验已归档 | 复盘落 `docs/reviews/T45首日复盘与流程优化-2026-09-04.md` §6，覆盖参照职责、逐张闭环、姿势第二参考、透明规范化与门禁。 |
+| 2026-09-06 | ZCode | 📋 出招速度需求 v1.0 定稿→主架构方案已约（seq=63） | Leo 二轮四裁落文（循环=时长本身/两段落点/普攻1s/3s→0.5s 数值框架）；语义级变更走完整链（方案→Leo拍板→发卡） |
