@@ -1,0 +1,24 @@
+{
+  "verTag": "v1788685333044",
+  "viewport": "375x667",
+  "heroCell": {
+    "q": -1,
+    "r": 11
+  },
+  "panelBox": {
+    "x": 40,
+    "y": 256.3755792728636
+  },
+  "cellCrossInPanel": {
+    "x": 100,
+    "y": 140
+  },
+  "byOffset": {
+    "6": {
+      "heroDrawXY": [
+        94,
+        287
+      ]
+    }
+  }
+}

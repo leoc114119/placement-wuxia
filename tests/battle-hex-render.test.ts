@@ -1825,14 +1825,15 @@ describe('[L 环锚点修正] directional 脚底基线 y=300 锚定格心 / lega
     expect(PIECE.feetBaselineRatio).toBe(300 / 320);
   });
 
-  it('directional（hero idle）绘制底边 = 格心 y + 高度×(1−feetBaselineRatio)：脚底基线 y=300 恰落格心（drawImage y 实参 = 格心 − 高×300/320）', () => {
+  it('directional（hero idle）绘制底边 = 格心 y + 高度×(1−feetBaselineRatio) + feetOffsetPx：脚底基线 y=300 锚格心后按选档下移（drawImage y 实参 = 格心 − 高×300/320 + feetOffsetPx）', () => {
     const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['hero', makeHeroStore()]]) };
     const { dy, dh, syGround } = drawIdlePiece(assets, dirActor()); // 默认 renderPos{q:4,r:8} idle 静立 hop=0
     const h = TILE_H * PIECE.heightPerTile; // 渲染高真源 123.2（drawImg 对 w/h 独立取整 → 绘制 dh=123）
+    expect(PIECE.feetOffsetPx).toBe(6); // 常量锁改写依据=Leo 09-06 校准图选档 6px（五档对照=shots/calib_feet_offset.png；旧值 0 待选档）
     expect(dh).toBe(Math.round(h));
-    expect(dy).toBe(Math.round(syGround - h * PIECE.feetBaselineRatio)); // 主架构验收换算式锁定（旧代码此处=格心−h，红）
-    // 绘制底边 = 格心 + 高×(1−ratio)（未取整口径换算式；dy/dh 独立取整 → 容差 ≤1px）
-    expect(Math.abs(dy + dh - (syGround + h * (1 - PIECE.feetBaselineRatio)))).toBeLessThanOrEqual(1);
+    expect(dy).toBe(Math.round(syGround - h * PIECE.feetBaselineRatio + PIECE.feetOffsetPx)); // 主架构验收换算式锁定（旧代码此处=格心−h，红）
+    // 绘制底边 = 格心 + 高×(1−ratio) + feetOffsetPx（未取整口径换算式；dy/dh 独立取整 → 容差 ≤1px）
+    expect(Math.abs(dy + dh - (syGround + h * (1 - PIECE.feetBaselineRatio) + PIECE.feetOffsetPx))).toBeLessThanOrEqual(1);
   });
 
   it('legacy（npc-shanzei idle）零回归锁：绘制底边 = 格心 y（整画布底落地口径不变，旧帧表脚底在画布底）', () => {

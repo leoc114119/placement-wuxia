@@ -145,9 +145,9 @@ export const PIECE = {
   // 跳跃帧分段阈值 jumpFrameThreshold 已删除（Leo 09-06 裁定：jump 单帧=全程腾空帧 _2，去蓄势帧 _1；
   // 选帧逻辑见 ui/battle-hex-render directionalFrameOf——ordinal 恒 1，禁两段切换回潮）
   /** 脚底向下补偿像素（L 环二轮居中校准 · Leo 连续两轮反馈人物偏上）：directional 分支 top 追加，
-   * 正数=人物下移。Leo 校准中，默认 0 待选档（档位候选 0/4/8/12/16 见 shots/calib_feet_offset.png）；
+   * 正数=人物下移。Leo 09-06 校准图选档 6px（五档对照图=shots/calib_feet_offset.png）；
    * ADR-004 只读展示参数。 */
-  feetOffsetPx: 0,
+  feetOffsetPx: 6,
   moveLerpSec: 0.3, // 普通行走位移表现时长
   jumpHeightPx: 88, // 轻功抛物线顶高（L 环追加②：44→88 翻倍；=JUMP.height 同源）
   deadAlpha: 0.45, // 阵亡变灰透明度

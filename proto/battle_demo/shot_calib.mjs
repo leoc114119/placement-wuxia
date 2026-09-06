@@ -1,7 +1,8 @@
 // ═══ L 环二轮小卡 ①：居中校准表 · feetOffsetPx 五档并排拼图 ═══
 // 背景：Leo 连续两轮反馈人物偏上，禁再盲调——本脚本产同机位 hero idle 场景五档对照图，
 //       Leo 选档后另发微调指令改 config PIECE.feetOffsetPx 常量（本脚本不改默认值）。
-// 用法：node proto/battle_demo/shot_calib.mjs（须先 node proto/battle_demo/build.mjs 刷新 bundle）
+// 用法：node proto/battle_demo/build.mjs 刷新 bundle 后 → node proto/battle_demo/shot_calib.mjs
+//       （可选 CALIB_OFFSETS=6 产单档效果图：shots/calib_feet_offset_6.png，供选档落定后复目验）
 // 产出：shots/calib_feet_offset.png —— 375×667 同机位五档（offset=0/4/8/12/16）横向并排，
 //       每格底部标注档位值；格心十字标记辅助目测 hero 脚底与所在六边形格的关系。
 //       附 shots/calib_feet_offset_diag.json（逐档 hero 帧绘制 y 白盒读数，量化档差）。
@@ -16,13 +17,14 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
 const here = path.dirname(fileURLToPath(import.meta.url));
-const outPng = path.join(here, 'shots', 'calib_feet_offset.png');
-const outDiag = path.join(here, 'shots', 'calib_feet_offset_diag.json');
-fs.mkdirSync(path.dirname(outPng), { recursive: true });
 
-const OFFSETS = [0, 4, 8, 12, 16]; // 档位候选（Leo 校准中，默认 0 待选档）
+const OFFSETS = (process.env.CALIB_OFFSETS ?? '0,4,8,12,16').split(',').map(Number); // 档位（默认五档候选；单档=选档落定复目验）
 const PANEL_W = 200; // 单档取景宽（CSS px，覆盖 hero 渲染高 123.2 + 上下余量）
 const PANEL_H = 280;
+const single = OFFSETS.length === 1; // 单档模式：产出按档位命名（如 calib_feet_offset_6.png），不覆盖五档校准表
+const outPng = path.join(here, 'shots', single ? `calib_feet_offset_${OFFSETS[0]}.png` : 'calib_feet_offset.png');
+const outDiag = path.join(here, 'shots', single ? `calib_feet_offset_${OFFSETS[0]}_diag.json` : 'calib_feet_offset_diag.json');
+fs.mkdirSync(path.dirname(outPng), { recursive: true });
 
 const browser = await chromium.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -97,7 +99,8 @@ const GAP = 12;
 const PAD = 14;
 const LABEL_H = 24;
 const HEAD_H = 30;
-const stitch = await browser.newPage({ viewport: { width: PAD * 2 + PANEL_W * 5 + GAP * 4, height: HEAD_H + PANEL_H + LABEL_H + PAD * 2 } });
+const stitchW = PAD * 2 + PANEL_W * OFFSETS.length + GAP * Math.max(0, OFFSETS.length - 1);
+const stitch = await browser.newPage({ viewport: { width: stitchW, height: HEAD_H + PANEL_H + LABEL_H + PAD * 2 } });
 const dataUrl = await stitch.evaluate(
   async (d) => {
     const { bufs, PAD, GAP, LABEL_H, HEAD_H, PANEL_W, PANEL_H, cross, offsets, verTag } = d;
@@ -112,7 +115,7 @@ const dataUrl = await stitch.evaluate(
           }),
       ),
     );
-    const W = PAD * 2 + PANEL_W * 5 + GAP * 4;
+    const W = PAD * 2 + PANEL_W * offsets.length + GAP * Math.max(0, offsets.length - 1);
     const H = HEAD_H + PANEL_H + LABEL_H + PAD * 2;
     const cv = document.createElement('canvas');
     cv.width = W;
