@@ -368,3 +368,4 @@
 | 2026-09-06 | ZCode | ✅ 1b 右上跳跃双帧门检 PASS（c4388aa） | 机械全过+蓄势/腾空双态+背斜侧同源；逐动作第 3 环（普攻✅行走✅跳跃✅→施法） |
 | 2026-09-06 | ZCode | ✅ 1b 右上施法三帧门检 PASS（a09cce5）——1b 收官 | 右上全向 10 帧（锚1+普攻2+行走2+跳2+施法3）零返工全过门；主角进度 13/31；放行 1c 右下（seq=36） |
 | 2026-09-06 | ZCode | ✅ 1c 右下普攻候选对门检 PASS（8c0ed05） | 候选阶段交付（formalRelease:false）识别正确——归一候选双帧机械全过+正斜侧+同源（含手部朝向问题经 tasks/answers A2 走正规通道解决✓）；放行 formalRelease+release 卫生三件（旧试点 atk_rightdown_1-3 替换/删除 _3 残留/清 atk_left* 旧镜像） |
+| 2026-09-06 | ZCode | 🔍 1c 普攻正式 release=needs_info（7ebbcbeb） | 主活三件✓（右下新帧/rightdown_3删/左系清）；补齐三项：atk_right_3+rightup_3 残留（卫生单点名项遗漏）/die 双名并存（MD5 同）/down 备用族移 backup——补齐转 accepted |
