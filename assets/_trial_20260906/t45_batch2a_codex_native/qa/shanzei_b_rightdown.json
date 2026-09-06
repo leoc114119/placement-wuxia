@@ -1,0 +1,36 @@
+{
+  "key": "shanzei_b_rightdown",
+  "source": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_b_rightdown_attempt1.png",
+  "output": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_b_rightdown.png",
+  "cutMethod": "edge-flood-white",
+  "sourceSize": [
+    1122,
+    1402
+  ],
+  "sourceBBox": [
+    336,
+    177,
+    780,
+    1152
+  ],
+  "outputSize": [
+    240,
+    320
+  ],
+  "outputBBox": [
+    62,
+    44,
+    179,
+    300
+  ],
+  "visualHeight": 256,
+  "widthHeightRatio": 0.45703125,
+  "ratioPass": true,
+  "feetY": 300,
+  "centroidX": 120.5,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "hasWeapon": false
+}

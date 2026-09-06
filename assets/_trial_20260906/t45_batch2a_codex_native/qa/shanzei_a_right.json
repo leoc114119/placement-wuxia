@@ -1,0 +1,36 @@
+{
+  "key": "shanzei_a_right",
+  "source": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_a_right_attempt2.png",
+  "output": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_a_right.png",
+  "cutMethod": "edge-flood-white",
+  "sourceSize": [
+    1122,
+    1402
+  ],
+  "sourceBBox": [
+    363,
+    196,
+    815,
+    1143
+  ],
+  "outputSize": [
+    240,
+    320
+  ],
+  "outputBBox": [
+    59,
+    44,
+    181,
+    300
+  ],
+  "visualHeight": 256,
+  "widthHeightRatio": 0.4765625,
+  "ratioPass": true,
+  "feetY": 300,
+  "centroidX": 120.0,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "hasWeapon": false
+}

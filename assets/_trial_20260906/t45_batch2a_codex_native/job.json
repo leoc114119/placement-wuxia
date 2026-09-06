@@ -1,11 +1,19 @@
 {
-  "task":"T45",
-  "batch":"2a",
-  "artifactStage":"raw",
-  "visualReview":"rejected",
-  "specGate":"blocked_by_generation_limit",
-  "integrationGate":"not_handed_off",
-  "nativeAttempts":{"requested":6,"completed":1,"blocked":5},
-  "policy":"empty-hand body anchors; standalone saber separate",
-  "limit":"ImageGen HTTP 429 usage_limit_reached at 2026-09-06"
+  "task": "T45",
+  "batch": "2a",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "nativeAttempts": {
+    "shanzei_a_right": 2,
+    "shanzei_a_rightup": 2,
+    "shanzei_a_rightdown": 2,
+    "shanzei_b_right": 2,
+    "shanzei_b_rightup": 1,
+    "shanzei_b_rightdown": 1
+  },
+  "candidateCount": 6,
+  "weaponPolicy": "all body frames empty-hand; standalone saber separate",
+  "next": "Leo visual gate before PM spec delivery"
 }

@@ -1,0 +1,150 @@
+{
+  "task": "T45",
+  "batch": "2a",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "count": 6,
+  "policy": "seq=50 empty-hand body anchors; standalone saber separate",
+  "entries": [
+    {
+      "key": "shanzei_a_right",
+      "direction": "right",
+      "enemy": "shanzei_a",
+      "sourceRaw": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_a_right_attempt2.png",
+      "normalized": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_a_right.png",
+      "attempt": 2,
+      "derivedFrom": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_a_right_attempt2.png",
+      "flipX": false,
+      "weaponPolicy": "empty-hand anchor; no weapon layer in body frame",
+      "size": [
+        240,
+        320
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.4765625,
+      "mechanicalPass": true,
+      "sourceSha256": "95a18c30c4d5899955168ed8a279b8ec640050fa9b78cf6b9a4ea2febe0f028f",
+      "outputSha256": "8ee7689d276770e1215a0e8adc279a74a40a057eb2bd83bd307e485f8a45301d"
+    },
+    {
+      "key": "shanzei_a_rightup",
+      "direction": "rightup",
+      "enemy": "shanzei_a",
+      "sourceRaw": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_a_rightup_attempt2.png",
+      "normalized": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_a_rightup.png",
+      "attempt": 2,
+      "derivedFrom": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_a_rightup_attempt2.png",
+      "flipX": false,
+      "weaponPolicy": "empty-hand anchor; no weapon layer in body frame",
+      "size": [
+        240,
+        320
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.4375,
+      "mechanicalPass": true,
+      "sourceSha256": "6ea3de04c9cf774445a987ae8cee80b4225c055fdf651c8d57ef2fb22cefef0a",
+      "outputSha256": "9198b0e1ca344290247ada969e47b7bc904fd3465c22aa3d03a9c3b6d1c59346"
+    },
+    {
+      "key": "shanzei_a_rightdown",
+      "direction": "rightdown",
+      "enemy": "shanzei_a",
+      "sourceRaw": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_a_rightdown_attempt2.png",
+      "normalized": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_a_rightdown.png",
+      "attempt": 2,
+      "derivedFrom": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_a_rightdown_attempt2.png",
+      "flipX": false,
+      "weaponPolicy": "empty-hand anchor; no weapon layer in body frame",
+      "size": [
+        240,
+        320
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.4609375,
+      "mechanicalPass": true,
+      "sourceSha256": "a1b9b3a775994cf3bbb5629eaf495f083130d886a836818d77a9f5774b3718f5",
+      "outputSha256": "605ce2fa929eabf45b6cae8e73d841784d51d4962e99ef23b4ec809846e32c39"
+    },
+    {
+      "key": "shanzei_b_right",
+      "direction": "right",
+      "enemy": "shanzei_b",
+      "sourceRaw": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_b_right_attempt1.png",
+      "normalized": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_b_right.png",
+      "attempt": 1,
+      "derivedFrom": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_b_right_attempt1.png",
+      "flipX": false,
+      "weaponPolicy": "empty-hand anchor; no weapon layer in body frame",
+      "size": [
+        240,
+        320
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.5,
+      "widthHeightRatio": 0.55078125,
+      "mechanicalPass": false,
+      "sourceSha256": "c729231946f1f0472cab604421d0e2e2da1da12475cce7399649f1bf3ce015e5",
+      "outputSha256": "977b6f4cb2106f0469a06b77a7c9cb93f147360c2c19b7c05fecef391bdef8f2"
+    },
+    {
+      "key": "shanzei_b_rightup",
+      "direction": "rightup",
+      "enemy": "shanzei_b",
+      "sourceRaw": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_b_rightup_attempt1.png",
+      "normalized": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_b_rightup.png",
+      "attempt": 1,
+      "derivedFrom": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_b_rightup_attempt1.png",
+      "flipX": false,
+      "weaponPolicy": "empty-hand anchor; no weapon layer in body frame",
+      "size": [
+        240,
+        320
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.421875,
+      "mechanicalPass": true,
+      "sourceSha256": "30b409f042d7079301a6f873b2d7fff436650b08d29a998db81688bddc663d22",
+      "outputSha256": "f552ee329e4a46d82ea20bd6d92002f5a541438a6086a7f5efd4e0460186b372"
+    },
+    {
+      "key": "shanzei_b_rightdown",
+      "direction": "rightdown",
+      "enemy": "shanzei_b",
+      "sourceRaw": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_b_rightdown_attempt1.png",
+      "normalized": "assets/_trial_20260906/t45_batch2a_codex_native/normalized/shanzei_b_rightdown.png",
+      "attempt": 1,
+      "derivedFrom": "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_b_rightdown_attempt1.png",
+      "flipX": false,
+      "weaponPolicy": "empty-hand anchor; no weapon layer in body frame",
+      "size": [
+        240,
+        320
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.5,
+      "widthHeightRatio": 0.45703125,
+      "mechanicalPass": true,
+      "sourceSha256": "c90ea5ddb94e0ff86ec18709a1d55d54405d6ad42bde16a948ab7fbcdc5abc6e",
+      "outputSha256": "81a1d56ffa67326851855dec33e6eb355e8914533d39a40d4216c2891cc1acb3"
+    }
+  ],
+  "rejectedRaw": [
+    "assets/_trial_20260906/t45_batch2a_codex_native/raw/shanzei_a_right_attempt1.png"
+  ],
+  "notes": [
+    "a_rightup uses native attempt2 for compact ratio; a_rightdown uses attempt2 for compact ratio; b_right ratio is 0.551, one pixel over 0.55 redline and remains visible for Leo/PM review."
+  ]
+}
