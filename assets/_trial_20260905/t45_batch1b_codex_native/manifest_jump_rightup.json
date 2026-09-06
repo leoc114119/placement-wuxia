@@ -1,0 +1,20 @@
+{
+  "jobId": "t45_batch1b_codex_native_20260906_jump",
+  "task": "T45",
+  "batch": "1b-jump",
+  "direction": "rightup",
+  "artifactStage": "release",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "approvedBy": "Leo",
+  "frameCount": 2,
+  "releasePaths": [
+    "assets/characters/hero/battle45/jump_rightup_1.png",
+    "assets/characters/hero/battle45/jump_rightup_2.png"
+  ],
+  "qa": "qa/jump_rightup_qa.json",
+  "contact": "contact/jump_rightup_pair_attempt1.png",
+  "sourceNotes": "rightup idle anchor for orientation and proportions; right jump pair for action phase",
+  "generationPolicy": "one native 2-cell sequence-list attempt; local cut/alpha/normalization only"
+}

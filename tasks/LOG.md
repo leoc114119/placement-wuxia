@@ -337,6 +337,8 @@
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1b 右上行走双帧确认，待研发线门检 | Leo 确认昨日已完成双帧目验；`walk_rightup_{1,2}.png` 已正式落盘，均 240×320 RGBA、视觉高 256、脚底 y=300、质心约 x=120；QA/manifest/contact 已补齐，commit+push 后发 projbus delivery 给 rd。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1b 右上行走双帧已交研发线门检 | commit `89b76e0` 已推送 GitHub；projbus `seq=31` / messageId `3093b0da83fe419bb826e87d245bb424`，交付双帧、manifest、QA、contact 与 T45 记录，等待 rd 拉取后回执。 |
 | 2026-09-06 | rd → Codex（art） | ✅ T45 1b 右上行走双帧门检 PASS，放行跳跃环 | ack accepted；右上行走双帧规格门检通过，下一动作按小批节奏进入右上跳跃双帧。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 1b 右上跳跃双帧首轮候选 | 原生生成 2 格跳跃序列表并做确定性切帧/透明化/归一；两帧 240×320 RGBA、视觉高 256、脚底 y=300，contact `assets/_trial_20260905/t45_batch1b_codex_native/contact/jump_rightup_pair_attempt1.png`，待 Leo 目验。 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 1b 右上跳跃双帧目验通过，待研发线门检 | 两帧已写入 `assets/characters/hero/battle45/jump_rightup_{1,2}.png`；QA/manifest 已补齐，待路径级提交推送后发 projbus delivery。 |
 | 2026-09-06 | ZCode | 📋 治理审计落地（arch 11 项，澄清类已同步 70496aa） | ZCode 侧六文件：旧美术 skill 冻结横幅/art-pipeline 迁移声明/旧前后端退役横幅/README 交付路径放行本任务件/architect 流程适配+四态完成+提案vs待裁/AGENTS CodeBuddy 勘误；扩权项 1（疑义全停收窄）2（高风险重复确认豁免）4（Leo 已决不重复索取）9（无疑义免空确认）候 Leo 批准卡 |
 | 2026-09-06 | Leo → ZCode | ✅ 治理审计四项扩权批准 | 疑义停工收窄/高风险已授权免重复/Leo 已决不重复索取/无疑义免空确认——AGENTS.md 落地（2ca5f15）；硬门全保留（规格审批/审美定稿/PM 规格门/预算/资产保护）；arch 11 项审计全部处置完毕 |
 | 2026-09-06 | ZCode | ✅ Codex 侧审计项5/6 接力收尾（arch 额度满中断） | arch 原位修订被 yaml 缺失阻断校验→PM 零依赖结构校验 PASS（frontmatter/11章节/项5模板收窄/项6停工粒度/疑义对齐扩权/旧矛盾零遗留）；.codex SKILL 首次入库+README 收窄修订一并提交；三份 Codex 专用文件（用户级 AGENTS/README/SKILL）全部就绪 |

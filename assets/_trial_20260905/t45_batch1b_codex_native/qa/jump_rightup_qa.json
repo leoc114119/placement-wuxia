@@ -1,0 +1,36 @@
+{
+  "jobId": "t45_batch1b_codex_native_20260906_jump",
+  "task": "T45",
+  "batch": "1b-jump",
+  "direction": "rightup",
+  "checkedAt": "2026-09-06",
+  "canvas": [240, 320],
+  "mode": "RGBA",
+  "alphaExtrema": [0, 255],
+  "baselineY": 300,
+  "visualHeight": 256,
+  "centroidX": "approximately 120",
+  "frames": [
+    {
+      "frame": 1,
+      "path": "assets/characters/hero/battle45/jump_rightup_1.png",
+      "bbox": [36, 44, 203, 300],
+      "sha256": "c6b54d513fbe3bdd76eb311efb2713cd82deb223d855df551e08f92f84b40765"
+    },
+    {
+      "frame": 2,
+      "path": "assets/characters/hero/battle45/jump_rightup_2.png",
+      "bbox": [30, 44, 209, 300],
+      "sha256": "c67209abdb28a3960c190d12017d77c85b4e4c02bee50deea439339833bf2018"
+    }
+  ],
+  "localSelfCheck": "pass",
+  "visualReview": "Leo confirmed both frames",
+  "specGate": "pending_rd_spec_gate",
+  "integrationGate": "not_handed_off",
+  "notes": [
+    "frame 1 is a light crouch from the rightup idle anchor",
+    "frame 2 is the forward/upward airborne phase with arms down and slightly open",
+    "no weapon, text, shadow, or opaque background"
+  ]
+}
