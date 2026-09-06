@@ -1,0 +1,24 @@
+{
+  "task": "T45",
+  "batch": "2a-b-rightdown-single-frame-v1",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "target": "shanzei_b_rightdown",
+  "nativeAttempt": 1,
+  "workflow": "Leo-approved individual frame workflow",
+  "locked": [
+    "approved b-right identity and rendering",
+    "approved b-rightup consistency",
+    "selected b-right head-to-body proportion",
+    "empty gripping fists",
+    "no weapon",
+    "feet baseline",
+    "right-down/front three-quarter viewpoint"
+  ],
+  "excludedReferences": [
+    "all previous painted b-rightup/rightdown candidates"
+  ],
+  "next": "Await PM specification gate with the other selected B direction anchors; do not copy to runtime assets before that gate."
+}

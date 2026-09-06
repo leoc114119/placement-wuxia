@@ -1,0 +1,174 @@
+{
+  "task": "T45",
+  "batch": "2a-anchor-selection-v2-singleframe",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_rd",
+  "integrationGate": "not_handed_off",
+  "scope": "six unarmed idle-body anchors only: shanzei_a/b × right/rightup/rightdown",
+  "policy": "Each selected new A or B direction was generated and visually reviewed one at a time. Do not copy candidates to runtime directories before RD spec-gate PASS. Weapons are separate assets and are not present in the body frames.",
+  "files": [
+    {
+      "role": "shanzei_a",
+      "direction": "right",
+      "candidatePath": "assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/normalized/shanzei_a_right.png",
+      "visualReview": "selected",
+      "selectionNote": "Leo selected new single-frame A right",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bbox": [
+        72,
+        44,
+        168,
+        300
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.375,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "b42174f1764a7e305a0644de8f57a4e41322ebba4b04dd7afa4cb5335dd3e7b1"
+    },
+    {
+      "role": "shanzei_a",
+      "direction": "rightup",
+      "candidatePath": "assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/normalized/shanzei_a_rightup.png",
+      "visualReview": "selected",
+      "selectionNote": "Leo selected new single-frame A rightup",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bbox": [
+        66,
+        44,
+        174,
+        300
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.421875,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "727d6bfcc180b9eb9bb971677274cb531a7f4ae5fb56a7fa19bc5b1fef2d6b7a"
+    },
+    {
+      "role": "shanzei_a",
+      "direction": "rightdown",
+      "candidatePath": "assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/normalized/shanzei_a_rightdown.png",
+      "visualReview": "selected",
+      "selectionNote": "Leo selected corrected A rightdown attempt 2",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bbox": [
+        60,
+        44,
+        180,
+        300
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.46875,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "0ac41113203f12509c293c960c950dff494f74fde83c2b7604534715a2a0db4f"
+    },
+    {
+      "role": "shanzei_b",
+      "direction": "right",
+      "candidatePath": "assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/normalized/shanzei_b_right.png",
+      "visualReview": "selected",
+      "selectionNote": "Leo selected B right",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bbox": [
+        54,
+        44,
+        186,
+        300
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.515625,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "4ac219c6a48f3f8849de9c17a661d81e0df3f5413033f19b40b8791267aa6a39"
+    },
+    {
+      "role": "shanzei_b",
+      "direction": "rightup",
+      "candidatePath": "assets/_trial_20260906/t45_batch2a_b_rightup_singleframe_v5_codex_native/normalized/shanzei_b_rightup.png",
+      "visualReview": "selected",
+      "selectionNote": "Leo selected B rightup",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bbox": [
+        56,
+        44,
+        184,
+        300
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.5,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "0590d39b26b865bbb1dc4d01fdd58d839fada2bbbd845c6369ccd8fbf3682cba"
+    },
+    {
+      "role": "shanzei_b",
+      "direction": "rightdown",
+      "candidatePath": "assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/normalized/shanzei_b_rightdown.png",
+      "visualReview": "selected",
+      "selectionNote": "Leo selected B rightdown attempt 2",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bbox": [
+        54,
+        44,
+        185,
+        300
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 119.5,
+      "widthHeightRatio": 0.51171875,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "237a32c471c2f81bf031b2528cc968d3b3300f7e232fe381c6248e4ec34ce2e7"
+    }
+  ]
+}

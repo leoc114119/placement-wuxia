@@ -1,0 +1,8 @@
+{
+  "identityAndProportion": "refs/a_right_selected_highres.png",
+  "directionOnly": "refs/rightup_white_model_cropped.png",
+  "priority": "image 1 sole character truth; image 2 only rear/right-up viewpoint",
+  "excluded": [
+    "all prior painted A rightup/rightdown candidates"
+  ]
+}

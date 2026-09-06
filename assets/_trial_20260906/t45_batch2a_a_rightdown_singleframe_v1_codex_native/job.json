@@ -1,0 +1,26 @@
+{
+  "task": "T45",
+  "batch": "2a-a-rightdown-single-frame-v1",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "target": "shanzei_a_rightdown",
+  "nativeAttempt": 2,
+  "workflow": "Leo-approved individual frame workflow",
+  "locked": [
+    "Leo-selected new A-right identity and rendering",
+    "Leo-selected A-rightup continuity",
+    "selected A head-to-body proportion",
+    "tied hair, eyepatch, beard, scar, black outfit and brown sash",
+    "empty gripping fists",
+    "no weapon",
+    "feet baseline",
+    "right-down/front three-quarter viewpoint"
+  ],
+  "excludedReferences": [
+    "all previous painted A rightup/rightdown candidates"
+  ],
+  "next": "A three-direction family selected; await RD specification gate with the B family.",
+  "attempt2Change": "Replace the white mannequin direction-only reference with an existing painted A rightdown pose-only reference; preserve the new A-right as sole identity/style/proportion source."
+}

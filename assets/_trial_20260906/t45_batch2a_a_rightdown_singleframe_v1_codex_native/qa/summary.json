@@ -1,0 +1,42 @@
+{
+  "count": 1,
+  "mechanicalPass": true,
+  "files": [
+    {
+      "key": "shanzei_a_rightdown",
+      "source": "assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/raw/shanzei_a_rightdown_attempt2.png",
+      "output": "assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/normalized/shanzei_a_rightdown.png",
+      "selectedAttempt": 2,
+      "size": [
+        240,
+        320
+      ],
+      "sourceAlphaBBox": [
+        269,
+        90,
+        842,
+        1310
+      ],
+      "largestForegroundComponentPixels": 373726,
+      "bbox": [
+        60,
+        44,
+        180,
+        300
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.46875,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "removedExteriorCheckerboardPixels": 1198738,
+      "sourceSha256": "7215e129af7a17ee4ba73b21d7599ad65aec73af7f35e2148789288d05ec68ae",
+      "outputSha256": "0ac41113203f12509c293c960c950dff494f74fde83c2b7604534715a2a0db4f",
+      "processing": "deterministic exterior-only light-neutral checkerboard removal; detached remnant excluded by largest foreground component crop; aspect-preserving 240x320 normalization; no semantic redraw",
+      "mechanicalPass": true
+    }
+  ]
+}

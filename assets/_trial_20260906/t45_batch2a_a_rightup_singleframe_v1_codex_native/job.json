@@ -1,0 +1,24 @@
+{
+  "task": "T45",
+  "batch": "2a-a-rightup-single-frame-v1",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "target": "shanzei_a_rightup",
+  "nativeAttempt": 1,
+  "workflow": "Leo-approved individual frame workflow",
+  "locked": [
+    "Leo-selected new A-right identity and rendering",
+    "selected A head-to-body proportion",
+    "tied hair, eyepatch, beard, scar, black outfit and brown sash",
+    "empty gripping fists",
+    "no weapon",
+    "feet baseline",
+    "right-up/rear three-quarter viewpoint"
+  ],
+  "excludedReferences": [
+    "all previous painted A rightup/rightdown candidates"
+  ],
+  "next": "A-rightup selected. Use A-right source as sole ImageGen identity reference for A-rightdown; preserve this selected rightup only for visual continuity review."
+}

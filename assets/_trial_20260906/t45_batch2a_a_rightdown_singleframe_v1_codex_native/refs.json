@@ -1,0 +1,10 @@
+{
+  "identityAndProportion": "refs/a_right_selected_highres.png",
+  "directionOnly": "refs/rightdown_painted_pose_only.png",
+  "priority": "image 1 sole character truth; image 2 only front/right-down viewpoint",
+  "excluded": [
+    "all prior painted A rightup/rightdown candidates"
+  ],
+  "replacedDirectionReference": "refs/rightdown_white_model_cropped.png",
+  "reason": "Leo identified the white pose model as insufficient to constrain the actual right-down pose; the existing painted A-rightdown is used only for pose/front-back layering."
+}

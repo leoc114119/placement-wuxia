@@ -1,0 +1,34 @@
+{
+  "key": "shanzei_a_rightup",
+  "source": "assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/raw/shanzei_a_rightup_attempt1.png",
+  "output": "assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/normalized/shanzei_a_rightup.png",
+  "size": [
+    240,
+    320
+  ],
+  "sourceAlphaBBox": [
+    262,
+    103,
+    788,
+    1352
+  ],
+  "bbox": [
+    66,
+    44,
+    174,
+    300
+  ],
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.0,
+  "widthHeightRatio": 0.421875,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "removedExteriorCheckerboardPixels": 1204611,
+  "sourceSha256": "561cc54e47a8d1e5c5be4713b519fcba336976a472c3ece37b788eb8cd7a5b54",
+  "outputSha256": "727d6bfcc180b9eb9bb971677274cb531a7f4ae5fb56a7fa19bc5b1fef2d6b7a",
+  "processing": "deterministic 4-connected exterior removal of only light neutral checkerboard pixels, then alpha-bbox crop and aspect-preserving 240x320 normalization; no semantic redraw",
+  "mechanicalPass": true
+}

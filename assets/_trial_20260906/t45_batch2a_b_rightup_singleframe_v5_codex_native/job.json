@@ -1,0 +1,24 @@
+{
+  "task": "T45",
+  "batch": "2a-b-rightup-single-frame-v5",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "mechanical_pass",
+  "integrationGate": "not_handed_off",
+  "target": "shanzei_b_rightup",
+  "nativeAttempt": 3,
+  "attemptException": "Leo explicitly reset the process to one-frame-at-a-time work after rejecting the grouped reuse workflow.",
+  "locked": [
+    "selected b-right identity and rendering",
+    "selected b-right head-to-body proportion",
+    "empty gripping fists",
+    "no weapon",
+    "feet baseline",
+    "right-up/rear viewpoint"
+  ],
+  "excludedReferences": [
+    "previous painted b-rightup",
+    "previous painted b-rightdown"
+  ],
+  "next": "Use this selected B right-up candidate as the continuity anchor for visual review only; the B-right high-resolution source remains sole ImageGen identity reference."
+}

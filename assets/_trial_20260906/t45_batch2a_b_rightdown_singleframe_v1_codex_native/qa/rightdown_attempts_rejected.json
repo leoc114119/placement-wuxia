@@ -1,0 +1,52 @@
+{
+  "target": "shanzei_b_rightdown",
+  "attemptLimit": 2,
+  "mechanicalFileFacts": [
+    {
+      "attempt": 1,
+      "path": "assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/raw/shanzei_b_rightdown_attempt1.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "alphaBBox": [
+        160,
+        108,
+        821,
+        1406
+      ],
+      "sha256": "30252accb3b2fd99f4069ac9b3038e5d5fc20b4230479f4c6a6d8bd74670d0df",
+      "identityGate": "fail",
+      "reason": "Both attempts drift from the selected B-right anchor: much heavier black outlines, oversized headscarf/head and fists, and a different muscular/cartoon rendering. Not normalized or shown as a Leo candidate."
+    },
+    {
+      "attempt": 2,
+      "path": "assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/raw/shanzei_b_rightdown_attempt2.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "alphaBBox": [
+        180,
+        115,
+        821,
+        1372
+      ],
+      "sha256": "b0b02fc2d87aa86e026f5596a9f4b8a35cead33500b8639a37946d4c7599fb41",
+      "identityGate": "fail",
+      "reason": "Both attempts drift from the selected B-right anchor: much heavier black outlines, oversized headscarf/head and fists, and a different muscular/cartoon rendering. Not normalized or shown as a Leo candidate."
+    }
+  ],
+  "result": "fail",
+  "next": "Stop this job. Do not make a third generation without Leo authorizing a one-time exception or providing a new direction reference."
+}

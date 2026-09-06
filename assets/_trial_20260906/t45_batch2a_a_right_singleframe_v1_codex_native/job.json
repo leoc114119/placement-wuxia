@@ -1,0 +1,23 @@
+{
+  "task": "T45",
+  "batch": "2a-a-right-single-frame-v1",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "target": "shanzei_a_right",
+  "nativeAttempt": 1,
+  "workflow": "Leo-directed one-frame-at-a-time regeneration",
+  "locked": [
+    "current A-right identity: eyepatch, beard, high tied hair, black outfit and brown sash",
+    "selected A head-to-body proportion",
+    "empty gripping fists",
+    "no weapon",
+    "right-facing idle viewpoint",
+    "feet baseline"
+  ],
+  "excludedReferences": [
+    "previous painted A rightup/rightdown candidates"
+  ],
+  "next": "Use selected A-right as the sole ImageGen identity anchor for A rightup; do not generate rightdown until rightup is selected."
+}
