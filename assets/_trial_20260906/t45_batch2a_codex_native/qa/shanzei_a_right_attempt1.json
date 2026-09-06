@@ -1,0 +1,16 @@
+{
+  "artifactStage":"raw",
+  "visualReview":"rejected",
+  "specGate":"fail",
+  "integrationGate":"not_handed_off",
+  "nativeAttempt":1,
+  "file":"raw/shanzei_a_right_attempt1.png",
+  "imageSize":[1086,1448],
+  "mode":"RGB",
+  "reasons":[
+    "Generated output contains a baked checkerboard background rather than real alpha or a single flat isolation color.",
+    "The pose reads closer to front three-quarter than the required right side anchor; do not normalize or release.",
+    "No obvious sword/blade/handle artifact observed, but background and direction failures are sufficient for rejection."
+  ],
+  "next":"Archive raw only; remaining five native generations blocked by ImageGen 429 usage limit. Do not derive other directions from this frame."
+}

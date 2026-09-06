@@ -1,0 +1,14 @@
+{
+  "task":"T45",
+  "batch":"2a",
+  "policySource":"projbus seq=50 / Leo emergency correction",
+  "refs": {
+    "identity_shanzei_a":"assets/characters/enemy/shanzei_a/frames/idle_down.png",
+    "identity_shanzei_b":"assets/characters/enemy/shanzei_b/frames/idle_down.png",
+    "direction_right":"assets/_trial_20260904/t45_batch0sixdir/anchor45_right.png",
+    "direction_rightup":"assets/_trial_20260904/t45_batch0sixdir/anchor45_rightup.png",
+    "direction_rightdown":"assets/_trial_20260904/t45_batch0sixdir/anchor45_rightdown.png",
+    "turnaround":"assets/characters/hero/refs/pose_turnaround_5dir.png",
+    "run":"assets/characters/hero/refs/pose_run_5x8.png"
+  }
+}
