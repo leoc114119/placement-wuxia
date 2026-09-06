@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-06 | Codex（art） | 🎨 T45 1c 右下行走双帧首轮候选 | 原生生成迈A/迈B并确定性归一；两帧 240×320 RGBA、视觉高 256、脚底 y=300、质心≈120；对照 `assets/_trial_20260906/t45_batch1c_codex_native/contact/walk_rightdown_pair_attempt1.png`，待 Leo 目验。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1c needs_info 三项补齐已交复验 | commit `bf602b9` 已推送；projbus `seq=41` / messageId `15e0222df20043faba02fb1ab73e0bb7`；两张残留普攻删除、`die_common` 单名、12 个 down 向 PNG 移入 backup，等待研发线转 accepted。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 研发线 needs_info 三项已处理 | 按确认完成：删除 `atk_right_3.png`/`atk_rightup_3.png` 与重复 `die_down.png`；保留 `die_common.png`；12 个 down 向 PNG 移入 `assets/characters/hero/battle45/backup/`，manifest/QA 已补齐全局清理记录，待回研发线复验。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1c 右下普攻正式 release 已交付 | commit `7ebbcbe` 已推送；projbus `seq=39` / messageId `17a53f4488c945479f8e360020433442`；正式双帧、manifest/QA/contact 已交付，旧右下残帧与左向镜像已清理，等待研发线接收。 |

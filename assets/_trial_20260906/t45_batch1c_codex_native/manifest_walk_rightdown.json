@@ -1,0 +1,20 @@
+{
+  "jobId": "t45_batch1c_codex_native_20260906_pilot",
+  "task": "T45",
+  "batch": "1c-pilot",
+  "direction": "rightdown",
+  "action": "walk",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "frameCount": 2,
+  "candidatePaths": [
+    "normalized/walk_rightdown_1_attempt1.png",
+    "normalized/walk_rightdown_2_attempt1.png"
+  ],
+  "qa": "qa/walk_rightdown_qa_attempt1.json",
+  "contact": "contact/walk_rightdown_pair_attempt1.png",
+  "sourcePolicy": "native ImageGen; frame1/2 use rightdown anchor + right walk mother pose; cutout/normalization/QA deterministic",
+  "formalRelease": false
+}

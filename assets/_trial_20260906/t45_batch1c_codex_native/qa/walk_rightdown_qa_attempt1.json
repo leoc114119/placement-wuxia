@@ -1,0 +1,67 @@
+{
+  "jobId": "t45_batch1c_codex_native_20260906_pilot",
+  "task": "T45",
+  "batch": "1c-pilot",
+  "direction": "rightdown",
+  "action": "walk",
+  "frameCount": 2,
+  "canvas": [
+    240,
+    320
+  ],
+  "targetHeight": 256,
+  "baselineY": 300,
+  "centroidTargetX": 120,
+  "frames": [
+    {
+      "path": "normalized/walk_rightdown_1_attempt1.png",
+      "source": "assets/_trial_20260906/t45_batch1c_codex_native/raw/walk_rightdown_1_attempt1.png",
+      "rawBBox": [
+        249,
+        169,
+        855,
+        1233
+      ],
+      "bgFloodPixels": 1204714,
+      "scale": 0.240602,
+      "bbox": [
+        48,
+        44,
+        194,
+        300
+      ],
+      "charHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.2
+    },
+    {
+      "path": "normalized/walk_rightdown_2_attempt1.png",
+      "source": "assets/_trial_20260906/t45_batch1c_codex_native/raw/walk_rightdown_2_attempt1.png",
+      "rawBBox": [
+        266,
+        179,
+        837,
+        1181
+      ],
+      "bgFloodPixels": 1254908,
+      "scale": 0.255489,
+      "bbox": [
+        45,
+        44,
+        191,
+        300
+      ],
+      "charHeight": 256,
+      "feetY": 300,
+      "centroidX": 119.7
+    }
+  ],
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "artifactStage": "candidate",
+  "formalRelease": false,
+  "identityGate": "pending_visual",
+  "angleGate": "pending_visual",
+  "motionGate": "pending_visual",
+  "fileGate": "PASS"
+}
