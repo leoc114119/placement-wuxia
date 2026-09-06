@@ -24,6 +24,7 @@ import {
   SHADOW,
   SPRITE_PROFILES,
   TILE,
+  TILE_H,
   TILE_W,
   TOPBAR,
   hexDist,
@@ -1774,5 +1775,59 @@ describe('[六向接线 §4.1] drawPieces：directional 六向独立 PNG 零翻�
     const allKeys: string[] = [];
     for (const facing of FACINGS) for (let o = 1; o <= 2; o++) allKeys.push(frameKeyOf('walk', facing as BattleFacingHex, o));
     expect(new Set(allKeys).size).toBe(12);
+  });
+});
+
+// ══════════ L 环小修卡：directional 脚底基线锚定格心（主架构验收 09-06 定版）══════════
+// 根因：battle45 帧画布 240×320，素材脚底基线 y=300（底部 20px 空白）；旧代码按整画布底(320)落地
+// → 人物上浮 h×20/320 ≈ 7.7px（h=TILE_H×2.0=123.2）。修法=directional 以脚底基线锚定格心：
+// top = syGround − h×300/320 − hop（落地基准=脚底，非画布底）；legacy 旧帧表脚底在画布底，口径零回归。
+
+describe('[L 环锚点修正] directional 脚底基线 y=300 锚定格心 / legacy 画布底口径零回归', () => {
+  const W = 375;
+  const H = 667;
+
+  /** 单棋子 idle 静立一帧：取棋子帧 drawImage 实参（x,y,w,h）+ 按渲染同源式换算格心屏 y。
+   * 镜头确定性：updateView 首帧 camInit 直定位理想机位（computeCamera 同式），无平滑/拖动噪声。 */
+  function drawIdlePiece(frameAssets: BattleHexAssets, actor: SnapshotActor): { dy: number; dh: number; syGround: number } {
+    const { ctx, ops } = makeDrawRecordingCtx();
+    const view = createView();
+    const snap = makeSnapshot([actor]);
+    updateView(view, snap, 0.016, W, H);
+    drawFrame({ ctx, width: W, height: H, dt: 0.016 }, snap, frameAssets, view);
+    const pieceDraws = ops.filter((o) => o.op === 'drawImage' && (o.args[0] as { tag?: string }).tag);
+    expect(pieceDraws).toHaveLength(1); // EMPTY_ASSETS 下带 tag 的 drawImage 唯一=棋子帧
+    const dy = pieceDraws[0].args[2] as number;
+    const dh = pieceDraws[0].args[4] as number;
+    const w = hexToWorld(actor.renderPos.q, actor.renderPos.r);
+    return { dy, dh, syGround: Math.round(w.y - view.camera.y + H / 2) };
+  }
+
+  it('常量锁：PIECE.feetBaselineRatio = 300/320（battle45 帧画布脚底基线 y=300；ADR-004 展示参数口径）', () => {
+    expect(PIECE.feetBaselineRatio).toBe(300 / 320);
+  });
+
+  it('directional（hero idle）绘制底边 = 格心 y + 高度×(1−feetBaselineRatio)：脚底基线 y=300 恰落格心（drawImage y 实参 = 格心 − 高×300/320）', () => {
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['hero', makeHeroStore()]]) };
+    const { dy, dh, syGround } = drawIdlePiece(assets, dirActor()); // 默认 renderPos{q:4,r:8} idle 静立 hop=0
+    const h = TILE_H * PIECE.heightPerTile; // 渲染高真源 123.2（drawImg 对 w/h 独立取整 → 绘制 dh=123）
+    expect(dh).toBe(Math.round(h));
+    expect(dy).toBe(Math.round(syGround - h * PIECE.feetBaselineRatio)); // 主架构验收换算式锁定（旧代码此处=格心−h，红）
+    // 绘制底边 = 格心 + 高×(1−ratio)（未取整口径换算式；dy/dh 独立取整 → 容差 ≤1px）
+    expect(Math.abs(dy + dh - (syGround + h * (1 - PIECE.feetBaselineRatio)))).toBeLessThanOrEqual(1);
+  });
+
+  it('legacy（npc-shanzei idle）零回归锁：绘制底边 = 格心 y（整画布底落地口径不变，旧帧表脚底在画布底）', () => {
+    const strip: Array<ImgLike | null> = Array.from({ length: 8 }, (_, i) => tagImg(`spr${i}`, 128, 256));
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei', strip]]) };
+    const foe = dirActor({
+      id: 'e1', side: 'enemy', name: '山贼甲', spriteKey: 'npc-shanzei',
+      facing: 'right', facingHex: 'rightdown', pos: { q: 6, r: 9 }, renderPos: { q: 6, r: 9 },
+    });
+    const { dy, dh, syGround } = drawIdlePiece(assets, foe);
+    const h = TILE_H * PIECE.heightPerTile;
+    expect(dh).toBe(Math.round(h));
+    expect(dy).toBe(Math.round(syGround - h)); // legacy 口径零变化（修前修后恒绿）
+    expect(Math.abs(dy + dh - syGround)).toBeLessThanOrEqual(1); // 绘制底边=格心（dy/dh 独立取整容差）
   });
 });

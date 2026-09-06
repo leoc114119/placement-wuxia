@@ -1077,7 +1077,12 @@ function drawPieces(
         ? Math.sin(shakeElapsed * DMG.shakeFreq) * DMG.shakePx * (1 - shakeElapsed / DMG.shakeSec)
         : 0; // T21 §2.5：水平 ±3px 衰减 ~200ms，cx 附加偏移（不动 moveAnims 插值位）
     const cx = sx + shake + shakeDmg;
-    const top = syGround - h - hop;
+    // 【L 环锚点修正 09-06（主架构验收定版）】directional=脚底基线锚定格心：battle45 帧画布 240×320
+    // 脚底在 y=300（底部 20px 空白），落地基准=脚底非画布底（旧整画布底口径上浮 h×20/320≈7.7px）；
+    // legacy=旧帧表脚底在画布底，整画布底落地口径零回归。
+    const top = isDirectional
+      ? syGround - h * PIECE.feetBaselineRatio - hop
+      : syGround - h - hop;
     placed.push({ actor, cx, top, h, w });
     if (img) {
       ctx.save();

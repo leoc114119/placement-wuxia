@@ -1,0 +1,44 @@
+{
+  "375x667": {
+    "verTag": "v1788682885503",
+    "heroDrawY": [
+      281,
+      281
+    ],
+    "cellCssY": 396.4,
+    "render": {
+      "q": -1,
+      "r": 11
+    },
+    "anim": "idle",
+    "canvasBuf": "375x667"
+  },
+  "560x700": {
+    "verTag": "v1788682885503",
+    "heroDrawY": [
+      314,
+      314
+    ],
+    "cellCssY": 429.4,
+    "render": {
+      "q": -1,
+      "r": 11
+    },
+    "anim": "idle",
+    "canvasBuf": "394x700"
+  },
+  "900x560": {
+    "verTag": "v1788682885503",
+    "heroDrawY": [
+      174,
+      174
+    ],
+    "cellCssY": 289.4,
+    "render": {
+      "q": -1,
+      "r": 11
+    },
+    "anim": "idle",
+    "canvasBuf": "315x560"
+  }
+}

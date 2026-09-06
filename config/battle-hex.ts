@@ -136,6 +136,11 @@ export const PIECE = {
   //（新帧视觉高占画布 256/320=0.8 → 约 1.6 格视觉高，符合《角色帧规范》「约 1.5 格」；
   // 若三档截图证 HUD 遮挡/脚底比例不合格，只允许 PM/Leo 按目验改本常量，禁散落缩放公式）。
   bossScale: 1.25, // Boss 放大
+  /** directional 帧脚底基线比例（L 环锚点修正 09-06，出处=主架构验收定版）：battle45 帧画布 240×320，
+   * 素材脚底基线在 y=300（底部 20px 空白）→ 落地锚 = 渲染高 × 300/320（落地基准=脚底非画布底；
+   * 旧整画布底口径上浮 h×20/320≈7.7px）。ADR-004 只读展示参数；仅 directional 分支消费——
+   * legacy 旧帧表脚底在画布底，整画布底落地口径不适用本常量。 */
+  feetBaselineRatio: 300 / 320,
   walkFrameMs: 140, // 战斗步频（沿 config/battle BATTLE_FRAME 口径）
   jumpFrameThreshold: 0.35, // 跳跃帧分段阈值（§3.2：moveAnim.t/duration < 阈值=起跳帧 1，≥=腾空至落地帧 2）
   moveLerpSec: 0.3, // 普通行走位移表现时长
