@@ -5,7 +5,7 @@
   "direction": "rightdown",
   "action": "walk",
   "artifactStage": "candidate",
-  "visualReview": "unreviewed",
+  "visualReview": "selected",
   "specGate": "pending",
   "integrationGate": "not_handed_off",
   "frameCount": 2,
@@ -16,5 +16,10 @@
   "qa": "qa/walk_rightdown_qa_attempt1.json",
   "contact": "contact/walk_rightdown_pair_attempt1.png",
   "sourcePolicy": "native ImageGen; frame1/2 use rightdown anchor + right walk mother pose; cutout/normalization/QA deterministic",
-  "formalRelease": false
+  "formalRelease": false,
+  "selectedBy": "Leo",
+  "releasePaths": [
+    "assets/characters/hero/battle45/walk_rightdown_1.png",
+    "assets/characters/hero/battle45/walk_rightdown_2.png"
+  ]
 }

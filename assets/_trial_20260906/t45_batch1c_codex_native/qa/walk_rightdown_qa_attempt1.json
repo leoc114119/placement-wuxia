@@ -56,12 +56,17 @@
       "centroidX": 119.7
     }
   ],
-  "visualReview": "unreviewed",
+  "visualReview": "selected",
   "specGate": "pending",
   "artifactStage": "candidate",
   "formalRelease": false,
-  "identityGate": "pending_visual",
-  "angleGate": "pending_visual",
-  "motionGate": "pending_visual",
-  "fileGate": "PASS"
+  "identityGate": "PASS_visual",
+  "angleGate": "PASS_visual",
+  "motionGate": "PASS_visual",
+  "fileGate": "PASS",
+  "selectedBy": "Leo",
+  "releasePaths": [
+    "assets/characters/hero/battle45/walk_rightdown_1.png",
+    "assets/characters/hero/battle45/walk_rightdown_2.png"
+  ]
 }
