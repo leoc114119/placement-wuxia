@@ -1,0 +1,33 @@
+{
+  "source": "assets/_trial_20260906/t45_batch1c_codex_native/raw/atk_rightdown_2_user_candidate1.png",
+  "normalized": "assets/_trial_20260906/t45_batch1c_codex_native/normalized/atk_rightdown_2_user_candidate1.png",
+  "canvas": [
+    240,
+    320
+  ],
+  "targetHeight": 256,
+  "baselineY": 300,
+  "centroidTargetX": 120,
+  "bgFloodPixels": 710887,
+  "rawBBox": [
+    125,
+    93,
+    740,
+    1021
+  ],
+  "scale": 0.275862,
+  "bbox": [
+    37,
+    44,
+    207,
+    300
+  ],
+  "identityGate": "PASS_visual_candidate",
+  "angleGate": "PASS_visual_candidate",
+  "fileGate": "PASS",
+  "handGate": "PASS_by_Leo_clarification",
+  "handGateReason": "Leo clarified the criterion is anatomical character right hand, not screen side; current candidate is accepted as that right-hand punch.",
+  "formalRelease": false,
+  "handSemantic": "character_right_hand",
+  "visualReview": "selected"
+}

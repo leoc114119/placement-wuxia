@@ -1,0 +1,21 @@
+{
+  "jobId": "t45_batch1c_codex_native_20260906_pilot",
+  "task": "T45",
+  "batch": "1c-pilot",
+  "direction": "rightdown",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "frameCount": 2,
+  "candidatePaths": [
+    "normalized/atk_rightdown_1_attempt1.png",
+    "normalized/atk_rightdown_2_user_candidate1.png"
+  ],
+  "qa": "qa/atk_rightdown_qa_user_candidate1.json",
+  "contact": "contact/atk_rightdown_pair_user_candidate1.png",
+  "generationPolicy": "one native generation per frame using right attack mother frames plus rightdown identity/orientation references; cutout, normalization and QA deterministic",
+  "formalRelease": false,
+  "handSemantic": "character_right_hand",
+  "handScreenProjection": "screen_right_for_this_candidate"
+}
