@@ -21,6 +21,7 @@
 | `level` | number | 当前等级（Lv 20/40/60 射程档位，R-05） |
 | `cooldownTurns` | number | 冷却回合（R-08） |
 | `neiliCost` | number | 内力消耗（R-09：一阶 20/二阶 50/三阶 100/绝学 150） |
+| `castSpeed` | number | **出招系数**（出招速度与两段式伤害需求 v1.2）：招式时长(ms)=3000÷(本武功 castSpeed+内功加成速度)；**个体差异属性非统一曲线**——轻招可 <1（0.8 起）、重招 >1（绝学可 2，慢而重）；与全体内功加成速度求和后参与除法，和封顶 ≤6（最快 500ms）；默认待各武功定值（首门示例暂 0.8） |
 
 ### 1.2 战棋装配层（新增 · 原占位"需增战棋字段(移动力等)"落地）
 
@@ -56,7 +57,7 @@
   "weapon": "sword", "grade": 0.5, "growth": 1.5, "level": 10,
   "cooldownTurns": 0, "neiliCost": 10,
   // —— 新增层 ——
-  "movBonus": null, "jumpUnlock": false,
+  "movBonus": null, "jumpUnlock": false, "castSpeed": 0.8,
   "tier": "tier1",
   "icon": "skills/yemao_jianfa.png",
   "desc": "门派入门剑法，一阶外功。",
@@ -83,4 +84,5 @@
 | 日期 | 变更 | 签字 |
 |---|---|---|
 | 2026-08-31 | 建骨架（管线重构：分类文档夹制） | 游承峰 |
+| 2026-09-06 | **v0.2：战斗层新增 `castSpeed` 出招系数**（出招速度与两段式伤害需求 v1.2，Leo 定）——个体差异属性（轻招<1/重招绝学可 2），与内功加成速度求和除 3000ms、和封顶≤6；示例补 0.8 | ZCode |
 | 2026-09-02 | **v0.1 填充（T10 排雷 P0-2）**：四层字段（战斗=SkillDef 现状/战棋装配 movBonus+jumpUnlock/表现/养成）+ 野猫剑法示例；待研发窗口审落 types.ts | ZCode |
