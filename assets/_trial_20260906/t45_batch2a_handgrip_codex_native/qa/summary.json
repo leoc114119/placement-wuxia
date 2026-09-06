@@ -1,30 +1,30 @@
 {
   "count": 6,
-  "mechanicalPass": 5,
+  "mechanicalPass": 4,
   "files": [
     {
       "key": "shanzei_a_right",
-      "source": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/raw/shanzei_a_right_grip_attempt1.png",
+      "source": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/raw/shanzei_a_right_grip_attempt2.png",
       "output": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/normalized/shanzei_a_right.png",
       "size": [
         240,
         320
       ],
       "bbox": [
-        60,
+        73,
         44,
-        179,
+        167,
         300
       ],
       "visualHeight": 256,
       "feetY": 300,
-      "centroidX": 119.5,
-      "widthHeightRatio": 0.46484375,
-      "ratioPass": true,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.3671875,
+      "ratioPass": false,
       "hands": "both empty gripping fists",
       "weaponVisible": false,
-      "sourceSha256": "50fa800f246b433a2936bd6cd01671533ae1f29ba686302387c1175a76ca9caf",
-      "outputSha256": "c6ff64a47b487710fac538a075c5ea01f308687b5130b0577c86f78753c5d961"
+      "sourceSha256": "cfbe7461cd995dabab62edefe8b5a2e9bfa5d6fa4c45d4fc9edb7753e60a7a4c",
+      "outputSha256": "7cf1d76d50a59a56b2f0d18deafda4a9a2291d7c1a576a8f49a7b401985f60fa"
     },
     {
       "key": "shanzei_a_rightup",
@@ -76,27 +76,27 @@
     },
     {
       "key": "shanzei_b_right",
-      "source": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/raw/shanzei_b_right_grip_attempt1.png",
+      "source": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/raw/shanzei_b_right_grip_attempt2.png",
       "output": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/normalized/shanzei_b_right.png",
       "size": [
         240,
         320
       ],
       "bbox": [
-        50,
+        72,
         44,
-        191,
+        167,
         300
       ],
       "visualHeight": 256,
       "feetY": 300,
-      "centroidX": 120.5,
-      "widthHeightRatio": 0.55078125,
+      "centroidX": 119.5,
+      "widthHeightRatio": 0.37109375,
       "ratioPass": false,
       "hands": "both empty gripping fists",
       "weaponVisible": false,
-      "sourceSha256": "22bcef2b48d9f98d7e8368fd80573fe571e7be48164014eaaece4f76d45f05d0",
-      "outputSha256": "f18e14494ee037204e95f9fce3fa921908cb7c3c4b3f1d7dc8abcd905bc4c4ee"
+      "sourceSha256": "d2653dd3c88b69e9400ee9020f2fb0a349797b0af1e231448d0b5e43abf59138",
+      "outputSha256": "4bf5a5820e640d482176aa0fe45b1c2d92e2b40dc49e26952ed7bb2f2fc87f4e"
     },
     {
       "key": "shanzei_b_rightup",

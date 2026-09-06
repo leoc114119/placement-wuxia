@@ -4,10 +4,10 @@ from collections import deque
 import json, hashlib
 JOB=Path('assets/_trial_20260906/t45_batch2a_handgrip_codex_native'); RAW=JOB/'raw'; OUT=JOB/'normalized'; QA=JOB/'qa'; OUT.mkdir(exist_ok=True); QA.mkdir(exist_ok=True)
 chosen={
-'shanzei_a_right':'shanzei_a_right_grip_attempt1.png',
+'shanzei_a_right':'shanzei_a_right_grip_attempt2.png',
 'shanzei_a_rightup':'shanzei_a_rightup_grip_attempt1.png',
 'shanzei_a_rightdown':'shanzei_a_rightdown_grip_attempt1.png',
-'shanzei_b_right':'shanzei_b_right_grip_attempt1.png',
+'shanzei_b_right':'shanzei_b_right_grip_attempt2.png',
 'shanzei_b_rightup':'shanzei_b_rightup_grip_attempt1.png',
 'shanzei_b_rightdown':'shanzei_b_rightdown_grip_attempt1.png'}
 def cut_white(im):

@@ -1,24 +1,24 @@
 {
   "key": "shanzei_b_right",
-  "source": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/raw/shanzei_b_right_grip_attempt1.png",
+  "source": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/raw/shanzei_b_right_grip_attempt2.png",
   "output": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/normalized/shanzei_b_right.png",
   "size": [
     240,
     320
   ],
   "bbox": [
-    50,
+    72,
     44,
-    191,
+    167,
     300
   ],
   "visualHeight": 256,
   "feetY": 300,
-  "centroidX": 120.5,
-  "widthHeightRatio": 0.55078125,
+  "centroidX": 119.5,
+  "widthHeightRatio": 0.37109375,
   "ratioPass": false,
   "hands": "both empty gripping fists",
   "weaponVisible": false,
-  "sourceSha256": "22bcef2b48d9f98d7e8368fd80573fe571e7be48164014eaaece4f76d45f05d0",
-  "outputSha256": "f18e14494ee037204e95f9fce3fa921908cb7c3c4b3f1d7dc8abcd905bc4c4ee"
+  "sourceSha256": "d2653dd3c88b69e9400ee9020f2fb0a349797b0af1e231448d0b5e43abf59138",
+  "outputSha256": "4bf5a5820e640d482176aa0fe45b1c2d92e2b40dc49e26952ed7bb2f2fc87f4e"
 }
