@@ -439,4 +439,7 @@
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 山贼甲右下候选通过，六锚候选齐套待规格门 | 统一清单 `assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/manifest.json`，交接 `tasks/handoff/T45-batch2a-six-unarmed-idle-anchors-candidate-2026-09-06.md`；待 rd PM 第二道门检。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 六张山贼空手待机锚交规格门 | commit `fc07941` 已推隔离分支 `codex/t45-shanzei-idle-anchor-candidates`；projbus `seq=65`，候选清单与 handoff 已交，等待 rd 第二道门检。 |
 | 2026-09-06 | Codex（art） | 📝 T45 主角色参照生成 NPC 锚经验已归档 | 复盘落 `docs/reviews/T45首日复盘与流程优化-2026-09-04.md` §6，覆盖参照职责、逐张闭环、姿势第二参考、透明规范化与门禁。 |
+| 2026-09-06 | Codex（art） | 🧾 T45 今日收口 | 六张候选视觉门通过、规格门 pending；skill 已同步，正式 runtime 未写入，今日停在等待 rd ACK/needs_info。 |
+| 2026-09-06 | Leo → Codex（art） | ▶️ T45 六张候选入阵前规格/透明复核 | 六张候选复核 PASS；QA `assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/qa/spec_transparency_recheck_20260906.json` 已落档，等待 rd 第二道规格门确认后再写 runtime。 |
 | 2026-09-06 | ZCode | 📋 出招速度需求 v1.0 定稿→主架构方案已约（seq=63） | Leo 二轮四裁落文（循环=时长本身/两段落点/普攻1s/3s→0.5s 数值框架）；语义级变更走完整链（方案→Leo拍板→发卡） |
+| 2026-09-06 | ZCode | 📋 武功 schema v0.2：castSpeed 出招系数入战斗层 | Leo 裁定=个体差异属性非统一曲线（轻招<1/绝学可 2）；内功加成速度=全体字段（随内功等级↑，初始 0.2）归内功系统 schema；两字段求和÷3000ms、和封顶≤6 |
