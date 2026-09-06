@@ -427,3 +427,12 @@
 | 2026-09-06 | ZCode | ✅ 敌型锚点对齐落地（1df25ef，已 push） | 先测后改：legacy 帧脚底实测 y=240/256（旧注释"画布底"系误判）→敌型修前脚底格心-7.7px（与 hero 修前同型同值）；修后双分支同构=格心+6px（legacyFeetBaselineRatio=240/256+共用 feetOffsetPx）；282 基线；verTag v1788686170112 待 Leo 复目验 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 山贼乙右上逐张候选通过，启动右下单帧 | 右上 job `assets/_trial_20260906/t45_batch2a_b_rightup_singleframe_v5_codex_native/` 视觉选定；右下仅建作业包 `assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/`，继续逐张闭环。 |
 | 2026-09-06 | Leo → ZCode | ✅ 首段六向接线全量 L 环收官 | Leo 确认居中（6px 选档）+敌型对齐无问题——T45 首段（hero 六向上屏）完整闭环：方案→施工→主架构验收→PM 四门→L 环三轮打磨（居中/resize/轻功单帧/敌型锚点）；FACE-1 视觉验收同刻收官 |
+| 2026-09-06 | Codex（art） | ⛔ T45 山贼乙右下单帧两次身份门失败，已停 | 作业 `assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/`；两次均风格/头身漂移，未归一未交候选；需 Leo 新参考或一次性追加豁免后再开。 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 山贼乙右下候选选定 | 采用第2次原生输出；规范化与文件门记录在 `assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/`，暂不写正式 runtime 路径，等待 PM 规格门。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 山贼甲右向逐张重建候选待目验 | 作业 `assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/`；文件门 PASS，后续右上/右下锁定，等待 Leo 选定本帧。 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 山贼甲右向逐张候选通过，启动右上单帧 | 新甲右作唯一身份锚；作业 `assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/` 仅处理右上。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 山贼甲右上逐张候选待目验 | 作业 `assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/`；透明处理和文件门 PASS，右下继续锁定，待 Leo 选定本帧。 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 山贼甲右上逐张候选通过，启动右下单帧 | 甲右/右上均已视觉选定；作业 `assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/` 仅处理右下。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 山贼甲右下逐张候选待目验 | 作业 `assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/`；A 右/右上已选，右下文件门 PASS，三向对照待 Leo 定稿。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 山贼甲右下第2次方向纠正候选待目验 | 采用新甲右身份锚+旧甲右下姿势参考图，方向已改为右下；作业 `assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/`，文件门 PASS，待 Leo 选定。 |
+| 2026-09-06 | ZCode | 📋 出招速度需求文档 v0.1 成稿 | Leo 六点对齐落文（两段式=出招速度附加产物，均外伤无打断）；AS-1~8 行为草案；语义级变更标注（session 两段错时结算→主架构方案+Leo 拍板链）；三开放点（循环帧集/收招时长归属/普攻延长量）候 Leo 圈 |
