@@ -1,0 +1,24 @@
+{
+  "key": "shanzei_a_rightdown",
+  "source": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/raw/shanzei_a_rightdown_grip_attempt1.png",
+  "output": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/normalized/shanzei_a_rightdown.png",
+  "size": [
+    240,
+    320
+  ],
+  "bbox": [
+    60,
+    44,
+    179,
+    300
+  ],
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 119.5,
+  "widthHeightRatio": 0.46484375,
+  "ratioPass": true,
+  "hands": "both empty gripping fists",
+  "weaponVisible": false,
+  "sourceSha256": "9a4bff4f0e4dbe07affc2c35059b150195cd8f649e67184f445c467ad83d93e9",
+  "outputSha256": "56f3eff16cdf19172f67751d41f68877f8bd6d5402621a65c47cca8013860d06"
+}

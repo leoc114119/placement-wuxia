@@ -15,5 +15,7 @@
   },
   "candidateCount": 6,
   "weaponPolicy": "all body frames empty-hand; standalone saber separate",
-  "next": "Leo visual gate before PM spec delivery"
+  "next": "Leo visual gate before PM spec delivery",
+  "supersededBy": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/",
+  "supersedeReason": "Leo requested both visible hands become empty gripping fists for later weapon attachment; old open/relaxed-hand candidates are retained only as rollback references."
 }

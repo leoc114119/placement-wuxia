@@ -1,0 +1,1 @@
+Six hand-shape edit prompts were applied to the corresponding raw parent candidates. Each prompt preserved the candidate as image 1 and requested only both hands become compact empty gripping fists; no weapon was drawn.

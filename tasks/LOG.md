@@ -396,3 +396,6 @@
 | 2026-09-06 | ZCode | 📋 2a 停点处置（seq=53 received） | Plus 额度 429 停点+首张 QA 双拒（棋盘底/方向）——美术处置正确；主线不受影响（首段接线只依赖镜像批=程序化零额度）；已令额度空窗优先镜像；2a 恢复后 prompt 修正（透明底强化+方向示意） |
 | 2026-09-06 | Codex（art） | ✅ T45 hero 左系镜像 30 张机械门 PASS | 响应 rd seq=55：右系 30 张确定性水平镜像入 `assets/characters/hero/battle45/`；`die_common` 不镜像。30/30 像素级镜像一致、240×320 RGBA、alpha bbox 对称全过；contact/manifest/QA 在 `assets/_trial_20260906/t45_hero_left_mirror_codex_native/`，待规格门。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 hero 左系镜像 30 张交规格门 | commit `9029e67` 已推送；projbus `seq=57` / messageId `8dc96ada869f416ab3301bc0545e3402`；30 张左系成品+manifest/QA/contact 已交，机械门全 PASS，等待 PM 规格门。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 批 2a 空手锚六张候选停 Leo 目验 | 额度恢复后完成 shanzei_a/b × right/rightup/rightdown 原生候选；确定性去白+归一，contact `assets/_trial_20260906/t45_batch2a_codex_native/contact/contact_sheet_2a_selected.png`，QA/manifest/job 已更新。5/6 严格比例 PASS，乙右向 0.551 超红线约1px；未交研发线，等待 Leo 视觉定锚后再发 PM 规格门。 |
+| 2026-09-06 | Leo → Codex（art） | 🔧 T45 批 2a 手形修正令 | 六张山贼锚双手统一改为握手/握柄姿态，方便朴刀层挂接；身体帧仍不画武器。旧开放手候选降为回退，新开 handgrip 修正批。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 批 2a 握手形六张候选停 Leo 目验 | 6 张原生局部修正+确定性去白归一完成；contact `assets/_trial_20260906/t45_batch2a_handgrip_codex_native/contact/contact_sheet_2a_handgrip.png`，manifest/QA/job 已留档；未交 PM/rd，等待 Leo 定稿。 |

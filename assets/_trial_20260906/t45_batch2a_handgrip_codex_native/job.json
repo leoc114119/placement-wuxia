@@ -1,0 +1,12 @@
+{
+  "task":"T45",
+  "batch":"2a-handgrip-correction",
+  "artifactStage":"candidate",
+  "visualReview":"unreviewed",
+  "specGate":"pending",
+  "integrationGate":"not_handed_off",
+  "count":6,
+  "change":"both visible hands -> empty gripping fists",
+  "weaponPolicy":"no weapon in body frame; standalone saber separate",
+  "next":"Leo visual gate before PM spec delivery"
+}

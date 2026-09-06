@@ -1,0 +1,7 @@
+{
+  "task":"T45",
+  "batch":"2a-handgrip-correction",
+  "parent":"assets/_trial_20260906/t45_batch2a_codex_native",
+  "policy":"both hands empty gripping fists; standalone saber remains separate",
+  "operation":"native local edit, one visible target change: hand shape"
+}
