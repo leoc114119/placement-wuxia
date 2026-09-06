@@ -1,0 +1,18 @@
+{
+  "task": "T45",
+  "batch": "2a-b-ratio-v3",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "count": 3,
+  "revision": 3,
+  "attempts": {"shanzei_b_right": 2, "shanzei_b_rightup": 1, "shanzei_b_rightdown": 1},
+  "change": "correct b head/neck proportion to accepted a-anchor style; do not enlarge further",
+  "changedOnly": ["shanzei_b_right", "shanzei_b_rightup", "shanzei_b_rightdown"],
+  "locked": ["b identity/costume", "gripping fists", "direction", "feet", "empty-hand body frame", "no weapon"],
+  "processing": "pure background flood-cut, tiny stray-component removal, 240x320 normalization; b_right horizontal normalization to target width/height ratio 0.40",
+  "contact": "contact/b_v3_triplet.png",
+  "comparison": "contact/old_new_b_compare.png",
+  "next": "Leo visual gate"
+}

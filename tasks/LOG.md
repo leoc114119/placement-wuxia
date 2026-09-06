@@ -409,3 +409,5 @@
 | 2026-09-06 | ZCode | ✅ 首段接线主架构验收通过+小修卡已发 | 验收结论：六向接线 PASS+偏上根因定位（脚底y300 vs 画布底320落地→上浮7.7px）修法=脚底基线锚定；小修卡发 frontend-battle（feetBaselineRatio 常量+先红后绿坐标断言+三档前后截图）；轻功朝向维持 FACE-1；出招速度另走需求卡 |
 | 2026-09-06 | Codex（art） | 🎨 T45 批 2a 握手形头身比 v2 候选停 Leo 目验 | 上轮“视觉几乎没变化”后，仅重做四张指定帧；头部/颈部做可见放大，握拳/方向/服装/脚位/空手政策锁定。4/4 机械门 PASS；总览 `assets/_trial_20260906/t45_batch2a_headratio_v2_codex_native/contact/contact_sheet_2a_headratio_v2.png`，新旧并排 `contact/old_new_compare.png`。未交 PM/rd，等待 Leo 第一关。 |
 | 2026-09-06 | ZCode | ✅ 锚点小修卡 PM 复验通过（204ca16，已 push） | 263 绿新基线（+3 先红后绿）/四门全过/三档前后对比留档（diag JSON 自证 y 换算）；发现既有缺陷登记：resize() 375×667 早退→坏缓冲（上卡 375 档证据受染，补卡已排）；verTag v1788682885503 待 Leo 复目验 |
+| 2026-09-06 | Leo → Codex（art） | 🔧 T45 批 2a 乙系头身比重做令 | 甲系三张可用；乙右、乙右上、乙右下比例更奇怪，要求只重做乙系三张。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 批 2a 乙系头身比 v3 候选停 Leo 目验 | 仅重做乙系三张；右上/右下首轮原生，纯右侧因整体过窄做第2次且最后一次原生修正。头颈收回到甲系锚同档；纯右侧补回自然躯干/双拳宽度并做确定性宽度归一。3/3 机械门 PASS；总览 `assets/_trial_20260906/t45_batch2a_bratio_v3_codex_native/contact/b_v3_triplet.png`，新旧对照 `contact/old_new_b_compare.png`。未交 PM/rd，等待 Leo 第一关。 |

@@ -1,0 +1,27 @@
+{
+  "key": "shanzei_b_rightup",
+  "source": "assets/_trial_20260906/t45_batch2a_bratio_v3_codex_native/raw/shanzei_b_rightup_v3.png",
+  "output": "assets/_trial_20260906/t45_batch2a_bratio_v3_codex_native/normalized/shanzei_b_rightup.png",
+  "size": [
+    240,
+    320
+  ],
+  "bbox": [
+    70,
+    44,
+    171,
+    300
+  ],
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.5,
+  "widthHeightRatio": 0.39453125,
+  "ratioPass": true,
+  "hands": "both empty gripping fists",
+  "weaponVisible": false,
+  "sourceSha256": "245806c0d08426e8a6134453ce1105008f544376d6033b3c10c74c6dbb4fafe5",
+  "outputSha256": "5e683c5cb1ef49d595b901bed8295998d7d67a901c60d4d805c4e0fc6b4eae75",
+  "nativeAttempt": 1,
+  "change": "corrected b head/body proportion",
+  "processing": "largest-component cleanup; 240x320 RGBA normalization"
+}
