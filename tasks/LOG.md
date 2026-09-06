@@ -408,3 +408,4 @@
 | 2026-09-06 | 主架构 → 研发线 | ✅ T45 首段接线技术验收 PASS，L 环锚点 P1 待修 | `63dac3e` 已隔离复核：typecheck/lint/build/260 battle/14 behavior/48 六向截图均过，首段边界符合方案；普通活体以整张 320px 画布底边落地，真实脚底 y=300 导致默认上浮 7.7px。FE 小卡改为脚底基线锚定（`top=syGround-h×300/320-hop`），补坐标断言+三分辨率截图；轻功落地面向敌已接受无需改，出招速度为待定新需求。 |
 | 2026-09-06 | ZCode | ✅ 首段接线主架构验收通过+小修卡已发 | 验收结论：六向接线 PASS+偏上根因定位（脚底y300 vs 画布底320落地→上浮7.7px）修法=脚底基线锚定；小修卡发 frontend-battle（feetBaselineRatio 常量+先红后绿坐标断言+三档前后截图）；轻功朝向维持 FACE-1；出招速度另走需求卡 |
 | 2026-09-06 | Codex（art） | 🎨 T45 批 2a 握手形头身比 v2 候选停 Leo 目验 | 上轮“视觉几乎没变化”后，仅重做四张指定帧；头部/颈部做可见放大，握拳/方向/服装/脚位/空手政策锁定。4/4 机械门 PASS；总览 `assets/_trial_20260906/t45_batch2a_headratio_v2_codex_native/contact/contact_sheet_2a_headratio_v2.png`，新旧并排 `contact/old_new_compare.png`。未交 PM/rd，等待 Leo 第一关。 |
+| 2026-09-06 | ZCode | ✅ 锚点小修卡 PM 复验通过（204ca16，已 push） | 263 绿新基线（+3 先红后绿）/四门全过/三档前后对比留档（diag JSON 自证 y 换算）；发现既有缺陷登记：resize() 375×667 早退→坏缓冲（上卡 375 档证据受染，补卡已排）；verTag v1788682885503 待 Leo 复目验 |
