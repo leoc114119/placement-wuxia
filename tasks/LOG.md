@@ -399,3 +399,4 @@
 | 2026-09-06 | Codex（art） | 🎨 T45 批 2a 空手锚六张候选停 Leo 目验 | 额度恢复后完成 shanzei_a/b × right/rightup/rightdown 原生候选；确定性去白+归一，contact `assets/_trial_20260906/t45_batch2a_codex_native/contact/contact_sheet_2a_selected.png`，QA/manifest/job 已更新。5/6 严格比例 PASS，乙右向 0.551 超红线约1px；未交研发线，等待 Leo 视觉定锚后再发 PM 规格门。 |
 | 2026-09-06 | Leo → Codex（art） | 🔧 T45 批 2a 手形修正令 | 六张山贼锚双手统一改为握手/握柄姿态，方便朴刀层挂接；身体帧仍不画武器。旧开放手候选降为回退，新开 handgrip 修正批。 |
 | 2026-09-06 | Codex（art） | 🎨 T45 批 2a 握手形六张候选停 Leo 目验 | 6 张原生局部修正+确定性去白归一完成；contact `assets/_trial_20260906/t45_batch2a_handgrip_codex_native/contact/contact_sheet_2a_handgrip.png`，manifest/QA/job 已留档；未交 PM/rd，等待 Leo 定稿。 |
+| 2026-09-06 | ZCode | ✅ 首段接线卡 PM 四门复验通过（63dac3e，已 push） | 260 绿新基线（+22）/行为面 14/14/shot16/e2e 11 MATCH/DBG=0/三零/红线零碰（battle-core/input/hex/config battle/game.ts）；hero 61/61 加载+48 张六向三档截图留档；先红后绿证据=19 红+2 回归锁+1 假绿盲区如实登记；主架构技术验收已派（seq=58）；verTag v1788679650837 待 Leo L 环 |
