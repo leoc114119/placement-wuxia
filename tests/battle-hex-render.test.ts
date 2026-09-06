@@ -1799,9 +1799,13 @@ describe('[六向接线 §4.1] drawPieces：directional 六向独立 PNG 零翻�
 // ══════════ L 环小修卡：directional 脚底基线锚定格心（主架构验收 09-06 定版）══════════
 // 根因：battle45 帧画布 240×320，素材脚底基线 y=300（底部 20px 空白）；旧代码按整画布底(320)落地
 // → 人物上浮 h×20/320 ≈ 7.7px（h=TILE_H×2.0=123.2）。修法=directional 以脚底基线锚定格心：
-// top = syGround − h×300/320 − hop（落地基准=脚底，非画布底）；legacy 旧帧表脚底在画布底，口径零回归。
+// top = syGround − h×300/320 − hop（落地基准=脚底，非画布底）。
+// 【L 环微调卡 09-06 · Leo 反馈"敌人的位置还没调"】legacy 同病同修：npc-shanzei 旧帧画布 128×256，
+// 实测 idle 07 帧 alpha bbox 末实体行 y=239（排除边基线=240，同 battle45 y=300 口径），
+// 旧"画布底落格心"口径使敌型脚底上浮 h×16/256 ≈ 7.7px——旧注释"legacy 帧脚底在画布底"系未实测误判；
+// 修法=legacy 分支同构消费 legacyFeetBaselineRatio + feetOffsetPx（脚底=格心+6px，与 hero 同源）。
 
-describe('[L 环锚点修正] directional 脚底基线 y=300 锚定格心 / legacy 画布底口径零回归', () => {
+describe('[L 环锚点修正] directional 脚底基线 y=300 / legacy 脚底基线 y=240 锚定格心+feetOffsetPx', () => {
   const W = 375;
   const H = 667;
 
@@ -1836,7 +1840,13 @@ describe('[L 环锚点修正] directional 脚底基线 y=300 锚定格心 / lega
     expect(Math.abs(dy + dh - (syGround + h * (1 - PIECE.feetBaselineRatio) + PIECE.feetOffsetPx))).toBeLessThanOrEqual(1);
   });
 
-  it('legacy（npc-shanzei idle）零回归锁：绘制底边 = 格心 y（整画布底落地口径不变，旧帧表脚底在画布底）', () => {
+  it('常量锁：PIECE.legacyFeetBaselineRatio = 240/256（npc-shanzei 旧帧画布 128×256 实测脚底基线；ADR-004 展示参数口径）', () => {
+    // 实测出处（09-06 微调卡程序化标定）：idle 07 帧alpha bbox（a>0）末实体行 y=239 → 排除边基线 240
+    //（与 battle45 hero y=300 同口径=末实体行+1）；测量脚本零依赖 PNG 解码，回执留档数据。
+    expect(PIECE.legacyFeetBaselineRatio).toBe(240 / 256);
+  });
+
+  it('legacy（npc-shanzei idle）绘制底边换算：脚底=格心+feetOffsetPx（drawImage y 实参 = 格心 − 高×240/256 + feetOffsetPx，与 hero 同源落脚）', () => {
     const strip: Array<ImgLike | null> = Array.from({ length: 8 }, (_, i) => tagImg(`spr${i}`, 128, 256));
     const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei', strip]]) };
     const foe = dirActor({
@@ -1846,7 +1856,9 @@ describe('[L 环锚点修正] directional 脚底基线 y=300 锚定格心 / lega
     const { dy, dh, syGround } = drawIdlePiece(assets, foe);
     const h = TILE_H * PIECE.heightPerTile;
     expect(dh).toBe(Math.round(h));
-    expect(dy).toBe(Math.round(syGround - h)); // legacy 口径零变化（修前修后恒绿）
-    expect(Math.abs(dy + dh - syGround)).toBeLessThanOrEqual(1); // 绘制底边=格心（dy/dh 独立取整容差）
+    // 微调卡推导式锁定（旧代码此处=格心−h 整画布底口径，红：脚底上浮 h×16/256≈7.7px）
+    expect(dy).toBe(Math.round(syGround - h * PIECE.legacyFeetBaselineRatio + PIECE.feetOffsetPx));
+    // 脚底（绘制底边按基线比例换算）= 格心 + feetOffsetPx（dy/dh 独立取整容差 ≤1px）
+    expect(Math.abs(dy + dh * PIECE.legacyFeetBaselineRatio - (syGround + PIECE.feetOffsetPx))).toBeLessThanOrEqual(1);
   });
 });

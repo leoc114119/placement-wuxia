@@ -138,15 +138,19 @@ export const PIECE = {
   bossScale: 1.25, // Boss 放大
   /** directional 帧脚底基线比例（L 环锚点修正 09-06，出处=主架构验收定版）：battle45 帧画布 240×320，
    * 素材脚底基线在 y=300（底部 20px 空白）→ 落地锚 = 渲染高 × 300/320（落地基准=脚底非画布底；
-   * 旧整画布底口径上浮 h×20/320≈7.7px）。ADR-004 只读展示参数；仅 directional 分支消费——
-   * legacy 旧帧表脚底在画布底，整画布底落地口径不适用本常量。 */
+   * 旧整画布底口径上浮 h×20/320≈7.7px）。ADR-004 只读展示参数；仅 directional 分支消费。 */
   feetBaselineRatio: 300 / 320,
+  /** legacy 旧帧脚底基线比例（L 环微调卡 09-06 · Leo 反馈"敌人的位置还没调"）：npc-shanzei 帧画布
+   * 128×256，程序化实测 idle 07 帧（=BATTLE_FRAME.idle）alpha bbox（a>0）末实体行 y=239 →
+   * 排除边基线 y=240（与 battle45 y=300 同口径=末实体行+1；测量=零依赖 PNG 解码脚本，数据留档回执）。
+   * 落地锚 = 渲染高 × 240/256（旧整画布底口径上浮 h×16/256≈7.7px）；仅 legacy 分支消费。 */
+  legacyFeetBaselineRatio: 240 / 256,
   walkFrameMs: 140, // 战斗步频（沿 config/battle BATTLE_FRAME 口径）
   // 跳跃帧分段阈值 jumpFrameThreshold 已删除（Leo 09-06 裁定：jump 单帧=全程腾空帧 _2，去蓄势帧 _1；
   // 选帧逻辑见 ui/battle-hex-render directionalFrameOf——ordinal 恒 1，禁两段切换回潮）
-  /** 脚底向下补偿像素（L 环二轮居中校准 · Leo 连续两轮反馈人物偏上）：directional 分支 top 追加，
-   * 正数=人物下移。Leo 09-06 校准图选档 6px（五档对照图=shots/calib_feet_offset.png）；
-   * ADR-004 只读展示参数。 */
+  /** 脚底向下补偿像素（L 环二轮居中校准 · Leo 连续两轮反馈人物偏上）：directional 与 legacy 两分支
+   * top 均追加（敌型=微调卡 09-06 起同源消费），正数=人物下移。Leo 09-06 校准图选档 6px
+   *（五档对照图=shots/calib_feet_offset.png）；ADR-004 只读展示参数。 */
   feetOffsetPx: 6,
   moveLerpSec: 0.3, // 普通行走位移表现时长
   jumpHeightPx: 88, // 轻功抛物线顶高（L 环追加②：44→88 翻倍；=JUMP.height 同源）

@@ -1079,11 +1079,13 @@ function drawPieces(
     const cx = sx + shake + shakeDmg;
     // 【L 环锚点修正 09-06（主架构验收定版）】directional=脚底基线锚定格心：battle45 帧画布 240×320
     // 脚底在 y=300（底部 20px 空白），落地基准=脚底非画布底（旧整画布底口径上浮 h×20/320≈7.7px）；
-    // +PIECE.feetOffsetPx 脚底向下补偿（L 环二轮居中校准：正数=下移，默认 0 待 Leo 选档）；
-    // legacy=旧帧表脚底在画布底，整画布底落地口径零回归（不消费 feetOffsetPx）。
+    // +PIECE.feetOffsetPx 脚底向下补偿（L 环二轮居中校准：正数=下移，Leo 选档 6px）。
+    // 【L 环微调卡 09-06 · Leo 反馈"敌人的位置还没调"】legacy 同病同修：npc-shanzei 帧画布 128×256
+    // 实测脚底基线 y=240（idle 07 帧 alpha bbox 末实体行 239+1，出处=config legacyFeetBaselineRatio 注释），
+    // 旧"画布底落格心"口径上浮 h×16/256≈7.7px——两分支同构：脚底=格心+feetOffsetPx（与 hero 同源落脚）。
     const top = isDirectional
       ? syGround - h * PIECE.feetBaselineRatio + PIECE.feetOffsetPx - hop
-      : syGround - h - hop;
+      : syGround - h * PIECE.legacyFeetBaselineRatio + PIECE.feetOffsetPx - hop;
     placed.push({ actor, cx, top, h, w });
     if (img) {
       ctx.save();

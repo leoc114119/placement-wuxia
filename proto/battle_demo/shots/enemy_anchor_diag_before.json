@@ -1,0 +1,20 @@
+{
+  "verTag": "v1788685333044",
+  "foeDraw": [
+    166,
+    227,
+    62,
+    123
+  ],
+  "allDraws": 4,
+  "cellCss": {
+    "x": 280,
+    "y": 350
+  },
+  "render": {
+    "q": 8,
+    "r": 2
+  },
+  "anim": "idle",
+  "canvasBuf": "394x700"
+}
