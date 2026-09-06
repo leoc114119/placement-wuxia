@@ -3,9 +3,9 @@
   "task": "T45",
   "batch": "1c-pilot",
   "direction": "rightdown",
-  "artifactStage": "candidate",
+  "artifactStage": "release",
   "visualReview": "selected",
-  "specGate": "pending",
+  "specGate": "pass",
   "integrationGate": "not_handed_off",
   "frameCount": 2,
   "candidatePaths": [
@@ -17,5 +17,24 @@
   "generationPolicy": "one native generation per frame using right attack mother frames plus rightdown identity/orientation references; cutout, normalization and QA deterministic",
   "formalRelease": false,
   "handSemantic": "character_right_hand",
-  "handScreenProjection": "screen_right_for_this_candidate"
+  "handScreenProjection": "screen_right_for_this_candidate",
+  "releasePaths": [
+    "assets/characters/hero/battle45/atk_rightdown_1.png",
+    "assets/characters/hero/battle45/atk_rightdown_2.png"
+  ],
+  "releaseCleanup": [
+    "deleted assets/characters/hero/battle45/atk_rightdown_3.png",
+    "deleted assets/characters/hero/battle45/atk_left_*.png",
+    "deleted assets/characters/hero/battle45/atk_leftup_*.png",
+    "deleted assets/characters/hero/battle45/atk_leftdown_*.png"
+  ],
+  "releaseCommitPending": true,
+  "releaseChecks": {
+    "frame1": "PASS",
+    "frame2": "PASS",
+    "pairConsistency": "PASS",
+    "oldRightdown3Removed": false,
+    "oldLeftMirrorsRemoved": false
+  },
+  "cleanupStatus": "pending_explicit_authorization_for_delete"
 }

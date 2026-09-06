@@ -29,5 +29,18 @@
   "handGateReason": "Leo clarified the criterion is anatomical character right hand, not screen side; current candidate is accepted as that right-hand punch.",
   "formalRelease": false,
   "handSemantic": "character_right_hand",
-  "visualReview": "selected"
+  "visualReview": "selected",
+  "artifactStage": "release",
+  "specGate": "PASS",
+  "releasePaths": [
+    "assets/characters/hero/battle45/atk_rightdown_1.png",
+    "assets/characters/hero/battle45/atk_rightdown_2.png"
+  ],
+  "releaseChecks": {
+    "frame1": "PASS",
+    "frame2": "PASS",
+    "pairConsistency": "PASS",
+    "oldRightdown3Removed": "pending_explicit_authorization",
+    "oldLeftMirrorsRemoved": "pending_explicit_authorization"
+  }
 }
