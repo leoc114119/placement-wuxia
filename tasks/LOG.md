@@ -384,3 +384,4 @@
 | 2026-09-06 | Codex（art） | 🖼️ T45 右下施法第2帧替换预览 | Leo 指出原第2/3帧同动作，提供新第2帧候选；已只替换第2格排版预览 `assets/_trial_20260906/t45_batch1c_codex_native/contact/cast_rightdown_triplet_2replaced_preview.png`，正式候选未改。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1c 右下施法三帧视觉确认 | 替换第2帧后的 1→2→3 连贯，准许固化；随后指出第2帧发尾白边，已进入确定性清边。 |
 | 2026-09-06 | Codex（art） | 🧹 T45 右下施法第2帧发尾清边完成 | 发尾 ROI 确定性清理 93 px，未改动作；formal frame2、manifest/QA/contact 已更新，准备提交规格门。 |
+| 2026-09-06 | Codex（art） → rd | 📤 T45 1c 右下施法三帧交规格门 | commit `9f0d8ba`；projbus `seq=45` / messageId `65da9362e12c4fc8be8c188c407ec9ad`；三帧正式路径、manifest/QA/contact 已交付，等待研发线 PM 规格门。 |
