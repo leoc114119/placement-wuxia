@@ -449,6 +449,7 @@
 | 2026-09-06 | Leo → Codex（art） | ⚠️ T45 六张预览来源混淆纠正 | Leo 明确 canonical 最终六张为 `assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/contact_six_selected.png`；此前展示的是旧 `t45_batch2a_codex_native` 试产批次，乙旧头身比不代表最终稿。canonical 六张不改，后续只认统一 manifest/canonical contact。 |
 | 2026-09-06 | Codex（art） | 🔍 T45 canonical 甲·右居中复核 | 旧 seq=72 的 +14px 仅落在旧批次；最终 canonical 甲·右全像素质心实测 x=114.2724，生成 +6px 无重绘预览 `qa/recenter_canonical_six_preview.png`，未改正式候选/manifest/runtime，待 Leo 目验。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 canonical 甲·右修正版确认并固化 | Leo 确认 +6px 预览；已固化 canonical 甲·右，manifest/sha/bbox/全像素质心更新，QA `qa/recenter_canonical_a_right_qa.json` 与 `contact_six_selected.png` 更新；runtime 未写，待 rd 重跑第二道规格门。 |
+| 2026-09-06 | Codex（art） → rd | 📤 T45 canonical 甲·右修正版交第二道规格门 | commit `571d04d` 已推隔离分支；projbus `seq=75` / messageId `4d3f37d93a094d98a2c67daa2b7150fe`，要求以更新后的 canonical manifest 复扫，runtime 未写。 |
 | 2026-09-06 | ZCode | 📋 出招速度需求 v1.0 定稿→主架构方案已约（seq=63） | Leo 二轮四裁落文（循环=时长本身/两段落点/普攻1s/3s→0.5s 数值框架）；语义级变更走完整链（方案→Leo拍板→发卡） |
 | 2026-09-06 | ZCode | 📋 武功 schema v0.2：castSpeed 出招系数入战斗层 | Leo 裁定=个体差异属性非统一曲线（轻招<1/绝学可 2）；内功加成速度=全体字段（随内功等级↑，初始 0.2）归内功系统 schema；两字段求和÷3000ms、和封顶≤6 |
 | 2026-09-06 | ZCode | 🔍 批 2a 锚候选门检：5/6 PASS，甲·右打回 | 全像素精扫发现甲·右躯干偏左（质心 105.8 应 ~120，偏 14px）——归一脚本对姿势性偏斜无纠偏能力（已知局限）；其余五张全 PASS（甲独眼/乙红巾形象立住、空拳确认）；整改单已发（平移回中或重出+QA 口径对齐全像素精扫） |
