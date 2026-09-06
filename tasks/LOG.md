@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-06 | Codex（art） → rd | 📤 T45 1c 右下行走双帧已交规格门 | commit `5e09f88` 已推送；projbus `seq=42` / messageId `edd6a3d5963b4814921dc2c69ebb3131`；Leo 目验通过，等待规格 PASS 后进入跳跃双帧。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1c 右下行走双帧目验通过 | `walk_rightdown_{1,2}.png` 已写入正式路径；manifest/QA 标记视觉 selected、规格门 pending，待研发线复核后进入跳跃双帧。 |
 | 2026-09-06 | Codex（art） | 🎨 T45 1c 右下行走双帧首轮候选 | 原生生成迈A/迈B并确定性归一；两帧 240×320 RGBA、视觉高 256、脚底 y=300、质心≈120；对照 `assets/_trial_20260906/t45_batch1c_codex_native/contact/walk_rightdown_pair_attempt1.png`，待 Leo 目验。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1c needs_info 三项补齐已交复验 | commit `bf602b9` 已推送；projbus `seq=41` / messageId `15e0222df20043faba02fb1ab73e0bb7`；两张残留普攻删除、`die_common` 单名、12 个 down 向 PNG 移入 backup，等待研发线转 accepted。 |
