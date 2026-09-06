@@ -393,3 +393,4 @@
 | 2026-09-06 | Codex（art） | ⛔ T45 批 2a seq=50 空手锚生产被 ImageGen 限流 | 新 trial `assets/_trial_20260906/t45_batch2a_codex_native/`；6 张请求中完成 1 张、其余 5 张遇 HTTP 429 `usage_limit_reached`。首张 `raw/shanzei_a_right_attempt1.png` 因 baked checkerboard RGB 背景+右向不足判 reject，不做归一/正式入库；无旧持刀稿混入。T45 v2.0 已同步 seq=50 空手身体层/独立朴刀覆盖。 |
 | 2026-09-06 | ZCode | ✅ 接线方案 PM 背书（4a26f15，seq=54）+左系镜像下单（seq=55） | 五点裁定：atk2/空手朴刀层（既有裁定同步）/变体键=roster 配置驱动（e0=a e1=b，render 禁猜）/angle=degree+MVP 武器统一前景叠放/DoR=hero 左系 30 张镜像（唯一硬阻塞已下单美术）；首段卡待镜像过门发 frontend-battle |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 批 2a 停点记录交研发线 | commit `03af1aa` 已推送；projbus `seq=53` / messageId `317a38bb604c49a7b56ae1e73bb21346`；仅交 trial/QA/需求覆盖记录，状态 blocked，无正式帧可接线。 |
+| 2026-09-06 | ZCode | 📋 2a 停点处置（seq=53 received） | Plus 额度 429 停点+首张 QA 双拒（棋盘底/方向）——美术处置正确；主线不受影响（首段接线只依赖镜像批=程序化零额度）；已令额度空窗优先镜像；2a 恢复后 prompt 修正（透明底强化+方向示意） |
