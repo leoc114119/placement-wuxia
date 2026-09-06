@@ -103,3 +103,11 @@ Leo 指出 `atk_rightup_2` 左肩后有背景白块未扣净。已对该孤立�
 ### H22 · 09-05 · T45 1b 右上普攻小闭环通过
 
 Leo 确认修正版 `atk_rightup_1/2` 通过。已写入正式 `assets/characters/hero/battle45/atk_rightup_{1,2}.png`，均为 240×320 RGBA、脚底 y=300、质心约 x=120；批 1b pilot manifest/QA/contact 已落盘，`specGate` 等待研发线机械门，其他右上动作暂不铺量。
+
+### H23 · 09-06 · 研发线 → 主架构 · 六向帧接线方案预约与增项（projbus seq=44/47/49/51）
+
+研发线要求按两段制定《战斗人物六向帧接线方案》：第一段主角先接，扩 `facingHex`、换 hero battle45 语义帧表、六向独立 PNG 零翻转并核 `heightPerTile`；敌型暂留 legacy。第二段在山贼素材到位后切 enemy directional，并纳入 Leo 最新裁定：敌型 `charge/strike→atk`、空手身体帧 + 独立朴刀层、`weapon_anchor` 扩 enemy 域。
+
+→ 主架构处置 · 09-06
+
+方案草案已落 `docs/design/03-战斗系统/战斗人物六向帧接线方案.md`。定版主张：六向由 session 已有 `hexFacing` 单点导出受限字符串；sprite profile 在 config 承担状态→clip 映射，render 禁敌我特判；hero directional 零运行时翻转；`heightPerTile` 维持 2.0（折算人物视觉高约 1.6 格）；seq=51 仅进入第二段。取证同时发现两个 DoR 缺口：`9f0d8ba` 只有 hero 右系 30+共用死亡 1，左系成品为 0；T45 需求真源仍写 hero atk3/敌武器入帧。方案可先审，PM 同步需求且对应资产过门前不得发实现卡。
