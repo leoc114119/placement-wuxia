@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-06 | Codex（art） | ⚠️ T45 1c 右下普攻第 5 次原生尝试仍未达手位门 | 按 Leo 直接纠正“交换当前出拳手”生成并归一 `assets/_trial_20260906/t45_batch1c_codex_native/raw/atk_rightdown_2_attempt5.png`；模型仍输出画面右侧手出拳，动作门 FAIL；对照 `contact/atk_rightdown_pair_attempt5.png`，不入正式目录，待圈选/姿势示意图。 |
 | 2026-09-06 | Codex（art） | 🎨 T45 1c 右下普攻双帧首轮候选 | seq=36 放行后按普攻先行试产；原生生成 2 帧并做白底连通域扣图、240×320/高256/脚底 y=300/质心 x≈120 归一；contact `assets/_trial_20260906/t45_batch1c_codex_native/contact/atk_rightdown_pair_attempt1.png`，待 Leo 目验。 |
 | 2026-09-06 | Leo → Codex（art） | ⚠️ T45 1c 右下普攻第二帧手位错误 | Leo 指出候选出的是左手而非右手；已完成一次局部修正及一次明确纠正后的手臂交换追加尝试，当前仍需确认右下三分之四视角的角色右手与画面侧映射。候选对照 `assets/_trial_20260906/t45_batch1c_codex_native/contact/atk_rightdown_pair_attempt3.png`。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ Q1-T45 手位映射裁决 | 角色在我方反面；画面左侧肩膀对应角色自身右手，目标为画面左侧手出拳、画面右侧手收腰；答复 `tasks/answers/A1-T45-rightdown-hand.md`。 |
