@@ -103,7 +103,7 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
   await page.waitForTimeout(200);
   await shot(page, `${tag}_walk_mid`);
 
-  // ③ 跳跃（轻功链路：金格 → jump 1→2；腾空段取帧 2）
+  // ③ 跳跃（轻功链路：金格 → jump 单帧=腾空帧 _2；Leo 09-06 裁定去蓄势帧）
   await heroTurn(page);
   await page.waitForFunction(() => window.__demo.getView().skillPop > 0.9, null, { timeout: 6000 }).catch(() => {});
   const qing = await page.evaluate(() => window.__demo.btnCss('qing'));

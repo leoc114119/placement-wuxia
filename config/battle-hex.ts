@@ -142,7 +142,12 @@ export const PIECE = {
    * legacy 旧帧表脚底在画布底，整画布底落地口径不适用本常量。 */
   feetBaselineRatio: 300 / 320,
   walkFrameMs: 140, // 战斗步频（沿 config/battle BATTLE_FRAME 口径）
-  jumpFrameThreshold: 0.35, // 跳跃帧分段阈值（§3.2：moveAnim.t/duration < 阈值=起跳帧 1，≥=腾空至落地帧 2）
+  // 跳跃帧分段阈值 jumpFrameThreshold 已删除（Leo 09-06 裁定：jump 单帧=全程腾空帧 _2，去蓄势帧 _1；
+  // 选帧逻辑见 ui/battle-hex-render directionalFrameOf——ordinal 恒 1，禁两段切换回潮）
+  /** 脚底向下补偿像素（L 环二轮居中校准 · Leo 连续两轮反馈人物偏上）：directional 分支 top 追加，
+   * 正数=人物下移。Leo 校准中，默认 0 待选档（档位候选 0/4/8/12/16 见 shots/calib_feet_offset.png）；
+   * ADR-004 只读展示参数。 */
+  feetOffsetPx: 0,
   moveLerpSec: 0.3, // 普通行走位移表现时长
   jumpHeightPx: 88, // 轻功抛物线顶高（L 环追加②：44→88 翻倍；=JUMP.height 同源）
   deadAlpha: 0.45, // 阵亡变灰透明度
@@ -399,12 +404,16 @@ const HERO_BATTLE45 = 'assets/characters/hero/battle45';
 export const SPRITE_PROFILES: Readonly<Record<string, BattleSpriteProfile>> = {
   hero: {
     mode: 'directional',
-    clipCounts: { idle: 1, walk: 2, jump: 2, atk: 2, cast: 3, die: 1 },
-    // idle 帧文件名无序号（battle_idle_{facing}.png），其余 clip= {clip}_{facing}_{ordinal}
+    // jump 2→1（Leo 09-06 单帧裁定：只留腾空帧，去蓄势帧 _1；素材文件不删不改，_1 留库待美术线卫生批）
+    clipCounts: { idle: 1, walk: 2, jump: 1, atk: 2, cast: 3, die: 1 },
+    // idle 帧文件名无序号（battle_idle_{facing}.png），其余 clip= {clip}_{facing}_{ordinal}；
+    // jump 例外：ordinal 1 恒映射既有 _2 后缀文件（jump_{facing}_2.png=腾空帧）——文件不重命名，归美术线卫生批
     frameSrc: (clip, facing, ordinal) =>
       clip === 'idle'
         ? `${HERO_BATTLE45}/battle_idle_${facing}.png`
-        : `${HERO_BATTLE45}/${clip}_${facing}_${ordinal}.png`,
+        : clip === 'jump'
+          ? `${HERO_BATTLE45}/jump_${facing}_2.png`
+          : `${HERO_BATTLE45}/${clip}_${facing}_${ordinal}.png`,
     sharedSrc: { die: `${HERO_BATTLE45}/die_common.png` },
     // §3.2 帧序：idle1 保持 / walk 1↔2 循环 / basic atk1→2 / charge cast1 / strike cast2→3
     // / hit 休眠态无专用素材→idle / dead die_common 1（沿既有压扁淡出）

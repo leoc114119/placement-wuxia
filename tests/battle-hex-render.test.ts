@@ -1572,7 +1572,7 @@ function makeDrawRecordingCtx(): { ctx: CanvasRenderingContext2D; ops: Array<{ o
 }
 
 describe('[六向接线 §3.1] hero directional profile 资源完整性（缺任一声明资源=完整性门红）', () => {
-  it('六向 × idle/walk/jump/atk/cast 均解析到存在且互异的独立路径；die=sharedSrc 单路径（总量 61=右31+左镜像30）', () => {
+  it('六向 × idle/walk/jump/atk/cast 均解析到存在且互异的独立路径；die=sharedSrc 单路径（消费 55=独立 54+die 共用；jump 单帧化 Leo 09-06 裁定）', () => {
     const p = SPRITE_PROFILES.hero;
     expect(p.mode).toBe('directional');
     const prof = p as DirectionalSpriteProfile;
@@ -1587,14 +1587,21 @@ describe('[六向接线 §3.1] hero directional profile 资源完整性（缺任
         }
       }
     }
-    expect(paths.size).toBe(60); // 独立路径互异：6+12+12+12+18
+    expect(paths.size).toBe(54); // 独立路径互异：6+12+6+12+18（jump 2→1 单帧，Leo 09-06 裁定）
     expect(prof.sharedSrc.die).toBeTruthy();
     expect(existsSync(path.join(ROOT, prof.sharedSrc.die as string))).toBe(true); // die_common 六向共用
   });
 
-  it('clipCounts 基线：idle1/walk2/jump2/atk2/cast3/die1（T45 已交付口径）', () => {
+  it('clipCounts 基线：idle1/walk2/jump1/atk2/cast3/die1（jump 2→1=Leo 09-06 单帧裁定：只留腾空帧 _2，_1 蓄势帧废弃留库）', () => {
     const prof = SPRITE_PROFILES.hero as DirectionalSpriteProfile;
-    expect(prof.clipCounts).toEqual({ idle: 1, walk: 2, jump: 2, atk: 2, cast: 3, die: 1 });
+    expect(prof.clipCounts).toEqual({ idle: 1, walk: 2, jump: 1, atk: 2, cast: 3, die: 1 });
+  });
+
+  it('jump 单帧映射锁：ordinal 1 → jump_{facing}_2.png（文件不重命名，归美术线卫生批；Leo 09-06 裁定）', () => {
+    const prof = SPRITE_PROFILES.hero as DirectionalSpriteProfile;
+    for (const facing of FACINGS) {
+      expect(prof.frameSrc('jump', facing, 1)).toBe(`assets/characters/hero/battle45/jump_${facing}_2.png`);
+    }
   });
 
   it('hero stateMap（§3.2 帧序表）：basic→atk1→2 / charge→cast1 / strike→cast2→3 / hit 休眠→idle1 / dead→die1', () => {
@@ -1660,7 +1667,7 @@ describe('[六向接线 §3.2] directional 选帧语义（frameOf 升级：语�
     expect(directionalFrameOf(view, walker)).toEqual({ clip: 'walk', ordinal: 1 });
   });
 
-  it('跳跃经 moveAnim.t/duration 判段（禁 animState clock）：p<阈值=起跳1，≥阈值=腾空2 至落地', () => {
+  it('jump 单帧=全程恒取腾空帧且唯一（Leo 09-06 裁定去蓄势帧 _1；旧两段切换逻辑废弃）：选帧 ordinal 恒 1，frameSrc 恒解析 jump_{facing}_2.png', () => {
     const view = createView();
     const jumper = dirActor({
       animState: 'walk', isJump: true, pos: { q: 5, r: 8 }, renderPos: { q: 1, r: 8 },
@@ -1669,12 +1676,19 @@ describe('[六向接线 §3.2] directional 选帧语义（frameOf 升级：语�
     updateView(view, snap, 0.016, 375, 667); // jumpRise 启动
     const ma = view.moveAnims.get('hero')!;
     expect(ma.hopHeight).toBeGreaterThan(0); // 前置：确为跳跃演出
-    ma.t = ma.duration * 0.2;
-    expect(directionalFrameOf(view, jumper)).toEqual({ clip: 'jump', ordinal: 1 }); // 起跳段
-    ma.t = ma.duration * 0.5;
-    expect(directionalFrameOf(view, jumper)).toEqual({ clip: 'jump', ordinal: 2 }); // 腾空至落地
-    ma.t = ma.duration * 0.999;
-    expect(directionalFrameOf(view, jumper)).toEqual({ clip: 'jump', ordinal: 2 }); // 落地前保持
+    const prof = SPRITE_PROFILES.hero as DirectionalSpriteProfile;
+    const sels = new Set<string>();
+    // 采样点含旧阈值两侧（0.2/0.34 < 0.35 ≤ 0.5）：旧两段代码在此分别取 _1/_2 → 本用例先红
+    for (const p of [0.05, 0.2, 0.34, 0.5, 0.9, 0.999]) {
+      ma.t = ma.duration * p;
+      const sel = directionalFrameOf(view, jumper);
+      expect(sel).toEqual({ clip: 'jump', ordinal: 1 }); // 全程唯一 ordinal（clipCounts.jump=1）
+      expect(prof.frameSrc(sel.clip, 'right', sel.ordinal)).toBe(
+        'assets/characters/hero/battle45/jump_right_2.png',
+      ); // 唯一帧=腾空帧 _2（文件不重命名）
+      sels.add(JSON.stringify(sel));
+    }
+    expect(sels.size).toBe(1); // 全程恒定无切换
   });
 
   it('idle→idle1；dead→die（共用，ordinal 1）；hit 休眠态→idle1', () => {
@@ -1690,8 +1704,8 @@ describe('[六向接线 §3.2] directional 选帧语义（frameOf 升级：语�
     expect(directionalFrameOf(view, hit)).toEqual({ clip: 'idle', ordinal: 1 });
   });
 
-  it('阈值常量在 config（方案建议 0.35）：PIECE.jumpFrameThreshold', () => {
-    expect(PIECE.jumpFrameThreshold).toBe(0.35);
+  it('jumpFrameThreshold 常量已随单帧裁定删除（Leo 09-06：禁两段切换回潮）', () => {
+    expect((PIECE as unknown as Record<string, unknown>).jumpFrameThreshold).toBeUndefined();
   });
 });
 
@@ -1709,7 +1723,7 @@ describe('[六向接线 §4.1] drawPieces：directional 六向独立 PNG 零翻�
     expect(pieceDraws.some((o) => (o.args[0] as { tag?: string }).tag === 'idle|left|1')).toBe(true);
   });
 
-  it('hero facingHex=rightdown 跳跃中段：绘 jump|rightdown|2（演出钟判段，非 animState）', () => {
+  it('hero facingHex=rightdown 跳跃全程：恒绘 jump|rightdown|1（=腾空帧 _2 映射；Leo 09-06 单帧裁定，演出钟判段非 animState）', () => {
     const { ctx, ops } = makeDrawRecordingCtx();
     const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['hero', makeHeroStore()]]) };
     const hero = dirActor({
@@ -1719,11 +1733,15 @@ describe('[六向接线 §4.1] drawPieces：directional 六向独立 PNG 零翻�
     const snap = makeSnapshot([hero]);
     updateView(view, snap, 0.016, 375, 667);
     const ma = view.moveAnims.get('hero')!;
-    ma.t = ma.duration * 0.5; // ≥阈值 → 腾空帧
-    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
-    const tags = ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag);
-    expect(tags).toContain('jump|rightdown|2');
-    expect(tags).not.toContain('jump|rightdown|1');
+    // 采样旧阈值两侧（0.2=旧起跳段 / 0.5=旧腾空段）：两段均应绘唯一腾空帧 → 旧两段代码先红
+    for (const p of [0.2, 0.5]) {
+      ops.length = 0;
+      ma.t = ma.duration * p;
+      drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+      const tags = ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag);
+      expect(tags).toContain('jump|rightdown|1'); // 唯一 ordinal=1（经 frameSrc 映射 jump_rightdown_2.png）
+      expect(tags).not.toContain('jump|rightdown|2'); // ordinal 2 已废（clipCounts.jump=1）
+    }
     expect(ops.filter((o) => o.op === 'scale')).toEqual([]);
   });
 

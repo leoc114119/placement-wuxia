@@ -952,8 +952,9 @@ export interface DirectionalFrameSel {
 }
 
 /** 【六向帧接线 §3.2】directional 选帧（frameOf 升级）：先解析语义 clip，再按对应时钟取 ordinal。
- * 优先级：dead（die 共用）> 移动演出期（jump 经 moveAnim.t/duration 判段——禁复用 animState
- * clock 判跳，否则 jump 非 session 状态会永卡第 1 帧；walk 沿演出钟 1↔2 循环）> animState
+ * 优先级：dead（die 共用）> 移动演出期（jump 单帧=全程腾空帧——Leo 09-06 裁定去蓄势帧 _1，
+ * ordinal 恒 1 经 profile.frameSrc 映射 jump_{facing}_2.png；旧两段切换/jumpFrameThreshold 已废；
+ * 禁复用 animState clock 判跳，否则 jump 非 session 状态会永卡；walk 沿演出钟 1↔2 循环）> animState
  * 经 profile.stateMap（循环态区间循环 / 单播态 from→to 播至尾帧保持，组切换由 updateView 重置）。
  * 纯导出供用例；调用方须保证 spriteKey 有 directional profile（drawPieces 已分支保证）。 */
 export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): DirectionalFrameSel {
@@ -967,9 +968,8 @@ export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): D
   const ma = view.moveAnims.get(actor.id);
   if (ma && ma.t < ma.duration) {
     if (ma.hopHeight > 0 || actor.isJump) {
-      // 跳跃：演出进度判段（1=起跳段 / 2=腾空至落地；阈值=PIECE.jumpFrameThreshold）
-      const p = ma.t / ma.duration;
-      return { clip: 'jump', ordinal: p < PIECE.jumpFrameThreshold ? 1 : 2 };
+      // 跳跃单帧（Leo 09-06）：全程恒腾空帧——ordinal 1 → frameSrc 映射 jump_{facing}_2.png
+      return { clip: 'jump', ordinal: 1 };
     }
     // 地面移动：沿演出钟循环（循环区间=stateMap.walk）
     const idx = Math.floor((ma.t * 1000) / PIECE.walkFrameMs);
@@ -1079,9 +1079,10 @@ function drawPieces(
     const cx = sx + shake + shakeDmg;
     // 【L 环锚点修正 09-06（主架构验收定版）】directional=脚底基线锚定格心：battle45 帧画布 240×320
     // 脚底在 y=300（底部 20px 空白），落地基准=脚底非画布底（旧整画布底口径上浮 h×20/320≈7.7px）；
-    // legacy=旧帧表脚底在画布底，整画布底落地口径零回归。
+    // +PIECE.feetOffsetPx 脚底向下补偿（L 环二轮居中校准：正数=下移，默认 0 待 Leo 选档）；
+    // legacy=旧帧表脚底在画布底，整画布底落地口径零回归（不消费 feetOffsetPx）。
     const top = isDirectional
-      ? syGround - h * PIECE.feetBaselineRatio - hop
+      ? syGround - h * PIECE.feetBaselineRatio + PIECE.feetOffsetPx - hop
       : syGround - h - hop;
     placed.push({ actor, cx, top, h, w });
     if (img) {

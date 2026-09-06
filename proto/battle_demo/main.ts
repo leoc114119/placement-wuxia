@@ -3,7 +3,7 @@
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
 import type { CombatantInput } from '../../types';
-import { BATTLE_HEX_RES, DMG, FACINGS, REJECT_HINTS, hexToWorld, type BattleClip } from '../../config/battle-hex';
+import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, hexToWorld, type BattleClip } from '../../config/battle-hex';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
   createView,
@@ -310,6 +310,11 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
   btnCss(id: string): CssPoint | null {
     const b = view.layout.skillBtns.find((x) => x.id === id);
     return b ? logicalToCss(b.x, b.y) : null;
+  },
+  /** 渲染常量组只读引用（L 环二轮居中校准专用：shot_calib.mjs 白盒覆写 PIECE.feetOffsetPx
+   * 逐档截图——渲染每帧属性读值，覆写即时生效；选档后常量落 config，本挂载不进正式接入） */
+  get PIECE() {
+    return PIECE;
   },
 };
 
