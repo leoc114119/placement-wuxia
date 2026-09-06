@@ -421,3 +421,4 @@
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 乙右双参考身高候选目验通过 | Leo 确认“没问题，合格了”；作业 visualReview=selected，文件门 PASS，准备交 rd 规格门；正式 runtime 目录仍锁定至 PM PASS。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 乙右双参考身高候选交规格门 | commit `20d731b`，独立分支 `codex/t45-b-right-height-candidate`；projbus `seq=64` / messageId `ebeecd5c7a2e4b7e88c13de809974ece`。交付候选 PNG、同基线对照、QA、作业状态与 handoff；正式目录待 PM PASS。 |
 | 2026-09-06 | ZCode | ✅ resize+校准+轻功单帧三卡合并终态复验通过（f608ba7/adf8033/139fc58，已 push） | 统一四门：281 绿新基线（266+3 校准/jump 面净额）/14 行为面/shot16/e2e 11 MATCH/DBG=0/三零；hero 55/55 加载（jump 单帧化）；校准图 calib_feet_offset.png 待 Leo 选档定 feetOffsetPx |
+| 2026-09-06 | ZCode | ✅ feetOffsetPx=6 选档落地（2c2ec6a，已 push） | Leo 五档校准图选 6px；常量+用例锁（toBe(6)+换算式补项）+单档效果图 calib_feet_offset_6.png（量化 y=281+6 恰合）；281 基线全绿；verTag v1788685333044 待 Leo 复目验收居中 |
