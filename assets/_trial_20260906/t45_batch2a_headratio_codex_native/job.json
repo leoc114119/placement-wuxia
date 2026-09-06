@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "batch": "2a-headratio-correction",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "count": 4,
+  "attemptPolicy": "one native correction attempt per target",
+  "change": "head and neck proportion only",
+  "weaponPolicy": "empty-hand body frame; standalone saber separate",
+  "next": "Leo visual gate",
+  "revision": 1,
+  "changedOnly": [
+    "shanzei_a_right",
+    "shanzei_b_right",
+    "shanzei_b_rightup",
+    "shanzei_b_rightdown"
+  ]
+}

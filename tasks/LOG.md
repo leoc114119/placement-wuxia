@@ -403,3 +403,5 @@
 | 2026-09-06 | Leo → Codex（art） | 🔧 T45 批 2a 握手形首列比例修正 | Leo 指出 shanzei_a_right / shanzei_b_right 两张首列比例不对；锁定握拳与右向，仅重做这两张，其他四张不动。 |
 | 2026-09-06 | Codex（art） | 🎨 T45 批 2a 握手形 revision 2 候选 | 首列两张第2次局部修正完成；contact `assets/_trial_20260906/t45_batch2a_handgrip_codex_native/contact/contact_sheet_2a_handgrip_v2.png`。新轮廓更窄直立但比例机械值 0.367/0.371 低于 0.38，停 Leo 目验；未交 PM/rd。 |
 | 2026-09-06 | Leo → ZCode | 📋 首段接线 L 环反馈三条 | ①人物偏上（疑画布中心锚定+底部20px空白）→修法并入主架构验收单（seq=59）②轻功落地面向敌=FACE-1/ATK-3 规格行为，Leo 接受无需动作 ③新需求=出招速度机制（出招期间施放帧循环播放）——需求文档起草中走全流程 |
+| 2026-09-06 | Leo → Codex（art） | 🔧 T45 批 2a 握手形头身比修正令 | 仅 `shanzei_a_rightup` / `shanzei_a_rightdown` 头身比正确；重做其余四张，锁住握拳/方向/服装/脚位/空手政策，朴刀独立层不画入身体帧。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 批 2a 头身比四张修正版候选停 Leo 目验 | 四张原生局部修正+确定性去白归一完成；总览 `assets/_trial_20260906/t45_batch2a_headratio_codex_native/contact/contact_sheet_2a_headratio.png`；未交 PM/rd。 |

@@ -1,0 +1,13 @@
+{
+  "task": "T45",
+  "batch": "2a-headratio-correction",
+  "parent": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native",
+  "styleRatioReference": "/var/folders/h1/pmxfd0v96jg39v02p6fzvly80000gn/T/codex-clipboard-c93c825f-b7a0-4b22-af6b-0e04313a569f.png",
+  "candidateRefs": {
+    "shanzei_a_right": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/normalized/shanzei_a_right.png",
+    "shanzei_b_right": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/normalized/shanzei_b_right.png",
+    "shanzei_b_rightup": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/normalized/shanzei_b_rightup.png",
+    "shanzei_b_rightdown": "assets/_trial_20260906/t45_batch2a_handgrip_codex_native/normalized/shanzei_b_rightdown.png"
+  },
+  "operation": "native image edit, one visible target change: head/body proportion"
+}

@@ -1,0 +1,26 @@
+{
+  "key": "shanzei_b_rightdown",
+  "source": "assets/_trial_20260906/t45_batch2a_headratio_codex_native/raw/shanzei_b_rightdown_headratio_attempt1.png",
+  "output": "assets/_trial_20260906/t45_batch2a_headratio_codex_native/normalized/shanzei_b_rightdown.png",
+  "size": [
+    240,
+    320
+  ],
+  "bbox": [
+    62,
+    44,
+    178,
+    300
+  ],
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.0,
+  "widthHeightRatio": 0.453125,
+  "ratioPass": true,
+  "hands": "both empty gripping fists",
+  "weaponVisible": false,
+  "sourceSha256": "4f5194cbf5d7776d343772611c35fc274f4572ba10cb039557ece687d5be503b",
+  "outputSha256": "f8492035b530b35260aeb2d7c7b4bd7333ba2593872dd05c65f420b103fda2b0",
+  "nativeAttempt": 1,
+  "change": "head/body proportion"
+}
