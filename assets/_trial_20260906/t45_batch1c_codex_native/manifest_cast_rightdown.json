@@ -1,0 +1,51 @@
+{
+  "jobId": "t45_batch1c_codex_native_20260906_pilot",
+  "task": "T45",
+  "batch": "1c-pilot",
+  "direction": "rightdown",
+  "action": "cast",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "frameCount": 3,
+  "candidatePaths": [
+    "normalized/cast_rightdown_1_rebuild_userselected.png",
+    "normalized/cast_rightdown_2_replaced_preview_clean_v2.png",
+    "normalized/cast_rightdown_3_rebuild_userselected.png"
+  ],
+  "qa": "qa/cast_rightdown_qa_selected.json",
+  "contact": "contact/cast_rightdown_triplet_release_candidate.png",
+  "generationPolicy": "frame1 retained from prior candidate; frame2/3 selected from Leo-provided user candidates; deterministic cutout, normalization and QA; deterministic neutral fringe cleanup on frame2 hair-tail ROI after Leo flagged white edge",
+  "formalRelease": false,
+  "selectedBy": "Leo",
+  "releasePaths": [
+    "assets/characters/hero/battle45/cast_rightdown_1.png",
+    "assets/characters/hero/battle45/cast_rightdown_2.png",
+    "assets/characters/hero/battle45/cast_rightdown_3.png"
+  ],
+  "releaseChecks": {
+    "frame1": "PASS",
+    "frame2": "PASS",
+    "frame3": "PASS",
+    "pairConsistency": "PASS",
+    "visualReview": "Leo approved",
+    "specGate": "pending_rd_spec_gate"
+  },
+  "releaseCommitPending": true,
+  "releaseAuthorizedByUser": true,
+  "normalizationPolicy": "240x320 RGBA; visual height 256; baseline y=300; centroid x≈120",
+  "edgeCleanup": {
+    "frame2": {
+      "regionCanvasPx": [
+        40,
+        92,
+        112,
+        160
+      ],
+      "method": "remove neutral light pixels touching transparency, two deterministic passes; no semantic redraw",
+      "removedPixels": 93,
+      "scope": "hair tail only"
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "jobId": "t45_batch1c_codex_native_20260906_pilot",
+  "task": "T45",
+  "batch": "1c-pilot",
+  "direction": "rightdown",
+  "action": "cast",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "frameCount": 3,
+  "candidatePaths": [
+    "normalized/cast_rightdown_1_rebuild_userselected.png",
+    "normalized/cast_rightdown_2_replaced_preview_clean_v2.png",
+    "normalized/cast_rightdown_3_rebuild_userselected.png"
+  ],
+  "releasePaths": [
+    "assets/characters/hero/battle45/cast_rightdown_1.png",
+    "assets/characters/hero/battle45/cast_rightdown_2.png",
+    "assets/characters/hero/battle45/cast_rightdown_3.png"
+  ],
+  "qa": "qa/cast_rightdown_qa_selected.json",
+  "contact": "contact/cast_rightdown_triplet_release_candidate.png",
+  "sourcePolicy": "frame1 retained from prior usable candidate; frame2 replaced by Leo-provided user candidate (双手收拢聚气); frame3 retained from Leo-approved user candidate; deterministic checkerboard flood cut, alpha normalization and 240x320 alignment; no semantic redraw after Leo selection; deterministic neutral fringe cleanup on frame2 hair-tail ROI after Leo flagged white edge",
+  "formalRelease": false,
+  "selectedBy": "Leo",
+  "releaseChecks": {
+    "frame1": "PASS",
+    "frame2": "PASS",
+    "frame3": "PASS",
+    "pairConsistency": "PASS",
+    "visualReview": "Leo approved",
+    "specGate": "pending_rd_spec_gate"
+  },
+  "handSemantic": "frame2 both hands gathered at chest; frame3 user-approved follow-through candidate",
+  "normalizationPolicy": "240x320 RGBA; visual height 256; baseline y=300; centroid x≈120",
+  "frames": [
+    {
+      "path": "assets/characters/hero/battle45/cast_rightdown_1.png",
+      "source": "assets/_trial_20260906/t45_batch1c_codex_native/normalized/cast_rightdown_1_rebuild_userselected.png",
+      "bbox": [
+        37,
+        44,
+        190,
+        300
+      ],
+      "charHeight": 256,
+      "feetY": 300,
+      "centroidX": 119.9,
+      "canvas": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "issues": []
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_rightdown_2.png",
+      "source": "assets/characters/hero/battle45/cast_rightdown_2.png",
+      "bbox": [
+        39,
+        44,
+        196,
+        300
+      ],
+      "charHeight": 256,
+      "feetY": 300,
+      "centroidX": 119.7,
+      "canvas": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "issues": []
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_rightdown_3.png",
+      "source": "assets/_trial_20260906/t45_batch1c_codex_native/normalized/cast_rightdown_3_rebuild_userselected.png",
+      "bbox": [
+        37,
+        44,
+        188,
+        300
+      ],
+      "charHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.5,
+      "canvas": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "issues": []
+    }
+  ],
+  "releaseAuthorizedByUser": true,
+  "edgeCleanup": {
+    "frame2": {
+      "regionCanvasPx": [
+        40,
+        92,
+        112,
+        160
+      ],
+      "method": "remove neutral light pixels touching transparency, two deterministic passes; no semantic redraw",
+      "removedPixels": 93,
+      "scope": "hair tail only"
+    }
+  }
+}

@@ -379,3 +379,8 @@
 | 2026-09-06 | ZCode | ✅ 1c 右下行走双帧门检 PASS（5e09f88） | 机械全过+正斜侧迈步+同源；主角 17/31；1c 剩跳跃2+施法3 |
 | 2026-09-06 | Codex（art） → rd | 📤 1c 右下跳跃双帧已交研发线规格门 | commit `efb841b` 已推送；projbus `seq=43` / messageId `11ad37d01e044fdb9dd6483e60292b85`；Leo 目验通过，等待规格 PASS 后进入右下施法三帧。 |
 | 2026-09-06 | ZCode | ✅ 1c 右下跳跃双帧门检 PASS（efb841b/7c59a67） | 机械全过+正斜侧腾空+同源；主角 19/31；1c 只剩施法 3 帧=主角右系收官前最后一组 |
+| 2026-09-06 | Codex（art） | 🎨 1c 右下施法三帧首轮候选 | 原生生成右下向举起→角色自身左下甩→角色自身右下甩，确定性去棋盘底并归一为 240×320 RGBA、视觉高 256、脚底 y=300、质心≈120；候选对照 `assets/_trial_20260906/t45_batch1c_codex_native/contact/cast_rightdown_triplet_attempt1.png`，待 Leo 目验。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 1c 右下施法第2帧按 Leo 口径重做 | Leo 指定第3帧沿用用户候选；第2帧按“角色自身右手向画面左下劈下”重生成。候选 contact `assets/_trial_20260906/t45_batch1c_codex_native/contact/cast_rightdown_triplet_userselected.png`，QA `assets/_trial_20260906/t45_batch1c_codex_native/qa/cast_rightdown_qa_userselected.json`，待目验。 |
+| 2026-09-06 | Codex（art） | 🖼️ T45 右下施法第2帧替换预览 | Leo 指出原第2/3帧同动作，提供新第2帧候选；已只替换第2格排版预览 `assets/_trial_20260906/t45_batch1c_codex_native/contact/cast_rightdown_triplet_2replaced_preview.png`，正式候选未改。 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 1c 右下施法三帧视觉确认 | 替换第2帧后的 1→2→3 连贯，准许固化；随后指出第2帧发尾白边，已进入确定性清边。 |
+| 2026-09-06 | Codex（art） | 🧹 T45 右下施法第2帧发尾清边完成 | 发尾 ROI 确定性清理 93 px，未改动作；formal frame2、manifest/QA/contact 已更新，准备提交规格门。 |
