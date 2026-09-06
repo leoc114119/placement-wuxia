@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "batch": "2a-b-right-two-reference-height-v8",
+  "references": [
+    {
+      "file": "refs_b_identity_leo.png",
+      "role": "strict b-character identity: face, red headscarf, brown outfit, rendering, empty gripping fists"
+    },
+    {
+      "file": "refs_hero_battle_idle_right.png",
+      "role": "standing-height, feet-baseline, and body-proportion guide only"
+    }
+  ],
+  "priority": "b identity is preserved; hero reference controls only total height and body proportion"
+}

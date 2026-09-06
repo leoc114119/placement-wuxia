@@ -418,4 +418,5 @@
 | 2026-09-06 | ZCode | ✅ 居中根因结论采信（arch seq=62 答复） | 四层排除（后端/相机/取整/换算，误差≤0.1px）；根因=顶面几何中心 vs 视觉落脚点感知差（侧裙厚度 SIDE_DEPTH/2≈3.7px）；修法=FE 视觉落脚偏移常量+五档校准图 Leo 选档；不发 BE 卡；校准卡到货后选档定值收尾 |
 | 2026-09-06 | Leo → Codex（art） | 🔧 T45 乙右双参考身高修正令 | b 人物自身风格正确、相对主角过矮；允许 b 图锁身份画风、主角右向待机图锁总高比例的双参考图生图。 |
 | 2026-09-06 | Codex（art） | 🎨 T45 乙右双参考身高候选停 Leo 目验 | `assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/`；候选保留 b 的脸/红巾/棕衣/握拳/右向，仅拉长头下躯干和腿部。RGBA 240×320、视觉高256、脚底y300、质心x120、比例0.516 机械门 PASS；同基线对照 `contact/hero_b_right_height_compare.png`，未正式入库或交 PM。 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 乙右双参考身高候选目验通过 | Leo 确认“没问题，合格了”；作业 visualReview=selected，文件门 PASS，准备交 rd 规格门；正式 runtime 目录仍锁定至 PM PASS。 |
 | 2026-09-06 | ZCode | ✅ resize+校准+轻功单帧三卡合并终态复验通过（f608ba7/adf8033/139fc58，已 push） | 统一四门：281 绿新基线（266+3 校准/jump 面净额）/14 行为面/shot16/e2e 11 MATCH/DBG=0/三零；hero 55/55 加载（jump 单帧化）；校准图 calib_feet_offset.png 待 Leo 选档定 feetOffsetPx |

@@ -1,0 +1,26 @@
+{
+  "task": "T45",
+  "batch": "2a-b-right-two-reference-height-v8",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "count": 1,
+  "attempts": {
+    "shanzei_b_right": 1
+  },
+  "target": "shanzei_b_right",
+  "change": "two-reference img2img: retain Leo-approved b identity and lengthen body below head to hero standing height",
+  "locked": [
+    "b face, red headscarf, brown costume and rendering",
+    "closed gripping fists",
+    "right-facing pose family",
+    "visible feet",
+    "empty-hand body frame",
+    "no weapon"
+  ],
+  "processing": "exterior-connected neutral checkerboard removal; no semantic redraw after ImageGen; aspect-preserving 240x320 normalization to visual height 256 and feet y=300",
+  "contact": "contact/hero_b_right_height_compare.png",
+  "visualApproval": "Leo approved the two-reference b-right candidate in the 2026-09-06 chat",
+  "next": "rd specification gate; do not promote to runtime asset path before PASS"
+}
