@@ -1,0 +1,86 @@
+{
+  "jobId": "t45_batch1c_codex_native_20260906_pilot",
+  "task": "T45",
+  "batch": "1c-pilot",
+  "direction": "rightdown",
+  "action": "jump",
+  "frameCount": 2,
+  "canvas": [
+    240,
+    320
+  ],
+  "targetHeight": 256,
+  "baselineY": 300,
+  "centroidTargetX": 120,
+  "frames": [
+    {
+      "path": "normalized/jump_rightdown_1_attempt1.png",
+      "source": "assets/_trial_20260906/t45_batch1c_codex_native/raw/jump_rightdown_1_attempt1.png",
+      "rawBBox": [
+        244,
+        120,
+        993,
+        1118
+      ],
+      "removedSmallComponents": 0,
+      "scale": 0.256513,
+      "bbox": [
+        20,
+        44,
+        212,
+        300
+      ],
+      "charHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "issues": [],
+      "formalPath": "assets/characters/hero/battle45/jump_rightdown_1.png",
+      "sha256": "370c6e5d8c01f9c55669356f10e2459ee51922b3e58c068a4296875d3b133e0b"
+    },
+    {
+      "path": "normalized/jump_rightdown_2_attempt1.png",
+      "source": "assets/_trial_20260906/t45_batch1c_codex_native/raw/jump_rightdown_2_attempt1.png",
+      "rawBBox": [
+        150,
+        107,
+        1070,
+        1119
+      ],
+      "removedSmallComponents": 3,
+      "scale": 0.252964,
+      "bbox": [
+        3,
+        44,
+        230,
+        300
+      ],
+      "charHeight": 256,
+      "feetY": 300,
+      "centroidX": 123.4,
+      "issues": [],
+      "xSafetyShiftPx": 3,
+      "formalPath": "assets/characters/hero/battle45/jump_rightdown_2.png",
+      "sha256": "53b92d9f9005ef30d5557f985bff0b90b102f1c8a2189b89658eb338f1ef4442"
+    }
+  ],
+  "visualReview": "selected",
+  "specGate": "pending",
+  "artifactStage": "candidate",
+  "formalRelease": false,
+  "identityGate": "PASS_visual",
+  "angleGate": "PASS_visual",
+  "motionGate": "PASS_visual",
+  "fileGate": "PASS",
+  "alphaCleanup": "threshold<=16 removed; alpha components <100 removed; width clamp to 236px before alignment; frame2 +3px x safety shift to clear left edge",
+  "checkedAt": "2026-09-06",
+  "selectedBy": "Leo",
+  "releasePaths": [
+    "assets/characters/hero/battle45/jump_rightdown_1.png",
+    "assets/characters/hero/battle45/jump_rightdown_2.png"
+  ],
+  "notes": [
+    "frame 1 is a crouched takeoff in the right-down three-quarter view",
+    "frame 2 is the airborne forward-lunge phase in the same view",
+    "transparent RGBA with no weapon, text, ground, shadow, or effects"
+  ]
+}

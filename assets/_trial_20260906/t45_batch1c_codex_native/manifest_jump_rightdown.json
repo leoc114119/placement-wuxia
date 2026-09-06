@@ -1,0 +1,33 @@
+{
+  "jobId": "t45_batch1c_codex_native_20260906_pilot",
+  "task": "T45",
+  "batch": "1c-pilot",
+  "direction": "rightdown",
+  "action": "jump",
+  "artifactStage": "candidate",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "frameCount": 2,
+  "candidatePaths": [
+    "normalized/jump_rightdown_1_attempt1.png",
+    "normalized/jump_rightdown_2_attempt1.png"
+  ],
+  "qa": "qa/jump_rightdown_qa_attempt1.json",
+  "contact": "contact/jump_rightdown_pair_attempt1.png",
+  "sourcePolicy": "native ImageGen; frame1 uses rightdown identity/walk anchor + right jump takeoff mother; frame2 uses generated frame1 + right jump airborne mother; alpha cleanup, normalization and QA deterministic",
+  "formalRelease": false,
+  "selectedBy": "Leo",
+  "releasePaths": [
+    "assets/characters/hero/battle45/jump_rightdown_1.png",
+    "assets/characters/hero/battle45/jump_rightdown_2.png"
+  ],
+  "releaseChecks": {
+    "frame1": "PASS",
+    "frame2": "PASS",
+    "pairConsistency": "PASS",
+    "visualReview": "Leo approved",
+    "specGate": "pending_rd_spec_gate"
+  },
+  "normalizationPolicy": "240x320 RGBA; visual height 256 target; baseline y=300; centroid x≈120; frame2 x safety shift +3px after alignment"
+}
