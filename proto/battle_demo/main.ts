@@ -21,8 +21,12 @@ import {
 import { createHexBattle } from '../../systems/battle-session';
 
 // ===== 画布（逻辑分辨率自适应窗口实际比例，L 环反馈④；dpr 放大保真） =====
-let W = 375;
-let H = 667;
+// W/H 初值 = 0（未测量哨兵，09-06 补卡）：舞台 #cvWrap 为 9:16，375×667 视口下 rect 恰为
+// 旧默认初值 375/667 → resize() 首调 `w===W && h===H` 早退 → canvas 缓冲滞留 HTML 默认
+// 300×150（画面左上裁区非均匀拉伸）。初值归 0 后首调必不早退（钳制下限 280×420 > 0），
+// 缓冲与 dpr transform 必在首帧前落设（缺陷锁 = tests/battle-demo-resize.test.ts）。
+let W = 0;
+let H = 0;
 const canvas = document.getElementById('cv') as HTMLCanvasElement;
 const dpr = Math.min(3, window.devicePixelRatio || 1);
 function resize(): void {
