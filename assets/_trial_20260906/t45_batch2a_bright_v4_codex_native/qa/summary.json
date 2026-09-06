@@ -1,0 +1,32 @@
+{
+  "count": 1,
+  "mechanicalPass": 1,
+  "files": [
+    {
+      "key": "shanzei_b_right",
+      "source": "assets/_trial_20260906/t45_batch2a_bright_v4_codex_native/raw/shanzei_b_right_v4.png",
+      "output": "assets/_trial_20260906/t45_batch2a_bright_v4_codex_native/normalized/shanzei_b_right.png",
+      "size": [
+        240,
+        320
+      ],
+      "bbox": [
+        71,
+        44,
+        169,
+        300
+      ],
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.3828125,
+      "ratioPass": true,
+      "hands": "both empty gripping fists",
+      "weaponVisible": false,
+      "nativeAttempt": 3,
+      "change": "reduce b right head/neck to accepted a-right proportion",
+      "sourceSha256": "d7af3a95c6dc033e8230ec2dc6174c073e2b77251c18276d03cf1a2651c8076f",
+      "outputSha256": "6c4bc67a6b32109dcc9c9b4ab079157876ee05840f5d810ae780826099ec980d"
+    }
+  ]
+}

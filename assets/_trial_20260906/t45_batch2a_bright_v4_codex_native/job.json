@@ -1,0 +1,23 @@
+{
+  "task": "T45",
+  "batch": "2a-b-right-ratio-v4",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "count": 1,
+  "revision": 4,
+  "attemptPolicy": "Leo-approved one-time additional native rework after v3 two-attempt limit",
+  "change": "reduce b right head/neck to accepted a-right proportion",
+  "locked": [
+    "b identity/costume",
+    "gripping fists",
+    "pure right profile",
+    "feet",
+    "empty-hand body frame",
+    "no weapon"
+  ],
+  "next": "Leo visual gate",
+  "processing": "pure background flood-cut, stray-component removal, 240x320 RGBA normalization; horizontal width normalization to accepted a-right ratio 0.383",
+  "contact": "contact/b_right_ratio_compare.png"
+}

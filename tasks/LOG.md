@@ -411,3 +411,5 @@
 | 2026-09-06 | ZCode | ✅ 锚点小修卡 PM 复验通过（204ca16，已 push） | 263 绿新基线（+3 先红后绿）/四门全过/三档前后对比留档（diag JSON 自证 y 换算）；发现既有缺陷登记：resize() 375×667 早退→坏缓冲（上卡 375 档证据受染，补卡已排）；verTag v1788682885503 待 Leo 复目验 |
 | 2026-09-06 | Leo → Codex（art） | 🔧 T45 批 2a 乙系头身比重做令 | 甲系三张可用；乙右、乙右上、乙右下比例更奇怪，要求只重做乙系三张。 |
 | 2026-09-06 | Codex（art） | 🎨 T45 批 2a 乙系头身比 v3 候选停 Leo 目验 | 仅重做乙系三张；右上/右下首轮原生，纯右侧因整体过窄做第2次且最后一次原生修正。头颈收回到甲系锚同档；纯右侧补回自然躯干/双拳宽度并做确定性宽度归一。3/3 机械门 PASS；总览 `assets/_trial_20260906/t45_batch2a_bratio_v3_codex_native/contact/b_v3_triplet.png`，新旧对照 `contact/old_new_b_compare.png`。未交 PM/rd，等待 Leo 第一关。 |
+| 2026-09-06 | Leo → Codex（art） | 🔧 T45 批 2a 乙右追加头身比重做令 | 乙右上、乙右下确认可用；仅乙右仍不行，要求再次试做。按明确返工令登记 v3 两次尝试后的单次追加原生豁免。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 批 2a 乙右 v4 候选停 Leo 目验 | 仅重做乙右；头颈相对乙系躯干明显收小，对齐已确认甲右锚，闭合握拳/纯右侧/服装/脚位锁定。机械门 PASS（比例0.383）；对照 `assets/_trial_20260906/t45_batch2a_bright_v4_codex_native/contact/b_right_ratio_compare.png`。未交 PM/rd，等待 Leo 第一关。 |
