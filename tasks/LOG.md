@@ -425,3 +425,5 @@
 | 2026-09-06 | ZCode | ✅ resize+校准+轻功单帧三卡合并终态复验通过（f608ba7/adf8033/139fc58，已 push） | 统一四门：281 绿新基线（266+3 校准/jump 面净额）/14 行为面/shot16/e2e 11 MATCH/DBG=0/三零；hero 55/55 加载（jump 单帧化）；校准图 calib_feet_offset.png 待 Leo 选档定 feetOffsetPx |
 | 2026-09-06 | ZCode | ✅ feetOffsetPx=6 选档落地（2c2ec6a，已 push） | Leo 五档校准图选 6px；常量+用例锁（toBe(6)+换算式补项）+单档效果图 calib_feet_offset_6.png（量化 y=281+6 恰合）；281 基线全绿；verTag v1788685333044 待 Leo 复目验收居中 |
 | 2026-09-06 | ZCode | ✅ 敌型锚点对齐落地（1df25ef，已 push） | 先测后改：legacy 帧脚底实测 y=240/256（旧注释"画布底"系误判）→敌型修前脚底格心-7.7px（与 hero 修前同型同值）；修后双分支同构=格心+6px（legacyFeetBaselineRatio=240/256+共用 feetOffsetPx）；282 基线；verTag v1788686170112 待 Leo 复目验 |
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 山贼乙右上逐张候选通过，启动右下单帧 | 右上 job `assets/_trial_20260906/t45_batch2a_b_rightup_singleframe_v5_codex_native/` 视觉选定；右下仅建作业包 `assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/`，继续逐张闭环。 |
+| 2026-09-06 | Leo → ZCode | ✅ 首段六向接线全量 L 环收官 | Leo 确认居中（6px 选档）+敌型对齐无问题——T45 首段（hero 六向上屏）完整闭环：方案→施工→主架构验收→PM 四门→L 环三轮打磨（居中/resize/轻功单帧/敌型锚点）；FACE-1 视觉验收同刻收官 |
