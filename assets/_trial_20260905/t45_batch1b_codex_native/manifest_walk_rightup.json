@@ -5,8 +5,8 @@
   "direction": "rightup",
   "artifactStage": "release",
   "visualReview": "selected",
-  "specGate": "pending",
-  "integrationGate": "not_handed_off",
+  "specGate": "pass",
+  "integrationGate": "accepted_by_zcode",
   "approvedBy": "Leo",
   "frameCount": 2,
   "releasePaths": [

@@ -26,8 +26,8 @@
   ],
   "localSelfCheck": "pass",
   "visualReview": "Leo confirmed both frames",
-  "specGate": "pending_rd_spec_gate",
-  "integrationGate": "not_handed_off",
+  "specGate": "pass",
+  "integrationGate": "accepted_by_zcode",
   "notes": [
     "two-frame walk phase alternates the character's feet",
     "rightup is the back-oblique facing upper-right",
