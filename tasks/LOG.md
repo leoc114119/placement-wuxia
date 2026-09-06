@@ -4,6 +4,8 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-06 | Leo → Codex（art） | ✅ T45 1b 右上施法三帧目验通过 | 第一帧/第三帧标注残留已清理，第二帧后方左手改为握拳；正式 PNG、QA、manifest 已准备，待提交并交研发线规格门。 |
+| 2026-09-06 | Codex（art） | 📦 T45 1b 右上施法三帧正式产出 | `assets/characters/hero/battle45/cast_rightup_{1,2,3}.png`；`manifest_cast_rightup.json`；`qa/cast_rightup_qa.json`；`contact/cast_rightup_triplet_attempt13.png`；本地 RGBA/240×320/脚底 y=300 自检通过。 |
 | 2026-09-05 17:40 | backend | 📦 交付 规格 v2.4 修正卡（AI-1/GATE-1） | Leo 直通线单卡两条落库：AI-1=planSkill AI 出技射程过滤改与玩家 activate 完全同源 rangeCells 格集合成员判定（ray 六向/cone 扇区，禁仅距离松判，circle/cone 数学等价；targetInRange 本体零动=普攻四处消费点零变更）；GATE-1=selectSkill 入口门（!pendingInputNow → rejected(reason= manual?'bar':'mode')+拒绝激活，mode 资格层优先口径；attack.skillId 兼容入口保留；UI 路径零变化）；types.ts reason 联合加 'mode' 一行为 Leo 直通裁决放行（红线豁免留痕，FE 查表默认兜底零破坏）；mock_session 评估零改动（既有 !pendingInput 门）；新增用例 6（AI1-1 报告反例复现修正前红/AI1-2 真射线对照/AI1-3 SP-2 双场射程集合逐位全等/GATE1-1 bar/GATE1-2 mode/GATE1-3 正向）；typecheck/lint 零输出+test:battle 238（232+6）+behavior 14/14+e2e 11 MATCH 不符合 0+shot 16 PASS+DBG=0+bundle rebuild verTag v1788600574081；threads/AI1-GATE1.md；commit 未 push 停等 PM 复验 |
 | 2026-09-05 | Leo→backend | 📤 直通派单 session 防御性加固 | TASK-ARCH-01 派生卡（体检报告 A01/A02/A03，PM 裁定 fail-fast 随卡生效）：A01 快照引用隔离/A02 faceTargetOf 空守卫（FACE-1 备忘合并）/A03 入口校验；铁律 4 用例清单先行；红线 types/battle-core/hex/battle-input/config/ui/proto源 零碰+既有 211+14 零改写 |
 | 2026-09-05 | backend | 📦 交付 session 防御性加固 | 三条落地：A01 快照出口防御性复制（copyCells=浅拷贝+逐元素{...p}断引用，内部 legalCells 仍唯一真值三同源不破坏）/A02 faceTargetOf 空集 fail-fast（'faceTargetOf: empty targets'，:817 空放守卫互指注释，_debug 增测试钩子直呼断言）/A03 tick 非有限负 dt 抛+阵容 id 重复/敌数超出生带容量抛（校验前置零副作用）；新增 14 例纯追加（A01×6/A02×3/A03×5，真回归锁）；门禁八项自跑全绿：typecheck/lint/build 三零+test:battle **225 绿新基线（211+14）**+behavior 14/14+shot 16+e2e 11 MATCH+DBG=0+bundle rebuild verTag v1788598513257；对表+用例清单+备注（他人 WIP 排除/shots 不入库/mock_session 零变化）见 threads/ARCH-DEF-A01-A03.md；路径级 commit 未 push 停等 PM 复验 |
@@ -340,6 +342,8 @@
 | 2026-09-06 | Codex（art） | 🎨 T45 1b 右上跳跃双帧首轮候选 | 原生生成 2 格跳跃序列表并做确定性切帧/透明化/归一；两帧 240×320 RGBA、视觉高 256、脚底 y=300，contact `assets/_trial_20260905/t45_batch1b_codex_native/contact/jump_rightup_pair_attempt1.png`，待 Leo 目验。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1b 右上跳跃双帧目验通过，待研发线门检 | 两帧已写入 `assets/characters/hero/battle45/jump_rightup_{1,2}.png`；QA/manifest 已补齐，待路径级提交推送后发 projbus delivery。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1b 右上跳跃双帧已交研发线门检 | commit `e5aeaf3` 已推送 GitHub；projbus `seq=32` / messageId `4597c0d17df64681871372a8673891a0`，交付双帧、manifest、QA、contact 与 T45 记录，等待 rd 拉取后回执。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 1b 右上施法三帧首轮候选 | 原生生成 3 格施法序列表并做确定性切帧/透明化/归一；contact `assets/_trial_20260905/t45_batch1b_codex_native/contact/cast_rightup_triplet_attempt1.png`，待 Leo 目验。 |
+| 2026-09-06 | Leo → Codex（art） | 🔧 T45 1b 右上施法中间帧方向修正 | 首轮中间帧误成画面右侧平伸；按 Leo 明确的“角色自身左下甩”完成第 2 次也是最后一次原生局部修正，contact `assets/_trial_20260905/t45_batch1b_codex_native/contact/cast_rightup_triplet_attempt2.png`，待复看。 |
 | 2026-09-06 | ZCode | 📋 治理审计落地（arch 11 项，澄清类已同步 70496aa） | ZCode 侧六文件：旧美术 skill 冻结横幅/art-pipeline 迁移声明/旧前后端退役横幅/README 交付路径放行本任务件/architect 流程适配+四态完成+提案vs待裁/AGENTS CodeBuddy 勘误；扩权项 1（疑义全停收窄）2（高风险重复确认豁免）4（Leo 已决不重复索取）9（无疑义免空确认）候 Leo 批准卡 |
 | 2026-09-06 | Leo → ZCode | ✅ 治理审计四项扩权批准 | 疑义停工收窄/高风险已授权免重复/Leo 已决不重复索取/无疑义免空确认——AGENTS.md 落地（2ca5f15）；硬门全保留（规格审批/审美定稿/PM 规格门/预算/资产保护）；arch 11 项审计全部处置完毕 |
 | 2026-09-06 | ZCode | ✅ Codex 侧审计项5/6 接力收尾（arch 额度满中断） | arch 原位修订被 yaml 缺失阻断校验→PM 零依赖结构校验 PASS（frontmatter/11章节/项5模板收窄/项6停工粒度/疑义对齐扩权/旧矛盾零遗留）；.codex SKILL 首次入库+README 收窄修订一并提交；三份 Codex 专用文件（用户级 AGENTS/README/SKILL）全部就绪 |

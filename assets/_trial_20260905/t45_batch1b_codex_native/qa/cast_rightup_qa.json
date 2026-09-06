@@ -1,0 +1,66 @@
+{
+  "jobId": "t45_batch1b_codex_native_20260906_cast",
+  "task": "T45",
+  "batch": "1b-cast",
+  "direction": "rightup",
+  "checkedAt": "2026-09-06",
+  "canvas": [
+    240,
+    320
+  ],
+  "mode": "RGBA",
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "baselineY": 300,
+  "visualHeight": 256,
+  "centroidX": "approximately 120",
+  "frames": [
+    {
+      "frame": 1,
+      "path": "assets/characters/hero/battle45/cast_rightup_1.png",
+      "bbox": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "sha256": "70dae35295facdfdffc9ae54081d45506cb90abdc8d261a4e3566e55d1dc9b78",
+      "centroidX": 121.28
+    },
+    {
+      "frame": 2,
+      "path": "assets/characters/hero/battle45/cast_rightup_2.png",
+      "bbox": [
+        34,
+        44,
+        207,
+        300
+      ],
+      "sha256": "3ba90146e6332341659f532d9220e21ee078ff5959e5a2e4b9c920684ad4fc28",
+      "centroidX": 127.54
+    },
+    {
+      "frame": 3,
+      "path": "assets/characters/hero/battle45/cast_rightup_3.png",
+      "bbox": [
+        36,
+        44,
+        204,
+        300
+      ],
+      "sha256": "68b26bd80bd45977d37fb4e7e2c9e50f8fd71b4de2c4d97ae0065710f003333b",
+      "centroidX": 114.27
+    }
+  ],
+  "localSelfCheck": "pass",
+  "visualReview": "Leo confirmed all three frames",
+  "specGate": "pending_rd_spec_gate",
+  "integrationGate": "not_handed_off",
+  "notes": [
+    "three-frame cast sequence uses the rightup back-oblique orientation and preserves the cast phase across frames",
+    "frame 2 rear/non-swinging left hand is a closed fist; frame 1/3 alpha residue was removed deterministically at the hair/shoulder and head/forearm edges",
+    "no weapon, text, shadow, or opaque background"
+  ]
+}
