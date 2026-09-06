@@ -1,0 +1,552 @@
+{
+  "task": "T45",
+  "batch": "hero-left-mirror",
+  "artifactStage": "release",
+  "visualReview": "selected",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "mirrorPolicy": "deterministic horizontal FLIP_LEFT_RIGHT from accepted hero right系 frames; die_common is shared and excluded",
+  "count": 30,
+  "entries": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_left.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_right.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        49,
+        44,
+        193,
+        300
+      ],
+      "sourceSha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+      "outputSha256": "36e3d52a6d5afda24e57880bff355d706aa3b44c8a212d5af7f0b071a9f7b8c0"
+    },
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_leftup.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_rightup.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        52,
+        44,
+        190,
+        300
+      ],
+      "sourceSha256": "84da13aea03fadea7d363befe7fbe073aa554c164bb4c1710125a5534b0faf66",
+      "outputSha256": "20a058551d74b0205e70234d5c5347906b188d26ecdb6cbd5b6a5a55d828c411"
+    },
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_leftdown.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        58,
+        44,
+        192,
+        300
+      ],
+      "sourceSha256": "2c0984b6a0064bc487e08786c8bfbd167a621a2315b621592f5ec1e1a5b13655",
+      "outputSha256": "317c660d7e76b87198da809cc2f00d445aace990a0c9d4cc7380c06b0f2d4965"
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_left_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_right_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        40,
+        44,
+        201,
+        300
+      ],
+      "sourceSha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+      "outputSha256": "9354a76b78637a0f2ad0c15d4b7091177410ecee46e37156662b718bc34f57d5"
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_left_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_right_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        44,
+        44,
+        203,
+        300
+      ],
+      "sourceSha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
+      "outputSha256": "d092901b0549c29aead4ac04a48616b91b7b04d8e1c0c9a2537ff6d5b531ffd3"
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftup_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_rightup_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        48,
+        44,
+        205,
+        300
+      ],
+      "sourceSha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1",
+      "outputSha256": "b8e176cfddae9b33fda245f6d8931e11fb5b7fab087f28a915088bd7ff9a1cbd"
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftup_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_rightup_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        39,
+        44,
+        202,
+        300
+      ],
+      "sourceSha256": "1e65c48d8a0ac271244b1beb1103a33ceace4653fd4885381ed4019afa62e421",
+      "outputSha256": "85218afa207493862ffa3b463cd54dca16a707316bf2d3064ded8091632f187b"
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftdown_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_rightdown_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        46,
+        44,
+        192,
+        300
+      ],
+      "sourceSha256": "ee53392e0bb82b09db23bbdb99a5a97a9f0a4b674f8078972ff30fc33de1f331",
+      "outputSha256": "324ceda831a3db9966dbb2aba200539784cc818b0a1ceb06965a8930792d91de"
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftdown_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_rightdown_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        49,
+        44,
+        195,
+        300
+      ],
+      "sourceSha256": "c422a9073335fbc4147ca8700016c123013f8785a499b3fcf2dc10f2f12f1af4",
+      "outputSha256": "4853d63e13e3844cf8596d5cbd39afd0aab89d287781247448a21945026f8297"
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_left_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_right_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        43,
+        44,
+        203,
+        300
+      ],
+      "sourceSha256": "f3e9814bbdc7ac8b9e2ad2d9b8fdd2320502c595302e9d9245a90425004aac4a",
+      "outputSha256": "73ff5d99fc1464f48d1607e3a3e31c80affbfbf3c4e027d6e5bbc8188108271e"
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_left_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_right_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        22,
+        44,
+        226,
+        300
+      ],
+      "sourceSha256": "7203581346af8ef67c73429bc71c43f7ef7b894ec253bf9d3582277605999d92",
+      "outputSha256": "630c87ca4f4c92da28ca3fcb78089934c270db8f1e2dba4e1d5f62528a60bc20"
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftup_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_rightup_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        37,
+        44,
+        204,
+        300
+      ],
+      "sourceSha256": "c6b54d513fbe3bdd76eb311efb2713cd82deb223d855df551e08f92f84b40765",
+      "outputSha256": "a8f7404ea1d8a73e49d333a069576540ecf437e07dae08924aee85c548d1546d"
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftup_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_rightup_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        31,
+        44,
+        210,
+        300
+      ],
+      "sourceSha256": "c67209abdb28a3960c190d12017d77c85b4e4c02bee50deea439339833bf2018",
+      "outputSha256": "558f42919ea2c254a9478e18eb8ba2b5f1d7d0739a487b8e78f83eaed33bef48"
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftdown_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_rightdown_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        28,
+        44,
+        220,
+        300
+      ],
+      "sourceSha256": "370c6e5d8c01f9c55669356f10e2459ee51922b3e58c068a4296875d3b133e0b",
+      "outputSha256": "5dd5bdedbfdb49864e111c8042d47dfe7f40bf246627d536c3a676499fc68adc"
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftdown_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_rightdown_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        10,
+        44,
+        237,
+        300
+      ],
+      "sourceSha256": "53b92d9f9005ef30d5557f985bff0b90b102f1c8a2189b89658eb338f1ef4442",
+      "outputSha256": "dc3ff6536d3890cdf02e6397c45d526905f365b7a51770a07fac1fcea29422e2"
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_left_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_right_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        47,
+        44,
+        195,
+        300
+      ],
+      "sourceSha256": "27e813ac35ffcab7f86b77156fec15e745a45f183f481fcc9d40472a01bc6a13",
+      "outputSha256": "5519ea10ae446058bdff90e0c5cf11c34a4d1a3a173713b94ba77d370ef1fadf"
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_left_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_right_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        23,
+        44,
+        194,
+        300
+      ],
+      "sourceSha256": "949e05763f06f03ef3ae7934e156fc26512d7c9ae26e125b1adea92f678e0ecd",
+      "outputSha256": "579837bd2ac49cac6f8e97fd31a441340450b0a79fe1065ecd23ca848a65f084"
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftup_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_rightup_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        53,
+        44,
+        202,
+        300
+      ],
+      "sourceSha256": "dbe19b78988688563633d3530c41b874be3ca48746cb1a14a4bce06793c3a431",
+      "outputSha256": "85d0aadb365fe3f0fc21b288c0443cc27c7b4abdfee6ff5fbe070f74d52b1b60"
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftup_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_rightup_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        14,
+        44,
+        192,
+        300
+      ],
+      "sourceSha256": "82655a03bab1d27da8321d04b6e750739269e69e687b69c9e244227a7412ae6e",
+      "outputSha256": "7db1f7298c749e36cb91e91d5d2fa68a7eae11c13cccbaf3f67d4e16966ab5c6"
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftdown_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_rightdown_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        51,
+        44,
+        190,
+        300
+      ],
+      "sourceSha256": "8660390de33c5130d1ceb0f986881d3eb457e14a132002ee41cb51f74fcf722c",
+      "outputSha256": "0d6aa35c61749344acc96eba30f8a7803a2f4d4e626f8a2dba3cb3492492de2d"
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftdown_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_rightdown_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        33,
+        44,
+        203,
+        300
+      ],
+      "sourceSha256": "8d27698792df7bd0d45bbde2dd034995c61ab4e8937a53a6fa63942c54db646c",
+      "outputSha256": "6ac5788db7da499978c2d3da98cff94e56480b36b5d3d6f68149b5744808cc2a"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_right_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "sourceSha256": "22bb3f7a7a355bba3440b62f5e60be661c14a3a52246c39ff68634713b3c351d",
+      "outputSha256": "11b179b1c2aadf7b048bf0c5c32f7b4ea88273d6905388c43a9d9486f330bfda"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_right_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        28,
+        44,
+        219,
+        300
+      ],
+      "sourceSha256": "a722a1d9faace4cff02d23cac99904b7567c3497dad24e9afb34c5bcb533989a",
+      "outputSha256": "dd1c18a16f24b25370011821e6d2f1ee4985220e00f9e7ec3a8b7b948c2428ec"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_3.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_right_3.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        43,
+        44,
+        227,
+        300
+      ],
+      "sourceSha256": "9f75dc98916a8a594ca77332ecac7087074098bfe47b6d543227397f516ed20e",
+      "outputSha256": "83c8b9bea2567aa9d68c4d0401fed0a2dd3f9ee8ad904a237c00e3c471cf8022"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightup_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "sourceSha256": "70dae35295facdfdffc9ae54081d45506cb90abdc8d261a4e3566e55d1dc9b78",
+      "outputSha256": "53d41cdd273cf71a242980afe2281f6fd5a26253f618fa3a976ca1501f6169bf"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightup_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        33,
+        44,
+        206,
+        300
+      ],
+      "sourceSha256": "3ba90146e6332341659f532d9220e21ee078ff5959e5a2e4b9c920684ad4fc28",
+      "outputSha256": "7df1e26cd009a2d817399763283d92381bb7694445f778a9429d75959724c5ca"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_3.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightup_3.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        36,
+        44,
+        204,
+        300
+      ],
+      "sourceSha256": "68b26bd80bd45977d37fb4e7e2c9e50f8fd71b4de2c4d97ae0065710f003333b",
+      "outputSha256": "5281ba1e8838346821794637df4f7be931ede2451b4ed1f5dfc9625457b288d1"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightdown_1.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        50,
+        44,
+        203,
+        300
+      ],
+      "sourceSha256": "f76e1d279e6b61cdd47ec42d41200f0b9e4a2aa34ee56ba969aeefe4d028904d",
+      "outputSha256": "96b6acd7500e273a846cf29f10e5882fdf38025d4ba2a57eec2ffeaf685d76cc"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightdown_2.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        44,
+        44,
+        201,
+        300
+      ],
+      "sourceSha256": "ae00941e1de8cb2cd4743b8440c2b0df94260020fca108470cb5923185932e8a",
+      "outputSha256": "5fb9ef75335ab6e6ff8724fa5ff9e7d7ae6d43d2baa3d533394693dcb0c57a49"
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_3.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightdown_3.png",
+      "flipX": true,
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaBBox": [
+        52,
+        44,
+        203,
+        300
+      ],
+      "sourceSha256": "195f8661b11a570949116432cf7a83941f1cec507563d74f528f3a2e3c35bbca",
+      "outputSha256": "bb717726aee026b9b73f338f26e09c0e903b224451e65f4b3df506c1eef86f6a"
+    }
+  ]
+}

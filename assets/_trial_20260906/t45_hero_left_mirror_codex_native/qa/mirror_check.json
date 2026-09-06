@@ -1,0 +1,278 @@
+{
+  "count": 30,
+  "pixelExactCount": 30,
+  "allPixelExact": true,
+  "allMechanicalPass": true,
+  "checks": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_left.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_right.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_leftup.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_rightup.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_leftdown.png",
+      "derivedFrom": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_left_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_right_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_left_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_right_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftup_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_rightup_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftup_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_rightup_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftdown_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_rightdown_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftdown_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/walk_rightdown_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_left_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_right_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_left_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_right_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftup_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_rightup_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftup_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_rightup_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftdown_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_rightdown_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftdown_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/jump_rightdown_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_left_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_right_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_left_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_right_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftup_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_rightup_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftup_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_rightup_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftdown_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_rightdown_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftdown_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/atk_rightdown_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_right_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_right_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_3.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_right_3.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightup_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightup_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_3.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightup_3.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_1.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightdown_1.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_2.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightdown_2.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_3.png",
+      "derivedFrom": "assets/characters/hero/battle45/cast_rightdown_3.png",
+      "pixelExact": true,
+      "sizePass": true,
+      "modePass": true,
+      "alphaBBoxMirrorPass": true,
+      "diffBBox": null
+    }
+  ]
+}

@@ -394,3 +394,4 @@
 | 2026-09-06 | ZCode | ✅ 接线方案 PM 背书（4a26f15，seq=54）+左系镜像下单（seq=55） | 五点裁定：atk2/空手朴刀层（既有裁定同步）/变体键=roster 配置驱动（e0=a e1=b，render 禁猜）/angle=degree+MVP 武器统一前景叠放/DoR=hero 左系 30 张镜像（唯一硬阻塞已下单美术）；首段卡待镜像过门发 frontend-battle |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 批 2a 停点记录交研发线 | commit `03af1aa` 已推送；projbus `seq=53` / messageId `317a38bb604c49a7b56ae1e73bb21346`；仅交 trial/QA/需求覆盖记录，状态 blocked，无正式帧可接线。 |
 | 2026-09-06 | ZCode | 📋 2a 停点处置（seq=53 received） | Plus 额度 429 停点+首张 QA 双拒（棋盘底/方向）——美术处置正确；主线不受影响（首段接线只依赖镜像批=程序化零额度）；已令额度空窗优先镜像；2a 恢复后 prompt 修正（透明底强化+方向示意） |
+| 2026-09-06 | Codex（art） | ✅ T45 hero 左系镜像 30 张机械门 PASS | 响应 rd seq=55：右系 30 张确定性水平镜像入 `assets/characters/hero/battle45/`；`die_common` 不镜像。30/30 像素级镜像一致、240×320 RGBA、alpha bbox 对称全过；contact/manifest/QA 在 `assets/_trial_20260906/t45_hero_left_mirror_codex_native/`，待规格门。 |

@@ -1,0 +1,487 @@
+{
+  "count": 30,
+  "passCount": 30,
+  "allPass": true,
+  "files": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_left.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        49,
+        44,
+        193,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_leftup.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        52,
+        44,
+        190,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_leftdown.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        58,
+        44,
+        192,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_left_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        40,
+        44,
+        201,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_left_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        44,
+        44,
+        203,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftup_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        48,
+        44,
+        205,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftup_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        39,
+        44,
+        202,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftdown_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        46,
+        44,
+        192,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/walk_leftdown_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        49,
+        44,
+        195,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_left_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        43,
+        44,
+        203,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_left_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        22,
+        44,
+        226,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftup_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        37,
+        44,
+        204,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftup_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        31,
+        44,
+        210,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftdown_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        28,
+        44,
+        220,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/jump_leftdown_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        10,
+        44,
+        237,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_left_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        47,
+        44,
+        195,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_left_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        23,
+        44,
+        194,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftup_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        53,
+        44,
+        202,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftup_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        14,
+        44,
+        192,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftdown_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        51,
+        44,
+        190,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/atk_leftdown_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        33,
+        44,
+        203,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        28,
+        44,
+        219,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_left_3.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        43,
+        44,
+        227,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        33,
+        44,
+        206,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftup_3.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        36,
+        44,
+        204,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        50,
+        44,
+        203,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        44,
+        44,
+        201,
+        300
+      ],
+      "pass": true
+    },
+    {
+      "path": "assets/characters/hero/battle45/cast_leftdown_3.png",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaBBox": [
+        52,
+        44,
+        203,
+        300
+      ],
+      "pass": true
+    }
+  ]
+}
