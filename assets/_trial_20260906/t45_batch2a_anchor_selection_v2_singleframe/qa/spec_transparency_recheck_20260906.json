@@ -1,0 +1,32 @@
+{
+  "task": "T45",
+  "batch": "2a-anchor-selection-v2-singleframe",
+  "checkedAt": "2026-09-06",
+  "scope": "six Leo-selected shanzei_a/b right/rightup/rightdown candidate PNGs",
+  "method": {
+    "alphaThreshold": 30,
+    "perimeterCheck": "all outer-edge pixels transparent at threshold",
+    "connectivity": "4-connected alpha component count",
+    "hash": "SHA-256 compared with manifest.json"
+  },
+  "required": {
+    "size": [240, 320],
+    "mode": "RGBA",
+    "alphaExtrema": [0, 255],
+    "visualHeight": 256,
+    "feetY": 300,
+    "centroidXTolerance": 1,
+    "singleForegroundComponent": true,
+    "perimeterTransparent": true
+  },
+  "files": [
+    {"role":"shanzei_a","direction":"right","pass":true,"bbox":[72,44,168,300],"visualHeight":256,"feetY":300,"centroidX":120.0,"components":1,"perimeterNonzero":0,"shaMatch":true},
+    {"role":"shanzei_a","direction":"rightup","pass":true,"bbox":[66,44,174,300],"visualHeight":256,"feetY":300,"centroidX":120.0,"components":1,"perimeterNonzero":0,"shaMatch":true},
+    {"role":"shanzei_a","direction":"rightdown","pass":true,"bbox":[60,44,180,300],"visualHeight":256,"feetY":300,"centroidX":120.0,"components":1,"perimeterNonzero":0,"shaMatch":true},
+    {"role":"shanzei_b","direction":"right","pass":true,"bbox":[54,44,186,300],"visualHeight":256,"feetY":300,"centroidX":120.0,"components":1,"perimeterNonzero":0,"shaMatch":true},
+    {"role":"shanzei_b","direction":"rightup","pass":true,"bbox":[56,44,184,300],"visualHeight":256,"feetY":300,"centroidX":120.0,"components":1,"perimeterNonzero":0,"shaMatch":true},
+    {"role":"shanzei_b","direction":"rightdown","pass":true,"bbox":[54,44,185,300],"visualHeight":256,"feetY":300,"centroidX":119.5,"components":1,"perimeterNonzero":0,"shaMatch":true}
+  ],
+  "overall": "PASS",
+  "integration": "Awaiting RD second specification-gate ACK; no runtime asset path changed."
+}
