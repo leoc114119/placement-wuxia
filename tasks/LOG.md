@@ -420,5 +420,8 @@
 | 2026-09-06 | Codex（art） | 🎨 T45 乙右双参考身高候选停 Leo 目验 | `assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/`；候选保留 b 的脸/红巾/棕衣/握拳/右向，仅拉长头下躯干和腿部。RGBA 240×320、视觉高256、脚底y300、质心x120、比例0.516 机械门 PASS；同基线对照 `contact/hero_b_right_height_compare.png`，未正式入库或交 PM。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 乙右双参考身高候选目验通过 | Leo 确认“没问题，合格了”；作业 visualReview=selected，文件门 PASS，准备交 rd 规格门；正式 runtime 目录仍锁定至 PM PASS。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 乙右双参考身高候选交规格门 | commit `20d731b`，独立分支 `codex/t45-b-right-height-candidate`；projbus `seq=64` / messageId `ebeecd5c7a2e4b7e88c13de809974ece`。交付候选 PNG、同基线对照、QA、作业状态与 handoff；正式目录待 PM PASS。 |
+| 2026-09-06 | Leo → Codex（art） | 🔧 T45 六锚总览返工 | 甲右/右上白边未净，只准确定性清理；乙右上/右下头部小于乙右，改以乙右为比例锚重做，其他两张不动。 |
+| 2026-09-06 | Codex（art） | 🎨 T45 六锚修正候选停 Leo 复目验 | 甲右/右上暴露中性白灰边清 198/558 px，无重绘；乙右上/右下双参考重生成至乙右头身比，文件门均 PASS。总览 `assets/_trial_20260906/t45_batch2a_anchor_corrections_v1_codex_native/contact/t45_batch2a_six_corrections_review.png`；未写正式目录或交 rd。 |
 | 2026-09-06 | ZCode | ✅ resize+校准+轻功单帧三卡合并终态复验通过（f608ba7/adf8033/139fc58，已 push） | 统一四门：281 绿新基线（266+3 校准/jump 面净额）/14 行为面/shot16/e2e 11 MATCH/DBG=0/三零；hero 55/55 加载（jump 单帧化）；校准图 calib_feet_offset.png 待 Leo 选档定 feetOffsetPx |
 | 2026-09-06 | ZCode | ✅ feetOffsetPx=6 选档落地（2c2ec6a，已 push） | Leo 五档校准图选 6px；常量+用例锁（toBe(6)+换算式补项）+单档效果图 calib_feet_offset_6.png（量化 y=281+6 恰合）；281 基线全绿；verTag v1788685333044 待 Leo 复目验收居中 |
+| 2026-09-06 | ZCode | ✅ 敌型锚点对齐落地（1df25ef，已 push） | 先测后改：legacy 帧脚底实测 y=240/256（旧注释"画布底"系误判）→敌型修前脚底格心-7.7px（与 hero 修前同型同值）；修后双分支同构=格心+6px（legacyFeetBaselineRatio=240/256+共用 feetOffsetPx）；282 基线；verTag v1788686170112 待 Leo 复目验 |
