@@ -90,18 +90,21 @@ export function createMockSession(seed = 42): MockSession {
       {
         id: 'hero', side: 'player', name: '小虾米', pos: heroPos, renderPos: { ...heroPos },
         hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 30, facing: 'right',
+        facingHex: 'right', // 六向帧接线 §2.1 契约字段同步（mock 演出占位：与 facing 同向，hero=directional 消费）
         animState: 'idle', statusIcons: ['poison', 'bleed', 'internal'], isBoss: false, spriteKey: 'hero', isJump: false,
         fillPerSec: 12, cooldowns: {}, timeline: null, moving: false,
       },
       {
         id: 'e1', side: 'enemy', name: '山贼甲', pos: e1, renderPos: { ...e1 },
         hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+        facingHex: 'left', // legacy profile 不消费（翻转走 facing）；字段随契约冻结补齐
         animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
         fillPerSec: 9, cooldowns: {}, timeline: null, moving: false,
       },
       {
         id: 'e2', side: 'enemy', name: '山贼乙', pos: e2, renderPos: { ...e2 },
         hp: 90, maxHp: 90, neili: 40, maxNeili: 40, actionBar: 5, facing: 'left',
+        facingHex: 'left',
         animState: 'idle', statusIcons: [], isBoss: true, spriteKey: 'npc-shanzei', isJump: false,
         fillPerSec: 8, cooldowns: {}, timeline: null, moving: false,
       },

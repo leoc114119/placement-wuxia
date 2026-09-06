@@ -3,6 +3,7 @@
 //（色彩/组件布局）、主架构《战斗界面接入技术方案》§2（渲染分层）。数值真值仍在 battle-core / 云端 settle。
 
 import { BATTLE_FRAME } from './battle';
+import type { BattleFacingHex } from '../types'; // 六向帧接线 §2.1 契约类型（type-only，零运行时耦合）
 
 // ===== 六边形几何（96 号定值：平顶 flat-top，s=31 → 格 62×54pt） =====
 // ===== 瓦片投影规格（L 环投影改造·Leo 看稿修正：尖角朝上/朝下的压扁六边形——上下尖角、左右竖直边，
@@ -131,8 +132,12 @@ export const HIGHLIGHT = {
 // ===== 棋子（L3；占位帧=既有 battle/ 小表，T14 Q 版帧到位换 spriteKey+定尺系数即可） =====
 export const PIECE = {
   heightPerTile: 2.0, // 渲染高 = 压扁格高(TILE_H) × 本系数（定尺接口：T14 到位调此系数，O4）
+  // 【六向帧接线 §4.1】首段维持 2.0 不动：渲染高=TILE_H×系数，与源图 240×320 像素尺寸无关
+  //（新帧视觉高占画布 256/320=0.8 → 约 1.6 格视觉高，符合《角色帧规范》「约 1.5 格」；
+  // 若三档截图证 HUD 遮挡/脚底比例不合格，只允许 PM/Leo 按目验改本常量，禁散落缩放公式）。
   bossScale: 1.25, // Boss 放大
   walkFrameMs: 140, // 战斗步频（沿 config/battle BATTLE_FRAME 口径）
+  jumpFrameThreshold: 0.35, // 跳跃帧分段阈值（§3.2：moveAnim.t/duration < 阈值=起跳帧 1，≥=腾空至落地帧 2）
   moveLerpSec: 0.3, // 普通行走位移表现时长
   jumpHeightPx: 88, // 轻功抛物线顶高（L 环追加②：44→88 翻倍；=JUMP.height 同源）
   deadAlpha: 0.45, // 阵亡变灰透明度
@@ -336,9 +341,88 @@ export const PLAQUE_BUTTONS: ReadonlyArray<{ xRatio: number; yRatio: number; wRa
   { xRatio: 26 / 310, yRatio: 0.55, wRatio: 273 / 310, hRatio: 0.21, label: '武功' },
 ];
 
+// ===== sprite profile（六向帧接线 §3.1：配置定「有哪些 clip/路径」，渲染定「按时钟取第几帧」） =====
+
+/** 语义动作 clip（directional 帧库六动作族；legacy 不用） */
+export type BattleClip = 'idle' | 'walk' | 'jump' | 'atk' | 'cast' | 'die';
+
+/** session animState → clip 帧序计划（§3.2 帧序表；from/to 为 clip 内 ordinal 区间）。
+ * 循环态（walk）在 [from,to] 循环；单播态播至 to 保持。敌型 charge/strike→atk 降级映射
+ *（seq=47）落第二段敌型 profile，不落 frameOf——hero 恒 charge/strike→cast 不受降级影响。 */
+export interface DirectionalClipPlan {
+  clip: BattleClip;
+  from: number;
+  to: number;
+}
+export type DirectionalStateMap = Readonly<
+  Record<'idle' | 'walk' | 'charge' | 'strike' | 'basic' | 'hit' | 'dead', DirectionalClipPlan>
+>;
+
+/** legacy profile：一维帧号数组（沿 ANIM_FRAMES/BATTLE_FRAME 旧线；facing 左右翻转消费 facing） */
+export interface LegacySpriteProfile {
+  mode: 'legacy';
+  frameCount: number;
+  frameSrc(i: number): string;
+}
+
+/** directional profile：六向独立 PNG 零运行时镜像（左系=美术管线确定性派生成品）。
+ * sharedSrc 声明六向共用帧（如 die_common，loader 只解码一次）。 */
+export interface DirectionalSpriteProfile {
+  mode: 'directional';
+  clipCounts: Readonly<Record<BattleClip, number>>;
+  frameSrc(clip: BattleClip, facing: BattleFacingHex, ordinal: number): string;
+  sharedSrc: Readonly<Partial<Record<BattleClip, string>>>;
+  stateMap: DirectionalStateMap;
+}
+
+export type BattleSpriteProfile = LegacySpriteProfile | DirectionalSpriteProfile;
+
+/** 名义六向枚举序（与 types BattleFacingHex 同集；loader/测试穷举用） */
+export const FACINGS: readonly BattleFacingHex[] = [
+  'right',
+  'rightup',
+  'leftup',
+  'left',
+  'leftdown',
+  'rightdown',
+] as const;
+
+/** hero battle45 帧族目录（T45 交付：右系 31 + 左系镜像 30，240×320 RGBA，die_common 六向共用） */
+const HERO_BATTLE45 = 'assets/characters/hero/battle45';
+
+/** spriteKey → profile（hero=directional 第一段；npc-shanzei=legacy 保持零迁移直至第二段） */
+export const SPRITE_PROFILES: Readonly<Record<string, BattleSpriteProfile>> = {
+  hero: {
+    mode: 'directional',
+    clipCounts: { idle: 1, walk: 2, jump: 2, atk: 2, cast: 3, die: 1 },
+    // idle 帧文件名无序号（battle_idle_{facing}.png），其余 clip= {clip}_{facing}_{ordinal}
+    frameSrc: (clip, facing, ordinal) =>
+      clip === 'idle'
+        ? `${HERO_BATTLE45}/battle_idle_${facing}.png`
+        : `${HERO_BATTLE45}/${clip}_${facing}_${ordinal}.png`,
+    sharedSrc: { die: `${HERO_BATTLE45}/die_common.png` },
+    // §3.2 帧序：idle1 保持 / walk 1↔2 循环 / basic atk1→2 / charge cast1 / strike cast2→3
+    // / hit 休眠态无专用素材→idle / dead die_common 1（沿既有压扁淡出）
+    stateMap: {
+      idle: { clip: 'idle', from: 1, to: 1 },
+      walk: { clip: 'walk', from: 1, to: 2 },
+      charge: { clip: 'cast', from: 1, to: 1 },
+      strike: { clip: 'cast', from: 2, to: 3 },
+      basic: { clip: 'atk', from: 1, to: 2 },
+      hit: { clip: 'idle', from: 1, to: 1 },
+      dead: { clip: 'die', from: 1, to: 1 },
+    },
+  },
+  'npc-shanzei': {
+    mode: 'legacy',
+    frameCount: 8, // 00~07（BATTLE_FRAME.idle=7 需全量 8 帧）
+    frameSrc: (i) => `assets/ui/frames/battle/spr_shanzei/spr_shanzei_0${i}_transparent.png`,
+  },
+} as const;
+
 // ===== 素材路径表（资源外置铁律：路径唯一出处=本表；版本号防缓存，preview 换图 bump） =====
 export const BATTLE_HEX_RES = {
-  ver: 't24v1',
+  ver: 't45v1', // 六向帧接线第一段：hero 切 battle45 六向帧族（61 张）——换图 bump t24v1→t45v1
   env: 'assets/ui/pixel/battle/raw/battle_env_pure.png', // L0 纯环境底图（无格无 UI，1088×1920）
   topbar: 'assets/ui/pixel/battle/components/topbar_base.png', // T23：无字底图（名字/百分比/条由代码绘制）
   plaque: 'assets/ui/pixel/battle/components/plaque_l_alpha.png',
@@ -348,20 +432,14 @@ export const BATTLE_HEX_RES = {
     jiasu: 'assets/ui/pixel/battle/components/ctrl_jiasu_face.png',
     flee: 'assets/ui/pixel/battle/components/ctrl_flee.png',
   },
-  /** T23：状态图标映射表（key 词表 poison/blood/skull，与 types.ts:290 冻结字段注释语义对齐；
+  /** T23：状态图标映射表（key 词表 poison/blood/skull，与 types.ts 冻结字段注释语义对齐；
    * 传入 key 命中即点亮，MVP 快照恒空数组=空槽；第 4 槽无素材预留不映射） */
   statusIcons: {
     poison: 'assets/ui/pixel/battle/components/icon_status_poison.png',
     blood: 'assets/ui/pixel/battle/components/icon_status_blood.png',
     skull: 'assets/ui/pixel/battle/components/icon_status_skull.png',
   },
-  /** 占位帧表：沿用既有 battle/ 小表（frameSrc 与 ui/assets.ts 同源），T14 Q 版帧到位即换表 */
-  frameSrc: (kind: string, i: number): string => {
-    const dir = kind === 'hero' ? 'hero' : 'spr_' + kind.replace('npc-', '').replace(/-/g, '_');
-    return `assets/ui/frames/battle/${dir}/${dir}_0${i}_transparent.png`;
-  },
-  frameCount: 8, // 00~07（BATTLE_FRAME.idle=7 需全量 8 帧）
-  /** 预载帧表键（联调 F3：敌方 spriteKey=configId，按 T15 敌型对齐；玩家恒 'hero'。
+  /** sprite profile 表（§3.1：loader 按此预解码；渲染按 profile 分支取帧。
    * Leo 09-04 裁定摘狼：设计无狼 NPC，演示阵容全山贼系——spr_lang/ 素材归档保留不删） */
-  spriteKinds: ['hero', 'npc-shanzei'],
+  profiles: SPRITE_PROFILES,
 } as const;

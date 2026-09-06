@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createHexBattle,
   assembleRoster,
+  hexFacingName,
   NEILI_COST_PER_CAST,
   FIELD_COL_MIN,
   FIELD_COL_MAX,
@@ -1730,5 +1731,52 @@ describe('[GATE-1] selectSkill 入口门(规格 v2.4 · 体检 Q03:禁静默激�
     expect(s.snapshot().selectedSkill).toBe('te');
     expect(s.snapshot().attackCells.length).toBeGreaterThan(0);
     expect(s.events.filter((e) => e.type === 'rejected')).toHaveLength(rejectedBefore);
+  });
+});
+
+// ══════════ 六向帧接线 §2.2（第一段 hero）：facingHex 单点导出 + 穷举映射 ══════════
+// 方案真源：《战斗人物六向帧接线方案》§2.2 映射表——唯一出口=battle-session 穷举函数；
+// 未知值 fail-fast 不回退 facing；旧 facing 断言全部保留（下方各向用例同时锁 facing 旧值）。
+
+describe('[六向接线 §2.2] hexFacingName 穷举映射（唯一出口 · fail-fast）', () => {
+  it('六个 HEX_DIRS 单位向量逐一导出正确 facingHex（方案 §2.2 表）', () => {
+    expect(hexFacingName({ q: 1, r: 0 })).toBe('right');
+    expect(hexFacingName({ q: 1, r: -1 })).toBe('rightup');
+    expect(hexFacingName({ q: 0, r: -1 })).toBe('leftup');
+    expect(hexFacingName({ q: -1, r: 0 })).toBe('left');
+    expect(hexFacingName({ q: -1, r: 1 })).toBe('leftdown');
+    expect(hexFacingName({ q: 0, r: 1 })).toBe('rightdown');
+  });
+
+  it('未知值 fail-fast 抛错（不回退 facing、不猜最近向——快照契约缺角宁可炸）', () => {
+    expect(() => hexFacingName({ q: 2, r: 0 })).toThrow();
+    expect(() => hexFacingName({ q: 0, r: 0 })).toThrow();
+    expect(() => hexFacingName({ q: -1, r: -1 })).toThrow();
+  });
+});
+
+describe('[六向接线 §2.2] 快照 facingHex 单点导出（session 语义零改动 · 旧 facing 保留）', () => {
+  const actorOf = (s: HexBattleSession, id: string) => s.snapshot().actors.find((a) => a.id === id)!;
+
+  // 布点沿用 FACE-1 ③ 系（offset col,row；p 锚 (7,8)）：四向邻格覆盖东/左下/上/下。
+  // place 不重算出生朝向——先普攻（cube1 邻格）触发 faceToward 定向，再断快照导出（与 ③a/③b 同法）。
+  it.each([
+    ['正东 {1,0} → right（facing 旧值 right 保留）', [[8, 8]], { q: 1, r: 0 }, 'right', 'right'],
+    ['左下 {-1,1} → leftdown（facing 旧值 left 保留）', [[6, 9]], { q: -1, r: 1 }, 'leftdown', 'left'],
+    ['上邻 {0,-1} → leftup（facing 旧值 left 保留）', [[6, 7]], { q: 0, r: -1 }, 'leftup', 'left'],
+    ['下邻 {0,1} → rightdown（facing 旧值 right 保留）', [[7, 9]], { q: 0, r: 1 }, 'rightdown', 'right'],
+  ] as const)('%s', (_label, spots, vec, wantHex, wantFacing) => {
+    const s = faceBoard(spots.map((sp) => [sp[0], sp[1]] as [number, number]));
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true); // 普攻定朝向
+    expect(facingOf(s, 'p')).toEqual(vec); // 内部真值（既有口径，FACE-1 回归锁不动）
+    expect(actorOf(s, 'p').facingHex).toBe(wantHex); // 快照导出=穷举映射单点
+    expect(actorOf(s, 'p').facing).toBe(wantFacing); // 旧 facing 保留（legacy profile 消费）
+  });
+
+  it('全员一致性：快照 facingHex === hexFacingName(hexFacing)（含敌方出生朝最近敌）', () => {
+    const s = faceBoard([[9, 8], [5, 8]]);
+    for (const a of s.snapshot().actors) {
+      expect(a.facingHex).toBe(hexFacingName(facingOf(s, a.id)));
+    }
   });
 });

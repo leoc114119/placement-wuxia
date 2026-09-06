@@ -24,6 +24,7 @@
 
 import type {
   ActionRequest,
+  BattleFacingHex,
   BattleMode,
   BattleSnapshot,
   BattleSnapshotPhase,
@@ -79,6 +80,30 @@ export const NEILI_INITIAL = 100;
 
 /** 表现时长 ms（展示参数，ADR-004 口径；驱动快照动画态） */
 export const ANIM_MS = { walk: 300, charge: 100, strike: 300, basic: 300, hit: 300 } as const;
+
+/** 【六向帧接线 §2.2】Runner.hexFacing 单位向量 → 名义六向（唯一出口，穷举映射表）。
+ * 按当前 hexToWorld 投影与 HEX_DIRS：{1,0}=right / {1,-1}=rightup / {0,-1}=leftup /
+ * {-1,0}=left / {-1,1}=leftdown / {0,1}=rightdown。未知值 fail-fast 抛错——不回退旧
+ * facing、不猜最近向（快照契约缺角宁可炸也不静默错画）。渲染层只消费快照 facingHex，
+ * 禁反向调本函数重算（单点真值=快照）。session 转向/射程/rng/结算语义零改动。 */
+export function hexFacingName(v: HexPos): BattleFacingHex {
+  switch (`${v.q},${v.r}`) {
+    case '1,0':
+      return 'right';
+    case '1,-1':
+      return 'rightup';
+    case '0,-1':
+      return 'leftup';
+    case '-1,0':
+      return 'left';
+    case '-1,1':
+      return 'leftdown';
+    case '0,1':
+      return 'rightdown';
+    default:
+      throw new Error(`hexFacingName: unknown hexFacing {q:${v.q},r:${v.r}}（须为 HEX_DIRS 六单位向量之一）`);
+  }
+}
 
 /** 【病灶⑤】core 兼容 pos 视图单例：恒原点、无几何语义（hex 才是真值、无手工双写）。
  * 所有 Runner 共享此引用；resolveAction 的曼哈顿复核在 hex 度量下恒通过（Q1 批复适配终态）。 */
@@ -919,6 +944,7 @@ export function createHexBattle(opts: HexBattleOptions) {
       maxNeili: c.maxNeili,
       actionBar: Math.min(BAR.max, c.bar),
       facing: c.faceLeft ? 'left' : 'right',
+      facingHex: hexFacingName(c.hexFacing), // 【六向帧接线 §2.2】单点导出（旧 facing 并存供 legacy profile）
       animState: c.animState,
       statusIcons: [],
       isBoss: false,

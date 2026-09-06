@@ -35,7 +35,7 @@ const EMPTY_ASSETS: BattleHexAssets = {
 function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {
   const base: SnapshotActor = {
     id: 'x', side: 'player', name: '单位', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
-    hp: 50, maxHp: 50, neili: 30, maxNeili: 30, actionBar: 0, facing: 'right',
+    hp: 50, maxHp: 50, neili: 30, maxNeili: 30, actionBar: 0, facing: 'right', facingHex: 'right',
     animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
   };
   return {

@@ -61,6 +61,7 @@ declare const wx: {
 // ============ T16：测试用 node 模块最小声明（vitest 运行时可用；小游戏运行时禁用） ============
 declare module 'node:fs' {
   export function readFileSync(path: string, encoding: string): string;
+  export function existsSync(path: string): boolean; // 六向帧接线：资源完整性用例（声明随任务补全）
 }
 declare module 'node:path' {
   export function join(...parts: string[]): string;

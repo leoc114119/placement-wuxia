@@ -1,7 +1,7 @@
 // T16 用例：渲染层红线扫描 + 六边形几何 + 帧组播报 + 镜头 + 输入翻译 + mock 快照渲染烟雾 + mock 会话契约咬合
 // 运行：npm run test:battle
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 // vitest 运行时注入（vite-node）；node:fs / node:path 的最小类型声明见 env.d.ts（全局 ambient）
@@ -16,16 +16,21 @@ import {
   CTRL_ACTIVE,
   CTRL_ART,
   CTRL_BUTTONS,
+  FACINGS,
   FIELD,
   JUMP,
+  PIECE,
   ROW_H,
   SHADOW,
+  SPRITE_PROFILES,
   TILE,
   TILE_W,
   TOPBAR,
   hexDist,
   hexToWorld,
   jumpParamsFor,
+  type BattleClip,
+  type DirectionalSpriteProfile,
 } from '../config/battle-hex';
 import {
   axialToOffset,
@@ -33,7 +38,9 @@ import {
   cellHash,
   computeCamera,
   computeMovePath,
+  directionalFrameOf,
   envWorldRect,
+  frameKeyOf,
   isBoardCell,
   isMovableCell,
   movableBounds,
@@ -46,10 +53,13 @@ import {
   worldToHex,
   type BattleHexAssets,
   type BattleHexView,
+  type DirectionalFrameStore,
+  type ImgLike,
+  type LegacyFrameStrip,
 } from '../ui/battle-hex-render';
 import { createBattleInput, createPointerTracker, pickCtrlButton, pickPlaqueButton, pickSkillButton } from '../ui/battle-input';
 import { createMockSession } from '../proto/battle_demo/mock_session';
-import type { BattleSnapshot, CombatantInput, HexPos, SnapshotActor } from '../types';
+import type { BattleFacingHex, BattleSnapshot, CombatantInput, HexPos, SnapshotActor } from '../types';
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -270,12 +280,12 @@ function makeViewForInput(): ReturnType<typeof createView> {
 describe('输入翻译（指针事件 → ActionRequest）', () => {
   const hero: SnapshotActor = {
     id: 'hero', side: 'player', name: '小虾米', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
-    hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right',
+    hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right', facingHex: 'right',
     animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
   };
   const enemy: SnapshotActor = {
     id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 3, r: 7 }, renderPos: { q: 3, r: 7 },
-    hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+    hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left', facingHex: 'left',
     animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
   };
 
@@ -360,13 +370,13 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>) });
     const hero: SnapshotActor = {
       id: 'hero', side: 'player', name: '小虾米', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
-      hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right',
+      hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right', facingHex: 'right',
       animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
     };
     // 敌逻辑格 (5,6)，动画位 (4.2,6.5)（移动中）——点击逻辑格
     const enemy: SnapshotActor = {
       id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 5, r: 6 }, renderPos: { q: 4.2, r: 6.5 },
-      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left', facingHex: 'left',
       animState: 'walk', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
     };
     const snap = makeSnapshot([hero, enemy]);
@@ -390,7 +400,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     });
     const mover: SnapshotActor = {
       id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 5, r: 6 }, renderPos: { q: 4.2, r: 6.5 },
-      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left', facingHex: 'left',
       animState: 'walk', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
     };
     const snap = makeSnapshot([hero, mover]);
@@ -445,7 +455,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
     });
     const mover: SnapshotActor = {
       id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 5, r: 6 }, renderPos: { q: 4.2, r: 6.5 },
-      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+      hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left', facingHex: 'left',
       animState: 'walk', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
     };
     const snap = makeSnapshot([hero, mover]);
@@ -582,7 +592,7 @@ describe('输入翻译（指针事件 → ActionRequest）', () => {
 function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {
   const base: SnapshotActor = {
     id: 'x', side: 'player', name: '单位', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
-    hp: 50, maxHp: 50, neili: 30, maxNeili: 30, actionBar: 0, facing: 'right',
+    hp: 50, maxHp: 50, neili: 30, maxNeili: 30, actionBar: 0, facing: 'right', facingHex: 'right',
     animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
   };
   return {
@@ -714,12 +724,12 @@ describe('A06 roundRect 能力检测（缺图降级占位钮）', () => {
 describe('A07 指针生命周期（同指针配对 + cancel/blur 重置 + 无 down up 忽略）', () => {
   const heroA: SnapshotActor = {
     id: 'hero', side: 'player', name: '小虾米', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
-    hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right',
+    hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right', facingHex: 'right',
     animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
   };
   const enemyA: SnapshotActor = {
     id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 3, r: 7 }, renderPos: { q: 3, r: 7 },
-    hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left',
+    hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left', facingHex: 'left',
     animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
   };
 
@@ -852,8 +862,10 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
       // T23：三脸给实尺寸（切图=钮本体 1:1）走有脸分支；图标空 Map=恒空槽（MVP）
       ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
       statusIcons: new Map(),
-      frames: new Map([
-        ['hero', [img, img, img, img, img, img, img, img]],
+      // 六向帧接线机械适配：hero 切 directional 帧库（断言语义不变——仍为「棋子帧绘制」）；
+      // npc-shanzei 保持 legacy 8 帧条
+      frames: new Map<string, LegacyFrameStrip | DirectionalFrameStore>([
+        ['hero', makeHeroStore()],
         ['npc-shanzei', [img, img, img, img, img, img, img, img]],
       ]),
     };
@@ -1494,5 +1506,273 @@ describe('mock 会话（契约咬合：ActionRequest 消费 + 快照产出）', 
     const s = createMockSession(7);
     expect(s.dispatch({ type: 'flee' })).toBe(true);
     expect(s.snapshot().phase).toBe('fled');
+  });
+});
+
+// ══════════ 六向帧接线 第一段（hero directional）——《战斗人物六向帧接线方案》§3/§4.1/§6.1 ══════════
+// 先红后绿：本节用例随卡新增，断言锚定方案定版（profile/语义 clip/零翻转/legacy 零迁移）。
+
+/** 身份标记测试图（tag 供 drawImage 身份断言；240×320=新帧源画布，128×256=legacy 占位帧画布） */
+type TagImg = ImgLike & { tag: string };
+const tagImg = (tag: string, width = 240, height = 320): TagImg => ({ width, height, tag });
+
+/** directional 测试专用 actor 工厂（含新契约字段 facingHex；不复用 makeSnapshot base 以隔离本节语义） */
+function dirActor(over: Partial<SnapshotActor> = {}): SnapshotActor {
+  return {
+    id: 'hero', side: 'player', name: '小虾米', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 },
+    hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 0, facing: 'right', facingHex: 'right',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
+    ...over,
+  };
+}
+
+/** hero directional 帧库（每 key 独立 tag 供 drawImage 身份断言） */
+function makeHeroStore(): DirectionalFrameStore {
+  const p = SPRITE_PROFILES.hero;
+  if (p.mode !== 'directional') throw new Error('hero profile 未切 directional');
+  const frames = new Map<string, ImgLike | null>();
+  for (const facing of FACINGS) {
+    for (const clip of Object.keys(p.clipCounts) as BattleClip[]) {
+      if (p.sharedSrc[clip] !== undefined) continue; // 共用帧走 clip 键（只解码一次）
+      for (let o = 1; o <= p.clipCounts[clip]; o++) {
+        const k = frameKeyOf(clip, facing, o);
+        frames.set(k, tagImg(k));
+      }
+    }
+  }
+  for (const clip of Object.keys(p.sharedSrc) as BattleClip[]) frames.set(clip, tagImg(clip));
+  return { mode: 'directional', frames };
+}
+
+/** drawImage/scale/translate 记录 ctx（身份断言用；其余方法自动空实现） */
+function makeDrawRecordingCtx(): { ctx: CanvasRenderingContext2D; ops: Array<{ op: string; args: unknown[] }> } {
+  const ops: Array<{ op: string; args: unknown[] }> = [];
+  const ctx = new Proxy(
+    {
+      canvas: { width: 375, height: 667 },
+      measureText: () => ({ width: 10 }),
+      createLinearGradient: () => ({ addColorStop: () => {} }),
+    } as unknown as CanvasRenderingContext2D,
+    {
+      get(t, prop) {
+        const rec = t as unknown as Record<string | symbol, unknown>;
+        if (prop in rec) return rec[prop];
+        const name = String(prop);
+        return (...args: unknown[]) => {
+          if (name === 'drawImage' || name === 'scale' || name === 'translate') ops.push({ op: name, args });
+        };
+      },
+      set() {
+        return true;
+      },
+    },
+  );
+  return { ctx, ops };
+}
+
+describe('[六向接线 §3.1] hero directional profile 资源完整性（缺任一声明资源=完整性门红）', () => {
+  it('六向 × idle/walk/jump/atk/cast 均解析到存在且互异的独立路径；die=sharedSrc 单路径（总量 61=右31+左镜像30）', () => {
+    const p = SPRITE_PROFILES.hero;
+    expect(p.mode).toBe('directional');
+    const prof = p as DirectionalSpriteProfile;
+    const paths = new Set<string>();
+    for (const facing of FACINGS) {
+      for (const clip of Object.keys(prof.clipCounts) as BattleClip[]) {
+        if (clip === 'die') continue; // die 走 sharedSrc 共用
+        for (let o = 1; o <= prof.clipCounts[clip]; o++) {
+          const src = prof.frameSrc(clip, facing, o);
+          expect(existsSync(path.join(ROOT, src))).toBe(true); // 声明即存在（缺图占位≠通过）
+          paths.add(src);
+        }
+      }
+    }
+    expect(paths.size).toBe(60); // 独立路径互异：6+12+12+12+18
+    expect(prof.sharedSrc.die).toBeTruthy();
+    expect(existsSync(path.join(ROOT, prof.sharedSrc.die as string))).toBe(true); // die_common 六向共用
+  });
+
+  it('clipCounts 基线：idle1/walk2/jump2/atk2/cast3/die1（T45 已交付口径）', () => {
+    const prof = SPRITE_PROFILES.hero as DirectionalSpriteProfile;
+    expect(prof.clipCounts).toEqual({ idle: 1, walk: 2, jump: 2, atk: 2, cast: 3, die: 1 });
+  });
+
+  it('hero stateMap（§3.2 帧序表）：basic→atk1→2 / charge→cast1 / strike→cast2→3 / hit 休眠→idle1 / dead→die1', () => {
+    const m = (SPRITE_PROFILES.hero as DirectionalSpriteProfile).stateMap;
+    expect(m.idle).toEqual({ clip: 'idle', from: 1, to: 1 });
+    expect(m.walk).toEqual({ clip: 'walk', from: 1, to: 2 });
+    expect(m.basic).toEqual({ clip: 'atk', from: 1, to: 2 });
+    expect(m.charge).toEqual({ clip: 'cast', from: 1, to: 1 });
+    expect(m.strike).toEqual({ clip: 'cast', from: 2, to: 3 });
+    expect(m.hit).toEqual({ clip: 'idle', from: 1, to: 1 }); // 休眠态无专用素材（§3.2）
+    expect(m.dead).toEqual({ clip: 'die', from: 1, to: 1 });
+  });
+
+  it('npc-shanzei 保持 legacy：mode/frameCount 8/路径族零迁移（第一段不接敌型，§3.1）', () => {
+    const p = SPRITE_PROFILES['npc-shanzei'];
+    expect(p.mode).toBe('legacy');
+    if (p.mode !== 'legacy') return;
+    expect(p.frameCount).toBe(8);
+    for (let i = 0; i < 8; i++) {
+      expect(p.frameSrc(i)).toBe(`assets/ui/frames/battle/spr_shanzei/spr_shanzei_0${i}_transparent.png`);
+    }
+  });
+});
+
+describe('[六向接线 §3.2] directional 选帧语义（frameOf 升级：语义 clip 解析 + 时钟取 ordinal）', () => {
+  it('charge 恒 cast1；strike cast2→cast3；basic atk1→atk2 播至尾帧保持（anim 钟驱动）', () => {
+    const view = createView();
+    const charge = dirActor({ animState: 'charge' });
+    let snap = makeSnapshot([charge]);
+    updateView(view, snap, 0.05, 375, 667);
+    updateView(view, snap, 0.2, 375, 667); // 钟累计 0.25s——charge 恒第 1 帧
+    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 1 });
+
+    const strike = dirActor({ animState: 'strike' });
+    snap = makeSnapshot([strike]);
+    updateView(view, snap, 0.016, 375, 667); // 切组重置钟 t=0
+    expect(directionalFrameOf(view, strike)).toEqual({ clip: 'cast', ordinal: 2 });
+    updateView(view, snap, 0.2, 375, 667); // t≈0.216 > 140ms 一步
+    expect(directionalFrameOf(view, strike)).toEqual({ clip: 'cast', ordinal: 3 });
+
+    const basic = dirActor({ animState: 'basic' });
+    snap = makeSnapshot([basic]);
+    updateView(view, snap, 0.016, 375, 667);
+    expect(directionalFrameOf(view, basic)).toEqual({ clip: 'atk', ordinal: 1 });
+    updateView(view, snap, 0.2, 375, 667);
+    expect(directionalFrameOf(view, basic)).toEqual({ clip: 'atk', ordinal: 2 });
+    updateView(view, snap, 2, 375, 667); // 长待机：尾帧保持（组内单播铁律）
+    expect(directionalFrameOf(view, basic)).toEqual({ clip: 'atk', ordinal: 2 });
+  });
+
+  it('walk 沿演出钟 1↔2 循环（PIECE.walkFrameMs 步频；演出期帧组由 moveAnim 主导）', () => {
+    const view = createView();
+    const walker = dirActor({ animState: 'walk', pos: { q: 4, r: 8 }, renderPos: { q: 2, r: 8 } });
+    const snap = makeSnapshot([walker]);
+    updateView(view, snap, 0.016, 375, 667); // walkRise 启动演出
+    const ma = view.moveAnims.get('hero')!;
+    expect(ma).toBeTruthy();
+    ma.t = 0;
+    expect(directionalFrameOf(view, walker)).toEqual({ clip: 'walk', ordinal: 1 });
+    ma.t = 0.15; // >140ms 一步
+    expect(directionalFrameOf(view, walker)).toEqual({ clip: 'walk', ordinal: 2 });
+    ma.t = 0.29; // >280ms 两步 → 循环回 1
+    expect(directionalFrameOf(view, walker)).toEqual({ clip: 'walk', ordinal: 1 });
+  });
+
+  it('跳跃经 moveAnim.t/duration 判段（禁 animState clock）：p<阈值=起跳1，≥阈值=腾空2 至落地', () => {
+    const view = createView();
+    const jumper = dirActor({
+      animState: 'walk', isJump: true, pos: { q: 5, r: 8 }, renderPos: { q: 1, r: 8 },
+    });
+    const snap = makeSnapshot([jumper]);
+    updateView(view, snap, 0.016, 375, 667); // jumpRise 启动
+    const ma = view.moveAnims.get('hero')!;
+    expect(ma.hopHeight).toBeGreaterThan(0); // 前置：确为跳跃演出
+    ma.t = ma.duration * 0.2;
+    expect(directionalFrameOf(view, jumper)).toEqual({ clip: 'jump', ordinal: 1 }); // 起跳段
+    ma.t = ma.duration * 0.5;
+    expect(directionalFrameOf(view, jumper)).toEqual({ clip: 'jump', ordinal: 2 }); // 腾空至落地
+    ma.t = ma.duration * 0.999;
+    expect(directionalFrameOf(view, jumper)).toEqual({ clip: 'jump', ordinal: 2 }); // 落地前保持
+  });
+
+  it('idle→idle1；dead→die（共用，ordinal 1）；hit 休眠态→idle1', () => {
+    const view = createView();
+    const idle = dirActor({ animState: 'idle' });
+    updateView(view, makeSnapshot([idle]), 0.5, 375, 667);
+    expect(directionalFrameOf(view, idle)).toEqual({ clip: 'idle', ordinal: 1 });
+    const dead = dirActor({ animState: 'dead' });
+    updateView(view, makeSnapshot([dead]), 0.1, 375, 667);
+    expect(directionalFrameOf(view, dead)).toEqual({ clip: 'die', ordinal: 1 });
+    const hit = dirActor({ animState: 'hit' });
+    updateView(view, makeSnapshot([hit]), 0.1, 375, 667);
+    expect(directionalFrameOf(view, hit)).toEqual({ clip: 'idle', ordinal: 1 });
+  });
+
+  it('阈值常量在 config（方案建议 0.35）：PIECE.jumpFrameThreshold', () => {
+    expect(PIECE.jumpFrameThreshold).toBe(0.35);
+  });
+});
+
+describe('[六向接线 §4.1] drawPieces：directional 六向独立 PNG 零翻转 / legacy 保留整图翻转', () => {
+  it('hero facingHex=left idle：绘 idle|left|1 帧且全程无 scale(-1,1)', () => {
+    const { ctx, ops } = makeDrawRecordingCtx();
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['hero', makeHeroStore()]]) };
+    const hero = dirActor({ facing: 'left', facingHex: 'left' });
+    const view = createView();
+    const snap = makeSnapshot([hero]);
+    updateView(view, snap, 0.016, 375, 667);
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(ops.filter((o) => o.op === 'scale')).toEqual([]); // 零翻转（§4.1 铁律）
+    const pieceDraws = ops.filter((o) => o.op === 'drawImage');
+    expect(pieceDraws.some((o) => (o.args[0] as { tag?: string }).tag === 'idle|left|1')).toBe(true);
+  });
+
+  it('hero facingHex=rightdown 跳跃中段：绘 jump|rightdown|2（演出钟判段，非 animState）', () => {
+    const { ctx, ops } = makeDrawRecordingCtx();
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['hero', makeHeroStore()]]) };
+    const hero = dirActor({
+      facingHex: 'rightdown', animState: 'walk', isJump: true, pos: { q: 5, r: 8 }, renderPos: { q: 1, r: 8 },
+    });
+    const view = createView();
+    const snap = makeSnapshot([hero]);
+    updateView(view, snap, 0.016, 375, 667);
+    const ma = view.moveAnims.get('hero')!;
+    ma.t = ma.duration * 0.5; // ≥阈值 → 腾空帧
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    const tags = ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag);
+    expect(tags).toContain('jump|rightdown|2');
+    expect(tags).not.toContain('jump|rightdown|1');
+    expect(ops.filter((o) => o.op === 'scale')).toEqual([]);
+  });
+
+  it('hero dead：绘 die 共用帧（沿既有压扁淡出路径，六向共用不镜像）', () => {
+    const { ctx, ops } = makeDrawRecordingCtx();
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['hero', makeHeroStore()]]) };
+    const hero = dirActor({ animState: 'dead', facingHex: 'leftdown' });
+    const view = createView();
+    const snap = makeSnapshot([hero]);
+    updateView(view, snap, 0.016, 375, 667);
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    const tags = ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag);
+    expect(tags).toContain('die'); // sharedSrc 键=clip 名
+    expect(ops.filter((o) => o.op === 'scale')).toEqual([]);
+  });
+
+  it('legacy enemy（npc-shanzei）回归锁：idle 取 07 帧 + facing left 保留 ctx.scale(-1,1) 整图翻转', () => {
+    const { ctx, ops } = makeDrawRecordingCtx();
+    const strip: Array<ImgLike | null> = Array.from({ length: 8 }, (_, i) => tagImg(`spr${i}`, 128, 256));
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei', strip]]) };
+    const foe = dirActor({
+      id: 'e1', side: 'enemy', name: '山贼甲', spriteKey: 'npc-shanzei',
+      facing: 'left', facingHex: 'leftdown',
+    });
+    const view = createView();
+    const snap = makeSnapshot([foe]);
+    updateView(view, snap, 0.016, 375, 667);
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    const tags = ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag);
+    expect(tags).toContain('spr7'); // idle=BATTLE_FRAME.idle=7（帧号回归不变）
+    const flips = ops.filter((o) => o.op === 'scale' && (o.args[0] as number) === -1);
+    expect(flips).toHaveLength(1); // legacy 翻转保留（§4.1：直至该 sprite 完成迁移）
+  });
+
+  it('directional 帧库缺帧（null）走剪影占位防崩、不镜像不翻转（缺图≠静默通过——完整性门另行红）', () => {
+    const { ctx, ops } = makeDrawRecordingCtx();
+    const emptyStore: DirectionalFrameStore = { mode: 'directional', frames: new Map() };
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['hero', emptyStore]]) };
+    const hero = dirActor({ facing: 'left', facingHex: 'left' });
+    const view = createView();
+    const snap = makeSnapshot([hero]);
+    updateView(view, snap, 0.016, 375, 667);
+    expect(() => drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view)).not.toThrow();
+    expect(ops.filter((o) => o.op === 'scale')).toEqual([]); // 占位剪影也不翻转
+  });
+
+  it('frameKeyOf 键式=clip|facing|ordinal（渲染/loader/测试单一键式，禁第二套公式）', () => {
+    expect(frameKeyOf('walk', 'leftup', 2)).toBe('walk|leftup|2');
+    const allKeys: string[] = [];
+    for (const facing of FACINGS) for (let o = 1; o <= 2; o++) allKeys.push(frameKeyOf('walk', facing as BattleFacingHex, o));
+    expect(new Set(allKeys).size).toBe(12);
   });
 });

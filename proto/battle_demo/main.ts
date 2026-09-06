@@ -3,17 +3,20 @@
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
 import type { CombatantInput } from '../../types';
-import { BATTLE_HEX_RES, DMG, REJECT_HINTS, hexToWorld } from '../../config/battle-hex';
+import { BATTLE_HEX_RES, DMG, FACINGS, REJECT_HINTS, hexToWorld, type BattleClip } from '../../config/battle-hex';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
   createView,
   drawFrame,
   enqueueHit,
+  frameKeyOf,
   pieceHop,
   spawnNoteFx,
   updateView,
   type BattleHexAssets,
+  type DirectionalFrameStore,
   type ImgLike,
+  type LegacyFrameStrip,
 } from '../../ui/battle-hex-render';
 import { createHexBattle } from '../../systems/battle-session';
 
@@ -59,15 +62,40 @@ function loadImg(url: string): Promise<HTMLImageElement | null> {
 async function loadAssets(): Promise<BattleHexAssets> {
   const q = (p: string): string => `${p}?v=${BATTLE_HEX_RES.ver}`;
   const frameJobs: Array<Promise<unknown>> = [];
-  const frames = new Map<string, Array<ImgLike | null>>();
-  for (const kind of BATTLE_HEX_RES.spriteKinds) {
-    const jobs: Array<Promise<ImgLike | null>> = [];
-    for (let i = 0; i < BATTLE_HEX_RES.frameCount; i++) jobs.push(loadImg(q(BATTLE_HEX_RES.frameSrc(kind, i))));
-    frameJobs.push(
-      Promise.all(jobs).then((arr) => {
-        frames.set(kind, arr);
-      }),
-    );
+  const frames = new Map<string, LegacyFrameStrip | DirectionalFrameStore>();
+  // 【六向帧接线 §3.1】loader 按 profile 预解码：legacy=帧号条；directional=clip×facing×ordinal
+  // 网格（sharedSrc 共用帧按 clip 键只解码一次——die_common 六向共用）
+  for (const [kind, profile] of Object.entries(BATTLE_HEX_RES.profiles)) {
+    if (profile.mode === 'legacy') {
+      const jobs: Array<Promise<ImgLike | null>> = [];
+      for (let i = 0; i < profile.frameCount; i++) jobs.push(loadImg(q(profile.frameSrc(i))));
+      frameJobs.push(
+        Promise.all(jobs).then((arr) => {
+          frames.set(kind, arr);
+        }),
+      );
+    } else {
+      const jobs: Array<Promise<readonly [string, ImgLike | null]>> = [];
+      for (const clip of Object.keys(profile.clipCounts) as BattleClip[]) {
+        const shared = profile.sharedSrc[clip];
+        if (shared !== undefined) {
+          jobs.push(loadImg(q(shared)).then((im) => [clip, im] as const)); // 共用帧：键=clip 名
+          continue;
+        }
+        const count = profile.clipCounts[clip];
+        for (const facing of FACINGS) {
+          for (let o = 1; o <= count; o++) {
+            const key = frameKeyOf(clip, facing, o);
+            jobs.push(loadImg(q(profile.frameSrc(clip, facing, o))).then((im) => [key, im] as const));
+          }
+        }
+      }
+      frameJobs.push(
+        Promise.all(jobs).then((pairs) => {
+          frames.set(kind, { mode: 'directional', frames: new Map(pairs) });
+        }),
+      );
+    }
   }
   // T23：ctrl 三钮独立脸 + 状态图标三枚（key 词表 poison/blood/skull = config BATTLE_HEX_RES.statusIcons）
   const faceEntries = Object.entries(BATTLE_HEX_RES.ctrlFaces) as Array<[string, string]>;
@@ -88,11 +116,15 @@ async function loadAssets(): Promise<BattleHexAssets> {
   }
   const statusIcons = new Map<string, ImgLike | null>(iconPairs);
   const ok = (i: HTMLImageElement | null): string => (i ? 'ok' : 'MISS');
+  const frameStat = (v: LegacyFrameStrip | DirectionalFrameStore): string =>
+    Array.isArray(v)
+      ? `${v.filter(Boolean).length}/${v.length}`
+      : `${[...v.frames.values()].filter(Boolean).length}/${v.frames.size}`;
   console.log(
     `[battle_demo] 资源：env=${ok(env)} topbar=${ok(topbar)} plaque=${ok(plaque)} ` +
       `ctrlFaces=[${facePairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
       `statusIcons=[${iconPairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
-      `帧=[${[...frames.entries()].map(([k2, v]) => `${k2}:${v.filter(Boolean).length}/${v.length}`).join(' ')}]`,
+      `帧=[${[...frames.entries()].map(([k2, v]) => `${k2}:${frameStat(v)}`).join(' ')}]`,
   );
   return { env, topbar, plaque, ctrlFaces, statusIcons, frames };
 }

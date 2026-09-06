@@ -193,6 +193,16 @@ export interface NpcView {
 // ============ T06 战斗界面演出类型（75 v2.1 + A1-T06 v2 裁决） ============
 
 export type BattleFacing = 'left' | 'right';
+/** 名义六向朝向（六向帧接线 §2.1 契约冻结 2026-09-06）：受限字符串而非任意 HexPos，
+ * 使渲染、路径表和测试都能穷举。由 session 已有 Runner.hexFacing 单点导出
+ *（battle-session 穷举映射函数），渲染层禁根据坐标/目标/旧左右字段猜方向。 */
+export type BattleFacingHex =
+  | 'right'
+  | 'rightup'
+  | 'leftup'
+  | 'left'
+  | 'leftdown'
+  | 'rightdown';
 export type BattleAnimState = 'idle' | 'walk' | 'charge' | 'strike' | 'basic';
 export type BattlePhase = 'fighting' | 'won' | 'lost' | 'timeout' | 'fled';
 
@@ -286,7 +296,8 @@ export interface SnapshotActor {
   neili: number;
   maxNeili: number;
   actionBar: number; // 0~100（F-05，fillRate 推进）
-  facing: BattleFacing; // 立绘翻转用左右朝向（dx≈0 防抖，T06 已验口径）
+  facing: BattleFacing; // 立绘翻转用左右朝向（dx≈0 防抖，T06 已验口径；legacy profile 消费）
+  facingHex: BattleFacingHex; // 名义六向（六向帧接线 §2.1；directional profile 消费，session 单点导出）
   animState: 'idle' | 'walk' | 'charge' | 'strike' | 'basic' | 'hit' | 'dead'; // hit/dead 为 hex 层新增（T06 BattleAnimState 不含）
   statusIcons: string[]; // 顶栏四槽数据源（中毒/流血/内伤…；MVP 恒空数组，字段先冻结）
   isBoss: boolean;

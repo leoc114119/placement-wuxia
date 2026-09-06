@@ -1,7 +1,15 @@
 // 战斗六边形渲染器（T16 frontend · 只读快照绘制，主架构方案 §2）。
 // 红线：本模块禁止 import battle-core（DoD 自动化扫描）；UI 只展示——所有游戏数值来自快照。
 // 环境无关：ctx 与图片由外部注入（wx canvas / 浏览器 canvas 均可跑），坐标一律整数像素定位。
-import type { BattleMode, BattleSnapshot, FrameContext, HexPos, SkillButtonInfo, SnapshotActor } from '../types';
+import type {
+  BattleFacingHex,
+  BattleMode,
+  BattleSnapshot,
+  FrameContext,
+  HexPos,
+  SkillButtonInfo,
+  SnapshotActor,
+} from '../types';
 import {
   ANIM_FRAMES,
   ANIM_LOOP_GROUPS,
@@ -26,6 +34,7 @@ import {
   PIECE,
   PLAQUE_BUTTONS,
   SHADOW,
+  SPRITE_PROFILES,
   TILE,
   TILE_H,
   TILE_NOISE,
@@ -35,6 +44,7 @@ import {
   SIDE_DEPTH,
   TOPBAR,
   hexToWorld,
+  type BattleClip,
 } from '../config/battle-hex';
 
 // ============ 资源与视图类型 ============
@@ -52,6 +62,21 @@ export interface CtrlFaceAssets {
   flee: ImgLike | null;
 }
 
+/** legacy 帧条（一维：索引=帧号，沿 ANIM_FRAMES/BATTLE_FRAME 旧线） */
+export type LegacyFrameStrip = Array<ImgLike | null>;
+
+/** directional 帧库（六向帧接线 §3.1：与 profile 判别联合对应）。键式=frameKeyOf 单一出处；
+ * sharedSrc 共用帧（die_common）键=clip 名（无 facing/ordinal 维度），loader 只解码一次。 */
+export interface DirectionalFrameStore {
+  mode: 'directional';
+  frames: Map<string, ImgLike | null>;
+}
+
+/** directional 帧库键式（渲染/loader/测试共用，禁第二套公式） */
+export function frameKeyOf(clip: BattleClip, facing: BattleFacingHex, ordinal: number): string {
+  return `${clip}|${facing}|${ordinal}`;
+}
+
 /** 渲染资源包（加载器分环境实现：wx 侧 M4 接入，preview 侧 DOM loader） */
 export interface BattleHexAssets {
   env: ImgLike | null;
@@ -61,8 +86,9 @@ export interface BattleHexAssets {
   /** 状态图标（T23 §2.2：key 词表 poison/blood/skull = config BATTLE_HEX_RES.statusIcons 路径表键；
    * 快照 statusIcons 传入 key 命中才画，恒空数组=空槽） */
   statusIcons: Map<string, ImgLike | null>;
-  /** spriteKey（config BATTLE_HEX_RES.spriteKinds）→ 帧数组（帧组播报按帧号取） */
-  frames: Map<string, Array<ImgLike | null>>;
+  /** spriteKey → 帧资源库（判别联合，与 config SPRITE_PROFILES 对应：legacy=帧号条 /
+   * directional=clip×facing 网格；缺任一帧=null→剪影占位防崩，资源完整性测试另行把关） */
+  frames: Map<string, LegacyFrameStrip | DirectionalFrameStore>;
 }
 
 /** 主角技能钮数据源（弧形四钮置灰判定）——契约类型唯一出处 types.ts（联调 F2 起由快照必选字段供给），
@@ -908,7 +934,7 @@ function drawEdgeShadow(ctx: CanvasRenderingContext2D, sx: number, sy: number): 
 
 // ============ L3 棋子 / L4 HUD ============
 
-/** 当前帧号（帧组播报：循环组取模循环；单播组夹到组尾保持，组切换由 updateView 重置） */
+/** 当前帧号（帧组播报：循环组取模循环；单播组夹到组尾保持，组切换由 updateView 重置）——legacy profile 专用 */
 function frameOf(view: BattleHexView, actor: SnapshotActor, stateOverride?: string): number {
   const state = stateOverride ?? actor.animState;
   const clock = view.anim.get(actor.id);
@@ -917,6 +943,55 @@ function frameOf(view: BattleHexView, actor: SnapshotActor, stateOverride?: stri
   const idx = Math.floor((clock.t * 1000) / PIECE.walkFrameMs);
   if (ANIM_LOOP_GROUPS.includes(state)) return group[idx % group.length];
   return group[Math.min(idx, group.length - 1)];
+}
+
+/** directional 选帧结果（§3.2：语义 clip + clip 内 ordinal） */
+export interface DirectionalFrameSel {
+  clip: BattleClip;
+  ordinal: number;
+}
+
+/** 【六向帧接线 §3.2】directional 选帧（frameOf 升级）：先解析语义 clip，再按对应时钟取 ordinal。
+ * 优先级：dead（die 共用）> 移动演出期（jump 经 moveAnim.t/duration 判段——禁复用 animState
+ * clock 判跳，否则 jump 非 session 状态会永卡第 1 帧；walk 沿演出钟 1↔2 循环）> animState
+ * 经 profile.stateMap（循环态区间循环 / 单播态 from→to 播至尾帧保持，组切换由 updateView 重置）。
+ * 纯导出供用例；调用方须保证 spriteKey 有 directional profile（drawPieces 已分支保证）。 */
+export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): DirectionalFrameSel {
+  const profile = SPRITE_PROFILES[actor.spriteKey];
+  if (!profile || profile.mode !== 'directional') {
+    throw new Error(`directionalFrameOf: spriteKey "${actor.spriteKey}" 无 directional profile`);
+  }
+  if (actor.animState === 'dead') {
+    return { clip: profile.stateMap.dead.clip, ordinal: profile.stateMap.dead.from };
+  }
+  const ma = view.moveAnims.get(actor.id);
+  if (ma && ma.t < ma.duration) {
+    if (ma.hopHeight > 0 || actor.isJump) {
+      // 跳跃：演出进度判段（1=起跳段 / 2=腾空至落地；阈值=PIECE.jumpFrameThreshold）
+      const p = ma.t / ma.duration;
+      return { clip: 'jump', ordinal: p < PIECE.jumpFrameThreshold ? 1 : 2 };
+    }
+    // 地面移动：沿演出钟循环（循环区间=stateMap.walk）
+    const idx = Math.floor((ma.t * 1000) / PIECE.walkFrameMs);
+    const plan = profile.stateMap.walk;
+    const span = plan.to - plan.from + 1;
+    return { clip: plan.clip, ordinal: plan.from + (idx % span) };
+  }
+  const state = actor.animState;
+  const plan = profile.stateMap[state] ?? profile.stateMap.idle;
+  const clock = view.anim.get(actor.id);
+  if (!clock || clock.state !== state) return { clip: plan.clip, ordinal: plan.from }; // 新组从 from 重放
+  const idx = Math.floor((clock.t * 1000) / PIECE.walkFrameMs);
+  if (ANIM_LOOP_GROUPS.includes(state)) {
+    const span = plan.to - plan.from + 1;
+    return { clip: plan.clip, ordinal: plan.from + (idx % span) };
+  }
+  return { clip: plan.clip, ordinal: Math.min(plan.from + idx, plan.to) }; // 单播：播至尾帧保持
+}
+
+/** directional 帧取图（sharedSrc 共用帧键=clip 名；缺帧=null→剪影占位防崩） */
+function directionalImg(store: DirectionalFrameStore, sel: DirectionalFrameSel, facing: BattleFacingHex): ImgLike | null {
+  return store.frames.get(frameKeyOf(sel.clip, facing, sel.ordinal)) ?? store.frames.get(sel.clip) ?? null;
 }
 
 interface PlacedPiece {
@@ -962,10 +1037,26 @@ function drawPieces(
     const syGround = Math.round(draw.y - cam.y + height / 2);
     const scale = actor.isBoss ? PIECE.bossScale : 1;
     const h = hexH * PIECE.heightPerTile * scale;
-    const frameState = ma && ma.t < ma.duration ? 'walk' : actor.animState; // 演出期帧组强制 walk（空中不站立滑行）
-    const img = assets.frames.get(actor.spriteKey)?.[frameOf(view, actor, frameState)] ?? null;
+    // 【六向帧接线 §4.1】先取 profile 再取帧：directional=facingHex+clip+ordinal 零翻转；
+    // legacy=帧号+facing 翻转保留（直至该 sprite 完成迁移）。禁在帧选择里写 actor.side 特判。
+    const profile = SPRITE_PROFILES[actor.spriteKey];
+    const isDirectional = !!profile && profile.mode === 'directional';
+    let img: ImgLike | null = null;
+    if (isDirectional) {
+      const store = assets.frames.get(actor.spriteKey);
+      img = store && !Array.isArray(store) ? directionalImg(store, directionalFrameOf(view, actor), actor.facingHex) : null;
+    } else {
+      const frameState = ma && ma.t < ma.duration ? 'walk' : actor.animState; // 演出期帧组强制 walk（空中不站立滑行）
+      const strip = assets.frames.get(actor.spriteKey);
+      img = strip && Array.isArray(strip) ? (strip[frameOf(view, actor, frameState)] ?? null) : null;
+    }
     const w = img ? (h * img.width) / img.height : h * 0.5;
-    if (frameState === 'dead') {
+    // 阵亡判定：directional=animState 直判（dead 优先于演出，§3.2 die_common 沿既有压扁淡出）；
+    // legacy=沿 frameState 口径零变化（演出中身亡仍播 walk 帧至演出结束——既有验收行为不动）
+    const dead = isDirectional
+      ? actor.animState === 'dead'
+      : (ma && ma.t < ma.duration ? false : actor.animState === 'dead');
+    if (dead) {
       // 阵亡：压扁淡出倒地
       if (img) {
         ctx.save();
@@ -990,7 +1081,8 @@ function drawPieces(
     placed.push({ actor, cx, top, h, w });
     if (img) {
       ctx.save();
-      if (actor.facing === 'left') {
+      if (!isDirectional && actor.facing === 'left') {
+        // legacy 整图翻转（directional 禁 ctx.scale 翻转——六向独立 PNG，§4.1）
         ctx.translate(Math.round(cx * 2), 0);
         ctx.scale(-1, 1);
       }
