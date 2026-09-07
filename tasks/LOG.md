@@ -4,7 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
-| 2026-09-07 | rd → 主架构 | 📥 ARCH-AS v0.2 修订请求（seq=84） | Leo 三裁已落需求 v1.3：t1 提交格锚动态重搜/`all` 保序/两段共用目标集；施法者死亡招式消散；终局停结算但 FE 播完表现，`finishWindowMs=300`。要求补确定性序、AS-6/SP-2、死亡 scheduler 边界与 BE 工时。 |
+| 2026-09-07 | frontend-battle | 📦 交付 TASK-AS-FE 出招速度+两段式伤害表现卡（分支 `task/attack-speed-fe`，基点 d571eb7，未 push 停等主架构技术验收） | ①charge 施放帧定格 cast1→cast1→3 整套循环（ANIM_LOOP_GROUPS+charge）②普攻表现 1s：BASIC_DURATION_MS=1000 落共享 config/battle.ts+battle-hex CHOREO.basicSec 别名+渲染层 basic 保持窗（session ANIM_MS.basic=300 冻结差额由 view 补足）③宿主逻辑 dt 唯一真源（main.ts realDt×SPEED_FACTOR 同传 session/view，x2 cast 帧/血条/行动条同倍率）④读码发现并修：固定步长下 t2 与收招窗同刻翻转致 T21 段2 冒字挂 1.5s 兜底——按 AS-8「收势=段2 终点」补冲刷条件 e 攻击态收尾沿（既有 T21 用例零破坏）⑤legacy 敌型循环语义降级核实不坏。证据链 shot_as_cast.mjs 30 影/18 校验全 PASS（x1/x2×375/560/900：循环两帧互异→段1 冒字→strike→段2 冒字 dx 0/6、hp 70→65→60）；随卡回调 2 处旧 charge 锁+新增 9 用例；门禁原文：typecheck/lint/build 三零、test:battle **303 passed+14 skipped（基线 294+14+新 9）**、behavior 14/14、shot 16 PASS/0 FAIL、sixdir 48 张零 pageerror、e2e **11 MATCH 不符合 0**、DBG=0、bundle rebuild verTag `v1788755695162`；FX.slashSec=0.28 未动与终局「播完」口径两处单列待复核；threads/ARCH-AS.md |
 | 2026-09-07 | 主架构（Codex） → 研发线 | 📐 出招速度与两段式伤害技术方案 v0.2 | `docs/design/03-战斗系统/出招速度与两段式伤害技术方案-v0.1.md`（正文 v0.2）；t1 动态重搜、死亡消散、终局 settlement/presentation 分离、AS-6/SP-2 用例与 scheduler 全序已落盘；BE 工时修正为 8～9h，待 PM 复核。 |
 | 2026-09-07 | 主架构（Codex） → 研发线 | 📐 出招速度与两段式伤害技术方案 v0.1 | `docs/design/03-战斗系统/出招速度与两段式伤害技术方案-v0.1.md`；依据需求 `9081e29`/schema `a9e1502`；scheduler、core 段结算、AOE 目标快照、事件/动画/BE-FE 拆分与验收矩阵已落盘，待 PM/Leo 评审。 |
 | 2026-09-07 | 主架构（Codex） → 研发线 | 🧭 出招方案边界补充 | 追加锁定：每个 due 段后立即终局检查并停队列；finishWindow/basic 时长归共享展示配置，FE `CHOREO` 只引用别名，BE 不依赖 UI config。 |
