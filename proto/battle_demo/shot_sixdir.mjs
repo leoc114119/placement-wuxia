@@ -121,10 +121,12 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
   await page.waitForTimeout(220);
   await shot(page, `${tag}_basic_atk2`);
 
-  // ⑤ 施放 cast1 / cast2 / cast3（charge=第1帧；strike=第2→3帧）
+  // ⑤ 施放 cast1 / cast2 / cast3（【AS · TASK-AS-FE】charge=cast 1→3 整套循环——cast_1 取相位窗
+  // [0,140ms) 首帧：等待压至 30ms（旧 90ms 定格语义下的余量在循环步频 140ms 内已不安全）；
+  // strike=第2→3帧单播（cast_2 取 <140ms / cast_3 取 >140ms 步进后）
   await quiet(page);
   await setUnit(page, 'hero', { animState: 'charge', animLeftMs: 9000, isJump: false });
-  await page.waitForTimeout(90);
+  await page.waitForTimeout(30);
   await shot(page, `${tag}_cast_1`);
   await setUnit(page, 'hero', { animState: 'strike', animLeftMs: 9000, isJump: false });
   await page.waitForTimeout(90);

@@ -21,6 +21,9 @@
 //
 // 确定性契约：单 rng 流（我方出生→敌方出生→战斗掷骰），同 seed + 同操作序列 → 事件流全等
 // （含 rejected 拒绝序列，SP-3）。
+// 【AS 出招速度+两段式伤害 · TASK-AS-BE】技能=提交即排程、t1/t2 两时刻结算（需求 v1.3 AS-1~AS-9、
+// 方案 v0.2 §3/§5）：due 全序 (dueAt, castSeq, segment, targetOrdinal)；死者/空放/消散/终局截断
+// 零 RNG；事件 t=各自 dueAt；普攻保持提交时单段即时结算。
 
 import type {
   ActionRequest,
@@ -38,17 +41,19 @@ import type {
 import {
   TOTAL_TIME_LIMIT_S,
   basicRange,
+  castDurationMs,
   fillRate,
   makeEnemy,
   makeRng,
   resolveAction,
+  resolveSkillSegment,
   rollEnemyCount,
   skillRange,
   stepManualTimeout,
   type ManualTimeoutState,
   type Rng,
 } from './battle-core';
-import { BAR, SPEED_FACTOR } from '../config/battle';
+import { BAR, FINISH_WINDOW_MS, SPEED_FACTOR } from '../config/battle';
 import {
   axialToOffset,
   cubeDistance,
@@ -61,6 +66,7 @@ import {
   rangeCells,
   rangeShapeOf,
   reachable,
+  type RangeShape,
 } from './hex';
 
 // ---------- 布局与经济常量（Q7 批复：session 本地导出，config/battle-hex.ts 归 FE 卡） ----------
@@ -80,6 +86,34 @@ export const NEILI_INITIAL = 100;
 
 /** 表现时长 ms（展示参数，ADR-004 口径；驱动快照动画态） */
 export const ANIM_MS = { walk: 300, charge: 100, strike: 300, basic: 300, hit: 300 } as const;
+
+// ══════════ AS 出招速度+两段式伤害（需求 v1.3 AS-1~AS-9 · 技术方案 v0.2 §3/§4/§5 · TASK-AS-BE） ══════════
+
+/** 【方案 §4.1】施法队列项（session 内部真值；卡授权 types.ts 仅加两输入字段，本接口不进共享契约区）。
+ * t0 不存目标——只存提交格 targetCell（t1 的 AOE 锚，锚=提交格不是施法者当前格）与冻结 rangeShape；
+ * t1 重搜一次写入 targetIds（保留 all 数组序，禁二次排序）；t2 只按该集合过滤存活。
+ * targetIds 三态纪律（§4.1）：null=尚未到 t1（禁当空集合处理）；[]=t1 已执行且空搜（空放）；
+ * 非空=t1 目标集（两段共用，t2 不重搜）。settlementState 终值互斥：resolved=两段处理完 /
+ * no-target=空放收口 / dissipated=施法者死亡消散 / terminal-canceled=终局截断（表现帧保留 presentationCasts）。 */
+export interface PendingCast {
+  castSeq: number; // session 内单调递增（t0 分配；同刻 due 全序的第一 tie-break，§5）
+  actorId: string;
+  skillId: string;
+  /** t1 的 AOE 锚 = 施法者 t0 所在格（需求 v1.3 AS-6「以提交时施放格为锚（施法者施法期间
+   * 不可移动，锚稳定）」——R1 读法，TASK-AS-BE 施工裁定，交付回执单列待 PM 复核；切换点=
+   * 三入口传参单点）。方案 §4.1 草图字段名 targetCell；施法者施法期间不可移动 → t0 格恒稳定，
+   * 点击格仍仅为出手确认（ATK-2 v2.2 五点②「点击格不影响结算」保持，方案 §1.2 未列废止）。 */
+  anchorCell: HexPos;
+  rangeShape: RangeShape; // t0 冻结，t1 只重算一次
+  axis: HexPos | null; // cone 轴快照（B3：rangeCells('cone') 必需；circle/ray=null）
+  targetIds: string[] | null;
+  startedAtSec: number; // =t0（逻辑时钟秒）
+  landAtSec: number; // =t1（段 1 due；castDurationMs 由 core 唯一真值算出）
+  finishAtSec: number; // =t2（段 2 due；finishWindowMs=共享配置 FINISH_WINDOW_MS）
+  phase: 'casting' | 'finish';
+  t1Resolved: boolean;
+  settlementState: 'pending' | 'resolved' | 'no-target' | 'dissipated' | 'terminal-canceled';
+}
 
 /** 【六向帧接线 §2.2】Runner.hexFacing 单位向量 → 名义六向（唯一出口，穷举映射表）。
  * 按当前 hexToWorld 投影与 HEX_DIRS：{1,0}=right / {1,-1}=rightup / {0,-1}=leftup /
@@ -136,6 +170,9 @@ interface Runner {
   jimin: number;
   danshi: number;
   shizhan: number;
+  /** 【AS · 需求 v1.3 AS-1】内功加成速度快照（CombatantInput 可选字段透传；唯一消费点
+   * core castDurationMs，session 禁读 neigongLevel 反推——方案 §2.1） */
+  internalCastSpeed?: number;
   weapon: CombatantInput['weapon'];
   skills: SkillDef[];
   cooldowns: Map<string, number>;
@@ -183,7 +220,14 @@ function copyCells(cells: HexPos[]): HexPos[] {
 
 export function createHexBattle(opts: HexBattleOptions) {
   // SP-2 确定性：单 rng 流、消费顺序固定（我方出生→敌方出生→战斗掷骰）
-  const rng: Rng = makeRng(opts.seed ?? 20260902);
+  // 【AS · 白盒计数】rngCalls 只做测试可观测（空放/消散/死者跳过「零 RNG 消费」的直接断言面，
+  // 方案 §5.3/§7.2）；包装不改流不改顺序，生产行为零变化。
+  let rngCalls = 0;
+  const rawRng: Rng = makeRng(opts.seed ?? 20260902);
+  const rng: Rng = () => {
+    rngCalls++;
+    return rawRng();
+  };
   const events: BattleUiEvent[] = [];
   let t = 0;
   let mode: BattleMode = opts.mode;
@@ -191,6 +235,16 @@ export function createHexBattle(opts: HexBattleOptions) {
   let phase: BattleSnapshotPhase = 'fighting';
   let lastActedId: string | null = null;
   const manual: ManualTimeoutState = { stage: 0, idleSec: 0 };
+
+  // ---- AS 施法队列（方案 §4.3：每施法者至多一个 pending；drainDueCasts 按 §5 全序消费） ----
+  const pendingCasts: PendingCast[] = [];
+  /** 终局截断后的只读表现保留（AS-9/方案 §3.2：FE 播完 finishAtSec 内施放/收招帧——纯视觉，
+   * 禁复用于结算；施法者死亡消散不入此列表，由既有 dead 视觉覆盖）。 */
+  const presentationCasts: PendingCast[] = [];
+  let nextCastSeq = 0;
+  /** drain 浮点边界容差（B6）：0.1×30 类累加 ≠ 精确 3.0，1e-9 内视为到期；事件 t 仍写 dueAt 原值。 */
+  const DUE_EPS = 1e-9;
+  const isCasting = (id: string) => pendingCasts.some((c) => c.actorId === id);
 
   // ---- 病灶④：选中态对象（写点仅 activate/clearSelection；legalCells 派生快取） ----
 
@@ -256,6 +310,7 @@ export function createHexBattle(opts: HexBattleOptions) {
     jimin: c.jimin,
     danshi: c.danshi,
     shizhan: c.shizhan,
+    internalCastSpeed: c.internalCastSpeed,
     weapon: c.weapon,
     skills: c.skills,
     cooldowns: new Map(c.skills.map((s) => [s.id, 0])),
@@ -297,6 +352,10 @@ export function createHexBattle(opts: HexBattleOptions) {
   };
 
   const emit = (e: Omit<BattleUiEvent, 't'>) => events.push({ t: +t.toFixed(2), ...e });
+
+  /** 【AS · 方案 §3.1/§5.5】段事件时间戳=各自 dueAt（t1/t2 边界时刻），不是 tick 结束时刻；
+   * 只改事件时间戳，不改逻辑时钟；两位小数格式与 emit 同源。 */
+  const emitAt = (at: number, e: Omit<BattleUiEvent, 't'>) => events.push({ t: +at.toFixed(2), ...e });
 
   // ---- 病灶③：合法移动格唯一产生点（显示与校验同源） ----
 
@@ -458,6 +517,7 @@ export function createHexBattle(opts: HexBattleOptions) {
       target.dead = true;
       target.animState = 'dead';
       target.animLeftMs = 0;
+      cancelPendingCastOnDeath(target.id); // 【AS-6b】写 HP→标 dead 同一事务内消散（普攻路径；先于 scheduler 下一 due 项）
       emit({ type: 'death', actorId: target.id });
     }
     checkEnd();
@@ -466,14 +526,14 @@ export function createHexBattle(opts: HexBattleOptions) {
   /** 【FACE-1 §二.1 · faceTarget 唯一产生点】受击敌中 cube 距离最小者（平局判距=逻辑格 hex，
    * §六-2 PM 裁定，与 ATK-7 命中口径同源）。单次遍历求 min + 保序收集平局（保持 all 数组序，
    * 禁 sort——SP-2 目标序锁）；勿复用 pickTarget（hp 次键且 sort 破序，§四-5）。
-   * rng 纪律（规格③ + §六-4 恒掷 1 次）：ties==1 零消费；ties≥2 恰掷 1 次。消费点由调用方
-   * 固定在逐目标循环之前（=本次施放首次掷骰之前，§二.2 SP-2 时序论证：消费计数为状态
-   * 确定函数，同 seed 双场逐位全同）。 */
+   * rng 纪律（规格③ + §六-4 恒掷 1 次）：ties==1 零消费；ties≥2 恰掷 1 次。
+   * 【TASK-AS-BE 后唯一消费点】resolveT1 在 t1 目标集固定后、段 1 逐目标掷骰前调用（相对序与
+   * 旧 resolveAoe 一致，§二.2 SP-2 时序论证保持）。 */
   function faceTargetOf(actor: Runner, targets: Runner[]): Runner {
     // 【体检 A02 · FACE-1 备忘合并】入口非空断言（PM 裁定：空放路径不得静默吞——空输入旧路径
-    // 会消费 1 次 rng 并在 resolveAoe 尾部取 .hex 崩溃）。正常两调用链均不可达空：cast 臂被
-    // submit 的 targets.length>0 守卫滤空（ATK-6 空放走 else 臂镜像结算，不经本函数）；AI 臂
-    // planSkill 只返回非空计划。两守卫与本断言互为注释锚点，禁把空 AOE 静默当空放。
+    // 会消费 1 次 rng 并崩溃）。正常调用链不可达空：resolveT1 的空集分支在调用前已收口
+    // （ids.length===0 早退发无目标 skill 后 return）；本断言与该早退互为注释锚点，
+    // 禁把空 AOE 静默当空放。
     if (targets.length === 0) throw new Error('faceTargetOf: empty targets');
     let dmin = Infinity;
     for (const t of targets) {
@@ -485,19 +545,180 @@ export function createHexBattle(opts: HexBattleOptions) {
     return ties[Math.floor(rng() * ties.length)]; // 平局恰掷 1 次（规格③随机取一）
   }
 
-  /** 【ATK-2 v2.2 · T22】范围 AOE 逐目标结算（cast 与 aiAct 案 A 的单一产生点）：
-   * 首目标承担资源（R-09/R-08 经 resolveAction 真值路径，neiliCost 视图=1）；后续目标
-   * payCost=false（视图=0，core:245 扣 0）——资源每次施放恰扣一次。每目标独立掷骰
-   * （命中 F-04 → 闪避 → 暴击，1~3 次 rng）+ 各发 skill|miss 事件（既有形状）+ 各自死亡判定。
-   * targets 顺序由调用方定死（all 数组序一次快照，禁 sort——SP-2 确定性）。
-   * 循环内 doAttack 副作用幂等注记（锁）：setAnim('charge') 同值覆写=单次效果（animLeftMs
-   * 重置同值，同步循环等价单次）；faceToward 循环内逐目标为不可观测中间态（submit/aiAct
-   * 同步块无快照采样，§一.1 注）——【FACE-1 §二.1】入口先定 faceTarget（rng 在循环前），
-   * 循环后 faceToward(actor, faceTarget.hex) 单点定版（朝最近受击敌；v2.2 点击格定版废止）。 */
-  function resolveAoe(actor: Runner, skill: SkillDef, targets: Runner[]): void {
-    const faceTarget = faceTargetOf(actor, targets); // ★ FACE-1：faceTarget 产生单点，rng 先于逐目标掷骰
-    for (let i = 0; i < targets.length; i++) doAttack(actor, targets[i], skill, false, i === 0);
-    faceToward(actor, faceTarget.hex); // ★ FACE-1：朝最近敌定版（AI 与玩家同规则，案 A 五点⑤）
+  // ---- AS 施法 scheduler（需求 v1.3 AS-2~AS-9 · 方案 §3/§4.3/§5；cast/attack(skillId)/AI planSkill 三入口唯一收敛点） ----
+
+  /** 【方案 §4.3】唯一排程入口：资源三件（R-09 视图口径 1 / R-08 条件写初值 / BAR-3 由调用方
+   * commitTurn 承担）+ 存锚格与 rangeShape/axis 快照 + charge 入相 + 入队。
+   * t0 禁搜索、禁写 targetIds（AS-6 动态语义：t1 才重算一次范围取存活敌）。
+   * anchor（R1 裁定，PM 复核中）：三入口统一=施法者 t0 自身格（施法期间不可移动，锚稳定；
+   * AI 与玩家同规则天然同构；点击格仅为出手确认，五点②保持）。cone 轴=施法者 t0 六向 facing。 */
+  function scheduleSkillCast(actor: Runner, skill: SkillDef, axis: HexPos | null, faceTo: HexPos | null): void {
+    const durMs = castDurationMs(skill, actor); // core 唯一真值（非法输入 fail-fast 在 core 装配点）
+    const land = t + durMs / 1000;
+    const finish = land + FINISH_WINDOW_MS / 1000;
+    actor.neili -= NEILI_COST_PER_CAST; // R-09（Q2 视图口径；段结算不重复扣，core resolveSkillSegment 纯函数）
+    if (skill.cooldownTurns > 0) actor.cooldowns.set(skill.id, skill.cooldownTurns); // R-08 条件写初值（镜像 core:246）
+    actor.pendingAnim = null; // 新施法开始，旧延后攻击演出作废（口径同 doMove）
+    setAnim(actor, 'charge'); // B5：施法中 charge 保持（tick 动画机对 casting 相豁免衰减，方案 §3.1）
+    // B1/FACE-1④：t0 朝点击格（演出反馈；空放全程保持=FACE-1④「空放保持点击格朝向」）；
+    // 非空施法 t1 由 FACE-1 faceTarget 定版覆盖（朝最近受击敌）；AI 无点击语义传 null（朝向保持）。
+    if (faceTo) faceToward(actor, faceTo);
+    const anchorCell = { q: actor.hex.q, r: actor.hex.r }; // R1：施法者 t0 格快照（与 faceTo 解耦）
+    pendingCasts.push({
+      castSeq: nextCastSeq++,
+      actorId: actor.id,
+      skillId: skill.id,
+      anchorCell,
+      rangeShape: rangeShapeOf(skill.weapon ?? actor.weapon ?? 'fist'),
+      axis: axis ? { q: axis.q, r: axis.r } : null,
+      targetIds: null,
+      startedAtSec: t,
+      landAtSec: land,
+      finishAtSec: finish,
+      phase: 'casting',
+      t1Resolved: false,
+      settlementState: 'pending',
+    });
+  }
+
+  /** 从结算队列移除（内部唯一移除点；消散/终局/收口共用）。 */
+  function removePending(cast: PendingCast): void {
+    const i = pendingCasts.indexOf(cast);
+    if (i >= 0) pendingCasts.splice(i, 1);
+  }
+
+  /** 施法者死亡消散（AS-6b/方案 §3.2）：写 HP→标 dead 的同一事务内调用，先于 scheduler 取下一
+   * due 项；零额外 skill/miss 事件、零 RNG；不入 presentationCasts（dead 视觉覆盖，§3.2）。 */
+  function cancelPendingCastOnDeath(actorId: string): void {
+    for (let i = pendingCasts.length - 1; i >= 0; i--) {
+      if (pendingCasts[i].actorId !== actorId) continue;
+      pendingCasts[i].settlementState = 'dissipated';
+      pendingCasts.splice(i, 1);
+    }
+  }
+
+  /** 终局截断（AS-9/方案 §3.2）：胜负成立 → 当前段剩余目标、同刻剩余段、未来 settlement 队列全弃，
+   * 零新增 skill/miss/death 结算事件；won/lost 保留只读 presentationCasts 供 FE 播完 finishAtSec
+   * （fled 不保留——逃跑无表现帧诉求）。 */
+  function flushPendingOnPhaseEnd(): void {
+    if (phase === 'fighting') return;
+    for (const c of pendingCasts.splice(0)) {
+      c.settlementState = 'terminal-canceled';
+      if (phase === 'won' || phase === 'lost') presentationCasts.push(c);
+    }
+  }
+
+  /** t1 动态 AOE 重搜（AS-6/方案 §3.3）：一次且仅一次。锚=PendingCast.anchorCell（R1=施法者
+   * t0 格快照；施法期间不可移动，锚稳定——需求 v1.3 AS-6 括注原文）、形状=t0 冻结
+   * rangeShape+axis、射程档=skillRange(skillId)（技能定义不可变）；读取 t1 当前站位——施法期间
+   * 敌走位可走出/走入范围（慢招可躲/快招难躲，AS-6 博弈维度）；目标=all 序保序的存活敌
+   * （禁坐标/距离/ID 二次排序）。空集=空放收口（ATK-6：一条无目标 skill，不安排 t2、不退款、
+   * 零 RNG）。非空 → FACE-1 faceTarget（平局恰掷 1 次，先于段 1 掷骰——与旧 resolveAoe 相对序
+   * 一致，SP-2 消费计数为状态确定函数）→ 段 1 逐目标。 */
+  function resolveT1(cast: PendingCast): void {
+    const actor = byId(cast.actorId)!;
+    const skill = actor.skills.find((s) => s.id === cast.skillId);
+    if (!skill) {
+      // 防御分支：技能定义不可变，提交路径保证存在；不可达时消散而非静默掷骰
+      cast.settlementState = 'dissipated';
+      removePending(cast);
+      return;
+    }
+    const cells = rangeCells(cast.anchorCell, cast.rangeShape, skillRange(skill), cast.axis ?? undefined, inField);
+    const ids = all
+      .filter((e) => !e.dead && e.side !== actor.side && cells.some((p) => hexEq(p, e.hex)))
+      .map((e) => e.id);
+    cast.targetIds = ids; // 保留 all 顺序（§3.3：唯一确定性顺序来源）
+    cast.t1Resolved = true;
+    cast.phase = 'finish';
+    setAnim(actor, 'strike'); // B5：[t1,t2) 收招相（animLeftMs=300=FINISH_WINDOW_MS）
+    if (ids.length === 0) {
+      // 空放（ATK-6 v2.2 平移到 t1）：t1 恰一条无 targetId/damage 的 skill；零 RNG、无 t2
+      emitAt(cast.landAtSec, { type: 'skill', actorId: actor.id, skillId: cast.skillId });
+      cast.settlementState = 'no-target';
+      removePending(cast);
+      return;
+    }
+    const faceTarget = faceTargetOf(actor, ids.map((id) => byId(id)!)); // FACE-1：rng 先于段 1 逐目标掷骰
+    resolveSegmentTargets(cast, 1);
+    if (phase === 'fighting') faceToward(actor, faceTarget.hex); // B1：t1 定版朝最近受击敌（终局后不再改向）
+  }
+
+  /** 单段逐目标结算（方案 §5.2/§5.4）：段 1=刚重搜的全集；段 2=不重搜，按 t1 保存集过滤存活
+   * （死者跳过且不消费 RNG）。每个目标伤害提交后立即检查终局（AS-9）——胜负成立即弃当前段
+   * 剩余目标（flush 由 checkEnd 收口）。 */
+  function resolveSegmentTargets(cast: PendingCast, segment: 1 | 2): void {
+    const actor = byId(cast.actorId)!;
+    const skill = actor.skills.find((s) => s.id === cast.skillId)!;
+    const dueAt = segment === 1 ? cast.landAtSec : cast.finishAtSec;
+    const ids = cast.targetIds ?? [];
+    for (let i = 0; i < ids.length; i++) {
+      const target = byId(ids[i])!;
+      if (target.dead) continue; // AS-6b：t1→t2 死亡目标 t2 跳过、不掷骰（段 1 全集为刚搜出的存活集）
+      applySegment(actor, skill, target, dueAt);
+      if (phase !== 'fighting') return; // AS-9：终局边界成立，当前段剩余目标丢弃
+    }
+    if (segment === 2 && phase === 'fighting') {
+      // 仅段 2 完成：清 pending、释放施法锁（§3.1 t2 行）；段 1 完成后留在队列等 t2 due
+      //（终局中断时由 checkEnd 的 flushPendingOnPhaseEnd 收口为 terminal-canceled）。
+      cast.settlementState = 'resolved';
+      removePending(cast);
+    }
+  }
+
+  /** 单目标单段应用（数值真值=core resolveSkillSegment；session 只写血量/转发既有事件/死亡事务）。 */
+  function applySegment(actor: Runner, skill: SkillDef, target: Runner, dueAt: number): void {
+    const r = resolveSkillSegment(actor, target, skill, 0.5, rng);
+    if (!r.missed) target.hp = Math.max(0, target.hp - r.damage);
+    emitAt(dueAt, {
+      type: r.kind, // 事件契约零新增（AS-5）：skill 带 targetId/damage/crit；miss 带 targetId、damage=0
+      actorId: actor.id,
+      targetId: target.id,
+      skillId: skill.id,
+      damage: r.damage,
+      crit: r.crit,
+    });
+    if (target.hp <= 0 && !target.dead) {
+      target.dead = true;
+      target.animState = 'dead';
+      target.animLeftMs = 0;
+      cancelPendingCastOnDeath(target.id); // ★ AS-6b：死亡同事务消散（先于 scheduler 下一 due 项）
+      emitAt(dueAt, { type: 'death', actorId: target.id });
+    }
+    checkEnd(); // ★ AS-9：逐目标终局立即检查（win/lose 事件由 checkEnd 既有路径发出）
+  }
+
+  /** due 段 drain（方案 §4.3/§5）：全序 (dueAtSec, castSeq, segment, targetOrdinal)——dueAt 先序
+   * （DUE_EPS 容差），同刻按 t0 分配的 castSeq 升序；段 1 先于段 2（finish=land+0.3 恒成立），
+   * 段内 targetOrdinal 即保存数组序。大 dt 跨多个边界时逐头消费不漏段不重段（AS-T11）。 */
+  function drainDueCasts(now: number): void {
+    for (;;) {
+      if (phase !== 'fighting') return; // 终局/逃跑：结算态停（表现态归 FE，§3.2）
+      let head: PendingCast | null = null;
+      let headDue = 0;
+      for (const c of pendingCasts) {
+        const due = c.t1Resolved ? c.finishAtSec : c.landAtSec;
+        if (due > now + DUE_EPS) continue;
+        if (
+          !head ||
+          due < headDue - DUE_EPS ||
+          (Math.abs(due - headDue) <= DUE_EPS && c.castSeq < head.castSeq)
+        ) {
+          head = c;
+          headDue = due;
+        }
+      }
+      if (!head) return;
+      const actor = byId(head.actorId);
+      if (!actor || actor.dead) {
+        // 双保险：正常路径死亡回调已移除；轮到时仍读 dead 并消散（§3.2），零事件零 RNG
+        head.settlementState = 'dissipated';
+        removePending(head);
+        continue;
+      }
+      if (head.t1Resolved) resolveSegmentTargets(head, 2);
+      else resolveT1(head);
+    }
   }
 
   // ---- 移动（病灶②：isJump 唯一产生点） ----
@@ -582,7 +803,11 @@ export function createHexBattle(opts: HexBattleOptions) {
     const basicOk = targetInRange(actor, target, basicRange(actor), rangeShapeOf(actor.weapon ?? 'fist'));
     tickCooldowns(actor);
     if (plan) {
-      resolveAoe(actor, plan.skill, plan.targets); // 【案 A】AI 代行出技同构 AOE（1v1 退化单目标）
+      // 【AS 三入口收敛 · 方案 §3.4】AI 出技同 scheduler：anchor=自身格（R1，与玩家 cast/attack 同规则、
+      // cone 轴=自身 facing）、
+      // t1 动态重搜、两段结算、RNG 与玩家同路径（AS-7 敌方同规则）。plan.targets 仅作
+      // 「射程内现有目标」的选技门（planSkill 不变），结算目标集由 t1 重搜产生。
+      scheduleSkillCast(actor, plan.skill, actor.hexFacing, null); // AI 无点击语义：t0 朝向保持
       return;
     }
     if (basicOk) {
@@ -627,6 +852,7 @@ export function createHexBattle(opts: HexBattleOptions) {
       clearSelection();
       emit({ type: 'lose' });
     }
+    flushPendingOnPhaseEnd(); // 【AS-9】终局即弃未来 settlement 队列（won/lost 保留只读 presentationCasts）
   }
 
   /** BAR-5：90s 总时长未分胜负 → 存活 hp 总量高者胜，同量判玩家负（常量=core 唯一真值）。 */
@@ -636,11 +862,15 @@ export function createHexBattle(opts: HexBattleOptions) {
     phase = hpSum('player') > hpSum('enemy') ? 'won' : 'lost';
     clearSelection(); // SEL-7
     emit({ type: phase === 'won' ? 'win' : 'lose' });
+    flushPendingOnPhaseEnd(); // 【AS-9】timeout 终局同弃未到时段
   }
 
-  /** SEL-1 输入态：条满（clamp 后恒 ≤100，满即 100）+ 手动 + 我方存活。 */
+  /** SEL-1 输入态：条满（clamp 后恒 ≤100，满即 100）+ 手动 + 我方存活 + 未在施法。
+   * 【AS 施法门 · B4】施法中（pendingCasts 持有）无输入态——同时解除一个时钟死锁：高 fillRate
+   * 下施法中 bar 回满 100 且 manual 会使 BAR-4 冻结逻辑时钟，t1 永不到达；本门使时钟照走。
+   * 施法中的提交经共享门拒绝，复用 reason='bar'（事件契约零新增，B4）。 */
   const pendingInputNow = () =>
-    phase === 'fighting' && mode === 'manual' && !player.dead && player.bar >= BAR.max;
+    phase === 'fighting' && mode === 'manual' && !player.dead && player.bar >= BAR.max && !isCasting(player.id);
 
   function tick(realDtSec: number): void {
     // 【体检 A03 入口校验 · PM 裁定 fail-fast】非有限或负 dt 直接抛（宿主边界坏输入禁静默禁兜底：
@@ -674,7 +904,9 @@ export function createHexBattle(opts: HexBattleOptions) {
           c.renderR = c.moveFromR + (c.hex.r - c.moveFromR) * c.moveT;
         }
       }
-      if (c.animLeftMs > 0) {
+      if (c.animLeftMs > 0 && !pendingCasts.some((pc) => pc.actorId === c.id && pc.phase === 'casting')) {
+        // 【AS · B5】施法相（casting）charge 保持——施放帧整套循环至招式时长结束（AS-2），
+        // 豁免 tick 动画机衰减；t1 置 strike 后（phase='finish'）恢复衰减，300ms 收招窗自然到期回 idle。
         c.animLeftMs -= dt * 1000;
         if (c.animLeftMs <= 0 && !c.dead) {
           if (c.animState === 'charge') {
@@ -692,9 +924,15 @@ export function createHexBattle(opts: HexBattleOptions) {
       }
     }
 
+    // 【AS · 方案 §4.3 tick 观察序第 2 步】drain 所有 dueAt ≤ t 的 cast 段（段内即时死亡/终局检查；
+    // 大 dt 跨界逐头消费不漏段，事件 t=各自 dueAt）。先于 BAR-2 ready 轮转（第 4 步）。
+    drainDueCasts(t);
+
     // BAR-2 轮转：bar 高 → fillRate 快 → 玩家先
+    // 【AS · §4.3 第 4 步】施法中单位不参与 ready 轮转（行动条照常填充可 clamp 100，但不发
+    // bar-max 不取行动；pending 清除后下一轮再按 BAR-2 补发一次 bar-max）。
     const ready = all
-      .filter((c) => !c.dead && c.bar >= BAR.max)
+      .filter((c) => !c.dead && c.bar >= BAR.max && !isCasting(c.id))
       .sort((a, b) => b.bar - a.bar || fillRate(b) - fillRate(a) || (a.side === 'player' ? -1 : 1));
     for (const c of ready) {
       if (phase !== 'fighting') break;
@@ -740,6 +978,7 @@ export function createHexBattle(opts: HexBattleOptions) {
       phase = 'fled';
       clearSelection(); // SEL-7
       emit({ type: 'flee' });
+      flushPendingOnPhaseEnd(); // 【AS-9 同口径】逃跑终局弃未到时段（fled 不保留表现帧）
       return true;
     }
     if (phase !== 'fighting') return false;
@@ -843,7 +1082,10 @@ export function createHexBattle(opts: HexBattleOptions) {
         return false;
       }
       tickCooldowns(player);
-      doAttack(player, target, s); // resolveAction 按 R-09 视图扣内力（neiliCost 视图=1）、R-08 写冷却
+      // 【AS 三入口收敛 · 方案 §3.4】attack(skillId) 保留点击单目标契约（四查/目标合法性不变），
+      // 但禁退回「立即单目标结算」——与 cast/AI 共用 scheduler（t1 动态重搜+两段结算）。
+      // anchor=施法者 t0 自身格（R1），cone 轴=玩家当前六向 facing；t0 演出朝向=被点目标（B1）。
+      scheduleSkillCast(player, s, player.hexFacing, target.hex);
       commitTurn(player);
       return true;
     }
@@ -878,33 +1120,15 @@ export function createHexBattle(opts: HexBattleOptions) {
         emit({ type: 'rejected', actorId: player.id, reason: 'range' });
         return false;
       }
-      // ★【ATK-2 v2.2 · T22】受击目标集合 = 射程形态格（selection.legalCells，显示=校验=结算三同源，
-      //   激活快照禁 cast 时重算——病灶③不复发）内的全体存活敌；all 数组序一次快照（SP-2：
-      //   rng 消费顺序 = 目标序 × 每目标独立掷骰 1~3 次，禁 sort/tie-break）。
-      //   演出位与点击格解耦（ATK-7 v2.2 简化）：命中只看射程成员，不依赖点击格与逻辑位。
-      const legalCells = selection.legalCells; // 激活快照局部引用（选中态门已保证非 null；回调内窄化失效）
-      const targets = all.filter(
-        (x) => x.side !== player.side && !x.dead &&
-          legalCells.some((p) => hexEq(p, x.hex)),
-      );
-
       tickCooldowns(player); // 读后递减，与 attack 分支同位（四查后、结算前）
 
-      if (targets.length > 0) {
-        // 空集禁入 resolveAoe（faceTargetOf 入口断言 fail-fast）——空放=下方 else 臂（ATK-6 合法施放），两处互指
-        resolveAoe(player, s, targets); // ★ 逐目标独立掷骰全额伤害，资源只在首目标扣一次；
-        // ★ FACE-1：朝向由 resolveAoe 内 faceTarget 定版（朝最近受击敌）——v2.2 T22 落库的
-        // faceToward(player, req.to)「点击格定版」随规格 v2.3 FACE-1 废止，此处不再覆盖
-      } else {
-        // ATK-6 空放=合法施放（v2.2 平移：射程形态内无任何存活敌）：resolveAction 不调
-        // （battle-core 零改动红线），session 逐字段镜像资源三件
-        // （与 AOE 施放资源终态四项全等：neili/冷却/bar/选中——用例 [ATK-6] 逐项锁）
-        player.neili -= NEILI_COST_PER_CAST; // R-09 镜像（skillView 同值，禁用 SkillDef.neiliCost）
-        if (s.cooldownTurns > 0) player.cooldowns.set(s.id, s.cooldownTurns); // R-08 镜像 core:246 条件式（写初值）
-        setAnim(player, 'charge'); // Q3：施放演出照播（charge→strike 既有 anim 链，无受击 FX）
-        faceToward(player, req.to); // 朝目标格出招（自己格=v{0,0} 早退，朝向保持）
-        emit({ type: 'skill', actorId: player.id, skillId: s.id }); // 空放事件=skill 无 targetId 无 damage
-      }
+      // ★【AS 提交即排程 · 需求 v1.3 AS-2/AS-6 · 方案 §3.1/§3.3】t0 不搜目标：只存锚格快照
+      //（R1=施法者 t0 自身格）与冻结 rangeShape/axis；资源三件+BAR-3+选中清除照旧即时生效（AS-T3）。
+      // 受击目标集=t1 以锚格重搜一次（射程形态格内全体存活敌、all 序保序；射程内无敌
+      //=空放收口，ATK-6 v2.2 空放语义平移至 t1）；两段伤害=t1/t2 各结算一次（AS-3/AS-4）。
+      // 旧「激活快照 targets 立即 resolveAoe / else 臂镜像资源三件」两分支随本卡废止（PM 授权，
+      // TASK-AS-BE；规格依据：需求 v1.3 AS-2/3/4/6 + 方案 v0.2 §3.1/§3.3/§3.4）。
+      scheduleSkillCast(player, s, player.hexFacing, req.to); // t0 演出朝向=点击格（B1/FACE-1④）
       commitTurn(player); // BAR-3 清零 + SEL-3 选中清除
       return true;
     }
@@ -988,9 +1212,15 @@ export function createHexBattle(opts: HexBattleOptions) {
       clock: () => t,
       player: () => player,
       selection: () => selection,
-      // 【体检 A02 测试钩子】faceTargetOf 是闭包内函数、生产调用面不可达空（两守卫滤空）——
+      // 【体检 A02 测试钩子】faceTargetOf 是闭包内函数、生产调用面不可达空（守卫滤空）——
       // 暴露 player 侧单参视图供守卫直呼断言（空数组抛错/非空返回本体），零生产行为面变化。
       faceTargetOf: (targets: Runner[]) => faceTargetOf(player, targets),
+      // 【AS · TASK-AS-BE 白盒】施法队列/表现保留只读快照（浅拷贝；测试断言 targetIds 三态与
+      // 消散/终局状态用，禁经此写回）+ rng 消费计数（空放/消散/死者跳过「零 RNG」直接断言面，
+      // 方案 §5.3/§7.2）。
+      pendingCasts: () => pendingCasts.map((c) => ({ ...c, targetIds: c.targetIds ? c.targetIds.slice() : null })),
+      presentationCasts: () => presentationCasts.map((c) => ({ ...c, targetIds: c.targetIds ? c.targetIds.slice() : null })),
+      rngCalls: () => rngCalls,
     },
   };
 }

@@ -41,6 +41,10 @@ export interface SkillDef {
   level: number; // 当前等级（决定范围档位：Lv 20/40/60 三档，R-05）
   cooldownTurns: number; // 冷却回合数（R-08）
   neiliCost: number; // 内力消耗（R-09）
+  /** 【AS 出招速度 · 需求 v1.3 AS-1/schema v0.2】武功出招系数（个体差异快照）：初始 0.8，
+   * 轻招可 <1、绝学可 2，随武功等级↑（成长曲线归 C 案）。缺省 = 0.8（MVP 默认，向后兼容）；
+   * 与 CombatantInput.internalCastSpeed 加法合成、和封顶 ≤6（castDurationMs=3000÷min(6,和)）。 */
+  castSpeed?: number;
 }
 
 /** 棋盘坐标（MVP 固定站位 P2-5：我方 y=10 / 敌方 y=1，棋盘 8×12） */
@@ -67,6 +71,10 @@ export interface CombatantInput {
   pos: GridPos;
   weapon: WeaponType | null; // 装备武器（R-05 匹配判定）
   skills: SkillDef[]; // 出招优先级按数组顺序
+  /** 【AS 出招速度 · 需求 v1.3 AS-1】内功加成速度：成长域提供的快照值（初始 0.2，随内功等级↑，
+   * 归内功系统 schema）。session 只读本快照，禁读 neigongLevel 反推；缺省 = 0.2（MVP 默认，
+   * 向后兼容）；与 SkillDef.castSpeed 加法合成（唯一消费点 battle-core castDurationMs）。 */
+  internalCastSpeed?: number;
 }
 
 /** 单条战斗日志（需求表 #7：回合/行动者/动作/伤害/结果） */

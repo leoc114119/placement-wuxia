@@ -233,13 +233,16 @@ d('ATK-2 技能施放链（结算层绿锁 · N2 受理/结算层无病的证据
     const neuli0 = snap.actors.find((a) => a.id === 'hero')!.neili;
     expect(s.submit({ type: 'attack', targetId: 'e1', skillId: 'te' })).toBe(true);
     const after = s.snapshot();
-    // 命中/闪避走 core 骰子（F-04），行为锁只锁链路：出手事件（skill 或 miss）+资源+状态
-    const tail = evTypes(s).slice(-3);
-    expect(tail).toEqual(expect.arrayContaining([expect.stringMatching(/^(skill|miss)$/)]));
-    expect(after.actors.find((a) => a.id === 'e1')!.hp).toBeLessThanOrEqual(hp0);
     expect(after.actors.find((a) => a.id === 'hero')!.neili).toBe(neuli0 - 1); // Q2 内力 1（骰前扣，确定）
     expect(after.selectedSkill).toBe(null);
     expect(after.actors.find((a) => a.id === 'hero')!.actionBar).toBe(0);
+    // 【AS 采样时刻改写·PM Q1 授权（TASK-AS-BE）】技能=提交即排程（v1.3 AS-2/3/4：t0 hp 不变·无段事件），
+    // 结算链路断言推进逻辑时钟越过 t1=3s 再采样（0.01 步长精确越界；行为锁断言体零改）。
+    for (let i = 0; i < 320 && !s.events.some((e) => e.type === 'skill' || e.type === 'miss'); i++) s.tick(0.01);
+    // 命中/闪避走 core 骰子（F-04），行为锁只锁链路：出手事件（skill 或 miss）+资源+状态
+    const tail = evTypes(s).slice(-3);
+    expect(tail).toEqual(expect.arrayContaining([expect.stringMatching(/^(skill|miss)$/)]));
+    expect(s.snapshot().actors.find((a) => a.id === 'e1')!.hp).toBeLessThanOrEqual(hp0);
   });
 });
 
@@ -365,6 +368,9 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
     expect(after.heroSkills.find((b) => b.id === 'te')!.disabled).toBe(true); // R-08 冷却写入（neili 60−1=59 ≫ 内力阈值，置灰唯冷却因）
     expect(after.actors.find((a) => a.id === 'e1')!.hp).toBe(hp01); // 空放：格上无敌=无伤害结算
     expect(after.actors.find((a) => a.id === 'e2')!.hp).toBe(hp02);
+    // 【AS 采样时刻改写·PM Q1 授权（TASK-AS-BE）】空放事件移至 t1（v1.3 AS-6：空搜=t1 恰一条
+    // 无目标 skill）——推进逻辑时钟越过 t1 再采样；行为锁断言体零改。
+    for (let i = 0; i < 320 && !s.events.some((e) => e.type === 'skill'); i++) s.tick(0.01);
     const skillEv = s.events.filter((e) => e.type === 'skill').pop();
     expect(skillEv).toBeDefined(); // 事件尾=skill（可观测反馈本体，ATK-6 契约）
     expect((skillEv as { targetId?: unknown }).targetId).toBeUndefined(); // 空放事件无 targetId
@@ -406,7 +412,9 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
     expect(dispatches).toEqual([{ type: 'cast', to: { q: 4, r: 9 }, skillId: 'te' }]); // 演出位∈射程=受理
     const afterA = s.snapshot();
     expect(afterA.selectedSkill).toBe(null); // 施放受理选中清
-    // v2.2 断言翻转（ATK-7 简化/五点④）：命中只看射程成员——e1 逻辑位 (9,8) ∈ 射程被 AOE 命中
+    // 【AS 采样时刻改写·PM Q1 授权（TASK-AS-BE）】结算事件移至 t1（v1.3 AS-3）——越 t1 再采样；
+    // v2.2 断言方向保持（ATK-7 简化/五点④：命中只看射程成员——e1 逻辑位 (9,8) ∈ 射程被 AOE 命中）。
+    for (let i = 0; i < 320 && s.events.slice(evA0).filter((e) => e.type === 'skill' || e.type === 'miss').length === 0; i++) s.tick(0.01);
     const settleA = s.events.slice(evA0).filter((e) => e.type === 'skill' || e.type === 'miss');
     expect(settleA).toHaveLength(1); // 恰 1 条结算事件（e1 唯一射程内敌）
     expect((settleA[0] as { targetId?: string }).targetId).toBe('e1');
