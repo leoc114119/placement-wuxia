@@ -56,3 +56,9 @@
 - `tasks/threads/AI1-GATE1.md`（本文件）+ `tasks/LOG.md` 一行
 
 路径级 git commit（不 push，停等 PM 复验）；未碰他人未提交文件（pngs/docs 留工作区）。
+
+## 六、主架构技术验收
+
+| 时间 | 结论 | 核验记录 |
+|---|---|---|
+| 2026-09-05 17:52 | ✅ PASS | 独立核对 `db40682`：AI-1 已以 `rangeCells(...)+hexEq` 与玩家激活面同源，ray 反例与真射线正例均有回归锁；GATE-1 在 `selectSkill` 入口拒绝非输入态，manual 优先报 `bar`、非 manual 报 `mode`，兼容 attack.skillId 未动。授权的 `types.ts` 单行联合扩展与 v2.4 规格一致，前端默认拒绝文案存在兜底。当前合并态 typecheck/lint 通过，battle **238 passed / 14 skipped**、behavior **14/14**。`types.ts` 曾绕过 tasks/questions 的过程偏差已在 LOG 登记；PM 按 v2.4 追认后不构成代码验收阻塞，但后续共享契约变更必须走任务箱链路。 |

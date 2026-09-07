@@ -8,6 +8,7 @@
 | 09-05 | Leo→backend | 📤 直通派单 | session 防御性加固卡（TASK-ARCH-01 派生）：A01 快照引用隔离 / A02 faceTargetOf 空守卫（FACE-1 备忘合并）/ A03 入口运行时校验；铁律 4 先列用例清单；门禁八项自跑；路径级 commit 不 push 停等 PM |
 | 09-05 | backend | 💬 DoR 用例清单 | 纯新增 14 例定稿：A01×6（attackCells 元素/结构篡改隔离、篡改不影响 cast 结算双向臂、qing 金格隔离、绿格隔离、actors/heroSkills 现状锁）+ A02×3（空集抛错/非空零扰动/空放臂不误伤）+ A03×5（非法 dt 四态抛+状态无损/tick(0) 合法/重复 id 两态/容量精确边界+满编互异/合法 6 敌基线）；架构自决备案：faceTargetOf 为闭包内函数不可直呼 → `_debug` 增单参测试钩子（零生产行为面） |
 | 09-05 | backend | 📦 交付 | 改动面 6 文件：`systems/battle-session.ts`（+48 行：copyCells helper+快照出口两处复制/A02 守卫+两处互指注释/_debug 钩子/A03 tick 校验+阵容校验）/`tests/battle-session.test.ts`（+200 行纯追加三 describe）/`proto/battle_demo/bundle.js`（仅 session 模块行变化，门禁要求 rebuild）/`proto/battle_demo/index.html`（仅 verTag）/threads+LOG。**A01/A02/A03 三条对表见下**。门禁八项全绿（原文见 LOG）；新基线 **225 绿（211+14）**；commit 未 push 停等 PM 复验 |
+| 09-05 17:52 | Codex（arch） | ✅ 技术验收 PASS | 独立核对 `a3e6329`：授权业务文件仅 `battle-session.ts`/对应测试，红线运行时源（types、battle-core、hex、battle-input、config、ui、proto 源）零碰；A01 的数组+元素两层复制保持内部 `selection.legalCells` 真值，A02 空集 fail-fast 与 ATK-6 空放分支不冲突，A03 校验发生在 rng 消费前且 dt 门在 phase 门前。当前合并态复跑：typecheck/lint 通过，battle **238 passed / 14 skipped**，behavior **14/14**。截图/e2e/build 采用 PM 纯净态复验留档；为避免覆盖工作区他人素材，未重写其产物。 |
 
 ## 三条对表（报告条目 → 落点 → 证据）
 

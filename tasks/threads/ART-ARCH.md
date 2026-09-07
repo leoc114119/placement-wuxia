@@ -111,3 +111,19 @@ Leo 确认修正版 `atk_rightup_1/2` 通过。已写入正式 `assets/character
 → 主架构处置 · 09-06
 
 方案草案已落 `docs/design/03-战斗系统/战斗人物六向帧接线方案.md`。定版主张：六向由 session 已有 `hexFacing` 单点导出受限字符串；sprite profile 在 config 承担状态→clip 映射，render 禁敌我特判；hero directional 零运行时翻转；`heightPerTile` 维持 2.0（折算人物视觉高约 1.6 格）；seq=51 仅进入第二段。取证同时发现两个 DoR 缺口：`9f0d8ba` 只有 hero 右系 30+共用死亡 1，左系成品为 0；T45 需求真源仍写 hero atk3/敌武器入帧。方案可先审，PM 同步需求且对应资产过门前不得发实现卡。
+
+### H24 · 09-06 · 主架构 → 研发线 · T45 首段接线技术验收（projbus seq=58/59）
+
+已在隔离 worktree 对 `63dac3e2f061de5f0240923639b340de9a023a0c` 复核：`git diff --check`、`npm run typecheck`、`npm run lint`、`npm run test:battle`（260 passed / 14 skipped）、`npm run test:behavior`（14/14）、`npm run build` 均通过；六向截图脚本生成 48 张，hero 资源载入 61/61。实现符合首段边界：`BattleFacingHex` / `hexFacingName` 穷尽导出、hero 六向 profile 零运行时翻转、legacy enemy 保持旧兼容、第二段仅保留类型和 profile 挂点。
+
+技术验收结论为 **PASS（T45 首段接线）**。但 Leo L 环发现的“人物偏上”须作为关闭 L 环前的独立 P1 小修复：`ui/battle-hex-render.ts` 的普通活体分支以 `top = syGround - h - hop` 把整张 320px 画布底边钉在地面；现有帧的真实脚底基线为 `y=300`，所以脚实际落在 `syGround - h×20/320`（默认 h=123.2 时上浮 7.7px）。采用**脚底基线锚定**而非通用竖直偏移：将 `frameCanvasH=320`、`footBaselineY=300`（或其 ratio）列为具名渲染常量，普通活体改为 `top = syGround - h×(footBaselineY/frameCanvasH) - hop`；死亡压缩分支维持现状。补一条 drawImage y 断言（脚底=地面−hop）和三分辨率截图。该项不改 session、帧表或素材，可由 FE 小卡立即修复。
+
+Leo 同报的轻功落地面向敌为既定 FACE-1 + ATK-3 行为，接受、无需改动；“出招速度／施放帧循环”是新需求，待需求文档定版后另行走卡，不并入本次验收。
+
+### H25 · 09-06 · 主架构 → 研发线 · 人物“居中偏上”二次不过门跨层根因（projbus seq=62）
+
+只读取证结论：**不是 session/renderPos（无需 BE 卡），也不是相机、取整或素材脚底基线换算错误；根因是渲染把逻辑格的“顶面几何中心”误命名/误当作“视觉落脚锚点”。** 固定 idle 实测三档均同链：session 快照 `renderPos=(-1,11)`；`hexToWorld` 依 `TILE_W=88, TILE_H=61.6, ROW_H=46.2` 得 `(396,508.2)`；screen 格心 y 依次为 396.4 / 429.4 / 289.4（375×667 / 560×700 / 900×560），反推相机 y 为 445.3 / 428.8 / 498.8，均由 `computeCamera` 的 FIELD clamp 给出；修后 drawImage top 为 281 / 314 / 174，按 `h=123.2`、`footBaselineRatio=300/320` 反算脚底 y=396.5 / 429.5 / 289.5，与格心仅有 0.1px 取整误差。故二修确实生效，而非被 resize/相机吞没。
+
+几何含义：`drawTile` 也以同一 y 作为顶面六边形中心，顶/底为 `y±TILE_H/2`（±30.8）；立体侧面再向下 `SIDE_DEPTH=7.392`。所以脚现在严格位于**顶面中心**，却比完整立体瓦片的视觉包围盒中心高 `SIDE_DEPTH/2=3.696px`；若 Leo 所说的“更居中”指近侧站位，则还需要经目验选择更大的设计下偏，而不能再改素材基线或 session 坐标。
+
+修法主张：保留已验证的 `feetBaselineRatio=300/320`，FE 另立“台面视觉落脚偏移”单一展示常量（例如 `visualFootOffsetPx`），公式明确拆为 `syCellCenter + visualFootOffsetPx - h×feetBaselineRatio - hop`，并把现变量 `syGround` 改名为 `syCellCenter`（或等价注释）以消除语义混淆。几何中性候选为 `SIDE_DEPTH/2` 下偏约 3.7px；若 Leo 选择近侧落点，则以校准卡 5 档截图选定一个常量后再发 FE 小卡，禁猜数值。验证应锁：脚底 = `syCellCenter + chosenOffset - hop`、三档无漂移、legacy 分支零回归。`Math.round` 仅 ≤0.5px，分数 renderPos 的已登记 odd-r 问题只会横向影响行走，均非本问题。
