@@ -521,3 +521,4 @@
 | 09-07 | Codex（art） | 🎨 T45 2b 乙右下攻击1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_atk_rightdown_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈119.8、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
 | 09-07 | Leo | 🏗️ PM 窗口拆分批准 | 研发 PM（本窗口）+美术 PM（新窗口）双窗制：美术 PM 接管 art 通道门检/口径/排产，研发 PM 专注 arch 通道+研发卡；护栏=事务域切死/git worktree 纪律/额度分账；入职快照 tasks/handoff/PM2-art-onboard-2026-09-07.md |
 | 2026-09-07 | Codex（art） | ✅ T45 共享白骨 `die_common` 正式入库 | Leo 已视觉通过 pose6；最终规格门 PASS。SHA=`ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24`，同一 PNG 写入 hero 与 shanzei_a/b battle45；旧 hero 帧已备份，试产包 manifest 与 `qa/release_preflight.json` 已落盘，等待 rd 接线门。 |
+| 2026-09-07 | Codex（art） → rd | 📤 T45 共享白骨 `die_common` 交付（seq=102，b938aba） | 已推送 `codex/t45-shanzei-2b-pilot`；清单含共享试产包 manifest/QA、hero 与 shanzei_a/b runtime PNG、旧 hero 帧备份。SHA=`ae5a6ac7…`；等待 rd 接线与运行时核验。 |
