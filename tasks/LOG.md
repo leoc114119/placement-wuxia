@@ -460,3 +460,5 @@
 | 09-07 | ZCode | 📤 外发两件：art 2b 放行（seq=77）/arch 催出招速度方案（seq=78） | art：六锚过门+分支已 merge+2b 逐动作节奏重申；arch：出招速度 v1.2（9081e29）+武功 schema v0.2（a9e1502）输入齐备，方案催办（09-06 约定未见交付） |
 | 2026-09-07 | Codex（art） | 🎨 T45 批 2b 三类动作 pilot 停 Leo 视觉门 | `assets/_trial_20260907/t45_batch2b_pilot_codex_native/`：山贼甲右 `walk_right_1`/`atk_right_1`/`die_common` 各1张，空手身体层、朴刀分离；原稿保留，确定性扣背景与 240×320 归一完成，QA summary 全部机械 PASS；未铺量、未写 runtime，待 Leo 目验。 |
 | 09-07 | Leo → ZCode | ⏸️ 点缀排产后置 + 美术线整体优化方案前置 | 战斗上下点缀（frame_top/bottom 两横幅）不排进当前批次；等山贼 2b 素材出完后，Leo 将让美术线先出**整体优化方案建议**（含战棋格子质感处理方向——09-04 L 环已提"格子质感不行"），方案过目后再定点缀与质感件的排产顺序 |
+| 2026-09-07 | Leo → Codex（art） | ✅ T45 2b pilot 风格/比例目验通过，要求严格尺寸复核 | 三张 pilot 风格和比例无问题；按 T45 §5 对身高、画布、脚底、中心、透明边界、单主体和死亡横躺宽度做全像素复核。 |
+| 2026-09-07 | Codex（art） | ✅ T45 2b pilot 严格尺寸复核全过 | `qa/strict_dimension_recheck.json`：walk/atk 视觉高均256px、bbox center x=120、feet y=300、RGBA/单连通/边界透明全过；die 宽210≤220、feet y=300、center x=120，按横躺宽适配例外。 |

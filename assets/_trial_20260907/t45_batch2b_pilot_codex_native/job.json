@@ -5,7 +5,8 @@
   "scope": ["shanzei_a", "right", "walk_right_1", "atk_right_1", "die_common"],
   "generationPolicy": "one image per action; no grids; stop after pilot contact for Leo visual gate",
   "specGate": "pending",
-  "visualGate": "pending",
+  "visualGate": "leo_visual_review_ok",
+  "strictDimensionRecheck": "qa/strict_dimension_recheck.json",
   "rawOutputs": [
     "raw/walk_right_1_attempt1.png",
     "raw/atk_right_1_attempt1.png",

@@ -1,0 +1,112 @@
+{
+  "task": "T45",
+  "batch": "2b-pilot",
+  "threshold": 30,
+  "specSource": "docs/design/01-基础功能/T45战斗帧45度-需求文档-v2.0.md §5",
+  "checks": {
+    "canvas": "240x320",
+    "verticalVisualHeight": "256 exact",
+    "verticalWidthHeightRatio": "0.38..0.55",
+    "dieWidth": "<=220",
+    "baseline": "y=300",
+    "bboxCenterX": "120±1",
+    "singleComponent": "1",
+    "perimeter": "0"
+  },
+  "mechanicalPass": true,
+  "files": [
+    {
+      "key": "walk_right_1",
+      "file": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/walk_right_1.png",
+      "sha256": "beea7a3802931ecd3fba0f1034ed0bbc2d077d8f280741577f01ab9e1564ad6b",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT30": [
+        60,
+        44,
+        180,
+        300
+      ],
+      "visualWidthT30": 120,
+      "visualHeightT30": 256,
+      "feetYT30": 300,
+      "centroidX_bboxT30": 120.0,
+      "widthHeightRatioT30": 0.46875,
+      "componentsT30": 1,
+      "largestComponentPx": 15923,
+      "perimeterNonzeroPx": 0,
+      "heightGate": true,
+      "widthGate": true,
+      "mechanicalPass": true
+    },
+    {
+      "key": "atk_right_1",
+      "file": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/atk_right_1.png",
+      "sha256": "f25024040d647e132a2c3f06ce26bcaa3e4f61d80cf3a24f27c1bfdd9995d2ba",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT30": [
+        69,
+        44,
+        171,
+        300
+      ],
+      "visualWidthT30": 102,
+      "visualHeightT30": 256,
+      "feetYT30": 300,
+      "centroidX_bboxT30": 120.0,
+      "widthHeightRatioT30": 0.398438,
+      "componentsT30": 1,
+      "largestComponentPx": 15226,
+      "perimeterNonzeroPx": 0,
+      "heightGate": true,
+      "widthGate": true,
+      "mechanicalPass": true
+    },
+    {
+      "key": "die_common",
+      "file": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/die_common.png",
+      "sha256": "e133a8a5c79362158387e9e9b7a65a6f1af6ada08b5d94467c2a4d218874735c",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT30": [
+        15,
+        230,
+        225,
+        300
+      ],
+      "visualWidthT30": 210,
+      "visualHeightT30": 70,
+      "feetYT30": 300,
+      "centroidX_bboxT30": 120.0,
+      "widthHeightRatioT30": 3.0,
+      "componentsT30": 1,
+      "largestComponentPx": 8348,
+      "perimeterNonzeroPx": 0,
+      "heightGate": null,
+      "widthGate": true,
+      "mechanicalPass": true
+    }
+  ]
+}
