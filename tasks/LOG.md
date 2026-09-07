@@ -493,6 +493,8 @@
 | 2026-09-07 | Codex（art） | 🧾 T45 seq=89 回执与精确 slug 落盘 | 已 ACK seq=89（messageId `6c5126f10e854c5cb00da01c32c4334b`）；skill、入场须知与全天复盘改为精确 `seedream-5.0-pro`，credits.json 同时记录 slug 与展示名。当前动作候选不触发回退。 |
 | 2026-09-07 | Codex（art） → rd | 📤 T45 seq=89 精确模型 slug 修订交付 | commit `527e384` 已推送；projbus `seq=90` / messageId `7c63e84c08634ddd8524b16c1ef9651e`；skill、入场须知、全天复盘与 T45 留痕均已硬限定 `seedream-5.0-pro`，当前动作候选不触发回退。 |
 | 2026-09-07 | Leo → Codex（art） | ▶️ T45 批 2b 铺量继续 | 按 seq=87 修正版 A 继续逐动作铺量；有交付即由 Leo 做第二道规格门检，交付仍带 commit、路径清单与机械 QA。当前无新的 projbus 打回或口径变更。 |
+| 09-07 | Codex（art）→ rd | 📤 条件性 Seedream 回退流程落地（seq=88，cb02f06） | 默认 Codex 原生；同帧同问题 3 连败+Leo 授权条件下→单帧一次 mxai Seedream 5 Pro（6 积分）；禁批量换源/第4次原生/连环重试/顺带生成；回退后重过全部门+两道关卡；credits.json 记账；乙 atk_right_2 user_fixed 已成功未触发回退。⚠️授权模式待 Leo 裁：逐次批 vs 流程批 |
+| 09-07 | Leo → ZCode | ✅ Seedream 回退流程批生效 + 硬限定 | Leo 亲验 Seedream 5 Pro 修正手脚/动作异常效果不错，裁**流程批**（即批即生效，美术线自行判断触发，credits.json 记账查账）；**硬限定 slug=seedream-5.0-pro 禁任何其他变体**；裁定回执 seq=89 已发美术线 |
 | 09-07 | ZCode | ⚠️ 双活事故处置+R1 锚义裁定（TASK-AS-BE） | ①5.3 前任代理 resume 后未死（PID 61706 10:52 起持续施工至交付冲刺），Leo 令停 5.3 后 PM 终止该进程止损，Flash 续任代理独占 worktree 收尾；②B2/R1 锚义冲突：续任代理数学反例证明 B2（锚=点击格）与已验收锁冲突且点敌格=必空放，**PM 终裁 R1 定版**（锚=施法者提交时自身格，三入口统一，与 v2.2 即时语义连续）；方案 §3.3 措辞勘误请求已发 arch（seq=91）；③追认：3 处计数断言翻倍+4 处同类采样改写（Q1 逻辑延伸）；FACE-1 ②b seed 核查责令完成 |
 | 09-07 | backend(5.3) | 📦 TASK-AS-BE 交付（fcd7067+670bce9，终止前完成） | 33 文件 +1148/−100：scheduler 提交即排程/t1 动态重搜(R1)/两段独立 F-04/死亡消散/终局截断/三入口收敛/26 新用例+16 处采样改写/bundle rebuild；自报门禁 294+14 绿/behavior 14/14/shot 16/e2e MATCH/DBG=0；三件复核=R1(已裁)/清单外 3 处(已追认)/FINISH 落位 battle.ts(追认：符合方案 §4.2 原文+保 T15 红线)；修复半成品 resolveSegmentTargets(AS-T4 锁)；⚠️本次运行 ~20M tokens(5.3 档)=额度事故主体 |
 | 09-07 | ZCode | 🔁 Flash 代理转独立复验 | 施工者≠复验者：复跑全量四门核实效数字+残留半截 shots 处置+ARCH-AS 交付行完整性核对+FACE-1 ②b seed 核查（明文必做）；复验 PASS 后送主架构技术验收 |
@@ -500,3 +502,31 @@
 | 09-07 | ZCode | 📤 分支已 push+主架构技术验收请求已发（seq=92） | task/attack-speed-be → origin；验收重点=B4 行为变更+R1 勘误确认（seq=91 并案）；PASS 后 PM 纯净态四门复验→L 环 |
 | 09-07 | rd → 主架构 | 📥 v0.3 修订请求（seq=98） | Leo L 环二次终裁：段1=t0即时且出手必中；段2=t1=整个出招时长末端并动态重搜；取消独立300ms收招结算；施法循环280ms/帧；要求方案评估与 AS-T3/T4/T5/T6、工时重写。 |
 | 09-07 | 主架构（Codex） | ✅ 收到 seq=98 | 已确认需求变更，开始 v0.3 方案修订；不改游戏代码。 |
+| 09-07 | Leo | ⏸️ 实时推送机制缓建，人肉转发为主 | projbus 准实时方案（ZCode Stop/UserPromptSubmit 钩子注入+headless 门检替身+fswatch 秒级监听）已评估并呈报，Leo 裁=暂不做，流程未闭合先人肉转发；技术调研结论留档（ZCode 钩子七事件/Stop 可 additionalContext 注入+续跑 3 次/空闲会话无法被外部唤醒），流程稳态后再议 |
+| 09-07 | Codex（art） | 🎨 T45 2b 手部异常逐张 Seedream 修正候选已整合 | 5张攻击帧按用户当前指示逐张调用 mxai seedream-5.0-pro（6积分/张，总30）；整合候选 integrated_candidate，credits.json 与 manifest 已落盘，待 Leo 目验与 PM 规格门，未写 runtime。 |
+| 09-07 | Codex（art） | ⏸️ T45 2b 按用户纠正暂停连续生成，改为逐张确认 | 已停止后续生成；当前5张 Seedream 候选保留原图、修正版、QA、credits 与整合目录，全部不进 runtime，等待逐张复核。 |
+| 09-07 | Codex（art） | ⏸️ T45 甲右普攻首张候选判错，已按右上正确参照重做一张待确认 | Leo 指出首张仍为左手出拳；仅针对同一帧重做一次，使用 Leo 提供的正确右上帧作为右手出拳路径参照。新输出已打开，等待确认，不继续生成下一帧。 |
+| 09-07 | Codex（art） | ▶️ T45 甲右普攻 v2 动作确认，打开下一张甲右上候选 | Leo 确认甲右普攻动作合格；v2 已确定性归一、全像素质心复核并替换整合候选。下一张甲右上候选已单独打开，等待逐张确认。 |
+| 09-07 | Codex（art） | ▶️ T45 甲右/右上动作确认，打开甲右下候选 | Leo 确认甲右与甲右上动作合格；下一张甲右下候选已单独打开，等待逐张确认。 |
+| 09-07 | Codex（art） | ⏸️ T45 甲右下右手出拳修正版已生成，停单张确认 | 仅针对甲右下调用一次 Seedream，输出已打开给 Leo 复核；不继续下一帧。 |
+| 09-07 | Codex（art） | ▶️ T45 甲右下修正版确认，打开乙右上候选 | Leo 确认甲右下修正版通过；已完成归一、质心复核并替换整合候选。下一张乙右上候选待单张确认。 |
+| 09-07 | Codex（art） | ▶️ T45 乙右上确认，打开乙右下候选 | Leo 确认乙右上通过；已完成归一、质心复核并替换整合候选。下一张乙右下候选待单张确认。 |
+| 09-07 | ZCode | ✅ BE 验收闭环+FE 卡交付（fe37cf4，task/attack-speed-fe 已 push） | 主架构技术验收 PASS（48d0edd ack）+PM 抽查（typecheck 零错+三关键文件 112 绿）；FE 一次交付：charge 施放帧整套循环/strike cast2→3/普攻 1s（basicHolds 保持窗）/宿主逻辑 dt 唯一真源/legacy 敌型幂等；抓修跨层缺陷=T2 与收招窗同刻到期致第二跳挂 1.5s 兜底（render 补冲刷条件 e，AS-8 对齐）；门禁 303+14 全绿/新 shot_as_cast.mjs 30 影+18 校验；两件单列待主架构复核（slashSec 独立时长/终局播完口径）；验收请求 seq=94 |
+| 09-07 | Codex（art） | ⏸️ T45 乙右下右手出拳重做候选已生成，停单张确认 | 乙右下首稿仍为左手出拳；已从原始帧重做一次，使用已通过的乙右上帧作右手路径参照。新输出已打开，等待确认，不继续下一张。 |
+| 09-07 | Codex（art） | ✅ T45 2b 六张攻击帧视觉候选整合完成 | 乙右下 v2 经 Leo 确认并完成归一/质心复核；六张攻击帧均已替换进 `integrated_candidate/`，walk2 三向保留原生候选。Seedream 共7次调用、总42积分；全部为候选，PM规格门与 runtime 待后续。 |
+| 2026-09-07 | Codex（art） | ✅ T45 2b 右系机械门检与正式入库完成 | `qa/release_preflight.json` 12/12 通过：240×320 RGBA、视觉高256、脚底边界 y=300、全 alpha>32 质心≈120、单连通、四边透明、浅色边界像素0；正式写入 `assets/characters/enemy/shanzei_a/battle45/` 与 `shanzei_b/battle45/`，等待 rd 接线门。 |
+| 2026-09-07 | Codex（art） → rd | 📤 T45 批2b 右系正式入库交付（seq=96，49c8475） | commit `49c8475` 已推送 `codex/t45-shanzei-2b-pilot`；12 张右系 walk2/atk2 已入两个 `battle45` 正式目录；`release_preflight` 12/12 PASS；请 rd 做第二道规格门与接线核验。 |
+| 09-07 | ZCode | ✅ T45 2b release 门检 PASS+代办 merge main（4f53f35） | 12 张正式帧（甲乙×三向×walk2/atk2）批量精扫 8 直接过+4 张 atk 帧 cx 超差目验判定=挥拳自然几何（修正版 A 延伸：atk/cast cx 门放宽 ±20，walk/idle 维持 ±6）；49c8475 在 rd-cast worktree 临时分支 merge 进 main（LOG 冲突双侧保留）已 push；rd→art seq=97 通知 |
+| 09-07 | Codex(art) | ⚠️ 已知障碍登记：Codex 沙箱拦 .git/index 写入 | 美术窗口 commit 间歇被拦（workspace-write 沙箱保护 .git 目录）——短期由 rd 代办 git 操作，长期美术窗口调沙箱配置/提权；今日 49c8475 本身提交成功（index mtime 吻合），卡的是 merge 环节 |
+| 09-07 | Codex（art） | 🎨 T45 2b 乙右行走1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_walk_right_1`；保留 raw，确定性连通中性背景扣除+240×320归一+全像素 alpha>32 质心右移3px；QA 机械门 PASS（视觉高256、脚底y300、质心x≈119.5、RGBA、单主体、边界透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Codex（art） | 🎨 T45 2b 乙右攻击1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_atk_right_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈120、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Leo → ZCode | 🎯 L 环二次终裁：两段落点改写 | Leo 试玩 8224（FE 分支预览）：两段+循环功能在，但"循环播完才扣第一段"观感不对+循环帧太快。终裁新时序：①段1=t0 提交即时结算（命中帧同步，出手必中）②段2=t1 施法循环结束时结算（两段间隔=出招时长；快招两跳近乎连击）③回站立；施法循环帧周期放慢 280ms/帧 |
+| 09-07 | ZCode | 📋 需求文档 v1.4 落盘+arch 方案 v0.3 修订请求已发 | AS-2/3/4/5/6/6b/8/9 改写（段1 即时结算/段2 循环结束+动态追踪重搜=出手必中+收招可躲分层/收招窗 300ms 概念取消/280ms 周期）；v0.2 的 BE/FE 已验收代码作为增量基础，改动面待 v0.3 评估 |
+| 09-07 | Codex（art） | 🎨 T45 2b 乙右上行走1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_walk_rightup_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈120、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Leo → ZCode | 🦴 新需求：死亡帧全角色复用 Q 版白骨 | 人形倒地"扁扁不好看"→死亡呈现改白骨（参考老网金地面白骨，Leo 提供截图）；一幅全角色复用、做 Q 一点；参考图已入库 assets/_trial_20260907/bones_ref/（含红框特写裁片） |
+| 09-07 | ZCode | 📋 白骨帧规格口径落定+试产单已发（seq=99） | 240×320 透明底/侧躺头朝左（全角色六向共用）/内容宽 120-160/贴底 y300/中心 x120/铃兰 Q 版粗边/单连通无字；流程=试产 1 张→Leo 目验→PM 门检→FE 接线小卡（die clip 全角色映射替换）；现有 die_common 人形帧待白骨定稿后处置（归档备份） |
+| 09-07 | Codex（art） | 🎨 T45 2b 乙右上攻击1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_atk_rightup_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈120、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Leo → Codex（art） | ✅ T45 乙右上攻击1视觉通过，登记统一比例复核要求 | Leo 确认 `shanzei_b_atk_rightup_1`；指出目测比例/大小可能比上一张偏大，要求统一对比；已登记为连播一致性待核项，继续乙右下行走1。 |
+| 09-07 | Codex（art） | 🎨 T45 2b 乙右下行走1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_walk_rightdown_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈119.7、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Codex（art） | 🎨 T45 2b 乙右下攻击1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_atk_rightdown_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈119.8、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Leo | 🏗️ PM 窗口拆分批准 | 研发 PM（本窗口）+美术 PM（新窗口）双窗制：美术 PM 接管 art 通道门检/口径/排产，研发 PM 专注 arch 通道+研发卡；护栏=事务域切死/git worktree 纪律/额度分账；入职快照 tasks/handoff/PM2-art-onboard-2026-09-07.md |
