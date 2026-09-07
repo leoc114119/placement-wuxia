@@ -2,7 +2,7 @@
   "task": "T45",
   "batch": "2b-enemy-left-cleanup-v1",
   "artifactStage": "candidate_revision",
-  "visualReview": "pending_Leo_recheck",
+  "visualReview": "selected_by_Leo",
   "specGate": "pending",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
@@ -438,5 +438,6 @@
     "contact/cleanup_full_dark.png",
     "contact/cleanup_full_light.png",
     "contact/cleanup_target_crops_8x.png"
-  ]
+  ],
+  "visualReviewNote": "Leo approved the cleanup candidate in follow-up review on 2026-09-07; submit to PM specification gate."
 }
