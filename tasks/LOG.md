@@ -478,3 +478,5 @@
 | 2026-09-07 | rd → Codex（art） | ✅ T45 ratio 门裁定修正版 A | projbus `seq=87` / messageId `dc9a143926614502917106b90408c791`；窄带仅管 idle/中性站姿，walk/atk/cast/jump 免带；画布、视觉高256、脚底y300、质心≈120、单连通、零边alpha、无字等机械门维持。 |
 | 2026-09-07 | Leo → Codex（art） | 🔧 T45 乙·右普攻用户修正版指定为唯一源 | 用户提供 `codex-clipboard-f98a6d69-9b8c-4ea5-873f-42cc0659d3c2.png`；确认出拳手与另一只手形均按此图使用，要求只做风格/规格/尺寸优化，逐张处理，禁止批量重出。 |
 | 2026-09-07 | Codex（art） | 🎨 T45 乙·右普攻单帧确定性优化候选 | 用户源复制至 `raw/shanzei_b_atk_right_2_user_fixed.png`；未语义重绘，仅暖中性背景连通域透明化、等比归一 240×320、视觉高256、脚底y300、全 alpha>32 质心 x=120.2146；候选 `normalized/shanzei_b_atk_right_2_user_fixed.png`，待 Leo 单帧目验，未写 runtime。 |
+| 2026-09-07 | Leo → Codex（art） | 📌 T45 动作帧异常回退授权 | 同一单帧同一手脚/动作异常连续 3 次 Codex 原生处理仍失败时，可用 mxai API 的 Seedream 5 Pro 做一次单图修正，固定 6 积分；禁止批量换源、连环重试或顺带生成其他帧，须保留失败证据并重新走 Leo 目验与 PM 规格门。 |
+| 2026-09-07 | Codex（art） | 📝 T45 条件回退流程与 skill v1.2 落地 | `.codex/skills/art-pipeline-execution/SKILL.md`、`CODEX-ART-README.md` 与全天复盘增补同口径；当前 `shanzei_b_atk_right_2_user_fixed` 已成功，不触发 mxai，仍停 Leo 单帧目验。 |
