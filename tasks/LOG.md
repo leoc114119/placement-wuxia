@@ -484,3 +484,9 @@
 | 2026-09-07 | rd → Codex（art） | ✅ T45 seq=89 流程批批准生效 | Leo 终裁流程批即批即生效；回退模型硬限定为 mxai `seedream-5.0-pro`（Seedream 5 Pro），其他变体/厂商模型违红线；其余三连败、单帧一次6积分、禁批量/连环、回退后全门复验护栏不变。 |
 | 2026-09-07 | Codex（art） | 🧾 T45 seq=89 回执与精确 slug 落盘 | 已 ACK seq=89（messageId `6c5126f10e854c5cb00da01c32c4334b`）；skill、入场须知与全天复盘改为精确 `seedream-5.0-pro`，credits.json 同时记录 slug 与展示名。当前动作候选不触发回退。 |
 | 2026-09-07 | Codex（art） → rd | 📤 T45 seq=89 精确模型 slug 修订交付 | commit `527e384` 已推送；projbus `seq=90` / messageId `7c63e84c08634ddd8524b16c1ef9651e`；skill、入场须知、全天复盘与 T45 留痕均已硬限定 `seedream-5.0-pro`，当前动作候选不触发回退。 |
+| 2026-09-07 | Leo → Codex（art） | ▶️ T45 批 2b 铺量继续 | 按 seq=87 修正版 A 继续逐动作铺量；有交付即由 Leo 做第二道规格门检，交付仍带 commit、路径清单与机械 QA。当前无新的 projbus 打回或口径变更。 |
+| 09-07 | ZCode | ⚠️ 双活事故处置+R1 锚义裁定（TASK-AS-BE） | ①5.3 前任代理 resume 后未死（PID 61706 10:52 起持续施工至交付冲刺），Leo 令停 5.3 后 PM 终止该进程止损，Flash 续任代理独占 worktree 收尾；②B2/R1 锚义冲突：续任代理数学反例证明 B2（锚=点击格）与已验收锁冲突且点敌格=必空放，**PM 终裁 R1 定版**（锚=施法者提交时自身格，三入口统一，与 v2.2 即时语义连续）；方案 §3.3 措辞勘误请求已发 arch（seq=91）；③追认：3 处计数断言翻倍+4 处同类采样改写（Q1 逻辑延伸）；FACE-1 ②b seed 核查责令完成 |
+| 09-07 | backend(5.3) | 📦 TASK-AS-BE 交付（fcd7067+670bce9，终止前完成） | 33 文件 +1148/−100：scheduler 提交即排程/t1 动态重搜(R1)/两段独立 F-04/死亡消散/终局截断/三入口收敛/26 新用例+16 处采样改写/bundle rebuild；自报门禁 294+14 绿/behavior 14/14/shot 16/e2e MATCH/DBG=0；三件复核=R1(已裁)/清单外 3 处(已追认)/FINISH 落位 battle.ts(追认：符合方案 §4.2 原文+保 T15 红线)；修复半成品 resolveSegmentTargets(AS-T4 锁)；⚠️本次运行 ~20M tokens(5.3 档)=额度事故主体 |
+| 09-07 | ZCode | 🔁 Flash 代理转独立复验 | 施工者≠复验者：复跑全量四门核实效数字+残留半截 shots 处置+ARCH-AS 交付行完整性核对+FACE-1 ②b seed 核查（明文必做）；复验 PASS 后送主架构技术验收 |
+| 09-07 | backend-battle(Flash) | ✅ TASK-AS-BE 独立复验 PASS（d571eb7） | 全量四门复跑与施工自报全数吻合（294+14/behavior 14/14/shot 16/e2e 11 MATCH/DBG=0/bundle 逐字节一致）；FACE-1 ②b seed 5/7 实测未漂移=Q1 条件闭合；残留半截产物 restore 清零工作树 clean |
+| 09-07 | ZCode | 📤 分支已 push+主架构技术验收请求已发（seq=92） | task/attack-speed-be → origin；验收重点=B4 行为变更+R1 勘误确认（seq=91 并案）；PASS 后 PM 纯净态四门复验→L 环 |
