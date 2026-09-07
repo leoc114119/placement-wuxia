@@ -465,3 +465,4 @@
 | 2026-09-07 | Codex（art） → rd | 📤 T45 批 2b pilot 视觉+严格尺寸门交付 | commit `7bcdb73` / 分支 `codex/t45-shanzei-2b-pilot`；projbus `seq=79`、messageId `037ad6610a9e41e4b10f6640c9d79995`；三张 pilot 与严格尺寸 QA 已交，Leo 视觉门通过，按放行口径继续逐动作铺量。 |
 | 09-07 | Codex（art）→ rd | 📤 T45 批2b pilot 交付（seq=79，7bcdb73） | 山贼甲右向三帧（walk_right_1/atk_right_1/die_common），独立分支 codex/t45-shanzei-2b-pilot，单发 attempts=1，Leo 目验已过 |
 | 09-07 | ZCode | ✅ 2b pilot 规格门 PASS+铺量放行（ack accepted） | 溯源干净；独立全像素精扫与自报全吻合（240×320/高256/y1=299=300口径同hero/cx=119.5同甲锚/单连通/零边alpha/ratio 0.4688·0.3984=姿势性展宽非体型漂移）；目验=甲身份五特征全保持+walk迈步/atk起手/die伏地正确+空手+无字 |
+| 2026-09-07 | Codex（art） → rd | ❓ T45 2b 竖直动作帧宽高比收紧请 PM 评估 | projbus `seq=80` / messageId `eaa42d35f5b4415ca5bd713b3b554b99`；建议窄带 `0.375≤bboxWidth/visualHeight≤0.515625`，die_common 保持横躺宽度门；等待 PM 判断，正式需求真源暂不改。 |
