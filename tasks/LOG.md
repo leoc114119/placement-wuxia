@@ -462,3 +462,4 @@
 | 09-07 | Leo → ZCode | ⏸️ 点缀排产后置 + 美术线整体优化方案前置 | 战斗上下点缀（frame_top/bottom 两横幅）不排进当前批次；等山贼 2b 素材出完后，Leo 将让美术线先出**整体优化方案建议**（含战棋格子质感处理方向——09-04 L 环已提"格子质感不行"），方案过目后再定点缀与质感件的排产顺序 |
 | 2026-09-07 | Leo → Codex（art） | ✅ T45 2b pilot 风格/比例目验通过，要求严格尺寸复核 | 三张 pilot 风格和比例无问题；按 T45 §5 对身高、画布、脚底、中心、透明边界、单主体和死亡横躺宽度做全像素复核。 |
 | 2026-09-07 | Codex（art） | ✅ T45 2b pilot 严格尺寸复核全过 | `qa/strict_dimension_recheck.json`：walk/atk 视觉高均256px、bbox center x=120、feet y=300、RGBA/单连通/边界透明全过；die 宽210≤220、feet y=300、center x=120，按横躺宽适配例外。 |
+| 2026-09-07 | Codex（art） → rd | 📤 T45 批 2b pilot 视觉+严格尺寸门交付 | commit `7bcdb73` / 分支 `codex/t45-shanzei-2b-pilot`；projbus `seq=79`、messageId `037ad6610a9e41e4b10f6640c9d79995`；三张 pilot 与严格尺寸 QA 已交，Leo 视觉门通过，按放行口径继续逐动作铺量。 |
