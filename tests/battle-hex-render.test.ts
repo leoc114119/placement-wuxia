@@ -1875,9 +1875,9 @@ describe('[L 环锚点修正] directional 脚底基线 y=300 / legacy 脚底基�
 
 // ══════════ 【AS · TASK-AS-v03】出招速度+两段式伤害 表现接线（需求 v1.4 AS-2/AS-4 · 方案 v0.3 §4.4）══════════
 describe('[AS · TASK-AS-FE] 出招速度+两段式伤害 表现接线', () => {
-  it('配置面别名锁：ANIM_LOOP_GROUPS=[walk,charge]；BASIC_DURATION_MS=1000 且 CHOREO.basicSec/strikeSec 只做共享常量别名（BE/FE 禁各自复制，§4.4）；v0.3 charge 循环步频=CAST_FRAME_PERIOD_MS 280 独立常量', () => {
+  it('配置面别名锁：ANIM_LOOP_GROUPS=[walk,charge]；BASIC_DURATION_MS=700（【L 环 Leo 09-07 裁 700ms】原 1000，「出拳后收得太慢」随卡改）且 CHOREO.basicSec/strikeSec 只做共享常量别名（BE/FE 禁各自复制，§4.4）；v0.3 charge 循环步频=CAST_FRAME_PERIOD_MS 280 独立常量', () => {
     expect(ANIM_LOOP_GROUPS).toEqual(['walk', 'charge']);
-    expect(BASIC_DURATION_MS).toBe(1000);
+    expect(BASIC_DURATION_MS).toBe(700); // 【L 环 Leo 09-07 裁 700ms】原 1000
     expect(CHOREO.basicSec).toBe(BASIC_DURATION_MS / 1000);
     expect(CHOREO.strikeSec).toBe(FINISH_WINDOW_MS / 1000); // 【v0.3 勘注】表现兼容暂留别名，非段 2 结算锚
     expect(CAST_FRAME_PERIOD_MS).toBe(280); // 【TASK-AS-v03】charge 循环解耦 walkFrameMs（方案 v0.3 §4.4）
@@ -1896,7 +1896,7 @@ describe('[AS · TASK-AS-FE] 出招速度+两段式伤害 表现接线', () => {
     expect(ordinals).toEqual([1, 2, 3, 1]); // idx=floor(t/280) 取模循环回第 1 帧（【TASK-AS-v03 随卡改写】v0.2 70ms 步频/walkFrameMs 口径废止）
   });
 
-  it('普攻保持窗（口径③/开放点③=1s）：快照 basic→idle 翻转后 atk 帧续播无 2→1 回跳；窗到期回 idle1 且 Map 惰性清理', () => {
+  it('普攻保持窗（【L 环 Leo 09-07 裁 700ms】原口径③/开放点③=1s）：快照 basic→idle 翻转后 atk 帧续播无 2→1 回跳；窗到期回 idle1 且 Map 惰性清理', () => {
     const view = createView();
     const hero = dirActor({ animState: 'idle' });
     const snap = makeSnapshot([hero]);
@@ -1907,16 +1907,16 @@ describe('[AS · TASK-AS-FE] 出招速度+两段式伤害 表现接线', () => {
     updateView(view, snap, 0.2, 375, 667); // 钟 t=0.216 ≥140ms → atk2
     expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 });
     snap.actors[0].animState = 'idle'; // session ANIM_MS.basic=300 冻结：快照翻 idle（300ms 处形状）
-    updateView(view, snap, 0.084, 375, 667); // 演出 t=0.3s：窗内（<1s）
+    updateView(view, snap, 0.084, 375, 667); // 演出 t=0.3s：窗内（<0.7s）
     expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 }); // 续播保持，无回跳
-    updateView(view, snap, 0.5, 375, 667); // t=0.8s：窗内
+    updateView(view, snap, 0.3, 375, 667); // t=0.6s：窗内（<0.7s，【L 环 Leo 09-07 裁 700ms】原 1s 窗采样步 0.5/0.3 随窗收窄）
     expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 });
-    updateView(view, snap, 0.3, 375, 667); // t=1.1s ≥ 1s：窗到期
+    updateView(view, snap, 0.2, 375, 667); // t=0.8s ≥ 0.7s：窗到期
     expect(directionalFrameOf(view, hero)).toEqual({ clip: 'idle', ordinal: 1 });
     expect(view.basicHolds.has('hero')).toBe(false); // 惰性清理（updateView 逐帧除名）
   });
 
-  it('普攻保持窗·legacy：快照 idle 但窗内恒绘帧 6（单帧组循环幂等，敌型普攻同享 1s 表现）', () => {
+  it('普攻保持窗·legacy：快照 idle 但窗内恒绘帧 6（单帧组循环幂等，敌型普攻同享 0.7s 表现——【L 环 Leo 09-07 裁 700ms】原 1s）', () => {
     const strip: Array<ImgLike | null> = Array.from({ length: 8 }, (_, i) => tagImg(`spr${i}`, 128, 256));
     const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei', strip]]) };
     const foe = dirActor({ id: 'e1', side: 'enemy', name: '山贼甲', spriteKey: 'npc-shanzei' });
@@ -1932,9 +1932,9 @@ describe('[AS · TASK-AS-FE] 出招速度+两段式伤害 表现接线', () => {
     updateView(view, snap, 0.016, 375, 667); // idle→basic 上升沿开窗
     expect(drawTag()).toBe('spr6');
     snap.actors[0].animState = 'idle';
-    updateView(view, snap, 0.4, 375, 667); // 快照已 idle，窗内（0.42s < 1s）
+    updateView(view, snap, 0.4, 375, 667); // 快照已 idle，窗内（0.42s < 0.7s）
     expect(drawTag()).toBe('spr6');
-    updateView(view, snap, 0.7, 375, 667); // 1.12s ≥ 1s 窗到期
+    updateView(view, snap, 0.7, 375, 667); // 1.12s ≥ 0.7s 窗到期（【L 环 Leo 09-07 裁 700ms】原 ≥1s 口径随窗收窄仍到期）
     expect(drawTag()).toBe('spr7');
   });
 
@@ -2112,5 +2112,112 @@ describe('PRM-1/GSG-1（TASK-AS-v04）：攻钮命中/选格派发/hover 翻译/
     view.layout.atkBtn = null;
     drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
     expect(view.layout.atkBtn).toBeNull();
+  });
+
+  it('攻钮猫爪布位（【L 环 Leo 09-07 裁】）：攻钮=特/绝/轻/毒四钮同圆心同半径 90°正下方圆形肉垫，外接方热区与四钮同直径', () => {
+    const calls: Record<string, number> = {};
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const rec = t as unknown as Record<string | symbol, unknown>;
+          if (prop in rec) return rec[prop];
+          calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
+          return () => {};
+        },
+        set() {
+          return true;
+        },
+      },
+    );
+    const img = { width: 128, height: 256 };
+    const assets: BattleHexAssets = {
+      env: img,
+      topbar: { width: 1440, height: 300 },
+      plaque: { width: 310, height: 757 },
+      ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
+      statusIcons: new Map(),
+      frames: new Map<string, LegacyFrameStrip | DirectionalFrameStore>([
+        ['hero', makeHeroStore()],
+        ['npc-shanzei', [img, img, img, img, img, img, img, img]],
+      ]),
+    };
+    const snap = makeSnapshot([
+      { id: 'hero', name: '小虾米', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } },
+      { id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 6, r: 7 }, renderPos: { q: 6, r: 7 }, spriteKey: 'npc-shanzei' },
+    ]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    const view = createView();
+    for (let i = 0; i < 40; i++) updateView(view, snap, 0.016, 375, 667); // skillPop 收敛到 1（弹出完成态，四钮满半径）
+    expect(view.skillPop).toBe(1);
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    const btns = view.layout.skillBtns;
+    expect(btns).toHaveLength(4);
+    const ab = view.layout.atkBtn;
+    expect(ab).not.toBeNull();
+    // pop=1 时四钮位=头圆心 + 极角(195/245/295/345)×R——对称关系反解头圆（hcx/hcy/R），再验攻钮=同圆 90° 正下
+    const d = btns[0].r * 2;
+    const hcx = (btns[0].x + btns[3].x) / 2; // 195°/345° 左右对称 → 中点=头圆心 x
+    const R = (btns[3].x - btns[0].x) / 2 / Math.cos((15 * Math.PI) / 180);
+    const hcy = (btns[1].y + btns[2].y) / 2 + Math.abs(Math.sin((245 * Math.PI) / 180)) * R;
+    expect(ab!.w).toBeCloseTo(d, 9); // 与四钮同直径（规格一致）
+    expect(ab!.h).toBeCloseTo(d, 9);
+    expect(ab!.x + ab!.w / 2).toBeCloseTo(hcx, 6); // 居中=头圆心正下
+    expect(ab!.y + ab!.h / 2).toBeCloseTo(hcy + R, 6); // 同圆心同半径（弧心角 90°=猫爪肉垫位）
+    expect(ab!.y).toBeGreaterThan(Math.max(...btns.map((b) => b.y))); // 在四钮下方
+  });
+
+  it('hover 红态收窄（【L 环 Leo 09-07 裁】）：绝/特 attackCells 悬停不画 cellHover 红（点格即施放不加红），攻击范围红本体不夺', () => {
+    const calls: Record<string, number> = {};
+    const fills: string[] = [];
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const rec = t as unknown as Record<string | symbol, unknown>;
+          if (prop in rec) return rec[prop];
+          calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
+          return () => {};
+        },
+        set(t, prop, v) {
+          if (prop === 'fillStyle') fills.push(String(v));
+          return true;
+        },
+      },
+    );
+    const img = { width: 128, height: 256 };
+    const assets: BattleHexAssets = {
+      env: img,
+      topbar: { width: 1440, height: 300 },
+      plaque: { width: 310, height: 757 },
+      ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
+      statusIcons: new Map(),
+      frames: new Map<string, LegacyFrameStrip | DirectionalFrameStore>([
+        ['hero', makeHeroStore()],
+        ['npc-shanzei', [img, img, img, img, img, img, img, img]],
+      ]),
+    };
+    const snap = makeSnapshot([
+      { id: 'hero', name: '小虾米', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } },
+      { id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 6, r: 7 }, renderPos: { q: 6, r: 7 }, spriteKey: 'npc-shanzei' },
+    ]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    snap.attackCells = [{ q: 4, r: 9 }]; // 绝/特攻击范围格（快照真值）
+    const view = createView();
+    updateView(view, snap, 0.016, 375, 667);
+    view.hoverCell = { q: 4, r: 9 }; // 悬停攻击范围格
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).toContain('rgba(225, 70, 55, 0.42)'); // 攻击范围红本体照画（HIGHLIGHT.attack）
+    expect(fills).not.toContain('rgba(228, 52, 32, 0.72)'); // cellHover 红不再响应 attackCells（收窄负向锁）
   });
 });

@@ -127,9 +127,10 @@ export const HIGHLIGHT = {
   attackEdge: 'rgba(255, 120, 100, 0.85)',
   selected: 'rgba(245, 205, 70, 0.5)', // 选中格（金）
   selectedEdge: 'rgba(255, 230, 130, 0.95)',
-  /** 【GSG-1 v2.5 · TASK-AS-v04】可选格通用悬停红态（Leo 09-07：悬停红色，不点两下）——
-   * 轻功金格/技能 attackCells/普攻 basicCells 三类可选格 hover=本红色选中效果，离开恢复原色；
-   * 普通移动绿格不纳入（GSG-1 明文）。触屏无 hover 自然退化（不设置即不画）。 */
+  /** 【GSG-1 v2.5 · TASK-AS-v04 · L 环 Leo 09-07 裁收窄】可选格悬停红态（Leo 09-07：悬停红色，不点两下）——
+   * 适用范围收窄为两类：轻功金格（jump 可达格）/普攻 basicCells；绝/特 attackCells 移出 hover 红态
+   *（技能点格即施放，不加红——将来「可移动的范围攻击」再议适用）；普通移动绿格不纳入（GSG-1 明文）。
+   * 触屏无 hover 自然退化（不设置即不画）。 */
   cellHover: 'rgba(228, 52, 32, 0.72)',
   cellHoverEdge: 'rgba(255, 96, 72, 0.95)',
 } as const;
@@ -195,7 +196,7 @@ export const CAST_FRAME_PERIOD_MS = 280;
 export const CHOREO = {
   chargeSec: 0.1, // 蓄力段（04）——legacy tick 动画机旧线口径；AS 线施法相 charge 由 pendingCasts 保持（时长=出招时长，B5）
   strikeSec: FINISH_WINDOW_MS / 1000, // 出招挥出（05）=收招窗别名（表现兼容暂留；非结算锚，见上勘注）
-  basicSec: BASIC_DURATION_MS / 1000, // 【AS · TASK-AS-FE】普攻表现时长别名（需求口径③/开放点③=1s；渲染层 basic 保持窗消费——只改表现计时，不延迟普攻事件或血量）
+  basicSec: BASIC_DURATION_MS / 1000, // 【AS · TASK-AS-FE】普攻表现时长别名（【L 环 Leo 09-07 裁 700ms】原口径③/开放点③=1s；渲染层 basic 保持窗消费——只改表现计时，不延迟普攻事件或血量）
   hitSec: 0.18, // 受击段
 } as const;
 
@@ -362,20 +363,17 @@ export const CTRL_ACTIVE = {
 } as const;
 
 /**
- * 【PRM-1 v2.5 · TASK-AS-v04】ctrl「攻」按钮（普攻选格入口；技能钮排下方=ctrl 组件正上方锚定，
- * 右对齐同宽——L 环清单 §9.5-4「ctrl『攻』→六邻格金色」；仅手动+主角待命可进入（PRM-1①），
- * 代码绘制占位钮（ctrl 三脸同族深木+金字，视觉降级模式沿用——无独立素材）。ADR-004 只读展示参数。
+ * 【PRM-1 v2.5 · TASK-AS-v04 · L 环 Leo 09-07 裁猫爪布位】ctrl「攻」按钮（普攻选格入口）：
+ * 旧「ctrl 组件正上方锚定、右对齐同宽矩形」废止——改锚定主角头圆与特/绝/轻/毒四钮同圆心同半径
+ *（ARC_BTNS 弧参数），位=弧心角 90°（屏幕系正下方）、圆形、与四钮同直径——五钮呈猫爪形态
+ *（四钮弧形在上排，攻钮如猫爪肉垫居中在下）。颜色/描边/选中态同源消费 ARC_BTNS（同圆同族不复制）。
+ * 仅手动+主角待命可进入（PRM-1①）；代码绘制占位钮（视觉降级模式沿用——无独立素材）。
+ * 热区=圆外接正方形（pickAtkButton 矩形口径不变）。ADR-004 只读展示参数。
  */
 export const ATK_BTN = {
   label: '攻', // 钮面字（PRM-1①「攻」按钮）
-  hRatio: 128 / 448, // 钮高=ctrl 标定矩形单钮高比例（art 系 128/448，与 CTRL_BUTTONS 钮 1 同高）
-  gapPx: 8, // 与 ctrl 组件顶缘的间距（px）
-  colorBg: '#3a2c18', // 深木底（ctrl 占位钮同族）
-  colorRim: '#d4af37', // 鎏金描边
-  colorText: '#ffd870', // 金字
-  activeRim: 'rgba(255, 205, 95, 0.95)', // 选中态金框（CTRL_ACTIVE.goldFrame 同源值）
-  activeRimWidth: 3, // 选中态线宽（px）
-  fontRatio: 0.42, // 字号=钮高比例（ctrl 占位钮 0.42 同族）
+  angleDeg: 90, // 猫爪肉垫位=弧圆心角（屏幕系 90=正下；四钮弧 195~345 居上排，攻钮居中在下）
+  fontRatio: 0.52, // 字号=钮径比例（与 ARC_BTNS 钮面字 0.52 同族）
 } as const;
 
 /**

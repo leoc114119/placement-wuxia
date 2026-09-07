@@ -161,11 +161,12 @@ export const SPEED_FACTOR = { normal: 1, fast: 2 } as const;
 export const FINISH_WINDOW_MS = 300;
 
 /** 【AS · 需求 v1.3 口径③/开放点③ · 技术方案 v0.2 §2.2/§4.4 · TASK-AS-FE】普攻表现时长 ms
- *（表现常量：普攻数值单段即时结算不受出招速度影响——BE；仅帧演出时长延长至 1s，不延迟普攻
+ *（表现常量：普攻数值单段即时结算不受出招速度影响——BE；仅帧演出时长延长，不延迟普攻
  * 事件或血量）。BE/FE 共享本唯一常量；FE 侧 battle-hex CHOREO.basicSec 只做别名引用（§4.4
  * 「BE/FE 不各自复制」），渲染层 basic 保持窗消费该别名（session ANIM_MS.basic=300 冻结不动，
- * 差额由 view 侧演出保持补足——普攻帧表现时长 1000ms 口径由此成立）。 */
-export const BASIC_DURATION_MS = 1000;
+ * 差额由 view 侧演出保持补足）。【L 环 Leo 09-07 裁 700ms】原 1000ms「出拳后收得太慢」，
+ * TASK-AS-v04 补充小卡改 700——唯一真值改这里，别名/保持窗/用例随动。 */
+export const BASIC_DURATION_MS = 700;
 
 // ===== 结算遮罩 / 占位（A1 Q5：胜负遮罩+战报统计，奖励与疗伤占位文案） =====
 export const RESULT_OVERLAY = {

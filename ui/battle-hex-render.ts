@@ -162,16 +162,17 @@ export interface BattleHexView {
   pendingHits: PendingHit[]; // 挂起冲刷队列（宿主白名单事件入队，updateView 四条件冲刷）
   shakes: Map<string, number>; // actorId → 震动已历时秒（衰减时钟 view 私有，session 无感知）
   dmgStagger: Map<string, { at: number; seq: number }>; // targetId → 同位错位序号（滑动窗口 at=上一条 spawn）
-  /** 【AS · TASK-AS-FE】普攻表现保持窗（需求口径③/开放点③=1s）：actorId → {since, until}（view.time 系）。
+  /** 【AS · TASK-AS-FE】普攻表现保持窗（【L 环 Leo 09-07 裁 700ms】原口径③/开放点③=1s）：actorId → {since, until}（view.time 系）。
    * 快照 basic 上升沿开窗；session ANIM_MS.basic=300 冻结不动，快照回 idle 后由本窗把普攻帧
-   * 保持满 1000ms（表现常量 CHOREO.basicSec=BASIC_DURATION_MS/1000 别名）。渲染层私有演出态
+   * 保持满 700ms（表现常量 CHOREO.basicSec=BASIC_DURATION_MS/1000 别名）。渲染层私有演出态
    *（与 moveAnims 同级：演出计时主导，快照真值仍为唯一数据源——只延帧不改任何数值/事件）。 */
   basicHolds: Map<string, { since: number; until: number }>;
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
-  /** 【GSG-1 · TASK-AS-v04】悬停格（表现态；会话侧契约无此字段、不进快照——方案 v0.4 §9.4）。
-   * input.hover 翻译指针位写入；渲染按快照三类可选格（轻功金格/attackCells/basicCells）成员
-   * 判定画红色选中效果，普通移动绿格不纳入；触屏无 hover 恒 null=自然退化金色+点击即执行。 */
+  /** 【GSG-1 · TASK-AS-v04 · L 环 Leo 09-07 裁收窄】悬停格（表现态；会话侧契约无此字段、不进快照——方案 v0.4 §9.4）。
+   * input.hover 翻译指针位写入；渲染按快照两类可选格（轻功金格/basicCells）成员判定画红色选中
+   * 效果——绝/特 attackCells 已移出 hover 红态（点格即施放，不加红；将来「可移动的范围攻击」再议），
+   * 普通移动绿格不纳入；触屏无 hover 恒 null=自然退化金色+点击即执行。 */
   hoverCell: HexPos | null;
   /** UI 状态反馈（宿主填充；托管/加速钮高亮显示——快照无此字段，演出态） */
   uiState: { mode?: BattleMode; speed?: boolean };
@@ -630,7 +631,7 @@ export function updateView(
         view.fx.push({ kind: 'slash', x: w.x, y: w.y, t: 0, sec: FX.slashSec });
         riseToAttack.add(a.id); // T21：与 slash 同沿收集，pendingHits 在演出循环后按 §2.3 冲刷
         if (a.animState === 'basic') {
-          // 【AS · TASK-AS-FE】普攻表现保持窗开窗（需求口径③/开放点③）：上升沿起算 1s
+          // 【AS · TASK-AS-FE】普攻表现保持窗开窗（【L 环 Leo 09-07 裁 700ms】原口径③=1s）：上升沿起算 0.7s
           //（CHOREO.basicSec=BASIC_DURATION_MS/1000 别名，session ANIM_MS.basic=300 冻结差额由此补足）；
           // 保持期内再出手=新演出起点，覆盖旧窗。
           view.basicHolds.set(a.id, { since: view.time, until: view.time + CHOREO.basicSec });
@@ -929,8 +930,9 @@ function fillHex(
  * 原 rect clip 逻辑整段删除，改为 isBoardCell 逐格判定：最外两圈非可动 dirt 格坐标哈希剔除 ~20%，
  * 边缘=不规则六边形齿边咬进 env 地形（被剔格露 env），画布自然出屏即裁。
  * 落地阴影（T24 方案 §2.2）：边缘格（六邻有缺）在格体之前画下偏软阴影两层（SHADOW 组，底侧重）。
- * 【PRM-1/GSG-1 · TASK-AS-v04】普攻 basicCells 金格 + 可选格通用悬停红态：hoverCell ∈
- * 轻功金格/attackCells/basicCells 三类 → 红色选中效果（HIGHLIGHT.cellHover），离开恢复原色；
+ * 【PRM-1/GSG-1 · TASK-AS-v04 · L 环 Leo 09-07 裁收窄】普攻 basicCells 金格 + 可选格悬停红态（两类）：
+ * hoverCell ∈ 轻功金格/basicCells → 红色选中效果（HIGHLIGHT.cellHover），离开恢复原色；绝/特
+ * attackCells 移出 hover 红态（点格即施放，不加红；将来「可移动的范围攻击」再议适用）；
  * 普通移动绿格不纳入；格集合全部来自快照（渲染不重算邻格/射程——§9.3 架构红线）。 */
 function drawCells(
   ctx: CanvasRenderingContext2D,
@@ -968,11 +970,9 @@ function drawCells(
       else if (attackSet.has(key)) fillHex(ctx, sx, sy, HIGHLIGHT.attack, HIGHLIGHT.attackEdge);
       else if (basicSet.has(key)) fillHex(ctx, sx, sy, HIGHLIGHT.jump, HIGHLIGHT.jumpEdge); // 普攻选格=金（PRM-1②）
       if (selKey === key) fillHex(ctx, sx, sy, HIGHLIGHT.selected, HIGHLIGHT.selectedEdge);
-      // GSG-1 悬停红态：仅三类可选格成员响应（绿格 fall-through 不画）；悬停即"选中"视觉、点击立即执行
-      else if (
-        hoverKey === key &&
-        (attackSet.has(key) || basicSet.has(key) || (jump && moveSet.has(key)))
-      ) {
+      // GSG-1 悬停红态（【L 环 Leo 09-07 裁收窄】两类：轻功金格 jump&&move + 普攻 basicCells；
+      // 绝/特 attackCells 点格即施放不加红）；悬停即"选中"视觉、点击立即执行；绿格 fall-through 不画
+      else if (hoverKey === key && (basicSet.has(key) || (jump && moveSet.has(key)))) {
         fillHex(ctx, sx, sy, HIGHLIGHT.cellHover, HIGHLIGHT.cellHoverEdge);
       }
     }
@@ -1235,6 +1235,45 @@ function drawPieceHud(
   const showPop = snapshot.phase === 'fighting' && snapshot.pendingInput && hero && snapshot.turnActorId === hero.id;
   const pop = showPop ? easeOutCubic(view.skillPop) : 0;
   view.layout.skillBtns = [];
+  // 【PRM-1 · TASK-AS-v04 · L 环 Leo 09-07 裁猫爪布位】攻钮=猫爪肉垫位：与特/绝/轻/毒四钮同圆心
+  // 同半径（ARC_BTNS 弧参数），弧心角 90°（正下）、圆形、同直径——五钮猫爪形态（旧「ctrl 正上方
+  // 同宽矩形」废止）。色/描边/选中态同源消费 ARC_BTNS；可见性条件沿旧攻钮原样（fighting+待命+
+  // 手动+主角存活），不随四钮弹出缩放（最小改动）；非待命=layout.atkBtn 保持 null（无热区，
+  // 棋盘 fall-through——HIT-1 同规）。热区=圆外接正方形（pickAtkButton 矩形口径不变）。
+  view.layout.atkBtn = null;
+  const atkVisible =
+    snapshot.phase === 'fighting' &&
+    snapshot.pendingInput &&
+    view.uiState.mode !== 'auto' &&
+    hero !== undefined &&
+    hero.animState !== 'dead';
+  if (atkVisible && hero) {
+    const padP = placed.find((x) => x.actor.id === hero.id);
+    if (padP) {
+      const padHw = padP.w * ARC_BTNS.headWidthRatio;
+      const padD = padHw * ARC_BTNS.diameterPerHead; // 与四钮同直径（规格一致）
+      const padR = padHw * ARC_BTNS.arcRadiusPerHead; // 与四钮同弧半径（同圆）
+      const padAng = (ATK_BTN.angleDeg * Math.PI) / 180;
+      const padCx = padP.cx + Math.cos(padAng) * padR;
+      const padCy = padP.top + padHw * 0.6 + Math.sin(padAng) * padR;
+      const active = snapshot.basicCells.length > 0; // 选中态判定=快照 basicCells 非空（session 真值，沿旧攻钮）
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(padCx, padCy, padD / 2, 0, Math.PI * 2);
+      ctx.fillStyle = ARC_BTNS.colorBg;
+      ctx.fill();
+      ctx.lineWidth = active ? ARC_BTNS.rimWidthSelected : ARC_BTNS.rimWidth;
+      ctx.strokeStyle = active ? ARC_BTNS.rimColorSelected : ARC_BTNS.colorRim;
+      ctx.stroke();
+      ctx.fillStyle = ARC_BTNS.colorText;
+      ctx.font = `bold ${Math.round(padD * ATK_BTN.fontRatio)}px ${FONT_STACK}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ATK_BTN.label, Math.round(padCx), Math.round(padCy + 1));
+      ctx.restore();
+      view.layout.atkBtn = { x: padCx - padD / 2, y: padCy - padD / 2, w: padD, h: padD };
+    }
+  }
   if (!hero || pop <= 0.01) return;
   const p = placed.find((x) => x.actor.id === hero.id);
   if (!p) return;
@@ -1282,7 +1321,8 @@ function drawComponents(
 ): void {
   view.layout.plaqueRect = null;
   view.layout.ctrlRect = null;
-  view.layout.atkBtn = null;
+  // 【L 环 Leo 09-07 裁猫爪布位】atkBtn 复位/产出已随攻钮绘制迁 drawPieceHud（先于本函数执行，
+  // 此处不再复位——防抹掉本帧猫爪热区）。
   // 顶栏（T23 §2.1）：topbar_base 无字底图全宽贴屏顶 + 代码压暗层（现状保留）+ 代码条/名字/百分比叠绘；缺图时代码兜底
   const tb = assets.topbar;
   const topH = (width * (tb ? tb.height : TOPBAR.artH)) / (tb ? tb.width : TOPBAR.artW);
@@ -1462,35 +1502,8 @@ function drawComponents(
     }
   }
   view.layout.ctrlRect = { x: cx, y: cy, w: cw, h: ch };
-  // 【PRM-1 · TASK-AS-v04】ctrl「攻」钮（普攻选格入口，ctrl 组件正上方锚定、右对齐同宽）：
-  // 仅 手动+主角待命+fighting+存活 时产出（PRM-1①「仅手动+主角待命可进入，auto/trust 不进入」）；
-  // 非待命=layout.atkBtn 保持 null（无热区，棋盘 fall-through——HIT-1 同规）。选中态=金框高亮。
-  const atkVisible =
-    snapshot.phase === 'fighting' &&
-    snapshot.pendingInput &&
-    view.uiState.mode !== 'auto' &&
-    hero !== undefined &&
-    hero.animState !== 'dead';
-  if (atkVisible) {
-    const abw = cw; // 与 ctrl 同宽（右对齐）
-    const abh = ch * ATK_BTN.hRatio; // 单钮高=ctrl 标定矩形单钮比例（art 128/448）
-    const abx = cx;
-    const aby = Math.round(cy - ATK_BTN.gapPx - abh);
-    const active = snapshot.basicCells.length > 0; // 选中态判定=快照 basicCells 非空（session 真值）
-    ctx.fillStyle = ATK_BTN.colorBg;
-    ctx.strokeStyle = active ? ATK_BTN.activeRim : ATK_BTN.colorRim;
-    ctx.lineWidth = active ? ATK_BTN.activeRimWidth : 2;
-    ctx.beginPath();
-    roundRectPath(ctx, abx, aby, abw, abh, 6);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = ATK_BTN.colorText;
-    ctx.font = `bold ${Math.round(abh * ATK_BTN.fontRatio)}px ${FONT_STACK}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(ATK_BTN.label, abx + abw / 2, aby + abh / 2 + 1);
-    view.layout.atkBtn = { x: abx, y: aby, w: abw, h: abh };
-  }
+  // 【L 环 Leo 09-07 裁猫爪布位】攻钮绘制已迁 drawPieceHud（与特/绝/轻/毒四钮同圆猫爪形态）；
+  // 本处旧「ctrl 正上方同宽矩形」布位整段删除，layout.atkBtn 复位/产出随 drawPieceHud。
 }
 
 // ============ L6 特效 + 结算遮罩 ============
