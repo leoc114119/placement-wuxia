@@ -61,7 +61,7 @@ import {
   type ImgLike,
   type LegacyFrameStrip,
 } from '../ui/battle-hex-render';
-import { createBattleInput, createPointerTracker, pickCtrlButton, pickPlaqueButton, pickSkillButton } from '../ui/battle-input';
+import { createBattleInput, createPointerTracker, pickAtkButton, pickCtrlButton, pickPlaqueButton, pickSkillButton } from '../ui/battle-input';
 import { createMockSession } from '../proto/battle_demo/mock_session';
 import type { BattleFacingHex, BattleSnapshot, CombatantInput, HexPos, SnapshotActor } from '../types';
 
@@ -277,6 +277,7 @@ function makeViewForInput(): ReturnType<typeof createView> {
     ],
     ctrlRect: { x: 300, y: 500, w: 70, h: 140 }, // 375×667 内
     plaqueRect: { x: 6, y: 50, w: 64, h: 156 },
+    atkBtn: null, // 【TASK-AS-v04 契约字段】输入翻译夹具默认无攻钮热区（待命期才产出）
   };
   return view;
 }
@@ -606,6 +607,7 @@ function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {
     moveCells: [],
     moveKind: 'walk',
     attackCells: [],
+    basicCells: [], // 【TASK-AS-v04 契约字段】渲染夹具默认无普攻选格
     selectedSkill: null,
     heroSkills: [],
     actors: parts.map((p) => ({ ...base, ...p })),
@@ -1964,5 +1966,151 @@ describe('[AS · TASK-AS-FE] 出招速度+两段式伤害 表现接线', () => {
     expect(MAIN).toContain('updateView(view, snap, dt, W, H)');
     expect(MAIN).toContain('drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view)');
     expect(MAIN).toContain("view.basicHolds.clear()"); // resetDemo 清保持窗（跨局不残留）
+  });
+});
+
+
+// ══════════ PRM-1 攻钮选格 + GSG-1 hover（TASK-AS-v04 · 规格 v2.5 · 方案 v0.4 §9.3） ══════════
+
+describe('PRM-1/GSG-1（TASK-AS-v04）：攻钮命中/选格派发/hover 翻译/渲染金红两态', () => {
+  const hero: SnapshotActor = {
+    id: 'hero', side: 'player', name: '小虾米', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
+    hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right', facingHex: 'right',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
+  };
+  const foe: SnapshotActor = {
+    id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 2, r: 8 }, renderPos: { q: 2, r: 8 },
+    hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left', facingHex: 'left',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
+  };
+  const cellCenter = (c: HexPos) => {
+    const w = hexToWorld(c.q, c.r);
+    return { x: w.x + 375 / 2, y: w.y + 667 / 2 };
+  };
+
+  it('攻钮命中：layout.atkBtn 非空且命中 → 派 selectBasic；null（非待命）→ 恒不命中（fall-through）', () => {
+    const view = makeViewForInput();
+    const sent: Array<Record<string, unknown>> = [];
+    const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>) });
+    view.layout.atkBtn = { x: 300, y: 430, w: 70, h: 40 }; // 375×667 画布内（ctrl 上方锚定位）
+    input.down(view, makeSnapshot([hero, foe]), 335, 450, 375, 667);
+    input.up(view, makeSnapshot([hero, foe]), 335, 450, 375, 667);
+    expect(sent).toEqual([{ type: 'selectBasic' }]);
+    // 非待命：atkBtn=null → 同坐标落棋盘（不派 selectBasic）
+    view.layout.atkBtn = null;
+    const sent2: Array<Record<string, unknown>> = [];
+    const input2 = createBattleInput({ dispatch: (r) => sent2.push(r as Record<string, unknown>) });
+    input2.down(view, makeSnapshot([hero, foe]), 335, 450, 375, 667);
+    input2.up(view, makeSnapshot([hero, foe]), 335, 450, 375, 667);
+    expect(sent2).not.toContainEqual({ type: 'selectBasic' });
+  });
+
+  it('basicCells 点选：金格 → basicAtCell；集合外格 → cancelSkill（SEL-5② 同构）；提交清 hoverCell', () => {
+    const view = makeViewForInput();
+    view.skillPop = 0;
+    view.layout.skillBtns = [];
+    const sent: Array<Record<string, unknown>> = [];
+    const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>) });
+    const snap = makeSnapshot([hero, foe]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    snap.basicCells = [{ q: 1, r: 9 }, { q: 2, r: 8 }]; // 含敌格 (2,8) 的普攻金格
+    view.hoverCell = { q: 1, r: 9 };
+    // ① 点金格（空）→ basicAtCell + hover 清
+    let p = cellCenter({ q: 1, r: 9 });
+    input.down(view, snap, p.x, p.y, 375, 667);
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent[0]).toMatchObject({ type: 'basicAtCell', to: { q: 1, r: 9 } });
+    expect(view.hoverCell).toBeNull();
+    // ② 点金格上的敌格 → 同样派 basicAtCell（格上有敌=对敌结算，session 校验）
+    p = cellCenter({ q: 2, r: 8 });
+    input.down(view, snap, p.x, p.y, 375, 667);
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent[1]).toMatchObject({ type: 'basicAtCell', to: { q: 2, r: 8 } });
+    // ③ 点集合外格 → cancelSkill（取消，非 basicAtCell）
+    p = cellCenter({ q: 6, r: 12 });
+    input.down(view, snap, p.x, p.y, 375, 667);
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent[2]).toEqual({ type: 'cancelSkill' });
+  });
+
+  it('hover 事件：画布内格写 view.hoverCell；棋盘外=null（渲染按快照集合判定，input 只译格）', () => {
+    const view = makeViewForInput();
+    const input = createBattleInput({ dispatch: () => {} });
+    const snap = makeSnapshot([hero, foe]);
+    const p = cellCenter({ q: 1, r: 9 });
+    input.hover(view, snap, p.x, p.y, 375, 667);
+    expect(view.hoverCell).toEqual({ q: 1, r: 9 });
+    input.hover(view, snap, -500, -500, 375, 667); // 远出棋盘
+    expect(view.hoverCell).toBeNull();
+  });
+
+  it('渲染两态：basicCells 金格入画；hoverCell ∈ 金/红可选格 → cellHover 红覆盖；绿格 hover 不画红；攻钮待命期产出热区', () => {
+    const calls: Record<string, number> = {};
+    const fills: string[] = [];
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const rec = t as unknown as Record<string | symbol, unknown>;
+          if (prop in rec) return rec[prop];
+          calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
+          return () => {};
+        },
+        set(t, prop, v) {
+          if (prop === 'fillStyle') fills.push(String(v));
+          return true;
+        },
+      },
+    );
+    const img = { width: 128, height: 256 };
+    const assets: BattleHexAssets = {
+      env: img,
+      topbar: { width: 1440, height: 300 },
+      plaque: { width: 310, height: 757 },
+      ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
+      statusIcons: new Map(),
+      frames: new Map<string, LegacyFrameStrip | DirectionalFrameStore>([
+        ['hero', makeHeroStore()],
+        ['npc-shanzei', [img, img, img, img, img, img, img, img]],
+      ]),
+    };
+    const snap = makeSnapshot([
+      { id: 'hero', name: '小虾米', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } },
+      { id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 6, r: 7 }, renderPos: { q: 6, r: 7 }, spriteKey: 'npc-shanzei' },
+    ]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    snap.basicCells = [{ q: 4, r: 9 }];
+    snap.moveCells = [{ q: 5, r: 9 }]; // 普通绿格（hover 负向对照）
+    snap.heroSkills = [];
+    const view = createView();
+    updateView(view, snap, 0.016, 375, 667);
+    // ① 金格入画 + hover 红态
+    view.hoverCell = { q: 4, r: 9 };
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).toContain('rgba(245, 205, 70, 0.45)'); // basicCells 金（PRM-1②）
+    expect(fills).toContain('rgba(228, 52, 32, 0.72)'); // GSG-1 hover 红
+    expect(view.layout.atkBtn).not.toBeNull(); // 待命期攻钮热区产出（PRM-1①）
+    // ② hover 移出 → 恢复原色（无红）
+    fills.length = 0;
+    view.hoverCell = null;
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).toContain('rgba(245, 205, 70, 0.45)');
+    expect(fills).not.toContain('rgba(228, 52, 32, 0.72)');
+    // ③ hover 普通移动绿格 → 不画红（GSG-1：绿格不纳入）
+    fills.length = 0;
+    view.hoverCell = { q: 5, r: 9 };
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).not.toContain('rgba(228, 52, 32, 0.72)');
+    // ④ 非待命（pendingInput=false）→ 攻钮热区收回（fall-through 棋盘）
+    snap.pendingInput = false;
+    view.layout.atkBtn = null;
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(view.layout.atkBtn).toBeNull();
   });
 });

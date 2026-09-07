@@ -127,6 +127,11 @@ export const HIGHLIGHT = {
   attackEdge: 'rgba(255, 120, 100, 0.85)',
   selected: 'rgba(245, 205, 70, 0.5)', // 选中格（金）
   selectedEdge: 'rgba(255, 230, 130, 0.95)',
+  /** 【GSG-1 v2.5 · TASK-AS-v04】可选格通用悬停红态（Leo 09-07：悬停红色，不点两下）——
+   * 轻功金格/技能 attackCells/普攻 basicCells 三类可选格 hover=本红色选中效果，离开恢复原色；
+   * 普通移动绿格不纳入（GSG-1 明文）。触屏无 hover 自然退化（不设置即不画）。 */
+  cellHover: 'rgba(228, 52, 32, 0.72)',
+  cellHoverEdge: 'rgba(255, 96, 72, 0.95)',
 } as const;
 
 // ===== 棋子（L3；占位帧=既有 battle/ 小表，T14 Q 版帧到位换 spriteKey+定尺系数即可） =====
@@ -354,6 +359,23 @@ export const CTRL_TEXT = {
 export const CTRL_ACTIVE = {
   goldFrame: 'rgba(255, 205, 95, 0.95)', // 金框（meta gold_frame [255,205,95]）
   frameWidthRatio: 4 / 216, // 金框线宽 @216（≈4）
+} as const;
+
+/**
+ * 【PRM-1 v2.5 · TASK-AS-v04】ctrl「攻」按钮（普攻选格入口；技能钮排下方=ctrl 组件正上方锚定，
+ * 右对齐同宽——L 环清单 §9.5-4「ctrl『攻』→六邻格金色」；仅手动+主角待命可进入（PRM-1①），
+ * 代码绘制占位钮（ctrl 三脸同族深木+金字，视觉降级模式沿用——无独立素材）。ADR-004 只读展示参数。
+ */
+export const ATK_BTN = {
+  label: '攻', // 钮面字（PRM-1①「攻」按钮）
+  hRatio: 128 / 448, // 钮高=ctrl 标定矩形单钮高比例（art 系 128/448，与 CTRL_BUTTONS 钮 1 同高）
+  gapPx: 8, // 与 ctrl 组件顶缘的间距（px）
+  colorBg: '#3a2c18', // 深木底（ctrl 占位钮同族）
+  colorRim: '#d4af37', // 鎏金描边
+  colorText: '#ffd870', // 金字
+  activeRim: 'rgba(255, 205, 95, 0.95)', // 选中态金框（CTRL_ACTIVE.goldFrame 同源值）
+  activeRimWidth: 3, // 选中态线宽（px）
+  fontRatio: 0.42, // 字号=钮高比例（ctrl 占位钮 0.42 同族）
 } as const;
 
 /**

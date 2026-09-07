@@ -24,6 +24,10 @@
 // 【AS 出招速度+两段式伤害 · TASK-AS-v03】技能=段 1 t0 提交内联结算 + 段 2 t1 循环结束结算
 // （需求 v1.4 AS-1~AS-9、方案 v0.3 §3/§5）：t1 due 全序 (finishAtSec, castSeq, targetOrdinal)；
 // 死者/空放/消散/终局截断零 RNG；事件 t=段1=t0/段2=t1；普攻保持提交时单段即时结算。
+// 【普攻交互三项 · TASK-AS-v04】规格 v2.5 + 方案 v0.4 §9：①ATK-1 普攻纯距离（六向皆可，
+// 锥形扇区过滤作废）②FACE-1 朝向=实际受击敌六向吸附（doAttack faceToward(target.hex) 单点，
+// 空挥=点击格 fallback）③ATK-3 玩家侧废止（AI 贴身自动普攻保留）④PRM-1 攻钮选格
+// （basicSelecting 选中态 + basicCells 六邻格快照 + basicAtCell 提交/空挥）。
 
 import type {
   ActionRequest,
@@ -58,6 +62,7 @@ import {
   axialToOffset,
   cubeDistance,
   hexEq,
+  hexNeighbors,
   inCone,
   jumpReachable,
   movePathCells,
@@ -254,6 +259,10 @@ export function createHexBattle(opts: HexBattleOptions) {
 
   type Selection = { skillId: string; kind: 'attack' | 'qing'; legalCells: HexPos[] } | null;
   let selection: Selection = null;
+  /** 【PRM-1 v2.5 · 方案 v0.4 §9.3】普攻选中态（攻钮 toggle 进/出；与技能选中互斥 BASE-5）。
+   * 写点收敛：selectBasic/activate 进入侧、clearSelection 清除侧——选格状态清理由
+   * commit/cancel/mode/end 共用的 clearSelection 单点完成（架构红线，§9.3）。 */
+  let basicSelecting = false;
 
   // ---- 布局与出生（D1 · SP-1 锚点制） ----
 
@@ -374,11 +383,20 @@ export function createHexBattle(opts: HexBattleOptions) {
   }
 
   /** 【唯一产生点】合法移动格：snapshot（显示）与 submit（校验）共用。
-   * 无选中=普通绿格（MV-1）；轻功选中=金格（MV-2）；攻击技选中=空（高亮走 attackCells）。 */
+   * 无选中=普通绿格（MV-1）；轻功选中=金格（MV-2）；攻击技选中=空（高亮走 attackCells）；
+   * 【PRM-1】普攻选中态=空（金格高亮走 basicCells，绿格不并存）。 */
   function legalMoveCells(): HexPos[] {
+    if (basicSelecting) return [];
     if (!selection) return walkCells(player);
     if (selection.kind === 'qing') return selection.legalCells;
     return [];
+  }
+
+  /** 【PRM-1 v2.5 · 方案 v0.4 §9.3】普攻选格集=主角外圈六邻格 ∩ 可动区（§9.3 定口径：固定六邻格，
+   * 不随 basicRange 扩大；占格不剔除——格上有敌=对敌结算、无敌=空挥，PRM-1③）。
+   * HEX_DIRS 固定序=确定性顺序（SP-2）；snapshot 显示与 basicAtCell 校验共用本函数（病灶③同源）。 */
+  function basicCellsOf(actor: Runner): HexPos[] {
+    return hexNeighbors(actor.hex).filter((p) => inField(p));
   }
 
   // ---- 选中态动作（病灶④：写点仅此两处） ----
@@ -387,6 +405,7 @@ export function createHexBattle(opts: HexBattleOptions) {
   function activate(skillId: string): boolean {
     const s = player.skills.find((x) => x.id === skillId);
     if (!s || player.dead) return false;
+    basicSelecting = false; // 【PRM-1 · BASE-5 互斥】激活技能自动退出普攻选中态
     if (selection?.skillId === skillId) {
       selection = null; // SEL-5①：再点同钮=取消
       return true;
@@ -414,9 +433,12 @@ export function createHexBattle(opts: HexBattleOptions) {
     return true;
   }
 
-  /** 清除（SEL-3 消耗 / SEL-4 回落 / SEL-7 切自动·逃跑·终局 / SEL-5①②取消）。 */
+  /** 清除（SEL-3 消耗 / SEL-4 回落 / SEL-7 切自动·逃跑·终局 / SEL-5①②取消）。
+   * 【PRM-1 · 架构红线 §9.3】普攻选格状态（basicSelecting）同点清理——commitTurn（commit）、
+   * cancelSkill（cancel）、setMode/flee（mode/end）全部经由本函数单点完成。 */
   function clearSelection(): void {
     selection = null;
+    basicSelecting = false;
   }
 
   /** 朝向更新：六向 facing = from→to 的 cube 最近方向（Q4 批复，锥形轴）。
@@ -759,7 +781,9 @@ export function createHexBattle(opts: HexBattleOptions) {
     emit({ type: 'move', actorId: actor.id, toX: off.col, toY: off.row });
   }
 
-  /** ATK-3 移动附带普攻特例：到位后最近敌在普攻射程内 → 自动普攻（不另耗行动、blocked 静默）。 */
+  /** 【ATK-3 · v2.5 玩家侧废止（规格 v2.5 · 方案 v0.4 §9.2.3）】AI 侧贴身自动普攻保留
+   * （C 案 B2 五级决策位移臂收尾，归 AI 决策、非玩家输入契约）；玩家移动路径（walk/jump）
+   * 自 TASK-AS-v04 起不再调用本函数——移动纯移动，普攻全手动（PRM-1 攻钮承接）。 */
   function basicIfAdjacent(actor: Runner): void {
     const nearest = pickTarget(actor);
     if (!nearest) return;
@@ -1030,6 +1054,51 @@ export function createHexBattle(opts: HexBattleOptions) {
       clearSelection(); // SEL-5
       return true;
     }
+    // ═══ 【PRM-1 普攻选格 · v2.5（09-07 Leo 二次定稿）· 方案 v0.4 §9.3】═══
+    if (req.type === 'selectBasic') {
+      // 攻钮 toggle：门与 selectSkill 同门（GATE-1 v2.4：manual+条满+存活+未施法——"仅手动+主角
+      // 待命可进入，auto/trust 不进入此态"）；reason 分派同 selectSkill（mode 资格层优先）。
+      if (!pendingInputNow()) {
+        emit({ type: 'rejected', actorId: player.id, reason: mode === 'manual' ? 'bar' : 'mode' });
+        return false;
+      }
+      if (basicSelecting) {
+        clearSelection(); // SEL-2 toggle：再点攻钮=取消（经单点清除）
+        return true;
+      }
+      clearSelection(); // BASE-5 互斥：进入普攻选中态先清技能选中
+      basicSelecting = true;
+      return true;
+    }
+    if (req.type === 'basicAtCell') {
+      if (!pendingInputNow()) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'bar' });
+        return false;
+      }
+      // 显示=校验同源（病灶③）：受理集=snapshot.basicCells 同一产生点 basicCellsOf。
+      // 集合外（含未进选中态）→ rejected(invalid)、选中保持零消耗（取消归 input 层 SEL-5② 同构路径）。
+      if (!basicSelecting || !basicCellsOf(player).some((p) => hexEq(p, req.to))) {
+        emit({ type: 'rejected', actorId: player.id, reason: 'invalid' });
+        return false;
+      }
+      const basicTarget = alive().find((c) => c.side !== player.side && hexEq(c.hex, req.to));
+      tickCooldowns(player); // 读后递减（CD-1 随回合；空挥"零冷却"指不写入冷却，递减照常——SEL-3）
+      if (basicTarget) {
+        // 有敌格=既有 basic F-04 全链（doAttack 路径零改动——红线"只改受理判定与入口"；
+        // FACE-1：出手朝向=实际受击敌位置六向吸附，doAttack 内 faceToward(target.hex) 单点）
+        doAttack(player, basicTarget, null);
+      } else {
+        // 空挥（PRM-1③/v2.5 先锁口径）：耗回合、零伤害、零内力、零冷却写入；事件沿既有 basic
+        // 契约可观测（镜像 t0 空放 skill 形状：无 targetId 无 damage——事件契约零新增）；
+        // 零 RNG（不调 resolveAction，无 F-04 掷骰）；朝向=点击格（FACE-1 现行 fallback，
+        // 方案 §9.2.2「L 环确认后锁死」）。
+        emit({ type: 'basic', actorId: player.id });
+        setAnim(player, 'basic');
+        faceToward(player, req.to);
+      }
+      commitTurn(player); // BAR-3 清零 + clearSelection 单点清普攻选中（快照 basicCells 随 pending 退出归空）
+      return true;
+    }
     // move / attack：仅输入态受理（O1 二选一）
     if (!pendingInputNow()) {
       emit({ type: 'rejected', actorId: player.id, reason: 'bar' });
@@ -1054,7 +1123,7 @@ export function createHexBattle(opts: HexBattleOptions) {
         }
         player.neili -= NEILI_COST_PER_CAST; // 【Q2】跳跃释放扣内力 1
         doMove(player, req.to, 'jump');
-        basicIfAdjacent(player);
+        // 【ATK-3 v2.5 玩家侧废止】移动纯移动，不再附带普攻（方案 v0.4 §9.2.3；普攻走 PRM-1 攻钮/点敌）
         tickCooldowns(player);
         commitTurn(player);
         return true;
@@ -1071,7 +1140,8 @@ export function createHexBattle(opts: HexBattleOptions) {
         return false;
       }
       doMove(player, req.to, 'walk');
-      basicIfAdjacent(player);
+      // 【ATK-3 v2.5 玩家侧废止】移动纯移动，不再附带普攻（规格 v2.5 · 方案 v0.4 §9.2.3；
+      // AI 侧贴身自动普攻保留于 aiAct→basicIfAdjacent）
       tickCooldowns(player);
       commitTurn(player);
       return true;
@@ -1085,8 +1155,10 @@ export function createHexBattle(opts: HexBattleOptions) {
         return false;
       }
       if (req.skillId === null) {
-        // 【ATK-1 普攻】合法性：cube ≤ basicRange 且（锥形）在 facing 扇区；非法 → rejected(invalid)
-        if (!targetInRange(player, target, basicRange(player), rangeShapeOf(player.weapon ?? 'fist'))) {
+        // 【ATK-1 · v2.5 勘误（09-07 Leo 裁 · 方案 v0.4 §9.2.1）】普攻合法性=纯距离
+        // cubeDistance ≤ basicRange，六向皆可——旧「锥形武器 facing 扇区过滤」作废
+        //（L 环实证玩家被迫绕位换方向攻击）；技能 ray/cone/circle 形状判定不受本条影响。
+        if (cubeDistance(player.hex, target.hex) > basicRange(player)) {
           emit({ type: 'rejected', actorId: player.id, targetId: target.id, reason: 'invalid' });
           return false;
         }
@@ -1178,6 +1250,8 @@ export function createHexBattle(opts: HexBattleOptions) {
     const moveCells = pending ? copyCells(legalMoveCells()) : [];
     const attackCells =
       pending && selection?.kind === 'attack' ? copyCells(selection.legalCells) : [];
+    // 【PRM-1 v2.5】普攻选格金格：选中态+输入态才产出（session 唯一计算点，渲染只画不算——§9.3 红线）
+    const basicCells = pending && basicSelecting ? copyCells(basicCellsOf(player)) : [];
     const heroSkills: SkillButtonInfo[] = player.dead
       ? []
       : player.skills.map((s) => {
@@ -1214,6 +1288,7 @@ export function createHexBattle(opts: HexBattleOptions) {
       moveCells,
       moveKind: selection?.kind === 'qing' ? 'jump' : 'walk',
       attackCells,
+      basicCells,
       selectedSkill: selection?.skillId ?? null,
       heroSkills,
       actors,

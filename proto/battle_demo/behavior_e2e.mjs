@@ -377,6 +377,10 @@ const clearHeroCooldowns = () =>
   await page.screenshot({ path: path.join(outDir, 'behavior_be4_n1_through.png') });
 }
 
+// 【TASK-AS-v04 改写登记（规格 v2.5 · 方案 v0.4 §9.2.3 · PM 授权随卡改写）】
+// HF3 原「ATK-3 移动附带普攻=dmg 随补播 basic 出现」随规格 v2.5「ATK-3 玩家侧废止」（09-07 Leo 裁：
+// 移动纯移动、普攻全手动走 PRM-1 攻钮；AI 侧保留）断言方向翻转——现锁「玩家移动后零 basic/miss
+// 跟随事件」；AI 侧保留面由 tests/battle-session.test.ts [ATK-3] AI 位移臂用例锁定。
 // ═══════ T21 受击反馈追加断言（09-03 PM 裁 Q1 增补授权：仅追加，既有 5 项与登记簿零改动）═══════
 // V1/V2/V4 e2e 观测断言（方案 §三）+ R9 reset 清理；观测面零新增（__demo.getView() 全量可读）。
 // 命中率按 core F-04 = 0.85（shizhan demo 档不抬命中率）——HF 用例以「未达样本即重试」去偶发，
@@ -565,7 +569,7 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
   report('HF2 特技对敌=dmg冒字；空放=零冒字零挂起（T21/V2）', false, ok && emptyOk, `${detail} · ${emptyDetail}`);
 }
 
-// ═══ HF3（T21/V4 · 预期绿）：ATK-3 移动附带普攻 → dmg 随补播 basic 出现（不早于快照 walk→basic 切换帧） ═══
+// ═══ HF3（TASK-AS-v04 · 预期绿）：玩家移动纯移动——贴敌落点后零 basic/miss 跟随事件（v2.5 ATK-3 玩家侧废止） ═══
 {
   let ok = false;
   let detail = '未取得样本';
@@ -575,8 +579,7 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
     await clearEnemyBars();
     await waitPop();
     const hero = (await snapState()).hero;
-    const ep = await placeFoeBeside('e1', hero, 1, 1); // 敌相邻+敌后一格同向（BE4 同构布点触发 ATK-3）
-    await startHfRecorder();
+    const ep = await placeFoeBeside('e1', hero, 1, 1); // 敌相邻+敌后一格同向（原 ATK-3 触发布点，现为废止锁负向面）
     const plan = await page.evaluate(([fq, fr]) => {
       const s = window.__demo.session.snapshot();
       const dest = { q: fq, r: fr };
@@ -585,26 +588,21 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
     if (!plan.inMove) throw new Error('HF3 目标格不在绿格：' + JSON.stringify(plan));
     const ev0 = await page.evaluate(() => window.__demo.session.events.length);
     await page.mouse.click(plan.p.x, plan.p.y);
-    await page.waitForTimeout(2600); // 录满移动+补播攻击窗口（录制器 240 帧自停）
-    const frames = await page.evaluate(() => window.__hfFrames);
+    await page.waitForTimeout(800); // 覆盖移动演出窗（0.3s×距离）+余量：废止后不应有任何普攻事件跟随
     const evs = await page.evaluate((n0) =>
       window.__demo.session.events.slice(n0).map((e) => ({ t: e.type, tgt: e.targetId ?? null, dmg: e.damage ?? null })),
     [ev0]);
-    const basicEv = evs.find((e) => e.t === 'basic');
-    let switchIdx = -1;
-    let dmgIdx = -1;
-    for (let i = 0; i < frames.length; i++) {
-      if (dmgIdx < 0 && frames[i].dmgN > 0) dmgIdx = i;
-      if (i > 0 && switchIdx < 0 && frames[i - 1].anim === 'walk' && frames[i].anim === 'basic') switchIdx = i;
-    }
-    if (basicEv && basicEv.tgt === 'e1' && typeof basicEv.dmg === 'number' && switchIdx >= 0 && dmgIdx >= switchIdx) {
+    const st1 = await snapState();
+    const moveEv = evs.find((e) => e.t === 'move');
+    const atkFollow = evs.filter((e) => ['basic', 'miss', 'fallback'].includes(e.t));
+    if (moveEv && atkFollow.length === 0 && st1.hero.hp === hero.hp && !st1.pending) {
       ok = true;
-      detail = `第${attempt}次 basic=${JSON.stringify(basicEv)} walk→basic切换帧=${switchIdx} dmg首现帧=${dmgIdx} 总帧=${frames.length}（断言基准=快照 animState，E3）`;
+      detail = `第${attempt}次 move 事件落地、零 basic/miss/fallback 跟随（事件=${JSON.stringify(evs)}；v2.5 移动纯移动，普攻走 PRM-1 攻钮）`;
     } else {
-      detail = `第${attempt}次 basic=${JSON.stringify(basicEv)} 切换帧=${switchIdx} dmg帧=${dmgIdx}（未达样本，重试）`;
+      detail = `第${attempt}次 move=${JSON.stringify(moveEv)} 跟随出手事件=${JSON.stringify(atkFollow)}（未达废止锁样本，重试）`;
     }
   }
-  report('HF3 ATK-3 移动附带普攻=dmg 随补播 basic 出现，不早于切换帧（T21/V4）', false, ok, detail);
+  report('HF3 玩家移动纯移动=零 basic/miss 跟随（v2.5 ATK-3 玩家侧废止 · 方案 v0.4 §9.2.3）', false, ok, detail);
 }
 
 // ═══ HF4（T21/R9 · 预期绿）：resetDemo 清理受击反馈三件（pendingHits/shakes/dmgStagger 不跨局） ═══

@@ -248,19 +248,20 @@ d('ATK-2 技能施放链（结算层绿锁 · N2 受理/结算层无病的证据
 });
 
 d('ATK-3/ATK-4 移动附带普攻与轻功态点敌（绿锁）', () => {
-  it('移动落点与敌相邻 → move 事件后跟 basic 事件（不另耗回合）', () => {
+  it('移动落点与敌相邻 → move 事件后零 basic/miss 跟随（规格依据=v2.5 ATK-3 玩家侧废止 09-07 Leo 裁，随卡改写；AI 侧保留见 battle-session [ATK-3] AI 位移臂用例）', () => {
     const s = mkSession();
     place(s, 'hero', 5, 8);
     place(s, 'e1', 6, 8);
     place(s, 'e2', 11, 3);
     ready(s);
     const n0 = s.events.length;
-    expect(s.submit({ type: 'move', to: offsetToAxial(6, 9) })).toBe(true); // 落点与 e1 相邻
+    expect(s.submit({ type: 'move', to: offsetToAxial(6, 9) })).toBe(true); // 落点与 e1 相邻（旧 ATK-3 触发面）
     const tail = evTypes(s).slice(n0);
     const iMove = tail.indexOf('move');
     expect(iMove).toBeGreaterThanOrEqual(0);
-    expect(tail.slice(iMove)).toContain('basic'); // ATK-3
-    expect(heroOf(s).actionBar).toBe(0); // 只耗一次行动
+    expect(tail.slice(iMove)).not.toContain('basic'); // v2.5 废止：移动纯移动（普攻走 PRM-1 攻钮/点敌）
+    expect(tail.slice(iMove)).not.toContain('miss');
+    expect(heroOf(s).actionBar).toBe(0); // 移动本身耗一次行动（BAR-3 不变）
   });
 
   it('轻功态点敌=无操作：false、无事件、选中保持（ATK-4/Q4）', () => {

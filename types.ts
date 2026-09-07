@@ -341,6 +341,9 @@ export interface BattleSnapshot {
   moveCells: HexPos[]; // 可移动高亮：普通态=普通可达（绿，不可穿越单位，C 案 A3）/轻功激活态=跳跃可达（金，moveKind='jump'）
   moveKind: 'walk' | 'jump'; // 当前 moveCells 形态（渲染换色：绿=普通 / 金=轻功跳跃）
   attackCells: HexPos[]; // 攻击范围高亮（红，激活攻击型技能后；O2 三形态，锥形按六向 facing 轴）
+  /** 【PRM-1 v2.5 · TASK-AS-v04】普攻选格金色高亮：攻钮选中态下主角外圈六邻格（∩可动区；
+   * session 唯一产出，渲染只画不算——方案 v0.4 §9.3 架构红线）。非选中态/非输入态=空数组。 */
+  basicCells: HexPos[];
   selectedSkill: string | null; // 已激活待施放的技能 id
   heroSkills: SkillButtonInfo[]; // 主角弧形技能钮（验收 F2：置灰数据源=会话真值，Ext 过渡段降级删除）
   actors: SnapshotActor[];
@@ -357,6 +360,11 @@ export type ActionRequest =
   | { type: 'cast'; to: HexPos; skillId: string }   // 对格施放（ATK-2/6/7 v2.0）：to=目标格（axial），skillId=选中攻击技
   | { type: 'selectSkill'; skillId: string }
   | { type: 'cancelSkill' }
+  /** 【PRM-1 v2.5 · TASK-AS-v04 普攻选格请求族】selectBasic=攻钮 toggle（进入/退出普攻选中态，
+   * 再点攻钮=取消）；basicAtCell=点金色六邻格提交普攻选格（to ∈ 快照 basicCells，显示=校验同源；
+   * 格上有敌=既有 basic F-04，无敌=空挥：耗回合零伤害零内力零冷却写入——方案 v0.4 §9.3）。 */
+  | { type: 'selectBasic' }
+  | { type: 'basicAtCell'; to: HexPos }
   | { type: 'setMode'; mode: BattleMode }
   | { type: 'toggleSpeed' }
   | { type: 'flee' };

@@ -14,6 +14,7 @@ import {
   ANIM_FRAMES,
   ANIM_LOOP_GROUPS,
   ARC_BTNS,
+  ATK_BTN,
   BOARD,
   BOARD_SHAPE,
   CAMERA,
@@ -102,6 +103,8 @@ export interface HitLayout {
   skillBtns: Array<{ id: string; x: number; y: number; r: number; disabled: boolean }>;
   ctrlRect: { x: number; y: number; w: number; h: number } | null;
   plaqueRect: { x: number; y: number; w: number; h: number } | null;
+  /** 【PRM-1 · TASK-AS-v04】ctrl「攻」钮屏矩形（仅待命期产出=热区存在；非待命=null fall-through 棋盘） */
+  atkBtn: { x: number; y: number; w: number; h: number } | null;
 }
 
 interface AnimClock {
@@ -166,6 +169,10 @@ export interface BattleHexView {
   basicHolds: Map<string, { since: number; until: number }>;
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
+  /** 【GSG-1 · TASK-AS-v04】悬停格（表现态；会话侧契约无此字段、不进快照——方案 v0.4 §9.4）。
+   * input.hover 翻译指针位写入；渲染按快照三类可选格（轻功金格/attackCells/basicCells）成员
+   * 判定画红色选中效果，普通移动绿格不纳入；触屏无 hover 恒 null=自然退化金色+点击即执行。 */
+  hoverCell: HexPos | null;
   /** UI 状态反馈（宿主填充；托管/加速钮高亮显示——快照无此字段，演出态） */
   uiState: { mode?: BattleMode; speed?: boolean };
   /** T23 顶栏/ctrl 观测面（§2.6：渲染私有 last-drawn 镜像，drawComponents 每帧覆写；
@@ -199,6 +206,7 @@ export function createView(): BattleHexView {
     basicHolds: new Map(),
     skillPop: 0,
     selectedCell: null,
+    hoverCell: null,
     uiState: {},
     topbarHud: {
       name: '',
@@ -209,7 +217,7 @@ export function createView(): BattleHexView {
       statusIcons: [],
       ctrlActive: { mode: false, speed: false },
     },
-    layout: { skillBtns: [], ctrlRect: null, plaqueRect: null },
+    layout: { skillBtns: [], ctrlRect: null, plaqueRect: null, atkBtn: null },
   };
 }
 
@@ -920,7 +928,10 @@ function fillHex(
  * 【Leo 09-04 翻案 v8 缺角】旧「战区矩形裁剪：错位行半格出界部分裁平 → 边缘整齐长方形战区」已撤——
  * 原 rect clip 逻辑整段删除，改为 isBoardCell 逐格判定：最外两圈非可动 dirt 格坐标哈希剔除 ~20%，
  * 边缘=不规则六边形齿边咬进 env 地形（被剔格露 env），画布自然出屏即裁。
- * 落地阴影（T24 方案 §2.2）：边缘格（六邻有缺）在格体之前画下偏软阴影两层（SHADOW 组，底侧重）。 */
+ * 落地阴影（T24 方案 §2.2）：边缘格（六邻有缺）在格体之前画下偏软阴影两层（SHADOW 组，底侧重）。
+ * 【PRM-1/GSG-1 · TASK-AS-v04】普攻 basicCells 金格 + 可选格通用悬停红态：hoverCell ∈
+ * 轻功金格/attackCells/basicCells 三类 → 红色选中效果（HIGHLIGHT.cellHover），离开恢复原色；
+ * 普通移动绿格不纳入；格集合全部来自快照（渲染不重算邻格/射程——§9.3 架构红线）。 */
 function drawCells(
   ctx: CanvasRenderingContext2D,
   snapshot: BattleSnapshot,
@@ -928,6 +939,7 @@ function drawCells(
   width: number,
   height: number,
   selected: HexPos | null,
+  hoverCell: HexPos | null,
 ): void {
   const center = worldToHex(cam.x, cam.y);
   const span = CAMERA.viewportCells + 2;
@@ -937,7 +949,9 @@ function drawCells(
   const moveEdge = jump ? HIGHLIGHT.jumpEdge : HIGHLIGHT.moveEdge;
   const moveSet = new Set(snapshot.moveCells.map(keyOf));
   const attackSet = new Set(snapshot.attackCells.map(keyOf));
+  const basicSet = new Set(snapshot.basicCells.map(keyOf));
   const selKey = selected ? keyOf(selected) : null;
+  const hoverKey = hoverCell ? keyOf(hoverCell) : null;
   for (let r = center.r - span; r <= center.r + span; r++) {
     for (let q = center.q - span; q <= center.q + span; q++) {
       if (!isBoardCell(q, r)) continue;
@@ -952,7 +966,15 @@ function drawCells(
       const key = `${q},${r}`;
       if (moveSet.has(key)) fillHex(ctx, sx, sy, moveFill, moveEdge);
       else if (attackSet.has(key)) fillHex(ctx, sx, sy, HIGHLIGHT.attack, HIGHLIGHT.attackEdge);
+      else if (basicSet.has(key)) fillHex(ctx, sx, sy, HIGHLIGHT.jump, HIGHLIGHT.jumpEdge); // 普攻选格=金（PRM-1②）
       if (selKey === key) fillHex(ctx, sx, sy, HIGHLIGHT.selected, HIGHLIGHT.selectedEdge);
+      // GSG-1 悬停红态：仅三类可选格成员响应（绿格 fall-through 不画）；悬停即"选中"视觉、点击立即执行
+      else if (
+        hoverKey === key &&
+        (attackSet.has(key) || basicSet.has(key) || (jump && moveSet.has(key)))
+      ) {
+        fillHex(ctx, sx, sy, HIGHLIGHT.cellHover, HIGHLIGHT.cellHoverEdge);
+      }
     }
   }
 }
@@ -1260,6 +1282,7 @@ function drawComponents(
 ): void {
   view.layout.plaqueRect = null;
   view.layout.ctrlRect = null;
+  view.layout.atkBtn = null;
   // 顶栏（T23 §2.1）：topbar_base 无字底图全宽贴屏顶 + 代码压暗层（现状保留）+ 代码条/名字/百分比叠绘；缺图时代码兜底
   const tb = assets.topbar;
   const topH = (width * (tb ? tb.height : TOPBAR.artH)) / (tb ? tb.width : TOPBAR.artW);
@@ -1439,6 +1462,35 @@ function drawComponents(
     }
   }
   view.layout.ctrlRect = { x: cx, y: cy, w: cw, h: ch };
+  // 【PRM-1 · TASK-AS-v04】ctrl「攻」钮（普攻选格入口，ctrl 组件正上方锚定、右对齐同宽）：
+  // 仅 手动+主角待命+fighting+存活 时产出（PRM-1①「仅手动+主角待命可进入，auto/trust 不进入」）；
+  // 非待命=layout.atkBtn 保持 null（无热区，棋盘 fall-through——HIT-1 同规）。选中态=金框高亮。
+  const atkVisible =
+    snapshot.phase === 'fighting' &&
+    snapshot.pendingInput &&
+    view.uiState.mode !== 'auto' &&
+    hero !== undefined &&
+    hero.animState !== 'dead';
+  if (atkVisible) {
+    const abw = cw; // 与 ctrl 同宽（右对齐）
+    const abh = ch * ATK_BTN.hRatio; // 单钮高=ctrl 标定矩形单钮比例（art 128/448）
+    const abx = cx;
+    const aby = Math.round(cy - ATK_BTN.gapPx - abh);
+    const active = snapshot.basicCells.length > 0; // 选中态判定=快照 basicCells 非空（session 真值）
+    ctx.fillStyle = ATK_BTN.colorBg;
+    ctx.strokeStyle = active ? ATK_BTN.activeRim : ATK_BTN.colorRim;
+    ctx.lineWidth = active ? ATK_BTN.activeRimWidth : 2;
+    ctx.beginPath();
+    roundRectPath(ctx, abx, aby, abw, abh, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = ATK_BTN.colorText;
+    ctx.font = `bold ${Math.round(abh * ATK_BTN.fontRatio)}px ${FONT_STACK}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(ATK_BTN.label, abx + abw / 2, aby + abh / 2 + 1);
+    view.layout.atkBtn = { x: abx, y: aby, w: abw, h: abh };
+  }
 }
 
 // ============ L6 特效 + 结算遮罩 ============
@@ -1533,7 +1585,7 @@ export function drawFrame(
   ctx.beginPath();
   ctx.rect(0, 0, width, height);
   ctx.clip();
-  drawCells(ctx, snapshot, cam, width, height, view.selectedCell);
+  drawCells(ctx, snapshot, cam, width, height, view.selectedCell, view.hoverCell);
   const placed = drawPieces(ctx, snapshot, assets, view, cam, width, height);
   drawPieceHud(ctx, placed, snapshot, view);
   drawFx(ctx, view, cam, width, height);

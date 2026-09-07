@@ -173,6 +173,7 @@ export function createMockSession(seed = 42): MockSession {
       moveCells,
       moveKind: 'walk',
       attackCells,
+      basicCells: [], // 【PRM-1 v2.5 契约字段】mock 演出占位恒空（普攻选格归真 session；T15 契约咬合）
       selectedSkill,
       actors,
       cameraTargetId: 'hero',

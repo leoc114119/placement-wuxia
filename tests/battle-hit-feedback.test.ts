@@ -47,6 +47,7 @@ function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {
     moveCells: [],
     moveKind: 'walk',
     attackCells: [],
+    basicCells: [], // 【TASK-AS-v04 契约字段】渲染夹具默认无普攻选格
     selectedSkill: null,
     heroSkills: [],
     actors: parts.map((p) => ({ ...base, ...p })),
