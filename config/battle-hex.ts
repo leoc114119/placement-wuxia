@@ -2,7 +2,7 @@
 // 依据：战场布局规格-六边形战棋.md 96 号（s=31 / 7×7 视口 / 平顶公式）、战斗界面视觉骨架.md v8 定稿
 //（色彩/组件布局）、主架构《战斗界面接入技术方案》§2（渲染分层）。数值真值仍在 battle-core / 云端 settle。
 
-import { BATTLE_FRAME, FINISH_WINDOW_MS } from './battle'; // 【AS · TASK-AS-BE】收招窗 300ms 唯一真值在共享配置（方案 §4.4：BE/FE 不各自复制，本文件 CHOREO 只做别名引用，不 import battle-core——T15 验收红线）
+import { BASIC_DURATION_MS, BATTLE_FRAME, FINISH_WINDOW_MS } from './battle'; // 【AS】共享表现常量唯一真值在共享配置（方案 §4.4：BE/FE 不各自复制，本文件 CHOREO 只做别名引用，不 import battle-core——T15 验收红线；FINISH_WINDOW_MS=BE 落 / BASIC_DURATION_MS=FE 落）
 import type { BattleFacingHex } from '../types'; // 六向帧接线 §2.1 契约类型（type-only，零运行时耦合）
 
 // ===== 六边形几何（96 号定值：平顶 flat-top，s=31 → 格 62×54pt） =====
@@ -170,16 +170,19 @@ export const ANIM_FRAMES: Record<string, readonly number[]> = {
   dead: [0],
 } as const;
 
-/** 循环型帧组（walk 循环重放；其余单播型：播到组尾帧保持，直到 session 切状态） */
-export const ANIM_LOOP_GROUPS: readonly string[] = ['walk'];
+/** 循环型帧组（walk 循环重放；其余单播型：播到组尾帧保持，直到 session 切状态）
+ * 【AS · 需求 v1.3 AS-2/开放点① · TASK-AS-FE】charge 入循环组：施放帧整套循环播放至出招时长
+ * 结束（循环多久由 session 施法相时长定，帧不单独锚定）；legacy 线 ANIM_FRAMES.charge=[4] 单帧
+ * 组循环自身=定格帧 4（敌型降级不坏，循环语义对单帧组幂等）。 */
+export const ANIM_LOOP_GROUPS: readonly string[] = ['walk', 'charge'];
 
 /** 出招演出时序（🟡 手感项，preview 目验可调；mock 按此驱动 animState 时间线）
  * 【AS · TASK-AS-BE】strikeSec 改为 core FINISH_WINDOW_MS 别名引用（值不变 0.3）——
  * 收招窗 300ms 是 t2 段结算锚（AS-4），唯一真值 battle-core，本处禁再硬编码。 */
 export const CHOREO = {
-  chargeSec: 0.1, // 蓄力段（04）
+  chargeSec: 0.1, // 蓄力段（04）——legacy tick 动画机旧线口径；AS 线施法相 charge 由 pendingCasts 保持（时长=出招时长，B5）
   strikeSec: FINISH_WINDOW_MS / 1000, // 出招挥出（05）=收招窗别名（AS-4 · 方案 §2.2/§4.4）
-  basicSec: 0.32, // 普攻全程（06+前冲回位口径；普攻表现 1s 常量归 FE 卡接线）
+  basicSec: BASIC_DURATION_MS / 1000, // 【AS · TASK-AS-FE】普攻表现时长别名（需求口径③/开放点③=1s；渲染层 basic 保持窗消费——只改表现计时，不延迟普攻事件或血量）
   hitSec: 0.18, // 受击段
 } as const;
 
@@ -421,12 +424,14 @@ export const SPRITE_PROFILES: Readonly<Record<string, BattleSpriteProfile>> = {
           ? `${HERO_BATTLE45}/jump_${facing}_2.png`
           : `${HERO_BATTLE45}/${clip}_${facing}_${ordinal}.png`,
     sharedSrc: { die: `${HERO_BATTLE45}/die_common.png` },
-    // §3.2 帧序：idle1 保持 / walk 1↔2 循环 / basic atk1→2 / charge cast1 / strike cast2→3
+    // §3.2 帧序：idle1 保持 / walk 1↔2 循环 / basic atk1→2 / 【AS】charge cast1→3 整套循环
+    //（AS-2/开放点①：施放帧循环播放至出招时长结束=聚气→外放→收势整套，至 session 切 strike）
+    // / strike cast2→3 单播（外放=段1 落地 / 收势=段2 终点，AS-8 帧时刻锚定）
     // / hit 休眠态无专用素材→idle / dead die_common 1（沿既有压扁淡出）
     stateMap: {
       idle: { clip: 'idle', from: 1, to: 1 },
       walk: { clip: 'walk', from: 1, to: 2 },
-      charge: { clip: 'cast', from: 1, to: 1 },
+      charge: { clip: 'cast', from: 1, to: 3 },
       strike: { clip: 'cast', from: 2, to: 3 },
       basic: { clip: 'atk', from: 1, to: 2 },
       hit: { clip: 'idle', from: 1, to: 1 },

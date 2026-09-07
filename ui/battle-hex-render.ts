@@ -17,6 +17,7 @@ import {
   BOARD,
   BOARD_SHAPE,
   CAMERA,
+  CHOREO,
   COMPONENT_LAYOUT,
   CTRL_ACTIVE,
   CTRL_ART,
@@ -157,6 +158,11 @@ export interface BattleHexView {
   pendingHits: PendingHit[]; // 挂起冲刷队列（宿主白名单事件入队，updateView 四条件冲刷）
   shakes: Map<string, number>; // actorId → 震动已历时秒（衰减时钟 view 私有，session 无感知）
   dmgStagger: Map<string, { at: number; seq: number }>; // targetId → 同位错位序号（滑动窗口 at=上一条 spawn）
+  /** 【AS · TASK-AS-FE】普攻表现保持窗（需求口径③/开放点③=1s）：actorId → {since, until}（view.time 系）。
+   * 快照 basic 上升沿开窗；session ANIM_MS.basic=300 冻结不动，快照回 idle 后由本窗把普攻帧
+   * 保持满 1000ms（表现常量 CHOREO.basicSec=BASIC_DURATION_MS/1000 别名）。渲染层私有演出态
+   *（与 moveAnims 同级：演出计时主导，快照真值仍为唯一数据源——只延帧不改任何数值/事件）。 */
+  basicHolds: Map<string, { since: number; until: number }>;
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
   /** UI 状态反馈（宿主填充；托管/加速钮高亮显示——快照无此字段，演出态） */
@@ -189,6 +195,7 @@ export function createView(): BattleHexView {
     pendingHits: [],
     shakes: new Map(),
     dmgStagger: new Map(),
+    basicHolds: new Map(),
     skillPop: 0,
     selectedCell: null,
     uiState: {},
@@ -551,6 +558,7 @@ export function updateView(
 ): void {
   view.time += dt;
   const riseToAttack = new Set<string>(); // T21 冲刷条件 a：本帧切到 basic/strike 的攻击者（演出循环后统一冲刷）
+  const poseEndAttack = new Set<string>(); // 【AS-8 · TASK-AS-FE】冲刷条件 e：本帧离开 basic/strike 的攻击者（攻击态收尾沿=段 2 冒字锚）
   for (const a of snapshot.actors) {
     const prev = view.anim.get(a.id);
     const prevAnim = view.moveAnims.get(a.id);
@@ -609,16 +617,30 @@ export function updateView(
       if (prev && (a.animState === 'strike' || a.animState === 'basic')) {
         view.fx.push({ kind: 'slash', x: w.x, y: w.y, t: 0, sec: FX.slashSec });
         riseToAttack.add(a.id); // T21：与 slash 同沿收集，pendingHits 在演出循环后按 §2.3 冲刷
+        if (a.animState === 'basic') {
+          // 【AS · TASK-AS-FE】普攻表现保持窗开窗（需求口径③/开放点③）：上升沿起算 1s
+          //（CHOREO.basicSec=BASIC_DURATION_MS/1000 别名，session ANIM_MS.basic=300 冻结差额由此补足）；
+          // 保持期内再出手=新演出起点，覆盖旧窗。
+          view.basicHolds.set(a.id, { since: view.time, until: view.time + CHOREO.basicSec });
+        }
       } else if (prev && a.animState === 'hit') {
         // 【T21 受击反馈互指】受击反馈已改走事件驱动路径（main.ts 白名单入队 → pendingHits 冲刷 +
         // shakes 震动，见本文件 §T21 注释）；下面这个 animState==='hit' 分支是休眠钩子——session 从不
         // 产生 'hit' 态，属永不执行的既有验收代码，维持休眠不删不接。与 drawPieces 内同名休眠行互指。
         view.fx.push({ kind: 'hit', x: w.x, y: w.y, t: 0, sec: FX.hitSec });
+      } else if (prev && (prev.state === 'strike' || prev.state === 'basic') && a.animState !== 'dead') {
+        // 【AS-8 · TASK-AS-FE】攻击态收尾沿（strike/basic→他态）：「收势=段 2 终点」冒字锚——
+        // 固定步长下 t2 与 strike 收招窗（=FINISH_WINDOW_MS）同刻到期，session tick 动画机先翻
+        // idle 再 drain 段 2 事件 → 条件 a/b 双缺，第二跳会挂至 1.5s 兜底；本沿同帧补冲刷。
+        poseEndAttack.add(a.id);
       }
       view.anim.set(a.id, { state: a.animState, t: 0 });
     } else {
       prev.t += dt;
     }
+    // 【AS · TASK-AS-FE】保持窗惰性清理（到期即除防 Map 无界；帧选随即回 idle 组）
+    const hold = view.basicHolds.get(a.id);
+    if (hold !== undefined && view.time >= hold.until) view.basicHolds.delete(a.id);
   }
   // 特效寿命推进（含 note 冒字）
   const aliveFx: FxItem[] = [];
@@ -641,8 +663,11 @@ export function updateView(
       const attacker = snapshot.actors.find((a) => a.id === ph.attackerId);
       const inAttackState = attacker ? attacker.animState === 'basic' || attacker.animState === 'strike' : false;
       // a 上升沿 / b 已在态兜底 / c 超时（攻击者挂死防御）/ d 攻击者已 dead（hp 减少是既成事实）
+      // e【AS-8 · TASK-AS-FE】攻击态收尾沿（strike/basic→他态同帧）——固定步长下 t2 与收招窗同刻
+      //   到期时 a/b 双缺（session 先翻 idle 再 drain 段 2 事件），本沿兜住「收势=段 2 终点」第二跳
       const flush =
         riseToAttack.has(ph.attackerId) ||
+        poseEndAttack.has(ph.attackerId) ||
         inAttackState ||
         view.time - ph.t > DMG.flushDeadlineSec ||
         attacker?.animState === 'dead';
@@ -934,9 +959,18 @@ function drawEdgeShadow(ctx: CanvasRenderingContext2D, sx: number, sy: number): 
 
 // ============ L3 棋子 / L4 HUD ============
 
+/** 【AS · TASK-AS-FE】普攻保持窗判定（view.time 系）：窗内快照 idle 帧组提升为 basic 续播 */
+function basicHoldActive(view: BattleHexView, actorId: string): boolean {
+  const h = view.basicHolds.get(actorId);
+  return h !== undefined && view.time < h.until;
+}
+
 /** 当前帧号（帧组播报：循环组取模循环；单播组夹到组尾保持，组切换由 updateView 重置）——legacy profile 专用 */
 function frameOf(view: BattleHexView, actor: SnapshotActor, stateOverride?: string): number {
-  const state = stateOverride ?? actor.animState;
+  let state = stateOverride ?? actor.animState;
+  // 【AS · TASK-AS-FE】普攻保持窗：快照已回 idle 但窗内 → 继续播 basic 帧（legacy 单帧组=帧 6 定格；
+  // 循环语义对单帧组幂等=敌型 charge 降级同理不坏）
+  if (state === 'idle' && basicHoldActive(view, actor.id)) state = 'basic';
   const clock = view.anim.get(actor.id);
   const group = ANIM_FRAMES[state] ?? ANIM_FRAMES.idle;
   if (!clock || clock.state !== state) return group[0];
@@ -954,8 +988,10 @@ export interface DirectionalFrameSel {
 /** 【六向帧接线 §3.2】directional 选帧（frameOf 升级）：先解析语义 clip，再按对应时钟取 ordinal。
  * 优先级：dead（die 共用）> 移动演出期（jump 单帧=全程腾空帧——Leo 09-06 裁定去蓄势帧 _1，
  * ordinal 恒 1 经 profile.frameSrc 映射 jump_{facing}_2.png；旧两段切换/jumpFrameThreshold 已废；
- * 禁复用 animState clock 判跳，否则 jump 非 session 状态会永卡；walk 沿演出钟 1↔2 循环）> animState
- * 经 profile.stateMap（循环态区间循环 / 单播态 from→to 播至尾帧保持，组切换由 updateView 重置）。
+ * 禁复用 animState clock 判跳，否则 jump 非 session 状态会永卡；walk 沿演出钟 1↔2 循环）>
+ * 【AS · TASK-AS-FE】普攻保持窗（快照 idle 但 1s 窗内 → basic 计划续播，见分支注）> animState
+ * 经 profile.stateMap（循环态区间循环——charge=cast 1→3 整套循环至 session 切 strike，AS-2/开放点①；
+ * 单播态 from→to 播至尾帧保持，组切换由 updateView 重置）。
  * 纯导出供用例；调用方须保证 spriteKey 有 directional profile（drawPieces 已分支保证）。 */
 export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): DirectionalFrameSel {
   const profile = SPRITE_PROFILES[actor.spriteKey];
@@ -978,6 +1014,17 @@ export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): D
     return { clip: plan.clip, ordinal: plan.from + (idx % span) };
   }
   const state = actor.animState;
+  // 【AS · TASK-AS-FE】普攻保持窗：快照已回 idle（session ANIM_MS.basic=300 冻结）但窗内 → 沿
+  // basic 计划续播；elapsed 取钟连续值（basic 在态=钟 t；已翻 idle=窗起点差）——atk1→2 单播
+  // 播至尾帧保持，无 2→1 回跳。
+  const hold = view.basicHolds.get(actor.id);
+  if (state === 'idle' && hold !== undefined && view.time < hold.until) {
+    const plan = profile.stateMap.basic;
+    const clockB = view.anim.get(actor.id);
+    const elapsed = clockB && clockB.state === 'basic' ? clockB.t : view.time - hold.since;
+    const idxB = Math.floor((elapsed * 1000) / PIECE.walkFrameMs);
+    return { clip: plan.clip, ordinal: Math.min(plan.from + idxB, plan.to) };
+  }
   const plan = profile.stateMap[state] ?? profile.stateMap.idle;
   const clock = view.anim.get(actor.id);
   if (!clock || clock.state !== state) return { clip: plan.clip, ordinal: plan.from }; // 新组从 from 重放

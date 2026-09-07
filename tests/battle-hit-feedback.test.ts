@@ -10,15 +10,17 @@ import path from 'node:path';
 
 declare const __dirname: string;
 import { DMG, FONT_STACK } from '../config/battle-hex';
+import { FINISH_WINDOW_MS } from '../config/battle'; // 【AS · TASK-AS-FE】收招窗共享常量（两跳间隔口径）
 import {
   createView,
+  directionalFrameOf,
   drawFrame,
   enqueueHit,
   updateView,
   type BattleHexAssets,
   type BattleHexView,
 } from '../ui/battle-hex-render';
-import type { BattleSnapshot, SnapshotActor } from '../types';
+import type { BattleSnapshot, CombatantInput, SnapshotActor } from '../types';
 
 const ROOT = path.resolve(__dirname, '..');
 const H = 667; // 逻辑屏高（定尺断言基准，E6/F6：禁用 dpr 放大后的物理高）
@@ -389,5 +391,110 @@ describe('R10 红线自查（V5/E5：禁碰文件源码锁+渲染层无 core/ses
       flushDeadlineSec: 1.5,
       missText: '闪避',
     });
+  });
+});
+
+// ══════════ 【AS · TASK-AS-FE】两段式伤害冒字（需求 v1.3 AS-4/AS-8 · 方案 v0.2 §4.4/§7.1 AS-T12）══════════
+describe('[AS · TASK-AS-FE] 两段式伤害冲刷（收势=段2 终点）', () => {
+  it('段2 对齐翻转形状（固定步长 t2 与收招窗同刻到期：session tick 先翻 idle 再 drain 段2 事件，条件 a/b 双缺）→ 攻击态收尾沿（条件 e）同帧冲刷，不落 1.5s 兜底', () => {
+    const view = createView();
+    const snap = twoActorSnap({ animState: 'idle' }, { animState: 'idle' });
+    feed(view, snap);
+    snap.actors[0].animState = 'charge';
+    feed(view, snap); // 施法相：不冲刷（R2 已锁）
+    expect(view.pendingHits).toHaveLength(0);
+    snap.actors[0].animState = 'strike';
+    feed(view, snap); // t1：charge→strike 上升沿（段1 沿=R2 同款，此处补段2 前置）
+    snap.actors[0].animState = 'idle'; // t2 同刻：快照已翻 idle（对齐形状）
+    enqueueHit(view, 'hero', 'e1', String(7), true); // 宿主段2 skill 白名单入队（次序镜像：先入队后冲刷）
+    feed(view, snap);
+    expect(view.pendingHits).toHaveLength(0); // 当帧冲刷（禁挂 1.5s）
+    expect(view.fx.filter((f) => f.kind === 'dmg')).toHaveLength(1);
+    expect(view.fx.find((f) => f.kind === 'dmg')?.text).toBe('7');
+  });
+
+  it('两跳同位错位（AS-8 同位错位防重叠）：段1/段2 间隔=收招窗 FINISH_WINDOW_MS（300ms < staggerWindowMs）→ 第二跳 dx=staggerPx、两跳同屏（DMG.sec>间隔）', () => {
+    const view = createView();
+    const snap = twoActorSnap({ animState: 'idle' }, { animState: 'idle' });
+    feed(view, snap);
+    snap.actors[0].animState = 'strike';
+    enqueueHit(view, 'hero', 'e1', String(11), true); // 段1：strike 已在态（b）当帧冲刷
+    feed(view, snap);
+    expect(view.fx.find((f) => f.kind === 'dmg')?.dx).toBe(0);
+    feed(view, snap, FINISH_WINDOW_MS / 1000); // 收招窗推进
+    snap.actors[0].animState = 'idle'; // 段2 收尾沿冲刷
+    enqueueHit(view, 'hero', 'e1', String(6), true);
+    feed(view, snap);
+    const dmgs = view.fx.filter((f) => f.kind === 'dmg');
+    expect(dmgs).toHaveLength(2); // 两跳同屏（第一跳寿命 0.6s > 0.3s 间隔）
+    expect(dmgs[1].dx).toBe(DMG.staggerPx); // 滑动窗口内命中序 1 → 错位一步防重叠
+  });
+
+  it('真 session 两段全链（AS-T12/方案 §4.4）：固定 50ms 步长施法相 charge 保持整套循环帧（1/2/3 均可见）、t1 段1 冒字、t2 段2 冒字，两跳时刻差=收招窗 300ms±1 步；两段事件恰 2 条（skill|miss×targetId）', async () => {
+    const { createHexBattle } = await import('../systems/battle-session');
+    const unit = (over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 'side'>): CombatantInput => ({
+      name: over.id, hp: 100, maxHp: 100, neili: 60, maxNeili: 100, atk: 10, def: 2, neigongLevel: 5,
+      jimin: 8, danshi: 0, shizhan: 60, pos: { x: 0, y: 0 }, weapon: 'fist', skills: [], ...over,
+    });
+    const session = createHexBattle({
+      player: unit({
+        id: 'hero', side: 'player', skills: [
+          { id: 'te', name: '特', kind: 'special', weapon: 'fist', grade: 1.3, growth: 1, level: 20, cooldownTurns: 2, neiliCost: 20 },
+        ],
+      }),
+      enemies: [unit({ id: 'e1', side: 'enemy', hp: 300, maxHp: 300, atk: 8, def: 3, jimin: 5 })],
+      mode: 'manual',
+      seed: 42,
+    });
+    for (let i = 0; i < 400 && !session.snapshot().pendingInput; i++) session.tick(0.05); // 到输入态（BAR-4 等待期时钟冻结）
+    // 白盒摆敌相邻（placeFoe 同款：清条防敌行动污染 3.3s 窗口；fillRate e1≈10.5/s 本也无害，双保险）
+    const heroHex = session._debug.units.find((u) => u.id === 'hero')!.hex;
+    const e1 = session._debug.units.find((u) => u.id === 'e1')!;
+    e1.hex = { q: heroHex.q + 1, r: heroHex.r };
+    e1.renderQ = e1.hex.q; e1.renderR = e1.hex.r; e1.moveFromQ = e1.hex.q; e1.moveFromR = e1.hex.r;
+    e1.moveT = 1; e1.bar = 0; e1.barWasMax = false; e1.dead = false;
+    expect(session.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(session.submit({ type: 'attack', targetId: 'e1', skillId: 'te' })).toBe(true); // cast=提交即排程（AS-2）
+    const view = createView();
+    let evCursor = 0;
+    const spawnAt: number[] = [];
+    const chargeOrdinals = new Set<number>();
+    const statesBeforeSeg1 = new Set<string>();
+    let prevDmgN = 0;
+    let seg1Seen = false;
+    for (let i = 0; i < 100; i++) { // 5s 覆盖 t0→t2（3.3s）+余量
+      session.tick(0.05);
+      const snap = session.snapshot();
+      const evs = session.events;
+      for (; evCursor < evs.length; evCursor++) {
+        const e = evs[evCursor];
+        if ((e.type === 'basic' || e.type === 'skill') && e.targetId && typeof e.damage === 'number' && e.damage > 0) {
+          enqueueHit(view, e.actorId ?? 'hero', e.targetId, String(e.damage), true);
+        } else if (e.type === 'miss' && e.targetId) {
+          enqueueHit(view, e.actorId ?? 'hero', e.targetId, DMG.missText, false);
+        }
+      }
+      const heroActor = snap.actors.find((a) => a.id === 'hero')!;
+      // t1 同刻快照已是 strike（resolveT1 setAnim）——施法相采样只收段1 事件落地前的 tick
+      if (evs.some((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1')) seg1Seen = true;
+      if (!seg1Seen) {
+        statesBeforeSeg1.add(heroActor.animState);
+        chargeOrdinals.add(directionalFrameOf(view, heroActor).ordinal); // charge 循环多帧可见性
+      }
+      updateView(view, snap, 0.05, 375, 667);
+      const dmgN = view.fx.filter((f) => f.kind === 'dmg').length;
+      if (dmgN > prevDmgN) { spawnAt.push(session._debug.clock()); prevDmgN = dmgN; }
+      if (dmgN >= 2) break;
+    }
+    // 事件面：恰 2 条 e1 结算事件（两段各一，AS-5；hero 普攻/敌行动零污染）
+    const settled = session.events.filter((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1' && e.actorId === 'hero');
+    expect(settled).toHaveLength(2);
+    // 施法相：charge 保持（B5）且 cast 三帧均可见（AS-2 整套循环）
+    expect([...statesBeforeSeg1]).toEqual(['charge']);
+    expect(chargeOrdinals).toEqual(new Set([1, 2, 3]));
+    // 两跳：均落地冲刷（无挂起）、时刻差=收招窗 300ms±1 步（AS-4/AS-8）
+    expect(spawnAt).toHaveLength(2);
+    expect(view.pendingHits).toHaveLength(0);
+    expect(Math.abs((spawnAt[1] - spawnAt[0]) - FINISH_WINDOW_MS / 1000)).toBeLessThanOrEqual(0.06);
   });
 });

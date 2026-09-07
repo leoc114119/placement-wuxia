@@ -12,6 +12,7 @@ import {
   ARC_BTNS,
   BOARD,
   BOARD_SHAPE,
+  CHOREO,
   COMPONENT_LAYOUT,
   CTRL_ACTIVE,
   CTRL_ART,
@@ -33,6 +34,7 @@ import {
   type BattleClip,
   type DirectionalSpriteProfile,
 } from '../config/battle-hex';
+import { BASIC_DURATION_MS, FINISH_WINDOW_MS } from '../config/battle'; // 【AS · TASK-AS-FE】共享表现常量别名锁用
 import {
   axialToOffset,
   boardBounds,
@@ -1604,12 +1606,12 @@ describe('[六向接线 §3.1] hero directional profile 资源完整性（缺任
     }
   });
 
-  it('hero stateMap（§3.2 帧序表）：basic→atk1→2 / charge→cast1 / strike→cast2→3 / hit 休眠→idle1 / dead→die1', () => {
+  it('hero stateMap（§3.2 帧序表）：basic→atk1→2 / charge→cast1→3 整套循环 / strike→cast2→3 / hit 休眠→idle1 / dead→die1', () => {
     const m = (SPRITE_PROFILES.hero as DirectionalSpriteProfile).stateMap;
     expect(m.idle).toEqual({ clip: 'idle', from: 1, to: 1 });
     expect(m.walk).toEqual({ clip: 'walk', from: 1, to: 2 });
     expect(m.basic).toEqual({ clip: 'atk', from: 1, to: 2 });
-    expect(m.charge).toEqual({ clip: 'cast', from: 1, to: 1 });
+    expect(m.charge).toEqual({ clip: 'cast', from: 1, to: 3 }); // 【AS · TASK-AS-FE 随卡回调】AS-2/开放点①：施放帧定格 cast1→cast1→3 整套循环
     expect(m.strike).toEqual({ clip: 'cast', from: 2, to: 3 });
     expect(m.hit).toEqual({ clip: 'idle', from: 1, to: 1 }); // 休眠态无专用素材（§3.2）
     expect(m.dead).toEqual({ clip: 'die', from: 1, to: 1 });
@@ -1627,13 +1629,18 @@ describe('[六向接线 §3.1] hero directional profile 资源完整性（缺任
 });
 
 describe('[六向接线 §3.2] directional 选帧语义（frameOf 升级：语义 clip 解析 + 时钟取 ordinal）', () => {
-  it('charge 恒 cast1；strike cast2→cast3；basic atk1→atk2 播至尾帧保持（anim 钟驱动）', () => {
+  it('charge cast1→2→3 整套循环（AS-2/开放点①）；strike cast2→cast3；basic atk1→atk2 播至尾帧保持（anim 钟驱动）', () => {
     const view = createView();
     const charge = dirActor({ animState: 'charge' });
     let snap = makeSnapshot([charge]);
-    updateView(view, snap, 0.05, 375, 667);
-    updateView(view, snap, 0.2, 375, 667); // 钟累计 0.25s——charge 恒第 1 帧
+    updateView(view, snap, 0.016, 375, 667); // 上升沿：钟 t=0
     expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 1 });
+    updateView(view, snap, 0.15, 375, 667); // 钟累计 0.15s ∈ [140,280)ms → 第 2 帧
+    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 2 });
+    updateView(view, snap, 0.14, 375, 667); // 0.29s ∈ [280,420)ms → 第 3 帧
+    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 3 });
+    updateView(view, snap, 0.14, 375, 667); // 0.43s ≥ 420ms=周期(3×walkFrameMs) → 循环回第 1 帧
+    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 1 }); // 【AS · TASK-AS-FE 随卡回调】旧「恒 cast1」定格断言按卡改循环
 
     const strike = dirActor({ animState: 'strike' });
     snap = makeSnapshot([strike]);
@@ -1860,5 +1867,100 @@ describe('[L 环锚点修正] directional 脚底基线 y=300 / legacy 脚底基�
     expect(dy).toBe(Math.round(syGround - h * PIECE.legacyFeetBaselineRatio + PIECE.feetOffsetPx));
     // 脚底（绘制底边按基线比例换算）= 格心 + feetOffsetPx（dy/dh 独立取整容差 ≤1px）
     expect(Math.abs(dy + dh * PIECE.legacyFeetBaselineRatio - (syGround + PIECE.feetOffsetPx))).toBeLessThanOrEqual(1);
+  });
+});
+
+// ══════════ 【AS · TASK-AS-FE】出招速度+两段式伤害 表现接线（需求 v1.3 AS-2/AS-4/口径③/开放点①③ · 方案 v0.2 §4.4）══════════
+describe('[AS · TASK-AS-FE] 出招速度+两段式伤害 表现接线', () => {
+  it('配置面别名锁：ANIM_LOOP_GROUPS=[walk,charge]；BASIC_DURATION_MS=1000 且 CHOREO.basicSec/strikeSec 只做共享常量别名（BE/FE 禁各自复制，§4.4）', () => {
+    expect(ANIM_LOOP_GROUPS).toEqual(['walk', 'charge']);
+    expect(BASIC_DURATION_MS).toBe(1000);
+    expect(CHOREO.basicSec).toBe(BASIC_DURATION_MS / 1000);
+    expect(CHOREO.strikeSec).toBe(FINISH_WINDOW_MS / 1000);
+  });
+
+  it('charge 循环时长=出招时长（AS-2/开放点①：循环多久由施法相定、帧不单独锚定）：3s 施法相全程 70ms 步长采样，帧序恒 [1,1,2,2,3,3,1]（周期 3×walkFrameMs，无定格）', () => {
+    const view = createView();
+    const hero = dirActor({ animState: 'charge' });
+    const snap = makeSnapshot([hero]);
+    updateView(view, snap, 0.001, 375, 667); // 上升沿：钟 t=0 起算
+    const ordinals = [directionalFrameOf(view, hero).ordinal];
+    for (let k = 1; k <= 6; k++) {
+      updateView(view, snap, 0.07, 375, 667); // 采样点 70/140/210/280/350/420ms
+      ordinals.push(directionalFrameOf(view, hero).ordinal);
+    }
+    expect(ordinals).toEqual([1, 1, 2, 2, 3, 3, 1]); // idx=floor(t/140) 取模循环回第 1 帧
+  });
+
+  it('普攻保持窗（口径③/开放点③=1s）：快照 basic→idle 翻转后 atk 帧续播无 2→1 回跳；窗到期回 idle1 且 Map 惰性清理', () => {
+    const view = createView();
+    const hero = dirActor({ animState: 'idle' });
+    const snap = makeSnapshot([hero]);
+    updateView(view, snap, 0.016, 375, 667); // 先登记 idle 组（上升沿判定的 prev，与生产形状一致）
+    snap.actors[0].animState = 'basic';
+    updateView(view, snap, 0.016, 375, 667); // idle→basic 上升沿：开窗（since=view.time）
+    expect(view.basicHolds.has('hero')).toBe(true);
+    updateView(view, snap, 0.2, 375, 667); // 钟 t=0.216 ≥140ms → atk2
+    expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 });
+    snap.actors[0].animState = 'idle'; // session ANIM_MS.basic=300 冻结：快照翻 idle（300ms 处形状）
+    updateView(view, snap, 0.084, 375, 667); // 演出 t=0.3s：窗内（<1s）
+    expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 }); // 续播保持，无回跳
+    updateView(view, snap, 0.5, 375, 667); // t=0.8s：窗内
+    expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 });
+    updateView(view, snap, 0.3, 375, 667); // t=1.1s ≥ 1s：窗到期
+    expect(directionalFrameOf(view, hero)).toEqual({ clip: 'idle', ordinal: 1 });
+    expect(view.basicHolds.has('hero')).toBe(false); // 惰性清理（updateView 逐帧除名）
+  });
+
+  it('普攻保持窗·legacy：快照 idle 但窗内恒绘帧 6（单帧组循环幂等，敌型普攻同享 1s 表现）', () => {
+    const strip: Array<ImgLike | null> = Array.from({ length: 8 }, (_, i) => tagImg(`spr${i}`, 128, 256));
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei', strip]]) };
+    const foe = dirActor({ id: 'e1', side: 'enemy', name: '山贼甲', spriteKey: 'npc-shanzei' });
+    const view = createView();
+    const snap = makeSnapshot([foe]);
+    const drawTag = (): string => {
+      const { ctx, ops } = makeDrawRecordingCtx();
+      drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+      return ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag)[0] ?? '';
+    };
+    updateView(view, snap, 0.016, 375, 667); // 先登记 idle 组（上升沿判定的 prev，与生产形状一致）
+    snap.actors[0].animState = 'basic';
+    updateView(view, snap, 0.016, 375, 667); // idle→basic 上升沿开窗
+    expect(drawTag()).toBe('spr6');
+    snap.actors[0].animState = 'idle';
+    updateView(view, snap, 0.4, 375, 667); // 快照已 idle，窗内（0.42s < 1s）
+    expect(drawTag()).toBe('spr6');
+    updateView(view, snap, 0.7, 375, 667); // 1.12s ≥ 1s 窗到期
+    expect(drawTag()).toBe('spr7');
+  });
+
+  it('legacy 敌型 AS 降级不坏（循环语义）：charge 恒帧 4（单帧组循环幂等）/strike 帧 5 单播（收招窗内保持）', () => {
+    const strip: Array<ImgLike | null> = Array.from({ length: 8 }, (_, i) => tagImg(`spr${i}`, 128, 256));
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei', strip]]) };
+    const foe = dirActor({ id: 'e1', side: 'enemy', name: '山贼甲', spriteKey: 'npc-shanzei' });
+    const view = createView();
+    const snap = makeSnapshot([foe]);
+    const drawTag = (): string => {
+      const { ctx, ops } = makeDrawRecordingCtx();
+      drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+      return ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag)[0] ?? '';
+    };
+    snap.actors[0].animState = 'charge';
+    updateView(view, snap, 0.016, 375, 667); // 上升沿
+    for (let i = 0; i < 30; i++) updateView(view, snap, 0.05, 375, 667); // 施法相 1.5s 全程（远超周期）
+    expect(drawTag()).toBe('spr4'); // ANIM_FRAMES.charge=[4] 单帧组：循环语义下恒帧 4（降级不坏）
+    snap.actors[0].animState = 'strike';
+    updateView(view, snap, 0.016, 375, 667);
+    updateView(view, snap, 0.2, 375, 667); // 收招窗内
+    expect(drawTag()).toBe('spr5');
+  });
+
+  it('宿主逻辑 dt 唯一真源（main.ts 源码锁 · 方案 §4.4「同一逻辑 dt 同时传给 session 与 view」）：session.tick 吃 realDt、view/drawFrame 吃同乘 SPEED_FACTOR 的逻辑 dt（x2 时 cast 帧/血条/行动条同倍率，禁只加速其一）', () => {
+    const MAIN = readFileSync(path.join(ROOT, 'proto/battle_demo/main.ts'), 'utf8');
+    expect(MAIN).toContain('const dt = realDt * (speedOn ? SPEED_FACTOR.fast : SPEED_FACTOR.normal)');
+    expect(MAIN).toContain('session.tick(realDt)'); // session 内部同 SPEED_FACTOR 缩放（battle-session speed 段）→ 两路逻辑 dt 恒同值
+    expect(MAIN).toContain('updateView(view, snap, dt, W, H)');
+    expect(MAIN).toContain('drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view)');
+    expect(MAIN).toContain("view.basicHolds.clear()"); // resetDemo 清保持窗（跨局不残留）
   });
 });
