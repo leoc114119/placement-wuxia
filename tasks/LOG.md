@@ -520,5 +520,41 @@
 | 09-07 | Codex（art） | 🎨 T45 2b 乙右下行走1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_walk_rightdown_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈119.7、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
 | 09-07 | Codex（art） | 🎨 T45 2b 乙右下攻击1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_atk_rightdown_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈119.8、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
 | 09-07 | Leo | 🏗️ PM 窗口拆分批准 | 研发 PM（本窗口）+美术 PM（新窗口）双窗制：美术 PM 接管 art 通道门检/口径/排产，研发 PM 专注 arch 通道+研发卡；护栏=事务域切死/git worktree 纪律/额度分账；入职快照 tasks/handoff/PM2-art-onboard-2026-09-07.md |
+| 09-07 | Codex（art） | ⏸️ T45 乙右下攻击1手间距修正版已生成，停 Leo 目验 | 按 Leo 指定仅修“两拳靠太近”这一项，原生第2次尝试；修正版与原稿对照、QA 已落生产包，机械门 PASS；不再追加该帧原生尝试，等待 Leo 视觉确认。 |
+| 09-07 | Leo → Codex（art） | ✅ T45 乙右下攻击1手间距修正版视觉通过，继续甲右上行走1 | Leo 确认乙右下攻击1手间距修正版通过；继续生成甲右上行走1，保留统一比例复核待办。 |
+| 09-07 | Codex（art） | 🎨 T45 2b 甲右上行走1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_a_walk_rightup_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈120.0、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Leo → Codex（art） | ✅ T45 甲右上行走1视觉通过，继续甲右上攻击1 | Leo 确认甲右上行走1通过；继续生成甲右上攻击1，保留统一比例复核待办。 |
+| 09-07 | Codex（art） | 🎨 T45 2b 甲右上攻击1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_a_atk_rightup_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈120.0、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Leo → Codex（art） | ✅ T45 甲右上攻击1视觉通过，继续甲右下行走1 | Leo 确认甲右上攻击1通过；继续生成甲右下行走1，保留统一比例复核待办。 |
+| 09-07 | Codex（art） | 🎨 T45 2b 甲右下行走1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_a_walk_rightdown_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈120.2、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Leo → Codex（art） | ✅ T45 甲右下行走1视觉通过，继续甲右下攻击1 | Leo 确认甲右下行走1通过；继续生成甲右下攻击1，保留统一比例复核待办。 |
+| 09-07 | ZCode | 🚀 TASK-AS-v03 发卡（两段时序改写 v0.3 增量卡） | 方案 v0.3（4015739）PM 复核 PASS：t0/t1 时序/300ms 取消/280ms 独立全对表；**PM 修正裁定=删 forceHit**（段1 走完整 F-04 含闪避——Leo 09-06"两段各自判断涉及暴击闪避"依据；方案伪码层提议作废，v0.2 实现本就无 forceHit=core 零改动）；代理 Q1 停工纠错=工单"main 已含验收代码"陈述有误（main 仅验收文档，v0.2 代码在 fe 分支未并）→裁 A 任务分支自并基座（fe+main，记账文件双侧保留）后施工；交付后送主架构验收 |
+| 09-07 | Codex（art） | 🎨 T45 2b 甲右下攻击1单帧候选已生成，完成游离残留清理后停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_a_atk_rightdown_1`；确定性清理 2 个游离小连通块后 QA 机械门 PASS，等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | ZCode（美术PM2） | 🤝 报到：接管美术线（双PM拆分落地） | 入职快照已读+§7 开工动作执行：信箱清读=[96] 2b release 补 ack（accepted+49c8475，fetch 门过），[95]/[100] arch→rd 留研发 PM 不动；在飞四件对齐——#1 2b：_2 帧 12 张已收（origin/main 实核 battle45 在库，head=0bba6db），walk_1/atk_1 逐张目验流在飞（末状态=甲右下行走1✅、下一张甲右下攻击1；"统一比例复核"挂账；4 张候选 LOG 缺成对✅行待美术线补登记），后续=左系镜像派生+帧账目缺口核对（die 部分待白骨定稿后重算）；#2 白骨试产单 seq=99 已发待回（与 _1 批收尾的插队优先级请 Leo 裁）；#3 整体优化方案待 2b 收尾向美术线发起；#4 点缀两横幅排 #3 之后 |
+| 09-07 | Codex（art） | ⚠️ T45 2b 甲右下攻击1首候选撤回，第二次原生候选已生成，停 Leo 目验 | 首候选因接近中立站姿撤回；保留 raw/QA。第二次候选改为明确非对称蓄力攻击姿势，机械门 PASS，等待 Leo 目验。 |
+| 09-07 | Leo → Codex（art） | ✅ T45 甲右下攻击1重生成版视觉通过，继续乙 die_common | `shanzei_a_atk_rightdown_1_attempt2_distinct` 视觉通过；转入 2b 缺失的 `shanzei_b die_common` 单帧候选。 |
+| 09-07 | Codex（art） | 🎨 T45 2b 乙 die_common 单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_die_common`；确定性宽归一/贴底后 QA 机械门 PASS，等待 Leo 视觉确认，不启动下一帧。 |
+| 09-07 | Leo → Codex（art） | 🔁 T45 死亡帧口径纠正：全角色共用 Q 版白骨 die_common | 撤回刚生成的乙专属人形 `die_common` 候选（保留证据、不入 runtime）；按 PM seq=99 启动全角色共用白骨单帧试产，规格与试产包 `assets/_trial_20260907/t45_shared_die_bone_codex_native/` 同步。 |
+| 09-07 | Codex（art） | 🎨 T45 全角色共用 Q 版白骨 die_common 试产候选已生成，停 Leo 目验 | 按 PM seq=99 完成全角色共用白骨单帧试产；QA PASS（240×320、宽150、头朝左、贴底 y300、bbox 中心 x120、单连通、透明四边），未进 runtime，等待 Leo 目验。 |
+| 09-07 | Codex（art） | 🎨 T45 共享白骨姿势2候选完成，停 Leo 视觉门 | 原生第二次单帧按 Leo 标注姿势生成：斜向后仰、四肢摊开，保留小面积低对比接触阴影；确定性中性底 flood-cut、亮边去晕、宽150px归一、贴底 y=300、bbox 中心 x=120 后机械门 PASS。候选与暗底检查落在 `assets/_trial_20260907/t45_shared_die_bone_codex_native/`，未写 runtime，等待 Leo 目验。 |
+| 09-07 | Leo → Codex（art） | 🔁 T45 共享白骨姿势2风格修正 | Leo 认为姿势2候选偏写实，要求整体更 Q；保持斜向后仰、四肢摊开与小阴影，仅调整渲染风格。 |
+| 09-07 | Codex（art） | 🎨 T45 共享白骨姿势3 Q版候选完成，停 Leo 视觉门 | 原生单帧编辑仅调整风格：简化骨骼、圆润头部、加粗深棕轮廓、减少解剖细节与高光；姿势、布局、头向和小阴影保持不变。确定性 flood-cut/去晕/宽150px归一/贴底与 bbox 中心复核后机械门 PASS；候选未写 runtime，等待 Leo 目验。 |
+| 09-07 | Leo → Codex（art） | 🔁 T45 共享白骨姿势3描边修正 | Leo 指出 Q 版候选黑边过重，要求减弱；保持 Q 版比例、姿势、布局和小阴影，仅调整轮廓线。 |
+| 09-07 | Codex（art） | 🎨 T45 共享白骨姿势4柔和描边候选完成，停 Leo 视觉门 | 原生单帧编辑仅收敛描边：近黑粗边改为更细、更柔和的中等暖棕轮廓；Q 版比例、斜向后仰、四肢摊开、头向、布局与小阴影保持不变。确定性 flood-cut/去晕/宽150px归一/贴底与 bbox 中心复核后机械门 PASS；候选未写 runtime，等待 Leo 目验。 |
+| 09-07 | Leo → Codex（art） | 🔁 T45 共享白骨改为雷劈焦黑骷髅 | Leo 确认将白色骷髅改为被雷劈后的焦黑骷髅；保留 Q 版姿势与小阴影。 |
+| 09-07 | Codex（art） | 🎨 T45 共享白骨焦黑骷髅候选完成，停 Leo 视觉门 | 保留 Q 版比例、斜向后仰、四肢摊开、柔和轮廓与小阴影，仅把骨骼材质改成哑光炭黑，加入克制的灰烬高光和少量焦痕裂纹。确定性 flood-cut/去晕/宽150px归一/贴底与 bbox 中心复核后机械门 PASS；暗底与浅底检查已落，候选未写 runtime，等待 Leo 目验。 |
+| 09-07 | Leo → Codex（art） | 🔁 T45 共享白骨回到白色底稿并恶搞化 | Leo 选择附件白色 Q 版骷髅作为基础，要求降低恐怖感、增加恶搞趣味。 |
+| 09-07 | Codex（art） | 🎨 T45 共享白骨恶搞白骨候选完成，停 Leo 视觉门 | 以 Leo 附图为底稿，仅做友好恶搞化：眼窝改卡通眩晕旋涡、下颌做歪嘴吐舌表情，骨骼细节更简化；斜躺姿势、布局、比例、暖白骨色、柔和描边与小阴影保持不变。确定性 flood-cut/去晕/宽150px归一/贴底与 bbox 中心复核后机械门 PASS；候选未写 runtime，等待 Leo 目验。 |
 | 2026-09-07 | Codex（art） | ✅ T45 共享白骨 `die_common` 正式入库 | Leo 已视觉通过 pose6；最终规格门 PASS。SHA=`ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24`，同一 PNG 写入 hero 与 shanzei_a/b battle45；旧 hero 帧已备份，试产包 manifest 与 `qa/release_preflight.json` 已落盘，等待 rd 接线门。 |
 | 2026-09-07 | Codex（art） → rd | 📤 T45 共享白骨 `die_common` 交付（seq=102，b938aba） | 已推送 `codex/t45-shanzei-2b-pilot`；清单含共享试产包 manifest/QA、hero 与 shanzei_a/b runtime PNG、旧 hero 帧备份。SHA=`ae5a6ac7…`；等待 rd 接线与运行时核验。 |
+| 09-07 | ZCode（美术PM2） | 📤 rd→art seq=101：白骨试产催办+LOG补登记请求 | seq=99 白骨试产单请美术线确认回执，建议 walk_1/atk_1 逐张流收官后即接白骨试产 1 张（Leo 现场改排除外）；乙右walk1/atk1·乙右上walk1·乙右下walk1 四张候选缺 Leo 目验✅成对行请补记；门检以 rd 侧独立全像素精扫为准 |
+| 09-07 | ZCode（美术PM2） | ✅ 共享白骨 die_common 门检 PASS+ack（seq=102/103，b938aba/ca47df9） | 独立全像素精扫：240×320 RGBA/内容宽150∈[120,160]/贴底y300（300行以下全空）/单连通/四边零alpha（>0口径）；manifest bboxT32[45,157,195,300]与实测逐位吻合（exclusive-end记法），SHA ae5a6ac7…四方字节一致；旧hero人形die已备份（backup/die_common_pre_shared_20260907.png）；目验=Q版恶搞要素齐全无字；⚠️规格留痕：seq=99"头朝左"被Leo现场标注姿势（斜向后仰·头朝右上）取代，pose6目验过为准；→移交研发PM：FE接线/运行时核验门（die clip全角色替换验证，白骨定稿后旧帧处置=归档备份已就地完成） |
+| 09-07 | ZCode（美术PM2） | 📤 rd→art seq=104：共享白骨放行通知 | 门检 PASS 结论+头向规格留痕随单送达；白骨件 art 侧闭环（接线门归研发 PM）；催办两项随单重申：_1 逐张流继续+四张候选补 Leo✅ LOG 行 |
+| 2026-09-07 | Codex（art） | 🎨 T45 2b 山贼左系 `_2` 确定性镜像候选完成 | 以已过门的甲乙右系 `walk/atk × right/rightup/rightdown × _2` 为源，Pillow `ImageOps.mirror` 生成 left/leftup/leftdown 共 12 张；`pixelExact=12/12`，尺寸/模式/视觉高256/脚底y300/边界透明/单连通/动作质心门全过。候选包 `assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/`，未改 runtime；`_1` 仍待 Leo 逐张目验后再派生。
+| 2026-09-07 | Codex（art） → rd | 📤 T45 批 2b 山贼左系 `_2` 镜像候选交第二道规格门 | commit `8760ca7` 已推送 `codex/t45-shanzei-2b-pilot`；交付 12 张 left/leftup/leftdown `walk/atk _2`、manifest、contact、mirror QA，`pixelExact=12/12`、机械门全过；候选未改 runtime，`_1` 等 Leo 逐张目验后再派生。projbus `seq=105` / messageId `c9f20ddc0d9a49c6a762eadebfca6091`。
+| 09-07 | ZCode（美术PM2） | 📋 rd→art 收官单（seq=105）：2b 右系收官批 | 对账=_1 候选 12 张全存在（_1 批 normalized 10+pilot 甲右 w1/a1 2）零新生成；三件=①_1 12 张集成 release（含统一比例复核 contact sheet）②2a idle 六锚 runtime 落位（battle45/ 现无 battle_idle_*，7d783c9 仅 trial）③补 4 张 Leo✅ LOG 行；收官后下一任务=左系镜像 30 张 |
+| 09-07 | ZCode（美术PM2） | ❓ rd→art seq=107：对账复核请求（Leo 令） | 2b 候选/release 检查记录发美术线逐项核对（A release 现状/B 候选 12 张清单+C idle 锚安排/D 四张✅补登），要求有出入先回再动、无出入按 seq=106 执行；correlation 绑定收官单 |
+| 2026-09-07 | Leo → Codex（art） | 🔧 T45 左系 `_2` 边缘残留清理请求 | 甲左系 6 张均需重新处理；乙仅 `walk_leftdown_2`、`atk_leftup_2` 处理手臂与腰带间留白；范围锁定 8 张，原镜像包与 runtime 不改。 |
+| 2026-09-07 | Codex（art） | 🎨 T45 左系 `_2` 清理 revision v1 候选完成 | `assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/`；8 张确定性去浅色边缘晕染，4 个指定 ROI 清除近白残块；cleanup QA 8/8 PASS（240×320 RGBA、视觉高256、脚底y300、质心门、四边透明、单连通、无新增 alpha）；待 Leo 复验与 PM 第二道规格门，未改 runtime。 |
+| 2026-09-07 | Leo → Codex（art） | ✅ T45 左系 `_2` 清理 revision v1 目验通过，提交规格门 | Leo 确认 8 张清理候选可用；manifest 更新 `visualReview=selected_by_Leo`，随 commit 提交研发线 PM 第二道规格门；runtime 暂不改。 |
+| 09-07 | ZCode | ⏸️ TASK-AS-v03 因 5 小时限额中断→定时续跑 | 代理完成基座合并（0966ce7=fe+main）后施工至 14:11 撞 5h 上限（15:52:51 重置）；现场已 WIP 封存（742f3a6：session+cast 测试半成品+Q1 卡归档）；已建 15:55 定时任务自动唤醒代理从 WIP 续作（automation-0d8a2122），若唤醒失败则报 Leo |
