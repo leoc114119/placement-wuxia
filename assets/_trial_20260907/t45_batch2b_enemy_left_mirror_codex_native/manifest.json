@@ -1,0 +1,377 @@
+{
+  "task": "T45",
+  "batch": "2b-enemy-left-mirror",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "sourcePolicy": "Only PM-accepted T45 right系 release frames; no ImageGen; Pillow ImageOps.mirror pixel-exact output.",
+  "mirrorPolicy": "left/leftup/leftdown = deterministic horizontal mirror of right/rightup/rightdown; die_common shared and excluded.",
+  "count": 12,
+  "files": [
+    {
+      "name": "shanzei_a_walk_left_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_walk_left_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_a/battle45/walk_right_2.png",
+      "flipX": true,
+      "sourceSha256": "a0a75a54bdd66a64f3cb0d50c3a80e4005419316573c4036ae47bd364adf0548",
+      "outputSha256": "e866b62f4c331077d00863a54bc13eb7b2d004d78c6d5d0940168e96a636cf68",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        39,
+        44,
+        192,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.10778177790085,
+      "alpha32CentroidY": 174.53259484907227,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_leftup_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_walk_leftup_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_a/battle45/walk_rightup_2.png",
+      "flipX": true,
+      "sourceSha256": "d61b1d765f6c3a09f719fd020b0c0e204b128c451948e3392710609968920357",
+      "outputSha256": "63efec8ec9d37caaa6b6c9397061ace3a9851c68430b7057c57d18254e509cf5",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        54,
+        44,
+        187,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.2172509738453,
+      "alpha32CentroidY": 173.35731775180858,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_leftdown_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_walk_leftdown_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_a/battle45/walk_rightdown_2.png",
+      "flipX": true,
+      "sourceSha256": "103f48a3e71a686b28b3ed5316f40b50313c45d6ec734b6ba02278c278f35a72",
+      "outputSha256": "55bfda84434dc2e714a4ac0d70b5dc458c8fcb04231028c2c1be26488754d83f",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        55,
+        44,
+        184,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.96070484581497,
+      "alpha32CentroidY": 167.14455212922172,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_left_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_atk_left_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_a/battle45/atk_right_2.png",
+      "flipX": true,
+      "sourceSha256": "72389c7651305cb19061d5337a38fa8bc472e29b61c2a2a8b27dfecfd31c218a",
+      "outputSha256": "b34195fa4ba91759fd2a1b4fba1a744c002f8f1a2d7f0f90464d368a63536939",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        33,
+        44,
+        187,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.30296030636435,
+      "alpha32CentroidY": 168.17123579113732,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_leftup_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_atk_leftup_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_a/battle45/atk_rightup_2.png",
+      "flipX": true,
+      "sourceSha256": "c8bb48831cde088abbcdc7ac999d1586c91293fd5e3b93c699b66cfef2ef81a8",
+      "outputSha256": "e4b6618b9bf66d048cea4915f2e2146a69ce00e2134e99b9bc0cc1fcb75419b5",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        24,
+        44,
+        179,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.7099262815018,
+      "alpha32CentroidY": 169.60323447054117,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_leftdown_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_atk_leftdown_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_a/battle45/atk_rightdown_2.png",
+      "flipX": true,
+      "sourceSha256": "06706b8729f49cb78d19d61be07f77414bd93510b7b47f3360f3e5fc24179de8",
+      "outputSha256": "71cb24db2503901db459879673cc722a72b8d05cea576fb1ca2a9326d3f7188e",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        46,
+        44,
+        192,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.53038983684145,
+      "alpha32CentroidY": 170.4351102254328,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_left_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_walk_left_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_b/battle45/walk_right_2.png",
+      "flipX": true,
+      "sourceSha256": "771452ae1b4fb0565bca0de14aafd34da7e2dd5e70642f1c2681247b7580e4e4",
+      "outputSha256": "2e8ff80744ad5b2c407cb7b6bd521cb367fb416e392a13da6ba5d79012bec0b7",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        51,
+        44,
+        192,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.78291666666667,
+      "alpha32CentroidY": 160.55838541666665,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_leftup_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_walk_leftup_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_b/battle45/walk_rightup_2.png",
+      "flipX": true,
+      "sourceSha256": "8433699da3a0858cf25990d8e0510cc00f0e86a22956b9fc4cb7ca0e4cd9b7ef",
+      "outputSha256": "a0507ea134beb1fdb3374905037409add6bffa65c1e3c2c58ad0e0b6258dda1d",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        55,
+        44,
+        193,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.81635618286545,
+      "alpha32CentroidY": 160.7292823413419,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_leftdown_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_walk_leftdown_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_b/battle45/walk_rightdown_2.png",
+      "flipX": true,
+      "sourceSha256": "d9c9cbd261d37fea9e4f3da1bda51ddbaa2152e64f0f934c8d1601aa7a6459c3",
+      "outputSha256": "8d5e30b0a72c00eae003d2909c36de5a79fa83b04acfae6cc137f4386f0bcc42",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        59,
+        44,
+        186,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.40359477124183,
+      "alpha32CentroidY": 160.09262663398692,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_left_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_atk_left_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_b/battle45/atk_right_2.png",
+      "flipX": true,
+      "sourceSha256": "9729be6f684f31077c5f4347c03f178869593679576c8d1320f5587cd68fa31f",
+      "outputSha256": "5bb8b6f10bd20211c07eda67e2352ce25750638a44d7ff4babd0430a85f04ea4",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        23,
+        44,
+        194,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.76473769605192,
+      "alpha32CentroidY": 162.34446137961552,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_leftup_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_atk_leftup_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_b/battle45/atk_rightup_2.png",
+      "flipX": true,
+      "sourceSha256": "6b4b6cb086d0cb6bfc16c8b958ec39fb3c79ec67216ed03f7da65e18bb5333ca",
+      "outputSha256": "ad1c82f44c0eea6e3a2dec14120720da282c1f4ee7c269f310d3db40b8800ee9",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        24,
+        44,
+        188,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.95934265893324,
+      "alpha32CentroidY": 159.0736381212328,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_leftdown_2.png",
+      "path": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_atk_leftdown_2.png",
+      "derivedFrom": "assets/characters/enemy/shanzei_b/battle45/atk_rightdown_2.png",
+      "flipX": true,
+      "sourceSha256": "e2269ff12ed7b78005653d24144cda955fe608ec550257f6ca82862d61319126",
+      "outputSha256": "30d0c35a8244c88366cd14d23f297c147c47fe44e2bc57d9aa31bf18dc083295",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        33,
+        44,
+        198,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.05629434954008,
+      "alpha32CentroidY": 158.17466491458606,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "pixelExact": true,
+      "edgeAlphaZero": true,
+      "hardGatesPass": true
+    }
+  ],
+  "hardGatesAllPass": true,
+  "qaPath": "qa/mirror_check.json",
+  "contactPath": "contact/left_mirror_right2_contact.png"
+}
