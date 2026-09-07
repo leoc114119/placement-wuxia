@@ -1,0 +1,9 @@
+Edit the existing shanzei_a right-facing attack frame using the four supplied references.
+
+Reference responsibilities:
+1. The existing shanzei_a attack frame is the composition and phase source; keep its full-body framing, planted feet, timing phase, and empty-body-layer policy.
+2. The shanzei_a right anchor is the only source for identity, face, hair, clothing, palette, rendering, and proportions.
+3. The white mannequin right-direction reference is the only source for the exact screen-right side view.
+4. The marked hero attack is the only source for punching-hand identity: follow the magenta annotation exactly. The character's intended right punching arm is the circled/retracted arm that travels across the torso to the closed fist at screen right. The opposite arm stays retracted near the torso. Do not let the shoulder-side arm currently reaching outward remain the punching arm.
+
+Make exactly one observable change: correct the punching arm to the marked right-arm path. Preserve the character's identity, face direction, hair and clothing, empty hands except for closed fists, body scale, feet, and attack phase. No weapons, no sword, no hilt, no sheath, no text, no watermark, no ground shadow, no extra limbs, and no redesign. Full body on a single plain light neutral background for deterministic cutout; no sheet and no multiple characters.

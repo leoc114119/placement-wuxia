@@ -1,9 +1,9 @@
 {
   "task": "T45",
   "batch": "2b-production",
-  "status": "blocked_ratio_gate_action_conflict",
+  "status": "handshape_correction_visual_review",
   "scope": "shanzei_a/b × right/rightup/rightdown × walk2+atk2; idle anchors reused; die common per identity; left系 deterministic mirror after right系 gate",
-  "ratioGate": "0.375<=bboxWidth/visualHeight<=0.515625 for vertical frames (T=30, visualHeight=256)",
+  "ratioGate": "idle/neutral frames only: 0.375<=bboxWidth/visualHeight<=0.515625; walk/atk/cast/jump exempt per rd seq87; other mechanical gates remain hard",
   "dieGate": "width<=220, feetY=300, bboxCenterX=120",
   "weaponPolicy": "empty-body frames; pudao separate",
   "identityAnchors": {
@@ -37,8 +37,21 @@
     "raw/shanzei_a_atk_rightdown_2_attempt1.png",
     "raw/shanzei_b_walk_rightdown_2_attempt1.png",
     "raw/shanzei_b_atk_rightdown_2_attempt1.png",
-    "qa/summary.json"
+    "qa/summary.json",
+    "raw/shanzei_b_atk_right_2_user_fixed.png",
+    "normalized/shanzei_b_atk_right_2_user_fixed.png",
+    "qa/shanzei_b_atk_right_2_user_fixed.json"
   ],
   "runtimeRelease": false,
-  "blocker": "Full foreground bbox ratio rejects natural walk/attack limb extension; awaiting PM decision on metric and action-specific gates."
+  "blocker": "Awaiting Leo visual review of the single-frame user-fixed source after deterministic normalization; no batch generation and no runtime release.",
+  "handCorrections": {
+    "shanzei_b_atk_right_2": {
+      "userSource": "raw/shanzei_b_atk_right_2_user_fixed.png",
+      "punchingHand": "preserved exactly from Leo-provided source",
+      "changeScope": "deterministic background/size/center normalization only; no semantic redraw",
+      "candidate": "normalized/shanzei_b_atk_right_2_user_fixed.png",
+      "visualReview": "pending",
+      "specGate": "pending"
+    }
+  }
 }

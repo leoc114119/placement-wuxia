@@ -1,0 +1,30 @@
+{
+  "key": "shanzei_b_atk_right_2_handshape_attempt1",
+  "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_right_2_handshape_attempt1.png",
+  "output": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_right_2_handshape_attempt1.png",
+  "size": [
+    240,
+    320
+  ],
+  "bboxT30": [
+    30,
+    44,
+    210,
+    300
+  ],
+  "visualWidth": 180,
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 107.49152305542617,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "03fd27fd32db9881f648b3723b3eccd7c8dfd4b9f33e70cd065e691085e1135d",
+  "outputSha256": "e62379da05b06aef26cca1f743a470a0b6e986fda9f65542ef48f7e20208d937",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+  "punchingHand": "preserved from Leo-provided source",
+  "correction": "retracted opposite hand shape only",
+  "visualReview": "pending",
+  "specGate": "pending"
+}

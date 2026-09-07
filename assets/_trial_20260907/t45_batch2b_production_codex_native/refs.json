@@ -16,6 +16,20 @@
     "rightup": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_rightup.png",
     "rightdown": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_rightdown.png"
   },
+  "correctionReferences": {
+    "handSideMarked": {
+      "path": "assets/_trial_20260905/t45_batch1a_codex_native/sheets/atk_right_2_target_hand_marked.png",
+      "visualCheck": "Hero right-facing attack with Leo's magenta annotation marking the intended punching-hand path; the circled retracted hand is the arm that must extend across the torso to the screen-right fist.",
+      "allowed": "punching-arm identity and path only",
+      "forbidden": "NPC identity, face, hair, clothes, palette, proportions, or direction"
+    },
+    "userHandShapeFix": {
+      "path": "assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_right_2_user_fixed.png",
+      "visualCheck": "Leo-provided corrected frame: punching arm, retracted hand, pose, and style are accepted; only deterministic cutout/size/center processing is allowed.",
+      "allowed": "source pixels, background removal, 240x320 normalization, full alpha>32 centroid recenter",
+      "forbidden": "semantic redraw, changing either hand, attack phase, direction, identity, clothing, feet, scale, or framing"
+    }
+  },
   "actionReferences": {
     "walk_1": {
       "hero": "assets/characters/hero/battle45/walk_{d}_1.png",

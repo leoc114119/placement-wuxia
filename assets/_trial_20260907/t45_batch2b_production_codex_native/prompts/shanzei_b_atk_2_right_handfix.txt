@@ -1,0 +1,8 @@
+Generate one shanzei_b right-facing attack frame from the three supplied references.
+
+Reference responsibilities:
+1. The shanzei_b right anchor is the only source for identity, red headscarf, face, hair, clothing, palette, rendering, and proportions.
+2. The white mannequin right-direction reference is the only source for the exact screen-right side view.
+3. The marked hero attack is the only source for the punching-hand identity and arm path. Follow the magenta annotation: the arm that starts as the circled/retracted hand on the lower screen-left side must cross in front of the torso and extend to the closed fist at screen right. The opposite arm stays bent and close to the torso.
+
+Generate attack phase 2, feet planted, full body, empty-body layer, one closed fist extended to screen right and the opposite fist retracted. Do not use the shoulder-side arm as the punching arm. Preserve the exact screen-right direction. No weapons, no text, no watermark, no ground shadow, no extra limbs, no multiple characters, no sheet. Plain light neutral background for deterministic cutout.

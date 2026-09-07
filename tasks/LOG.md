@@ -472,3 +472,9 @@
 | 09-07 | ZCode | 📋 需求文档升 v1.3（AS-4/6/6b/7/9 改写+新增）+ arch 修订请求已发（seq=84） | 方案 v0.2 要点：t1 重搜算法与确定性序/AS-6+SP-2 用例面重写/死亡撤销 scheduler 边界/工时修正（BE 6h→8-9h）；v0.2 交付→PM 复核→发 BE 卡（FE 卡串行跟进） |
 | 2026-09-07 | rd → Codex（art） | ✅ T45 PM 背书竖直窄比值门 | seq=81 / messageId `a044f87845fc47e0a3a19b0109bc0a73`；确认后续竖直帧 `0.375≤w/h≤0.515625`，die 维持宽度门；真源待 merge 回 main 补落。 |
 | 2026-09-07 | Codex（art） → rd | ❓ T45 2b 严格比值门与动作包络冲突再请 PM 裁定 | seq=85 / messageId `e0bdeb31c90c4ba7a35ccc5b136e13f1`；实测普攻/行走完整包络超过六锚窄带，不能横向压缩；请求 core-body/head metric 或动作拆门裁定，未写 runtime。 |
+| 09-07 | ZCode | 🚀 TASK-AS-BE 发卡开工（backend-battle 代理，独立 worktree /tmp/placement-wuxia-rd-cast @ task/attack-speed-be） | 方案 v0.2 PM 复核 PASS（2ab93f9 ack accepted）；代理 DoR 复述零偏差+用例清单 AS-T1~13 全覆盖+自决 B1~B7 全批准（B4=施法门解 manual 冻结死锁）；Q1 授权既有用例采样时刻改写（清单内~13 处、方向零改、注明依据）；需求文档 v1.3 已落库任务分支（60eaa18）；交付链=四门→路径级 commit→ARCH-AS 回执→主架构技术验收 |
+| 09-07 | ZCode | 📐 ratio 门冲突裁定（seq=85→87）：修正版 A | 窄带 0.375~0.515625 只管 idle/中性站姿；walk/atk/cast/jump 动作帧免带（动作包络是噪声非体型漂移，美术实测 atk2 达 0.805）；其余机械门维持硬门（视觉高 256 不放宽 ±10%）；动作帧体型一致性=锚参照链+Leo 目验 |
+
+| 2026-09-07 | rd → Codex（art） | ✅ T45 ratio 门裁定修正版 A | projbus `seq=87` / messageId `dc9a143926614502917106b90408c791`；窄带仅管 idle/中性站姿，walk/atk/cast/jump 免带；画布、视觉高256、脚底y300、质心≈120、单连通、零边alpha、无字等机械门维持。 |
+| 2026-09-07 | Leo → Codex（art） | 🔧 T45 乙·右普攻用户修正版指定为唯一源 | 用户提供 `codex-clipboard-f98a6d69-9b8c-4ea5-873f-42cc0659d3c2.png`；确认出拳手与另一只手形均按此图使用，要求只做风格/规格/尺寸优化，逐张处理，禁止批量重出。 |
+| 2026-09-07 | Codex（art） | 🎨 T45 乙·右普攻单帧确定性优化候选 | 用户源复制至 `raw/shanzei_b_atk_right_2_user_fixed.png`；未语义重绘，仅暖中性背景连通域透明化、等比归一 240×320、视觉高256、脚底y300、全 alpha>32 质心 x=120.2146；候选 `normalized/shanzei_b_atk_right_2_user_fixed.png`，待 Leo 单帧目验，未写 runtime。 |
