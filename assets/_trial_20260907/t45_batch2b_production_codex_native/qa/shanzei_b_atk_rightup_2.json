@@ -1,0 +1,29 @@
+{
+  "key": "shanzei_b_atk_rightup_2",
+  "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_rightup_2_attempt1.png",
+  "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_rightup_2.png",
+  "size": [
+    240,
+    320
+  ],
+  "bboxT30": [
+    36,
+    44,
+    203,
+    300
+  ],
+  "visualWidth": 167,
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 119.5,
+  "widthHeightRatio": 0.65234375,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "e964097b1c2c81d24962805df34c37e382325f17b6d13b7b40b2020bc7be0b8e",
+  "outputSha256": "3939d919e8c9aaf1c2cdca8d5fe82f1892faa3825f2fd0f4f577dc9bd2a7b42b",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+  "ratioPass": false,
+  "mechanicalPass": false
+}

@@ -466,3 +466,9 @@
 | 09-07 | Codex（art）→ rd | 📤 T45 批2b pilot 交付（seq=79，7bcdb73） | 山贼甲右向三帧（walk_right_1/atk_right_1/die_common），独立分支 codex/t45-shanzei-2b-pilot，单发 attempts=1，Leo 目验已过 |
 | 09-07 | ZCode | ✅ 2b pilot 规格门 PASS+铺量放行（ack accepted） | 溯源干净；独立全像素精扫与自报全吻合（240×320/高256/y1=299=300口径同hero/cx=119.5同甲锚/单连通/零边alpha/ratio 0.4688·0.3984=姿势性展宽非体型漂移）；目验=甲身份五特征全保持+walk迈步/atk起手/die伏地正确+空手+无字 |
 | 2026-09-07 | Codex（art） → rd | ❓ T45 2b 竖直动作帧宽高比收紧请 PM 评估 | projbus `seq=80` / messageId `eaa42d35f5b4415ca5bd713b3b554b99`；建议窄带 `0.375≤bboxWidth/visualHeight≤0.515625`，die_common 保持横躺宽度门；等待 PM 判断，正式需求真源暂不改。 |
+| 09-07 | Codex（arch）→ rd | 📤 出招速度技术方案 v0.1 交付（seq=82/83，ce113a2+34c00a8） | 提交即排程+两时刻结算（t1 落地/t2 收招终点）；core 新增 50% 段结算纯函数零新增事件；AOE 提交时目标快照；边界补交=scheduler 每段后查终局停队列+finishWindow 归共享配置；BE 6h 先行+FE 4h 后行 |
+| 09-07 | ZCode | 📋 方案符合性审阅通过+AS-1 勘误落盘（待 main 空闲提交） | 六裁定逐条吻合（加法公式/两段落点/循环=时长/普攻1s/无打断/AI 同构）；AS-1 行 v1.1 乘法残留已勘误为 v1.2 加法公式（9081e29 为准）+标题版本同步+旧空标题清理；三项拍板呈 Leo：①AOE 提交快照=AS-6 正式解释（语义级）②finishWindowMs=300 复用 strikeSec（参数级 PM 背书）③终局停结算零新增伤害事件（表现层 FE 可播完纯动画） |
+| 09-07 | Leo → ZCode | 🎯 出招速度三项拍板+动态追踪改裁 | ①AOE 目标语义=**动态追踪**（Leo 提"竞技性更强"，PM 复演后改背书：慢招可躲/快招难躲=速度博弈维度；与现行 AOE 语义连续）②收招窗 300ms 照建议③终局=停结算+FE 播完施放帧；追加细裁：施法者死亡=**招式消散**（A 案，集火反制慢招第二手段）；自然推论 PM 落规格：重搜锚=提交格、重搜空集=空放、目标集 t1 一次定两段共用 |
+| 09-07 | ZCode | 📋 需求文档升 v1.3（AS-4/6/6b/7/9 改写+新增）+ arch 修订请求已发（seq=84） | 方案 v0.2 要点：t1 重搜算法与确定性序/AS-6+SP-2 用例面重写/死亡撤销 scheduler 边界/工时修正（BE 6h→8-9h）；v0.2 交付→PM 复核→发 BE 卡（FE 卡串行跟进） |
+| 2026-09-07 | rd → Codex（art） | ✅ T45 PM 背书竖直窄比值门 | seq=81 / messageId `a044f87845fc47e0a3a19b0109bc0a73`；确认后续竖直帧 `0.375≤w/h≤0.515625`，die 维持宽度门；真源待 merge 回 main 补落。 |
+| 2026-09-07 | Codex（art） → rd | ❓ T45 2b 严格比值门与动作包络冲突再请 PM 裁定 | seq=85 / messageId `e0bdeb31c90c4ba7a35ccc5b136e13f1`；实测普攻/行走完整包络超过六锚窄带，不能横向压缩；请求 core-body/head metric 或动作拆门裁定，未写 runtime。 |

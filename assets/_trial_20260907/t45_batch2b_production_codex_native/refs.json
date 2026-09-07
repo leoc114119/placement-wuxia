@@ -1,0 +1,37 @@
+{
+  "identityAnchors": {
+    "shanzei_a": {
+      "right": "assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/normalized/shanzei_a_right.png",
+      "rightup": "assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/normalized/shanzei_a_rightup.png",
+      "rightdown": "assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/normalized/shanzei_a_rightdown.png"
+    },
+    "shanzei_b": {
+      "right": "assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/normalized/shanzei_b_right.png",
+      "rightup": "assets/_trial_20260906/t45_batch2a_b_rightup_singleframe_v5_codex_native/normalized/shanzei_b_rightup.png",
+      "rightdown": "assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/normalized/shanzei_b_rightdown.png"
+    }
+  },
+  "directionReferences": {
+    "right": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_right.png",
+    "rightup": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_rightup.png",
+    "rightdown": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_rightdown.png"
+  },
+  "actionReferences": {
+    "walk_1": {
+      "hero": "assets/characters/hero/battle45/walk_{d}_1.png",
+      "semantics": "walking phase 1: full-body stride, one leg forward and the other back, arms counter-swing, feet separated and planted"
+    },
+    "walk_2": {
+      "hero": "assets/characters/hero/battle45/walk_{d}_2.png",
+      "semantics": "walking phase 2: opposite stride from phase 1, full-body motion, opposite leg forward, arms counter-swing"
+    },
+    "atk_1": {
+      "hero": "assets/characters/hero/battle45/atk_{d}_1.png",
+      "semantics": "attack phase 1: guarded charging pose, both fists drawn close to the chest, elbows bent, feet planted"
+    },
+    "atk_2": {
+      "hero": "assets/characters/hero/battle45/atk_{d}_2.png",
+      "semantics": "attack phase 2: one closed fist extends toward screen right while the other fist retracts near the torso, feet planted"
+    }
+  }
+}

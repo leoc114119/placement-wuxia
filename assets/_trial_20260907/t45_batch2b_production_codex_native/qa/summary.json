@@ -1,0 +1,384 @@
+{
+  "count": 13,
+  "ratioGate": "0.375<=width/visualHeight<=0.515625",
+  "mechanicalPass": false,
+  "files": [
+    {
+      "key": "shanzei_a_atk_right_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_atk_right_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_right_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        32,
+        44,
+        207,
+        300
+      ],
+      "visualWidth": 175,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 119.5,
+      "widthHeightRatio": 0.68359375,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "44bf232b8d077ca250893f397162ac69433e72a57d2bd356f8569ea24d76eb21",
+      "outputSha256": "50b52c7f3339dfd9411de67468e5e659f1024e240cab77196c9d38b47eb0101f",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_a_atk_rightdown_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_atk_rightdown_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_rightdown_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        23,
+        44,
+        217,
+        300
+      ],
+      "visualWidth": 194,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.7578125,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "9154b5cee6b4748448bd38c70b896d3c0e93c07380b297084308b52539915780",
+      "outputSha256": "42a31f66d8bc0e9240d5fbc36a861ba3e48b8c6705b27b00fa03507fbaa840c5",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_a_atk_rightup_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_atk_rightup_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_rightup_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        36,
+        44,
+        204,
+        300
+      ],
+      "visualWidth": 168,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.65625,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "8f976fa70b7262b2c3d85799d092231a94014b9920917468ae5f655ecb08eb85",
+      "outputSha256": "f11b2439cff2cdb24d4cd6a03152e000770204a3d86696315b7f177834fbc4cb",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_a_walk_right_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_walk_right_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_walk_right_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        44,
+        44,
+        197,
+        300
+      ],
+      "visualWidth": 153,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.5,
+      "widthHeightRatio": 0.59765625,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "2167ffe8c701b0dcd053d550f1366034b3455efdf5d98c5d4f736a03beff5c46",
+      "outputSha256": "4868f7969239b65a546517d78bd68d23c45d9e807021a29e3783c5e84ce274d0",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_a_walk_rightdown_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_walk_rightdown_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_walk_rightdown_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        56,
+        44,
+        185,
+        300
+      ],
+      "visualWidth": 129,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.5,
+      "widthHeightRatio": 0.50390625,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "2accb8a49c500affb3e55f23b41048105d250e62c138b90b50afe37984fd2f94",
+      "outputSha256": "1689b4336ca3164d0ab7032aeb1a75714cf220f70b8278097d65da6ba20184d0",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": true,
+      "mechanicalPass": true
+    },
+    {
+      "key": "shanzei_a_walk_rightup_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_walk_rightup_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_walk_rightup_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        54,
+        44,
+        187,
+        300
+      ],
+      "visualWidth": 133,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.5,
+      "widthHeightRatio": 0.51953125,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "8c3a7979a6854fc1c0f92ee612249e07150ad0701ad2105fa4032e42d66a03d3",
+      "outputSha256": "1bdcd2046ab02cce0ef8053eb0bde85540a9696f98d6493098330fdc9756f241",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_b_atk_right_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_right_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_right_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        26,
+        44,
+        213,
+        300
+      ],
+      "visualWidth": 187,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 119.5,
+      "widthHeightRatio": 0.73046875,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "142f650af0b788c6bbcd8daba6a0c993e32d9d17d32293168992da169cc1f29e",
+      "outputSha256": "b01e3dee9fb1236fba0937091b48063ab2671fce7a8584d024862b10498857f7",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_b_atk_right_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_right_2_attempt2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_right_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        24,
+        44,
+        216,
+        300
+      ],
+      "visualWidth": 192,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.75,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "3c3756a633c7b611b10af9dabb38a0ed9f512f5eef3dc34d45748842539d6c6b",
+      "outputSha256": "0dd800c7ec847f505b1bda160b409cc380cbda2d63a099acc87c3cf8428f9859",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_b_atk_rightdown_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_rightdown_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_rightdown_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        17,
+        44,
+        223,
+        300
+      ],
+      "visualWidth": 206,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.8046875,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "b4e2bda7ba25bcd956a4e7f93b2f0b052ef6bcdc2f34da49024e79fa0b31cb8a",
+      "outputSha256": "d0c022be2a99455359236e1c6e514b9676f388a2351efa2e308f7c1e468ebcdb",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_b_atk_rightup_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_rightup_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_rightup_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        36,
+        44,
+        203,
+        300
+      ],
+      "visualWidth": 167,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 119.5,
+      "widthHeightRatio": 0.65234375,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "e964097b1c2c81d24962805df34c37e382325f17b6d13b7b40b2020bc7be0b8e",
+      "outputSha256": "3939d919e8c9aaf1c2cdca8d5fe82f1892faa3825f2fd0f4f577dc9bd2a7b42b",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_b_walk_right_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_walk_right_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_walk_right_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        50,
+        44,
+        191,
+        300
+      ],
+      "visualWidth": 141,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.5,
+      "widthHeightRatio": 0.55078125,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "2f888948ee78e04ae9246277d56c693f248e91dae767f7fa40753cdc415a494f",
+      "outputSha256": "717ba9643a1b201e689d0234629f31520bb4d4ef4e8063d667efe29dbb0b7f07",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    },
+    {
+      "key": "shanzei_b_walk_rightdown_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_walk_rightdown_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_walk_rightdown_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        56,
+        44,
+        183,
+        300
+      ],
+      "visualWidth": 127,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 119.5,
+      "widthHeightRatio": 0.49609375,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "313476cda1ac50d2b2da9726dd34db046be94e7145709cab8e9432ea7737d2e6",
+      "outputSha256": "d1017ed189f0c976c998f60b172303b98dd1d7115e3931540876eb6f291092d5",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": true,
+      "mechanicalPass": true
+    },
+    {
+      "key": "shanzei_b_walk_rightup_2",
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_walk_rightup_2_attempt1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_walk_rightup_2.png",
+      "size": [
+        240,
+        320
+      ],
+      "bboxT30": [
+        51,
+        44,
+        189,
+        300
+      ],
+      "visualWidth": 138,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.5390625,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "e76d0423f038ee721fb0d5225ac2a4bdd16fa79bedf081209f57c911ca519984",
+      "outputSha256": "5bf281ce88aecdd344add5c491bb8ca96d06b053398c6135b8a2d2e54bbeba81",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+      "ratioPass": false,
+      "mechanicalPass": false
+    }
+  ]
+}

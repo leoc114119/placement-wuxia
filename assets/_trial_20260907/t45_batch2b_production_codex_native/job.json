@@ -1,0 +1,44 @@
+{
+  "task": "T45",
+  "batch": "2b-production",
+  "status": "blocked_ratio_gate_action_conflict",
+  "scope": "shanzei_a/b × right/rightup/rightdown × walk2+atk2; idle anchors reused; die common per identity; left系 deterministic mirror after right系 gate",
+  "ratioGate": "0.375<=bboxWidth/visualHeight<=0.515625 for vertical frames (T=30, visualHeight=256)",
+  "dieGate": "width<=220, feetY=300, bboxCenterX=120",
+  "weaponPolicy": "empty-body frames; pudao separate",
+  "identityAnchors": {
+    "shanzei_a": {
+      "right": "assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/normalized/shanzei_a_right.png",
+      "rightup": "assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/normalized/shanzei_a_rightup.png",
+      "rightdown": "assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/normalized/shanzei_a_rightdown.png"
+    },
+    "shanzei_b": {
+      "right": "assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/normalized/shanzei_b_right.png",
+      "rightup": "assets/_trial_20260906/t45_batch2a_b_rightup_singleframe_v5_codex_native/normalized/shanzei_b_rightup.png",
+      "rightdown": "assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/normalized/shanzei_b_rightdown.png"
+    }
+  },
+  "directionReferences": {
+    "right": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_right.png",
+    "rightup": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_rightup.png",
+    "rightdown": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_rightdown.png"
+  },
+  "outputs": [
+    "raw/shanzei_a_walk_right_2_attempt1.png",
+    "raw/shanzei_a_atk_right_2_attempt1.png",
+    "raw/shanzei_b_walk_right_2_attempt1.png",
+    "raw/shanzei_b_atk_right_2_attempt1.png",
+    "raw/shanzei_b_atk_right_2_attempt2.png",
+    "raw/shanzei_a_walk_rightup_2_attempt1.png",
+    "raw/shanzei_a_atk_rightup_2_attempt1.png",
+    "raw/shanzei_b_walk_rightup_2_attempt1.png",
+    "raw/shanzei_b_atk_rightup_2_attempt1.png",
+    "raw/shanzei_a_walk_rightdown_2_attempt1.png",
+    "raw/shanzei_a_atk_rightdown_2_attempt1.png",
+    "raw/shanzei_b_walk_rightdown_2_attempt1.png",
+    "raw/shanzei_b_atk_rightdown_2_attempt1.png",
+    "qa/summary.json"
+  ],
+  "runtimeRelease": false,
+  "blocker": "Full foreground bbox ratio rejects natural walk/attack limb extension; awaiting PM decision on metric and action-specific gates."
+}

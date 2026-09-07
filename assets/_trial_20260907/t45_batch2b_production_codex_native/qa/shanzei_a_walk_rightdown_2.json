@@ -1,0 +1,29 @@
+{
+  "key": "shanzei_a_walk_rightdown_2",
+  "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_walk_rightdown_2_attempt1.png",
+  "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_walk_rightdown_2.png",
+  "size": [
+    240,
+    320
+  ],
+  "bboxT30": [
+    56,
+    44,
+    185,
+    300
+  ],
+  "visualWidth": 129,
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.5,
+  "widthHeightRatio": 0.50390625,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "2accb8a49c500affb3e55f23b41048105d250e62c138b90b50afe37984fd2f94",
+  "outputSha256": "1689b4336ca3164d0ab7032aeb1a75714cf220f70b8278097d65da6ba20184d0",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+  "ratioPass": true,
+  "mechanicalPass": true
+}
