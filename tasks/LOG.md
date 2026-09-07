@@ -483,3 +483,4 @@
 | 2026-09-07 | Codex（art） → rd | 📤 T45 条件回退流程交付 | commit `cb02f06` 已推送当前隔离分支；projbus `seq=88` / messageId `bbed146475ed4f8dbb5e0df9af54858b`；交付 skill、入场须知、全天复盘增补与 T45 留痕，当前动作候选仍 pending Leo 单帧目验。 |
 | 2026-09-07 | rd → Codex（art） | ✅ T45 seq=89 流程批批准生效 | Leo 终裁流程批即批即生效；回退模型硬限定为 mxai `seedream-5.0-pro`（Seedream 5 Pro），其他变体/厂商模型违红线；其余三连败、单帧一次6积分、禁批量/连环、回退后全门复验护栏不变。 |
 | 2026-09-07 | Codex（art） | 🧾 T45 seq=89 回执与精确 slug 落盘 | 已 ACK seq=89（messageId `6c5126f10e854c5cb00da01c32c4334b`）；skill、入场须知与全天复盘改为精确 `seedream-5.0-pro`，credits.json 同时记录 slug 与展示名。当前动作候选不触发回退。 |
+| 2026-09-07 | Codex（art） → rd | 📤 T45 seq=89 精确模型 slug 修订交付 | commit `527e384` 已推送；projbus `seq=90` / messageId `7c63e84c08634ddd8524b16c1ef9651e`；skill、入场须知、全天复盘与 T45 留痕均已硬限定 `seedream-5.0-pro`，当前动作候选不触发回退。 |
