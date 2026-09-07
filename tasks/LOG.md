@@ -463,3 +463,5 @@
 | 2026-09-07 | Leo → Codex（art） | ✅ T45 2b pilot 风格/比例目验通过，要求严格尺寸复核 | 三张 pilot 风格和比例无问题；按 T45 §5 对身高、画布、脚底、中心、透明边界、单主体和死亡横躺宽度做全像素复核。 |
 | 2026-09-07 | Codex（art） | ✅ T45 2b pilot 严格尺寸复核全过 | `qa/strict_dimension_recheck.json`：walk/atk 视觉高均256px、bbox center x=120、feet y=300、RGBA/单连通/边界透明全过；die 宽210≤220、feet y=300、center x=120，按横躺宽适配例外。 |
 | 2026-09-07 | Codex（art） → rd | 📤 T45 批 2b pilot 视觉+严格尺寸门交付 | commit `7bcdb73` / 分支 `codex/t45-shanzei-2b-pilot`；projbus `seq=79`、messageId `037ad6610a9e41e4b10f6640c9d79995`；三张 pilot 与严格尺寸 QA 已交，Leo 视觉门通过，按放行口径继续逐动作铺量。 |
+| 09-07 | Codex（art）→ rd | 📤 T45 批2b pilot 交付（seq=79，7bcdb73） | 山贼甲右向三帧（walk_right_1/atk_right_1/die_common），独立分支 codex/t45-shanzei-2b-pilot，单发 attempts=1，Leo 目验已过 |
+| 09-07 | ZCode | ✅ 2b pilot 规格门 PASS+铺量放行（ack accepted） | 溯源干净；独立全像素精扫与自报全吻合（240×320/高256/y1=299=300口径同hero/cx=119.5同甲锚/单连通/零边alpha/ratio 0.4688·0.3984=姿势性展宽非体型漂移）；目验=甲身份五特征全保持+walk迈步/atk起手/die伏地正确+空手+无字 |
