@@ -467,3 +467,4 @@
 | 2026-09-07 | Leo → Codex（art） | ✅ T45 2b pilot 风格/比例目验通过，要求严格尺寸复核 | 三张 pilot 风格和比例无问题；按 T45 §5 对身高、画布、脚底、中心、透明边界、单主体和死亡横躺宽度做全像素复核。 |
 | 2026-09-07 | Codex（art） | ✅ T45 2b pilot 严格尺寸复核全过 | `qa/strict_dimension_recheck.json`：walk/atk 视觉高均256px、bbox center x=120、feet y=300、RGBA/单连通/边界透明全过；die 宽210≤220、feet y=300、center x=120，按横躺宽适配例外。 |
 | 09-07 | ZCode（backend-battle） | 📦 TASK-AS-BE 交付（task/attack-speed-be @ fcd7067，未 push） | 出招速度+两段式伤害 BE 卡：scheduler 提交即排程/t1 动态重搜（R1 锚=施法者格，二读裁定待复核）/两段独立 F-04/死亡消散/终局截断；四门+proto 门全绿（battle 294+14、behavior 14/14、shot 16、e2e 全 MATCH、DBG=0、verTag bump）；详见 tasks/threads/ARCH-AS.md 交付行 |
+| 09-07 | ZCode（backend-battle·复验） | ✅ TASK-AS-BE 独立复验收口 | 四门+proto 门全数复跑吻合（battle 294+14 / behavior 14/14 / shot 16 PASS / e2e 11 MATCH 0 不符 / DBG=0 / bundle 逐字节=重建产物）；FACE-1 ②b seed 5/7 实跑未漂移，结论已补 ARCH-AS 交付行（Q1 条件闭合）；前任被 kill 残留（半截 shots/verTag）按处置令重跑覆盖，未 commit 残留 |
