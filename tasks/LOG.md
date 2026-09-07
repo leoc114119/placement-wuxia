@@ -498,3 +498,5 @@
 | 09-07 | ZCode | 🔁 Flash 代理转独立复验 | 施工者≠复验者：复跑全量四门核实效数字+残留半截 shots 处置+ARCH-AS 交付行完整性核对+FACE-1 ②b seed 核查（明文必做）；复验 PASS 后送主架构技术验收 |
 | 09-07 | backend-battle(Flash) | ✅ TASK-AS-BE 独立复验 PASS（d571eb7） | 全量四门复跑与施工自报全数吻合（294+14/behavior 14/14/shot 16/e2e 11 MATCH/DBG=0/bundle 逐字节一致）；FACE-1 ②b seed 5/7 实测未漂移=Q1 条件闭合；残留半截产物 restore 清零工作树 clean |
 | 09-07 | ZCode | 📤 分支已 push+主架构技术验收请求已发（seq=92） | task/attack-speed-be → origin；验收重点=B4 行为变更+R1 勘误确认（seq=91 并案）；PASS 后 PM 纯净态四门复验→L 环 |
+| 09-07 | rd → 主架构 | 📥 v0.3 修订请求（seq=98） | Leo L 环二次终裁：段1=t0即时且出手必中；段2=t1=整个出招时长末端并动态重搜；取消独立300ms收招结算；施法循环280ms/帧；要求方案评估与 AS-T3/T4/T5/T6、工时重写。 |
+| 09-07 | 主架构（Codex） | ✅ 收到 seq=98 | 已确认需求变更，开始 v0.3 方案修订；不改游戏代码。 |
