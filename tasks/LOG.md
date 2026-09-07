@@ -469,3 +469,4 @@
 | 09-07 | Leo → ZCode | ⏸️ 点缀排产后置 + 美术线整体优化方案前置 | 战斗上下点缀（frame_top/bottom 两横幅）不排进当前批次；等山贼 2b 素材出完后，Leo 将让美术线先出**整体优化方案建议**（含战棋格子质感处理方向——09-04 L 环已提"格子质感不行"），方案过目后再定点缀与质感件的排产顺序 |
 | 2026-09-07 | Leo → Codex（art） | ✅ T45 2b pilot 风格/比例目验通过，要求严格尺寸复核 | 三张 pilot 风格和比例无问题；按 T45 §5 对身高、画布、脚底、中心、透明边界、单主体和死亡横躺宽度做全像素复核。 |
 | 2026-09-07 | Codex（art） | ✅ T45 2b pilot 严格尺寸复核全过 | `qa/strict_dimension_recheck.json`：walk/atk 视觉高均256px、bbox center x=120、feet y=300、RGBA/单连通/边界透明全过；die 宽210≤220、feet y=300、center x=120，按横躺宽适配例外。 |
+| 2026-09-07 | 主架构（Codex） | ✅ TASK-AS-FE 技术验收 PASS（seq=94） | 独立副本复核 `task/attack-speed-fe@676c8c6`（基点 `d571eb7`）：typecheck/lint/build、battle `303 passed + 14 skipped`、behavior `14/14`；交付证据 `shot.mjs` 16/16、`shot_as_cast.mjs` 30 影+18 校验、`shot_sixdir.mjs` 48 张零 pageerror、e2e 11 MATCH、DBG=0。charge/strike、普攻1s保持窗、x2单一逻辑dt、T21条件e、legacy降级均通过；`FX.slashSec=0.28s` 独立特效口径与终局冻结快照表现口径确认；待 PM 需求门与 Leo L 环。 |
