@@ -1,0 +1,150 @@
+{
+  "task": "T45",
+  "batch": "shared-die-bone",
+  "status": "release_ready",
+  "scope": "all characters and all six directions share one die_common Q-version skeleton frame",
+  "spec": {
+    "canvas": [
+      240,
+      320
+    ],
+    "contentWidth": [
+      120,
+      160
+    ],
+    "headDirection": "left",
+    "feetY": 300,
+    "bboxCenterX": 120,
+    "style": "Q版白骨，铃兰式粗边",
+    "singleConnectedSubject": true,
+    "textOrUi": false
+  },
+  "references": "refs.json",
+  "prompt": "prompts/shared_die_bone_pose6_gag_white.txt",
+  "attempt": 6,
+  "visualReview": "selected_by_Leo",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": true,
+  "outputs": [
+    "raw/die_common_bone_attempt1.png",
+    "normalized/die_common_bone.png",
+    "qa/die_common_bone.json",
+    "contact/die_common_bone_dark_check.png",
+    "raw/die_common_bone_pose2_shadow_attempt1.png",
+    "normalized/die_common_bone_pose2_shadow.png",
+    "qa/die_common_bone_pose2_shadow.json",
+    "contact/die_common_bone_pose2_shadow_dark_check.png",
+    "raw/die_common_bone_pose3_more_q_attempt1.png",
+    "normalized/die_common_bone_pose3_more_q.png",
+    "qa/die_common_bone_pose3_more_q.json",
+    "contact/die_common_bone_pose3_more_q_dark_check.png",
+    "raw/die_common_bone_pose4_soft_outline_attempt1.png",
+    "normalized/die_common_bone_pose4_soft_outline.png",
+    "qa/die_common_bone_pose4_soft_outline.json",
+    "contact/die_common_bone_pose4_soft_outline_dark_check.png",
+    "raw/die_common_bone_pose5_charred_attempt1.png",
+    "normalized/die_common_bone_pose5_charred.png",
+    "qa/die_common_bone_pose5_charred.json",
+    "contact/die_common_bone_pose5_charred_dark_check.png",
+    "contact/die_common_bone_pose5_charred_light_check.png",
+    "contact/die_common_bone_pose5_charred_mid_check.png",
+    "raw/die_common_bone_gag_base_user.png",
+    "raw/die_common_bone_pose6_gag_white_attempt1.png",
+    "normalized/die_common_bone_pose6_gag_white.png",
+    "qa/die_common_bone_pose6_gag_white.json",
+    "contact/die_common_bone_pose6_gag_white_dark_check.png",
+    "contact/die_common_bone_pose6_gag_white_light_check.png",
+    "contact/die_common_bone_pose6_gag_white_mid_check.png",
+    "qa/release_preflight.py",
+    "qa/release_preflight.json",
+    "manifest.json",
+    "assets/characters/hero/battle45/die_common.png",
+    "assets/characters/enemy/shanzei_a/battle45/die_common.png",
+    "assets/characters/enemy/shanzei_b/battle45/die_common.png"
+  ],
+  "continuationStatus": "released_shared_die_common_pose6_selected_by_Leo_spec_pass",
+  "continuationFrame": "die_common",
+  "continuationOutputs": {
+    "prompt": "prompts/shared_die_bone_pose6_gag_white.txt",
+    "userBase": "raw/die_common_bone_gag_base_user.png",
+    "attempt6Raw": "raw/die_common_bone_pose6_gag_white_attempt1.png",
+    "attempt6Normalized": "normalized/die_common_bone_pose6_gag_white.png",
+    "attempt6Qa": "qa/die_common_bone_pose6_gag_white.json",
+    "attempt6DarkCheck": "contact/die_common_bone_pose6_gag_white_dark_check.png",
+    "attempt6LightCheck": "contact/die_common_bone_pose6_gag_white_light_check.png"
+  },
+  "attemptResults": {
+    "attempt1": {
+      "raw": "raw/die_common_bone_attempt1.png",
+      "normalized": "normalized/die_common_bone.png",
+      "visualStatus": "superseded_by_Leo_pose_update",
+      "issue": "straight horizontal side-lying pose did not match Leo-provided splayed-back reference"
+    },
+    "attempt2": {
+      "raw": "raw/die_common_bone_pose2_shadow_attempt1.png",
+      "normalized": "normalized/die_common_bone_pose2_shadow.png",
+      "qa": "qa/die_common_bone_pose2_shadow.json",
+      "darkCheck": "contact/die_common_bone_pose2_shadow_dark_check.png",
+      "visualStatus": "rejected_by_Leo_style_too_realistic",
+      "issueAddressed": "replaced straight horizontal pose with diagonal splayed-back pose and retained small low-contrast contact shadow from the selected native source",
+      "mechanicalStatus": "PASS",
+      "visualIssue": "pose approved directionally, but rendering is too realistic; remake more Q/chibi"
+    },
+    "attempt3": {
+      "raw": "raw/die_common_bone_pose3_more_q_attempt1.png",
+      "normalized": "normalized/die_common_bone_pose3_more_q.png",
+      "qa": "qa/die_common_bone_pose3_more_q.json",
+      "darkCheck": "contact/die_common_bone_pose3_more_q_dark_check.png",
+      "visualStatus": "rejected_by_Leo_outline_too_dark",
+      "issueAddressed": "reduced realism and glossy anatomical rendering; changed only to simplified chunky Q/chibi game-sprite styling while preserving pose/layout and small shadow",
+      "mechanicalStatus": "PASS",
+      "visualIssue": "Q/chibi candidate accepted directionally, but the dark outline remains too prominent; soften and thin contour"
+    },
+    "attempt4": {
+      "raw": "raw/die_common_bone_pose4_soft_outline_attempt1.png",
+      "normalized": "normalized/die_common_bone_pose4_soft_outline.png",
+      "qa": "qa/die_common_bone_pose4_soft_outline.json",
+      "darkCheck": "contact/die_common_bone_pose4_soft_outline_dark_check.png",
+      "visualStatus": "rejected_by_Leo_still_unsettling",
+      "issueAddressed": "softened and thinned the near-black outline to a medium warm-brown contour; preserved Q/chibi pose, placement, proportions and small shadow",
+      "mechanicalStatus": "PASS",
+      "visualIssue": "Leo requests a charred post-lightning skeleton instead of a light skeleton"
+    },
+    "attempt5": {
+      "raw": "raw/die_common_bone_pose5_charred_attempt1.png",
+      "normalized": "normalized/die_common_bone_pose5_charred.png",
+      "qa": "qa/die_common_bone_pose5_charred.json",
+      "darkCheck": "contact/die_common_bone_pose5_charred_dark_check.png",
+      "lightCheck": "contact/die_common_bone_pose5_charred_light_check.png",
+      "midCheck": "contact/die_common_bone_pose5_charred_mid_check.png",
+      "visualStatus": "rejected_by_Leo_charred_too_scary",
+      "issueAddressed": "changed the Q/chibi skeleton to matte soot-black lightning aftermath with restrained ash/scorch detail; preserved pose, layout, softened contour and small shadow",
+      "mechanicalStatus": "PASS",
+      "visualIssue": "Leo selected the attached white Q-version base and requested a more humorous, playful direction"
+    },
+    "attempt6": {
+      "raw": "raw/die_common_bone_pose6_gag_white_attempt1.png",
+      "normalized": "normalized/die_common_bone_pose6_gag_white.png",
+      "qa": "qa/die_common_bone_pose6_gag_white.json",
+      "darkCheck": "contact/die_common_bone_pose6_gag_white_dark_check.png",
+      "lightCheck": "contact/die_common_bone_pose6_gag_white_light_check.png",
+      "midCheck": "contact/die_common_bone_pose6_gag_white_mid_check.png",
+      "visualStatus": "selected_by_Leo",
+      "issueAddressed": "returned to the user-provided white Q-version base and added friendly gag expression: spiral cartoon eyes, slightly goofy crooked grin and tiny tongue; preserved exact pose/layout and small shadow",
+      "mechanicalStatus": "PASS",
+      "specGate": "pass",
+      "runtimeRelease": true
+    }
+  },
+  "artifactStage": "release",
+  "releaseManifest": "manifest.json",
+  "releaseQa": "qa/release_preflight.json",
+  "releasedAt": "2026-09-07T15:14:51.783191+08:00",
+  "runtimePaths": [
+    "assets/characters/hero/battle45/die_common.png",
+    "assets/characters/enemy/shanzei_a/battle45/die_common.png",
+    "assets/characters/enemy/shanzei_b/battle45/die_common.png"
+  ],
+  "releaseSha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24"
+}

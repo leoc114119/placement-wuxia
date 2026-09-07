@@ -1,0 +1,54 @@
+{
+  "key": "die_common_bone_pose3_more_q",
+  "source": "raw/die_common_bone_pose3_more_q_attempt1.png",
+  "output": "normalized/die_common_bone_pose3_more_q.png",
+  "darkCheck": "contact/die_common_bone_pose3_more_q_dark_check.png",
+  "size": [
+    240,
+    320
+  ],
+  "mode": "RGBA",
+  "sourceSize": [
+    1086,
+    1448
+  ],
+  "sourceSha256": "4110b645598c6234138e5304dbb6949728540e42da3bfa128cec61d513acdc09",
+  "outputSha256": "a01031fb5f220b87eada073f2464705234bdf5a9b5688548d308bda4ae2872c4",
+  "processing": {
+    "background": "edge-connected neutral flood-cut",
+    "floodThreshold": 60,
+    "backgroundPixelsRemoved": 1321363,
+    "defringeLuma": 195,
+    "defringePasses": 8,
+    "defringePixelsRemoved": 13454,
+    "aspectPreservingTargetWidth": 150,
+    "canvas": [
+      240,
+      320
+    ],
+    "placement": "bbox centered x=120; bottom y=300",
+    "redraw": false,
+    "shadow": "retained from selected source; no synthetic redraw"
+  },
+  "bboxT32": [
+    45,
+    157,
+    195,
+    300
+  ],
+  "visualWidth": 150,
+  "visualHeight": 143,
+  "feetY": 300,
+  "bboxCenterX": 120.0,
+  "alpha32CentroidX": 130.11094058320543,
+  "alpha32CentroidY": 218.77702258276693,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "components": 1,
+  "largestComponent": 9122,
+  "borderNonzero": 0,
+  "lightBoundaryPixels": 294,
+  "mechanicalPass": true
+}

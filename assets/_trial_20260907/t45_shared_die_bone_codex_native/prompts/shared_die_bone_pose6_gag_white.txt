@@ -1,0 +1,13 @@
+Use case: style-transfer
+Asset type: T45 shared game death sprite, friendly gag Q-version white skeleton frame
+Primary request: Edit Image 1 only to make this white Q-version skeleton playful and funny instead of scary. Keep the exact diagonal back-lying splayed pose, skull upper-right with face pointing left, rib cage center, pelvis below, all limb directions, placement, proportions, warm ivory bones, gentle medium-brown contour, and small soft contact shadow. Change only the expression and surface detail toward friendly slapstick: soften the eye sockets into shallow dark-gray cartoon sockets with simple dizzy spiral or dot pupils rather than deep hollow voids, give the jaw a slightly crooked goofy grin with one tiny tongue peeking out, simplify the bone details, and use rounded toy-like forms with light restrained shading.
+Input images: Image 1 is the user-provided edit target and the sole source of pose, composition, proportions, and white Q-skeleton design.
+Scene/backdrop: plain neutral white background for deterministic local flood-cut; no environment.
+Subject: one cute Q-version white skeleton lying diagonally on its back after a cartoon mishap; oversized rounded skull, chunky simplified bones, bent splayed arms, one leg lower-left and one lower-right.
+Style/medium: clean 2D chibi game art, friendly gag illustration, warm ivory bones, soft medium-brown outline, minimal texture, cheerful rather than horror.
+Composition/framing: preserve Image 1 exactly; no rotation, crop, camera, or layout change.
+Lighting/mood: lighthearted slapstick; small soft low-contrast gray contact shadow touching the skeleton.
+Color palette: warm ivory and cream bones, medium warm-brown contour, soft gray eye sockets, tiny muted pink tongue; no charcoal black.
+Text (verbatim): ""
+Constraints: change only the facial expression and simplifying comedic detail; keep exact pose, skull direction, limb splay, placement, proportions, white color family, outline character, background, and contact shadow; one skeleton only; no weapons, clothing, terrain, UI, labels, red boxes, text, watermark, blood, gore, or extra objects.
+Avoid: scary hollow black sockets, horror, blood, gore, realistic anatomy, photorealism, charred bones, charcoal-black recolor, heavy black outline, altered pose, extra limbs, lightning effects, extra objects.

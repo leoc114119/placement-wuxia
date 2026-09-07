@@ -1,0 +1,14 @@
+Use case: style-transfer
+Asset type: T45 shared game death sprite, Q-version white skeleton frame
+Primary request: Edit Image 1 only to make the skeleton clearly more chibi and game-like. Reduce realistic anatomy and glossy 3D rendering: use a compact oversized skull, simplified chunky bones, fewer anatomical details, rounded toy-like joints, thick dark brown outline, flat warm ivory fills with very limited shading, and a small soft low-contrast gray contact shadow.
+Input images: Image 1 is the edit target and the sole source of the approved diagonal back-lying splayed pose; preserve its exact composition. No other image is used.
+Scene/backdrop: plain neutral white background for deterministic local flood-cut; no environment.
+Subject: one Q-version white skeleton lying diagonally on its back, skull upper-right with face pointing left, rib cage centered, pelvis below, arms bent and splayed, one leg lower-left and one leg lower-right.
+Style/medium: clearly chibi 2D game art, chunky simplified cartoon skeleton, thick clean outline, flat cel-shaded warm ivory; avoid realistic skull anatomy, realistic bone texture, photorealism, glossy 3D rendering, and fine anatomical detail.
+Composition/framing: keep the exact diagonal pose, limb directions, skull position, overall silhouette, and generous white margins from Image 1; do not rotate, crop, or change proportions/layout.
+Lighting/mood: simple even lighting with only a small soft contact shadow touching the skeleton; shadow is low contrast and compact.
+Color palette: warm ivory bones, dark brown outline, restrained tan shadow accents, small neutral dark-gray contact shadow.
+Materials/textures: clean game sprite edges, minimal texture, no grain.
+Text (verbatim): ""
+Constraints: change only rendering style toward a more Q/chibi look; keep the exact pose, skull direction, limb splay, overall placement, and small shadow; one skeleton only; preserve the plain background; no weapons, clothing, terrain, UI, labels, red boxes, watermark, or extra objects.
+Avoid: photorealism, realistic anatomy, glossy 3D, dramatic cinematic lighting, detailed medical skeleton, extra bones or limbs, altered pose, new accessories, text, watermark.

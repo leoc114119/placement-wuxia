@@ -1,0 +1,54 @@
+{
+  "task": "T45",
+  "batch": "shared-die-bone",
+  "assetRole": "all-character shared battle45 death frame",
+  "identity": "all-characters-shared",
+  "artifactStage": "release",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": true,
+  "sourceJob": "assets/_trial_20260907/t45_shared_die_bone_codex_native/job.json",
+  "sourceRaw": "assets/_trial_20260907/t45_shared_die_bone_codex_native/raw/die_common_bone_pose6_gag_white_attempt1.png",
+  "sourceCandidate": "assets/_trial_20260907/t45_shared_die_bone_codex_native/normalized/die_common_bone_pose6_gag_white.png",
+  "qaEvidence": "assets/_trial_20260907/t45_shared_die_bone_codex_native/qa/release_preflight.json",
+  "deterministicProcessing": "edge-connected neutral flood-cut, defringe, aspect-preserving width 150, bbox centered x=120 and bottom y=300; no redraw",
+  "mirrorPolicy": "shared across all six directions and all characters; no mirror",
+  "releasedAt": "2026-09-07T15:14:51.783191+08:00",
+  "frames": [
+    {
+      "name": "die_common.png",
+      "runtimePaths": [
+        "assets/characters/hero/battle45/die_common.png",
+        "assets/characters/enemy/shanzei_a/battle45/die_common.png",
+        "assets/characters/enemy/shanzei_b/battle45/die_common.png"
+      ],
+      "source": "assets/_trial_20260907/t45_shared_die_bone_codex_native/normalized/die_common_bone_pose6_gag_white.png",
+      "sha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        45,
+        157,
+        195,
+        300
+      ],
+      "visualWidth": 150,
+      "visualHeight": 143,
+      "feetY": 300,
+      "bboxCenterX": 120.0,
+      "components": 1,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "borderNonzero": 0,
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "integrationGate": "not_handed_off"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "key": "die_common_bone_pose5_charred",
+  "source": "raw/die_common_bone_pose5_charred_attempt1.png",
+  "output": "normalized/die_common_bone_pose5_charred.png",
+  "darkCheck": "contact/die_common_bone_pose5_charred_dark_check.png",
+  "size": [
+    240,
+    320
+  ],
+  "mode": "RGBA",
+  "sourceSize": [
+    1086,
+    1448
+  ],
+  "sourceSha256": "8285bf7f690a49c0e3920d6b9148fc7b6f3dc9f5dc2f81cc0d794ff475bde28d",
+  "outputSha256": "1e73b8f2ee03874a13674a10a89a84cb32e25e5cf22668ad20a2da2be7ebdcb3",
+  "processing": {
+    "background": "edge-connected neutral flood-cut",
+    "floodThreshold": 60,
+    "backgroundPixelsRemoved": 1330008,
+    "defringeLuma": 195,
+    "defringePasses": 8,
+    "defringePixelsRemoved": 14853,
+    "aspectPreservingTargetWidth": 150,
+    "canvas": [
+      240,
+      320
+    ],
+    "placement": "bbox centered x=120; bottom y=300",
+    "redraw": false,
+    "shadow": "retained from selected source; no synthetic redraw"
+  },
+  "bboxT32": [
+    45,
+    157,
+    195,
+    300
+  ],
+  "visualWidth": 150,
+  "visualHeight": 143,
+  "feetY": 300,
+  "bboxCenterX": 120.0,
+  "alpha32CentroidX": 130.27530134182396,
+  "alpha32CentroidY": 218.37798498976574,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "components": 1,
+  "largestComponent": 8794,
+  "borderNonzero": 0,
+  "lightBoundaryPixels": 387,
+  "mechanicalPass": true,
+  "lightCheck": "contact/die_common_bone_pose5_charred_light_check.png",
+  "midCheck": "contact/die_common_bone_pose5_charred_mid_check.png"
+}

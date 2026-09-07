@@ -14,10 +14,10 @@
     "rightdown"
   ],
   "mirrorPolicy": "left系由右系确定性水平镜像，另批处理；本批不写左系",
-  "sourceJob": "assets/_trial_20260907/t45_batch2b_production_codex_native/job.json",
+  "sourceJob": "assets/_trial_20260907/t45_shared_die_bone_codex_native/job.json",
   "qaEvidence": "assets/_trial_20260907/t45_batch2b_production_codex_native/qa/release_preflight.json",
   "credits": "assets/_trial_20260907/t45_batch2b_production_codex_native/credits.json",
-  "releasedAt": "2026-09-07T13:02:19.046243+08:00",
+  "releasedAt": "2026-09-07T15:14:51.783191+08:00",
   "frames": [
     {
       "name": "atk_right_2.png",
@@ -211,5 +211,38 @@
       "specGate": "pass",
       "integrationGate": "not_handed_off"
     }
-  ]
+  ],
+  "sharedDieCommon": {
+    "name": "die_common.png",
+    "path": "assets/characters/enemy/shanzei_a/battle45/die_common.png",
+    "source": "assets/_trial_20260907/t45_shared_die_bone_codex_native/normalized/die_common_bone_pose6_gag_white.png",
+    "sha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24",
+    "size": [
+      240,
+      320
+    ],
+    "mode": "RGBA",
+    "bboxT32": [
+      45,
+      157,
+      195,
+      300
+    ],
+    "visualWidth": 150,
+    "visualHeight": 143,
+    "feetY": 300,
+    "bboxCenterX": 120.0,
+    "components": 1,
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "borderNonzero": 0,
+    "reuse": "all-character shared Q-version skeleton death frame",
+    "mirrorPolicy": "no mirror; one shared frame for six directions",
+    "visualReview": "selected_by_Leo",
+    "specGate": "pass",
+    "integrationGate": "not_handed_off"
+  },
+  "sharedDieSource": "assets/_trial_20260907/t45_shared_die_bone_codex_native/manifest.json"
 }

@@ -1,0 +1,13 @@
+Use case: style-transfer
+Asset type: T45 shared game death sprite, Q-version white skeleton frame
+Primary request: Edit Image 1 only to soften the overly prominent dark outline. Keep the exact Q/chibi rendering, diagonal back-lying splayed pose, skull upper-right with face pointing left, rib cage center, pelvis below, limb directions, placement, proportions, and small soft contact shadow. Replace the near-black/thick border with a thinner, softer medium warm-brown contour that reads as a gentle cartoon edge rather than a heavy black frame. Keep flat warm-ivory fills, simplified chunky bones, rounded joints, and restrained tan shading.
+Input images: Image 1 is the edit target and the sole source of the approved pose and current Q/chibi style.
+Scene/backdrop: plain neutral white background for deterministic local flood-cut; no environment.
+Subject: one Q-version white skeleton lying diagonally on its back, skull upper-right with face pointing left, arms bent and splayed, one leg lower-left and one lower-right.
+Style/medium: clean 2D chibi game art, simplified chunky cartoon skeleton, gentle medium-brown outline, flat warm ivory, minimal texture; not photorealistic or glossy 3D.
+Composition/framing: preserve Image 1 exactly; no rotation, crop, camera, or layout change.
+Lighting/mood: even simple lighting; keep only the small low-contrast gray contact shadow touching the skeleton.
+Color palette: warm ivory bones, medium warm brown contour (avoid near-black), restrained tan accents, small neutral gray shadow.
+Text (verbatim): ""
+Constraints: change only outline darkness/thickness; keep Q/chibi proportions, pose, limb splay, skull direction, placement, background, and contact shadow unchanged; one skeleton only; no weapons, terrain, UI, labels, red boxes, text, watermark, or extra objects.
+Avoid: black outline, heavy dark frame, thick border, photorealism, medical realism, glossy 3D, altered pose, extra limbs, extra objects.

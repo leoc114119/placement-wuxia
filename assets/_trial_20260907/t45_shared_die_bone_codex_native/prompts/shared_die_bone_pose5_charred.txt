@@ -1,0 +1,13 @@
+Use case: style-transfer
+Asset type: T45 shared game death sprite, Q-version charred skeleton frame
+Primary request: Edit Image 1 only into the aftermath of a lightning strike: a clearly charred, soot-black Q-version skeleton. Keep the exact diagonal back-lying splayed pose, skull upper-right with face pointing left, rib cage center, pelvis below, all limb directions, placement, proportions, Q/chibi silhouette, softened medium warm-brown outline, and small soft contact shadow. Change only the material and color state from clean ivory bone to matte charcoal-black burned bone, with subtle gray ash highlights, a few restrained pale scorch cracks, and very limited dull ember warmth inside cracks. The result should read as a game sprite and remain readable, not as a realistic horror prop.
+Input images: Image 1 is the edit target and the sole source of the approved pose, composition, Q/chibi proportion, softened outline, and shadow.
+Scene/backdrop: plain neutral white background for deterministic local flood-cut; no environment.
+Subject: one compact Q-version skeleton lying diagonally on its back after a lightning strike; oversized rounded skull, simplified chunky bones, bent splayed arms, one leg lower-left and one lower-right.
+Style/medium: clean 2D chibi game art, matte soot-black charcoal bones, soft medium-brown contour, simple gray ash accents, minimal texture; no photorealism, no glossy 3D, no gore.
+Composition/framing: preserve Image 1 exactly; no rotation, crop, camera, or layout change.
+Lighting/mood: subdued aftermath; small soft low-contrast gray contact shadow touching the skeleton; no large lightning bolt or dramatic effects.
+Color palette: charcoal black and dark graphite bones, soft warm-brown outline, muted gray ash highlights, tiny restrained dull amber scorch accents only if needed.
+Text (verbatim): ""
+Constraints: change only bone material/color to charred lightning aftermath; keep Q/chibi proportions, exact pose, skull direction, limb splay, placement, softened outline character, background, and contact shadow; one skeleton only; no weapons, clothing, terrain, UI, labels, red boxes, text, watermark, gore, blood, or extra objects.
+Avoid: white ivory skeleton, realistic horror, exposed flesh, gore, blood, photorealism, glossy 3D, heavy black frame, altered pose, extra limbs, large lightning effects, extra objects.

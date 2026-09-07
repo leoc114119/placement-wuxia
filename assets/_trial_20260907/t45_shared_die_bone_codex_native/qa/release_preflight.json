@@ -1,0 +1,178 @@
+{
+  "task": "T45",
+  "batch": "shared-die-bone",
+  "stage": "release_preflight",
+  "artifactStage": "release",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": true,
+  "source": "assets/_trial_20260907/t45_shared_die_bone_codex_native/normalized/die_common_bone_pose6_gag_white.png",
+  "sourceRaw": "assets/_trial_20260907/t45_shared_die_bone_codex_native/raw/die_common_bone_pose6_gag_white_attempt1.png",
+  "userBase": "assets/_trial_20260907/t45_shared_die_bone_codex_native/raw/die_common_bone_gag_base_user.png",
+  "processing": "deterministic normalization already recorded in qa/die_common_bone_pose6_gag_white.json; release copies are byte-identical",
+  "semanticChecks": {
+    "headDirection": "left",
+    "pose": "diagonal back-lying splay preserved",
+    "style": "friendly gag Q-version white skeleton; Leo visual review selected",
+    "textOrUi": "none by visual review and source constraints",
+    "mirrorPolicy": "shared byte-identical frame; no directional mirror"
+  },
+  "candidate": {
+    "path": "assets/_trial_20260907/t45_shared_die_bone_codex_native/normalized/die_common_bone_pose6_gag_white.png",
+    "sha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24",
+    "size": [
+      240,
+      320
+    ],
+    "mode": "RGBA",
+    "bboxT32": [
+      45,
+      157,
+      195,
+      300
+    ],
+    "visualWidth": 150,
+    "visualHeight": 143,
+    "feetY": 300,
+    "bboxCenterX": 120.0,
+    "alpha32CentroidX": 130.53265752793456,
+    "alpha32CentroidY": 218.12487040663518,
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "components": 1,
+    "borderNonzero": 0,
+    "hardGates": {
+      "canvas_240x320": true,
+      "rgba": true,
+      "content_width_120_160": true,
+      "feet_y_300": true,
+      "bbox_center_x_120": true,
+      "single_connected_subject": true,
+      "alpha_extrema_0_255": true,
+      "four_edges_transparent": true
+    },
+    "hardGatesPass": true
+  },
+  "runtimeCopies": [
+    {
+      "path": "assets/characters/hero/battle45/die_common.png",
+      "sha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        45,
+        157,
+        195,
+        300
+      ],
+      "visualWidth": 150,
+      "visualHeight": 143,
+      "feetY": 300,
+      "bboxCenterX": 120.0,
+      "alpha32CentroidX": 130.53265752793456,
+      "alpha32CentroidY": 218.12487040663518,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "hardGates": {
+        "canvas_240x320": true,
+        "rgba": true,
+        "content_width_120_160": true,
+        "feet_y_300": true,
+        "bbox_center_x_120": true,
+        "single_connected_subject": true,
+        "alpha_extrema_0_255": true,
+        "four_edges_transparent": true
+      },
+      "hardGatesPass": true
+    },
+    {
+      "path": "assets/characters/enemy/shanzei_a/battle45/die_common.png",
+      "sha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        45,
+        157,
+        195,
+        300
+      ],
+      "visualWidth": 150,
+      "visualHeight": 143,
+      "feetY": 300,
+      "bboxCenterX": 120.0,
+      "alpha32CentroidX": 130.53265752793456,
+      "alpha32CentroidY": 218.12487040663518,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "hardGates": {
+        "canvas_240x320": true,
+        "rgba": true,
+        "content_width_120_160": true,
+        "feet_y_300": true,
+        "bbox_center_x_120": true,
+        "single_connected_subject": true,
+        "alpha_extrema_0_255": true,
+        "four_edges_transparent": true
+      },
+      "hardGatesPass": true
+    },
+    {
+      "path": "assets/characters/enemy/shanzei_b/battle45/die_common.png",
+      "sha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        45,
+        157,
+        195,
+        300
+      ],
+      "visualWidth": 150,
+      "visualHeight": 143,
+      "feetY": 300,
+      "bboxCenterX": 120.0,
+      "alpha32CentroidX": 130.53265752793456,
+      "alpha32CentroidY": 218.12487040663518,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "hardGates": {
+        "canvas_240x320": true,
+        "rgba": true,
+        "content_width_120_160": true,
+        "feet_y_300": true,
+        "bbox_center_x_120": true,
+        "single_connected_subject": true,
+        "alpha_extrema_0_255": true,
+        "four_edges_transparent": true
+      },
+      "hardGatesPass": true
+    }
+  ],
+  "allHardGatesPass": true,
+  "releasedAt": "2026-09-07T15:14:51.783191+08:00",
+  "sha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24"
+}

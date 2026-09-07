@@ -1,0 +1,40 @@
+{
+  "key": "die_common_bone",
+  "source": "assets/_trial_20260907/t45_shared_die_bone_codex_native/raw/die_common_bone_attempt1.png",
+  "output": "assets/_trial_20260907/t45_shared_die_bone_codex_native/normalized/die_common_bone.png",
+  "size": [
+    240,
+    320
+  ],
+  "mode": "RGBA",
+  "sourceAlphaBBox": [
+    72,
+    544,
+    1013,
+    888
+  ],
+  "bboxT30": [
+    45,
+    245,
+    195,
+    300
+  ],
+  "visualWidth": 150,
+  "visualHeight": 55,
+  "feetY": 300,
+  "bboxCenterX": 120.0,
+  "alpha32CentroidX": 104.66529724504592,
+  "alpha32CentroidY": 274.0355244079265,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "components": 1,
+  "largestComponent": 4138,
+  "borderNonzero": 0,
+  "processing": "connected neutral-background flood-cut; aspect-preserving width normalization to 150px within 120~160 spec; bottom baseline y=300; bbox-center x=120; 240x320 RGBA frame; no redraw",
+  "sourceSha256": "b40c1f70382bb7e8874dc2bc702e126ea97c56fbbbd85583029d08e812b70e9a",
+  "outputSha256": "4f247bf85d95f71410763a30560d591972a10b4a7bfaa28b418cfcf4e5ddc4d8",
+  "widthGate": "120<=visualWidth<=160",
+  "mechanicalPass": true
+}

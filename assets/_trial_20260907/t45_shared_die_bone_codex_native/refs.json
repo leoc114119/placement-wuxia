@@ -1,0 +1,63 @@
+{
+  "task": "T45-shared-die-bone",
+  "identity": "all-characters-shared",
+  "references": [
+    {
+      "path": "assets/_trial_20260907/t45_shared_die_bone_codex_native/raw/die_common_bone_attempt1.png",
+      "visualCheck": "Current generated Q-version skeleton style source; single white skeleton on neutral background",
+      "allowed": "bone rendering, thick outline, chibi proportion",
+      "forbidden": "previous horizontal pose, background"
+    },
+    {
+      "path": "/var/folders/h1/pmxfd0v96jg39v02p6fzvly80000gn/T/codex-clipboard-33377f35-247d-4f24-9a9b-4b7ddff38589.png",
+      "visualCheck": "Leo-provided pose screenshot; red-boxed skeleton lies diagonally with skull upper-right and limbs splayed",
+      "allowed": "pose and defeat composition only",
+      "forbidden": "red rectangle, terrain, UI, labels, other characters"
+    }
+  ],
+  "prompt": "prompts/shared_die_bone_pose6_gag_white.txt",
+  "generationPolicy": "single native ImageGen frame; raw first; no grid; no batch; Leo visual gate before PM spec gate",
+  "activeGeneration": {
+    "frame": "die_common_bone",
+    "attempt": 6,
+    "prompt": "prompts/shared_die_bone_pose6_gag_white.txt",
+    "visualIssue": "Leo selected the attached white Q-version base and requests a more humorous, playful expression to reduce fear.",
+    "input": "raw/die_common_bone_gag_base_user.png",
+    "inputRole": "user-provided edit target; preserve exact pose/composition and white Q-skeleton design",
+    "changeOnly": "friendly slapstick facial expression and simplified comedic detail",
+    "forbidden": "pose/layout/proportions/white color family/outline/shadow changes; background, text, UI, gore, extra objects",
+    "output": "raw/die_common_bone_pose6_gag_white_attempt1.png",
+    "normalized": "normalized/die_common_bone_pose6_gag_white.png",
+    "qa": "qa/die_common_bone_pose6_gag_white.json",
+    "darkCheck": "contact/die_common_bone_pose6_gag_white_dark_check.png",
+    "lightCheck": "contact/die_common_bone_pose6_gag_white_light_check.png",
+    "status": "selected_by_Leo_spec_pass",
+    "mechanicalPass": true,
+    "visualReview": "selected_by_Leo",
+    "specGate": "pass",
+    "runtimeRelease": true
+  },
+  "generationCompleted": {
+    "frame": "die_common_bone",
+    "attempt": 6,
+    "source": "raw/die_common_bone_pose6_gag_white_attempt1.png",
+    "output": "normalized/die_common_bone_pose6_gag_white.png",
+    "visualStatus": "selected_by_Leo"
+  },
+  "release": {
+    "manifest": "manifest.json",
+    "qa": "qa/release_preflight.json",
+    "sha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24",
+    "runtimePaths": [
+      "assets/characters/hero/battle45/die_common.png",
+      "assets/characters/enemy/shanzei_a/battle45/die_common.png",
+      "assets/characters/enemy/shanzei_b/battle45/die_common.png"
+    ],
+    "artifactStage": "release",
+    "visualReview": "selected_by_Leo",
+    "specGate": "pass",
+    "integrationGate": "not_handed_off",
+    "runtimeRelease": true,
+    "releasedAt": "2026-09-07T15:14:51.783191+08:00"
+  }
+}

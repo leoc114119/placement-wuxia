@@ -1,0 +1,56 @@
+{
+  "key": "die_common_bone_pose6_gag_white",
+  "source": "raw/die_common_bone_pose6_gag_white_attempt1.png",
+  "output": "normalized/die_common_bone_pose6_gag_white.png",
+  "darkCheck": "contact/die_common_bone_pose6_gag_white_dark_check.png",
+  "size": [
+    240,
+    320
+  ],
+  "mode": "RGBA",
+  "sourceSize": [
+    1086,
+    1448
+  ],
+  "sourceSha256": "f646ce9fe48fe21f64c87f5e9d1380d5613c0bc6eafdf1fa4bf6822df20c44f8",
+  "outputSha256": "ae5a6ac7b147531042ec7baf29dd63b3e97f9ed6a0d3d637857562eda1088a24",
+  "processing": {
+    "background": "edge-connected neutral flood-cut",
+    "floodThreshold": 60,
+    "backgroundPixelsRemoved": 1334010,
+    "defringeLuma": 195,
+    "defringePasses": 8,
+    "defringePixelsRemoved": 15213,
+    "aspectPreservingTargetWidth": 150,
+    "canvas": [
+      240,
+      320
+    ],
+    "placement": "bbox centered x=120; bottom y=300",
+    "redraw": false,
+    "shadow": "retained from selected source; no synthetic redraw"
+  },
+  "bboxT32": [
+    45,
+    157,
+    195,
+    300
+  ],
+  "visualWidth": 150,
+  "visualHeight": 143,
+  "feetY": 300,
+  "bboxCenterX": 120.0,
+  "alpha32CentroidX": 130.53265752793456,
+  "alpha32CentroidY": 218.12487040663518,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "components": 1,
+  "largestComponent": 8681,
+  "borderNonzero": 0,
+  "lightBoundaryPixels": 416,
+  "mechanicalPass": true,
+  "lightCheck": "contact/die_common_bone_pose6_gag_white_light_check.png",
+  "midCheck": "contact/die_common_bone_pose6_gag_white_mid_check.png"
+}
