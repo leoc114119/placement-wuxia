@@ -502,6 +502,8 @@
 | 09-07 | ZCode | 📤 分支已 push+主架构技术验收请求已发（seq=92） | task/attack-speed-be → origin；验收重点=B4 行为变更+R1 勘误确认（seq=91 并案）；PASS 后 PM 纯净态四门复验→L 环 |
 | 09-07 | rd → 主架构 | 📥 v0.3 修订请求（seq=98） | Leo L 环二次终裁：段1=t0即时且出手必中；段2=t1=整个出招时长末端并动态重搜；取消独立300ms收招结算；施法循环280ms/帧；要求方案评估与 AS-T3/T4/T5/T6、工时重写。 |
 | 09-07 | 主架构（Codex） | ✅ 收到 seq=98 | 已确认需求变更，开始 v0.3 方案修订；不改游戏代码。 |
+| 09-07 | rd → 主架构 | 📥 seq=117/121 联合处理 | v0.3 技术验收与普攻交互勘误补全合并处理：两段时序 + 普攻方向/纯距离 + 攻钮选格 + 悬停红态，下一次 L 环一次验收。 |
+| 09-07 | 主架构（Codex） | 📐 联合方案 v0.4 起草 | 统一 `task/attack-speed-v03@3b60e03` 基线与规格 v2.5（`efa48b6`/`81b24dd`）口径；不分别给出半验收结论。 |
 | 09-07 | Leo | ⏸️ 实时推送机制缓建，人肉转发为主 | projbus 准实时方案（ZCode Stop/UserPromptSubmit 钩子注入+headless 门检替身+fswatch 秒级监听）已评估并呈报，Leo 裁=暂不做，流程未闭合先人肉转发；技术调研结论留档（ZCode 钩子七事件/Stop 可 additionalContext 注入+续跑 3 次/空闲会话无法被外部唤醒），流程稳态后再议 |
 | 09-07 | Codex（art） | 🎨 T45 2b 手部异常逐张 Seedream 修正候选已整合 | 5张攻击帧按用户当前指示逐张调用 mxai seedream-5.0-pro（6积分/张，总30）；整合候选 integrated_candidate，credits.json 与 manifest 已落盘，待 Leo 目验与 PM 规格门，未写 runtime。 |
 | 09-07 | Codex（art） | ⏸️ T45 2b 按用户纠正暂停连续生成，改为逐张确认 | 已停止后续生成；当前5张 Seedream 候选保留原图、修正版、QA、credits 与整合目录，全部不进 runtime，等待逐张复核。 |

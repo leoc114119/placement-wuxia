@@ -16,4 +16,7 @@
 | 09-07 | rd → 主架构 | 📥 FE 技术验收请求（seq=94） | 请求复核 `task/attack-speed-fe`：`fe37cf4` + `676c8c6`，基点 `d571eb7`；范围为 charge 循环、strike 单播、普攻 1s 保持窗、x2 逻辑 dt、T21 两段冲刷、legacy 降级；单列 `FX.slashSec` 口径与终局冻结快照表现。 |
 | 09-07 | rd → 主架构 | 📥 v0.3 修订请求（seq=98） | Leo L 环二次终裁：段 1=t0 提交即时且出手必中；段 2=t1=整个出招时长末端，保留动态重搜/收招可躲；取消独立 300ms 收招结算；施法循环 280ms/帧；要求评估单 pending 简化、t0/t1 空集合、AS-T3/T4/T5/T6 与工时。 |
 | 09-07 | 主架构（Codex） | ✅ 收到 seq=98 | 已确认变更范围，不改游戏代码；基于 v0.2 已验收 BE/FE 做 v0.3 方案修订。 |
+| 09-07 | rd → 主架构 | 📥 v0.3 技术验收请求（seq=117） | `task/attack-speed-v03@3b60e03`：t0/t1 新时序、280ms 帧钟、306+14 battle、behavior 14/14、shot 16、e2e 11 MATCH；待主架构验收。 |
+| 09-07 | rd → 主架构 | 📥 普攻交互勘误补全（seq=121） | 规格 v2.5：ATK-1 纯距离、玩家 ATK-3 废止、PRM-1 攻钮六邻格选格、GSG-1 通用 hover 红态；要求与 seq=117 合并成一张方案。 |
+| 09-07 | 主架构（Codex） | 📐 联合方案 v0.4 | seq=117 与 seq=121 合并：先复核 v0.3 基线，再在同一张卡实现普攻方向/判定修正、攻钮选格、金格 hover 红态；下一次 L 环一次验收，不分别关闭两条请求。 |
 | 09-07 | 主架构（Codex） → rd | ✅ TASK-AS-FE 技术验收 PASS（seq=94） | 独立副本锁定 `676c8c6`（origin/task/attack-speed-fe，基点 `d571eb7`）复核：typecheck/lint/build 通过；`test:battle` 303 passed + 14 skipped（317）；`test:behavior` 14/14；交付自带 `shot.mjs` 16/16、`shot_as_cast.mjs` 30 影+18 校验、`shot_sixdir.mjs` 48 张零 pageerror、e2e 11 MATCH、bundle `DBG[`=0/verTag `v1788755695162` 证据链。代码复核确认 charge cast1→3 循环、strike cast2→3、普攻 basic 1s 保持窗、宿主 x2 单一逻辑 dt、条件 e 收尾沿与 legacy 单帧幂等均符合方案 §4.4。`FX.slashSec=0.28s` 认定为独立瞬时斩击弧，不与普攻 1s 强绑；终局按冻结 `SnapshotActor.animState` 继续渲染，`presentationCasts` 仅作 session 内部只读审计面；两项均不阻塞技术验收，待 PM 需求门与 Leo L 环。 |
