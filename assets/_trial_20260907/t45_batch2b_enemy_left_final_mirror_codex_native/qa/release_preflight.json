@@ -1,0 +1,1308 @@
+{
+  "task": "T45",
+  "batch": "2b-production",
+  "stage": "release_preflight",
+  "count": 18,
+  "allHardGatesPass": true,
+  "files": [
+    {
+      "name": "shanzei_a_atk_left_1.png",
+      "source": "integrated_candidate/shanzei_a_atk_left_1.png",
+      "output": "release_candidate/shanzei_a_atk_left_1.png",
+      "sourceSha256": "3cefe46669e1bff618fd02267edef07081213d925f8956692d343f8d13c33de4",
+      "outputSha256": "2d425530cefc889287f8735b3bb417ea522d1f38f278a2cb528206325f684820",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          65,
+          44,
+          167,
+          300
+        ],
+        "visualWidth": 102,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.97464603226868,
+        "alpha32CentroidY": 170.81995390187686,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 15185,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          65,
+          44,
+          167,
+          300
+        ],
+        "visualWidth": 102,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.97464603226868,
+        "alpha32CentroidY": 170.81995390187686,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 15185,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        66,
+        44,
+        168,
+        300
+      ],
+      "visualWidth": 102,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.97464603226868,
+      "alpha32CentroidY": 170.81995390187686,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 15185,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_leftdown_1.png",
+      "source": "integrated_candidate/shanzei_a_atk_leftdown_1.png",
+      "output": "release_candidate/shanzei_a_atk_leftdown_1.png",
+      "sourceSha256": "d317ce98ec872aeee8b8a9ec80c48725a24677b2de5ce4d6eac59365733a4ddc",
+      "outputSha256": "e6a8063974fb9f871ab6213973ccc89baaf263f3d02b53f45faedf6fe2a64b8c",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          22,
+          44,
+          210,
+          300
+        ],
+        "visualWidth": 188,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.33787116503896,
+        "alpha32CentroidY": 173.80043405346748,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 20274,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          22,
+          44,
+          210,
+          300
+        ],
+        "visualWidth": 188,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.33787116503896,
+        "alpha32CentroidY": 173.80043405346748,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 20274,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        23,
+        44,
+        211,
+        300
+      ],
+      "visualWidth": 188,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.33787116503896,
+      "alpha32CentroidY": 173.80043405346748,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 20274,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_leftup_1.png",
+      "source": "integrated_candidate/shanzei_a_atk_leftup_1.png",
+      "output": "release_candidate/shanzei_a_atk_leftup_1.png",
+      "sourceSha256": "b97aad216c430582bd324984da017bc20faf1beec7f2090980c533e10ed1524f",
+      "outputSha256": "c698d18e10f3234a2b87e0e1b7d7ab11fa9ca1d6c247657865fa444d8be2f9eb",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          65,
+          44,
+          176,
+          300
+        ],
+        "visualWidth": 111,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.97175240779892,
+        "alpha32CentroidY": 172.60206718346254,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 17028,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          65,
+          44,
+          176,
+          300
+        ],
+        "visualWidth": 111,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.97175240779892,
+        "alpha32CentroidY": 172.60206718346254,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 17028,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        66,
+        44,
+        177,
+        300
+      ],
+      "visualWidth": 111,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.97175240779892,
+      "alpha32CentroidY": 172.60206718346254,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 17028,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_battle_idle_left.png",
+      "source": "integrated_candidate/shanzei_a_battle_idle_left.png",
+      "output": "release_candidate/shanzei_a_battle_idle_left.png",
+      "sourceSha256": "ca15cc6b7d0d56473ba8dbcf42360a1ef2b0f8c6de771d893366f4e9cfe68d4c",
+      "outputSha256": "ebef037b6adea6e1eff109ea66fae7907104c6f73d1af2dbab38005ade62e174",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          66,
+          44,
+          162,
+          300
+        ],
+        "visualWidth": 96,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.72763567465151,
+        "alpha32CentroidY": 170.69089186628773,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 14778,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          66,
+          44,
+          162,
+          300
+        ],
+        "visualWidth": 96,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.72763567465151,
+        "alpha32CentroidY": 170.69089186628773,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 14778,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        67,
+        44,
+        163,
+        300
+      ],
+      "visualWidth": 96,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.72763567465151,
+      "alpha32CentroidY": 170.69089186628773,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 14778,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "0.375<=width/visualHeight<=0.515625",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_battle_idle_leftdown.png",
+      "source": "integrated_candidate/shanzei_a_battle_idle_leftdown.png",
+      "output": "release_candidate/shanzei_a_battle_idle_leftdown.png",
+      "sourceSha256": "187771473f4246fd3b2c51d433d5deba3a3125d56c3f247a7dae544055e61b4f",
+      "outputSha256": "dade42981c7efb4bd4eb935a9d646aa3b764c1526d1653ee5b7002e1d13ecc0d",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          61,
+          44,
+          181,
+          300
+        ],
+        "visualWidth": 120,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.35728270542866,
+        "alpha32CentroidY": 172.28436665677842,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 16855,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          61,
+          44,
+          181,
+          300
+        ],
+        "visualWidth": 120,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.35728270542866,
+        "alpha32CentroidY": 172.28436665677842,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 16855,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        62,
+        44,
+        182,
+        300
+      ],
+      "visualWidth": 120,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.35728270542866,
+      "alpha32CentroidY": 172.28436665677842,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 16855,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "0.375<=width/visualHeight<=0.515625",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_battle_idle_leftup.png",
+      "source": "integrated_candidate/shanzei_a_battle_idle_leftup.png",
+      "output": "release_candidate/shanzei_a_battle_idle_leftup.png",
+      "sourceSha256": "71483fc4d97084a4aa5895b4c54317aa412292d223b1988e484c02943549d49c",
+      "outputSha256": "7e17e5822df58171f2795f7fd4280147dfa8b53b6902b76e63101616c4dbdc91",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          60,
+          44,
+          168,
+          300
+        ],
+        "visualWidth": 108,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.85893810870249,
+        "alpha32CentroidY": 172.05906377631166,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 15915,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          60,
+          44,
+          168,
+          300
+        ],
+        "visualWidth": 108,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.85893810870249,
+        "alpha32CentroidY": 172.05906377631166,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 15915,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        61,
+        44,
+        169,
+        300
+      ],
+      "visualWidth": 108,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.85893810870249,
+      "alpha32CentroidY": 172.05906377631166,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 15915,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "0.375<=width/visualHeight<=0.515625",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_left_1.png",
+      "source": "integrated_candidate/shanzei_a_walk_left_1.png",
+      "output": "release_candidate/shanzei_a_walk_left_1.png",
+      "sourceSha256": "ff153c4c046cfcc01e79a0963c4c74d6c0d7a4804fda0de56e53cb45abe35909",
+      "outputSha256": "75bdcadc6e597bcb46cdd0199ed2ff3a21a8cd171b67476e3c732c9ebdd81046",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          61,
+          44,
+          181,
+          300
+        ],
+        "visualWidth": 120,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.5350555836281,
+        "alpha32CentroidY": 171.0488883274381,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 15832,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          61,
+          44,
+          181,
+          300
+        ],
+        "visualWidth": 120,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.5350555836281,
+        "alpha32CentroidY": 171.0488883274381,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 15832,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        62,
+        44,
+        182,
+        300
+      ],
+      "visualWidth": 120,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.5350555836281,
+      "alpha32CentroidY": 171.0488883274381,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 15832,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_leftdown_1.png",
+      "source": "integrated_candidate/shanzei_a_walk_leftdown_1.png",
+      "output": "release_candidate/shanzei_a_walk_leftdown_1.png",
+      "sourceSha256": "7ab7f8d5dedffa88e0ff179297856da8dd1dcfe9a8e7e131c2d18bd0b1110fb8",
+      "outputSha256": "c7d3ec841636f8936f20644f8effaf86971ddac1b6eec56364b782471ba7310d",
+      "featherRemovedLightBoundaryPixels": 5,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          55,
+          44,
+          183,
+          300
+        ],
+        "visualWidth": 128,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.79344076901329,
+        "alpha32CentroidY": 172.72032796154934,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 17685,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 2
+      },
+      "afterFeather": {
+        "bboxT32": [
+          55,
+          44,
+          183,
+          300
+        ],
+        "visualWidth": 128,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.78489819004525,
+        "alpha32CentroidY": 172.74321266968326,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 17680,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        56,
+        44,
+        184,
+        300
+      ],
+      "visualWidth": 128,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.78489819004525,
+      "alpha32CentroidY": 172.74321266968326,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 17680,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_leftup_1.png",
+      "source": "integrated_candidate/shanzei_a_walk_leftup_1.png",
+      "output": "release_candidate/shanzei_a_walk_leftup_1.png",
+      "sourceSha256": "15d2387deea2d414b7a1fe8264887664793d20fc6feeb269ac2b045addb38251",
+      "outputSha256": "a3c5bc0fdc56f413d000e29dad3ab3dae0d9f1f562e35e6ecf9425238515c8ae",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          36,
+          44,
+          192,
+          300
+        ],
+        "visualWidth": 156,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.98444526744616,
+        "alpha32CentroidY": 175.7581609438654,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 18901,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          36,
+          44,
+          192,
+          300
+        ],
+        "visualWidth": 156,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.98444526744616,
+        "alpha32CentroidY": 175.7581609438654,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 18901,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        37,
+        44,
+        193,
+        300
+      ],
+      "visualWidth": 156,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.98444526744616,
+      "alpha32CentroidY": 175.7581609438654,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 18901,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_left_1.png",
+      "source": "integrated_candidate/shanzei_b_atk_left_1.png",
+      "output": "release_candidate/shanzei_b_atk_left_1.png",
+      "sourceSha256": "93ea525085dc068917823d2a2e8784468478e5706a41991b553abc1fe7dece7b",
+      "outputSha256": "62e604dd369b4a0b6013417e8d070ca6f5fa45ab25287c078f429725ab53efe3",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          60,
+          44,
+          192,
+          300
+        ],
+        "visualWidth": 132,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.67000319454797,
+        "alpha32CentroidY": 157.89867958683845,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 18782,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          60,
+          44,
+          192,
+          300
+        ],
+        "visualWidth": 132,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.67000319454797,
+        "alpha32CentroidY": 157.89867958683845,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 18782,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        61,
+        44,
+        193,
+        300
+      ],
+      "visualWidth": 132,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.67000319454797,
+      "alpha32CentroidY": 157.89867958683845,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 18782,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_leftdown_1.png",
+      "source": "integrated_candidate/shanzei_b_atk_leftdown_1.png",
+      "output": "release_candidate/shanzei_b_atk_leftdown_1.png",
+      "sourceSha256": "0703767d7aca93ce3a0a1a5f385e3c224ed4799c7d5a8b3e718d20a032a31c86",
+      "outputSha256": "9d78451b541936cdcc6fe73ca38a816295cdb5bea68b020a3965da3b09b83060",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          55,
+          44,
+          191,
+          300
+        ],
+        "visualWidth": 136,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.76808134816442,
+        "alpha32CentroidY": 165.3713180885091,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 20947,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          55,
+          44,
+          191,
+          300
+        ],
+        "visualWidth": 136,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.76808134816442,
+        "alpha32CentroidY": 165.3713180885091,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 20947,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        56,
+        44,
+        192,
+        300
+      ],
+      "visualWidth": 136,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.76808134816442,
+      "alpha32CentroidY": 165.3713180885091,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 20947,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_leftup_1.png",
+      "source": "integrated_candidate/shanzei_b_atk_leftup_1.png",
+      "output": "release_candidate/shanzei_b_atk_leftup_1.png",
+      "sourceSha256": "c302e31dda5d78ddca2c522e843058d66365be90917ba94f468a05522984dee9",
+      "outputSha256": "33f54d4732c46aaf90fb5005644170d0f225943858a2750daa8da3161be20ce6",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          61,
+          44,
+          196,
+          300
+        ],
+        "visualWidth": 135,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.45987030934411,
+        "alpha32CentroidY": 162.99537578399065,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 18814,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          61,
+          44,
+          196,
+          300
+        ],
+        "visualWidth": 135,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.45987030934411,
+        "alpha32CentroidY": 162.99537578399065,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 18814,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        62,
+        44,
+        197,
+        300
+      ],
+      "visualWidth": 135,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.45987030934411,
+      "alpha32CentroidY": 162.99537578399065,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 18814,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_battle_idle_left.png",
+      "source": "integrated_candidate/shanzei_b_battle_idle_left.png",
+      "output": "release_candidate/shanzei_b_battle_idle_left.png",
+      "sourceSha256": "ffe7063659078f9030cca509167585782508e97752dc6733359c1f6861691fa6",
+      "outputSha256": "71a056718836eac7137ea7af4f477744ce911b7ec5d7954760b40bd4f1cc6385",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          61,
+          44,
+          193,
+          300
+        ],
+        "visualWidth": 132,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.74026247825857,
+        "alpha32CentroidY": 157.50529700100142,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 18973,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          61,
+          44,
+          193,
+          300
+        ],
+        "visualWidth": 132,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.74026247825857,
+        "alpha32CentroidY": 157.50529700100142,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 18973,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        62,
+        44,
+        194,
+        300
+      ],
+      "visualWidth": 132,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.74026247825857,
+      "alpha32CentroidY": 157.50529700100142,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 18973,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "0.375<=width/visualHeight<=0.515625",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_battle_idle_leftdown.png",
+      "source": "integrated_candidate/shanzei_b_battle_idle_leftdown.png",
+      "output": "release_candidate/shanzei_b_battle_idle_leftdown.png",
+      "sourceSha256": "9e56c1e31ce9100a76e8a80707289aeffeec4b7626256c2d00bf6a4733c86bda",
+      "outputSha256": "7e8984e220bab4e246cbcef744d5db1a809651a97297540f12b80ed6098cee81",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          58,
+          44,
+          189,
+          300
+        ],
+        "visualWidth": 131,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.59718383311603,
+        "alpha32CentroidY": 162.2438070404172,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 19175,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          58,
+          44,
+          189,
+          300
+        ],
+        "visualWidth": 131,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.59718383311603,
+        "alpha32CentroidY": 162.2438070404172,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 19175,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        59,
+        44,
+        190,
+        300
+      ],
+      "visualWidth": 131,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.59718383311603,
+      "alpha32CentroidY": 162.2438070404172,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 19175,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "0.375<=width/visualHeight<=0.515625",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_battle_idle_leftup.png",
+      "source": "integrated_candidate/shanzei_b_battle_idle_leftup.png",
+      "output": "release_candidate/shanzei_b_battle_idle_leftup.png",
+      "sourceSha256": "010151a7a346803aa1baac32dbc13cfa708b597956d2e41e171f9ad0c063257c",
+      "outputSha256": "a39271a0672546c9bb8212db4251b967ab09e4a24eeec660ed3148a045eb5509",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          62,
+          44,
+          190,
+          300
+        ],
+        "visualWidth": 128,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.02976885360728,
+        "alpha32CentroidY": 159.96754611253795,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 17132,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          62,
+          44,
+          190,
+          300
+        ],
+        "visualWidth": 128,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.02976885360728,
+        "alpha32CentroidY": 159.96754611253795,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 17132,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        63,
+        44,
+        191,
+        300
+      ],
+      "visualWidth": 128,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.02976885360728,
+      "alpha32CentroidY": 159.96754611253795,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 17132,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "0.375<=width/visualHeight<=0.515625",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_left_1.png",
+      "source": "integrated_candidate/shanzei_b_walk_left_1.png",
+      "output": "release_candidate/shanzei_b_walk_left_1.png",
+      "sourceSha256": "3e91525a4b20c2e3959a944a0388f487adf162d057ac93f5ede07cae09233df0",
+      "outputSha256": "0209bba8425945cbaf46a9778538f65386248c62532796714562363b72d86837",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          34,
+          44,
+          198,
+          300
+        ],
+        "visualWidth": 164,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.57562788072617,
+        "alpha32CentroidY": 164.61565233750352,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 21262,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          34,
+          44,
+          198,
+          300
+        ],
+        "visualWidth": 164,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.57562788072617,
+        "alpha32CentroidY": 164.61565233750352,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 21262,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        35,
+        44,
+        199,
+        300
+      ],
+      "visualWidth": 164,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.57562788072617,
+      "alpha32CentroidY": 164.61565233750352,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 21262,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_leftdown_1.png",
+      "source": "integrated_candidate/shanzei_b_walk_leftdown_1.png",
+      "output": "release_candidate/shanzei_b_walk_leftdown_1.png",
+      "sourceSha256": "31ae35af70cc96678b4372fd97bd4c27893703fdfea9288d6461478800a4f2ab",
+      "outputSha256": "e5d3372bbda5000d40e629b54b4ed227e5c1631dcd7857c2d5447df9ecf4f900",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          42,
+          44,
+          192,
+          300
+        ],
+        "visualWidth": 150,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.207605344296,
+        "alpha32CentroidY": 165.75618985331215,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 21406,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          42,
+          44,
+          192,
+          300
+        ],
+        "visualWidth": 150,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 119.207605344296,
+        "alpha32CentroidY": 165.75618985331215,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 21406,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        43,
+        44,
+        193,
+        300
+      ],
+      "visualWidth": 150,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.207605344296,
+      "alpha32CentroidY": 165.75618985331215,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 21406,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_leftup_1.png",
+      "source": "integrated_candidate/shanzei_b_walk_leftup_1.png",
+      "output": "release_candidate/shanzei_b_walk_leftup_1.png",
+      "sourceSha256": "4d4bff4a39e30b7cb372c2accc26b086752d9fb2f64f9d41801c35d488a0a0a3",
+      "outputSha256": "2b63883c194a429c00f9e9356b23dd94a0815857fc8fef27d3e7a3935838e7ee",
+      "featherRemovedLightBoundaryPixels": 0,
+      "recenterDxPx": 1,
+      "before": {
+        "bboxT32": [
+          40,
+          44,
+          195,
+          300
+        ],
+        "visualWidth": 155,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.51579610427368,
+        "alpha32CentroidY": 165.14962690183157,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 20638,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "afterFeather": {
+        "bboxT32": [
+          40,
+          44,
+          195,
+          300
+        ],
+        "visualWidth": 155,
+        "visualHeight": 256,
+        "feetY": 300,
+        "alpha32CentroidX": 118.51579610427368,
+        "alpha32CentroidY": 165.14962690183157,
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "components": 1,
+        "largestComponent": 20638,
+        "borderNonzero": 0,
+        "lightBoundaryPixels": 0
+      },
+      "bboxT32": [
+        41,
+        44,
+        196,
+        300
+      ],
+      "visualWidth": 155,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.51579610427368,
+      "alpha32CentroidY": 165.14962690183157,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "largestComponent": 20638,
+      "borderNonzero": 0,
+      "lightBoundaryPixels": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "hardGatesPass": true
+    }
+  ],
+  "instruction": "seq113",
+  "sourceAuthority": "assets/characters/enemy/shanzei_a|b/battle45 current right-side runtime",
+  "processing": "horizontal mirror + exposed light-fringe cleanup + alpha>32 centroid recenter to x=120"
+}
