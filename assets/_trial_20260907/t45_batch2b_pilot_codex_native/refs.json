@@ -1,0 +1,24 @@
+{
+  "task": "T45",
+  "batch": "2b-pilot",
+  "identityAnchor": "assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/normalized/shanzei_a_right.png",
+  "directionReference": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_right.png",
+  "actionReferences": {
+    "walk_right_1": "assets/characters/hero/battle45/walk_right_1.png",
+    "atk_right_1": "assets/characters/hero/battle45/atk_right_1.png",
+    "die_common": "assets/characters/hero/battle45/die_common.png"
+  },
+  "referenceResponsibilities": {
+    "identityAnchor": "shanzei_a identity, rendering, clothing, palette, proportion, empty-fist policy",
+    "directionReference": "pure right-facing side view only",
+    "actionReferences": "static action silhouette and phase only; never copy hero identity, costume, colors, or weapon"
+  },
+  "output": {
+    "canvas": [240, 320],
+    "visualHeight": 256,
+    "feetY": 300,
+    "centerX": 120,
+    "background": "light neutral plain background for deterministic cutout",
+    "weaponPolicy": "no weapon, no hilt, no sheath"
+  }
+}

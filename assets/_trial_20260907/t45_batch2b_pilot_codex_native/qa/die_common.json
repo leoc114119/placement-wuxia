@@ -1,0 +1,34 @@
+{
+  "key": "die_common",
+  "source": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/raw/die_common_attempt1.png",
+  "output": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/die_common.png",
+  "size": [
+    240,
+    320
+  ],
+  "sourceAlphaBBox": [
+    213,
+    334,
+    1358,
+    718
+  ],
+  "bbox": [
+    15,
+    230,
+    225,
+    300
+  ],
+  "visualWidth": 210,
+  "visualHeight": 70,
+  "feetY": 300,
+  "centroidX": 120.0,
+  "widthHeightRatio": 3.0,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "33cfe522a9cfc9e75de4925758e80f679ce1cdc9f9b50b17f8b376af9e26363e",
+  "outputSha256": "e133a8a5c79362158387e9e9b7a65a6f1af6ada08b5d94467c2a4d218874735c",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize; 240x320 RGBA frame; no redraw",
+  "mechanicalPass": true
+}

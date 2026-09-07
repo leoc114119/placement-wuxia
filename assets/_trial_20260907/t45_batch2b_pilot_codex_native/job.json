@@ -1,0 +1,25 @@
+{
+  "task": "T45",
+  "batch": "2b-pilot",
+  "status": "pilot_ready_for_leo_visual_gate",
+  "scope": ["shanzei_a", "right", "walk_right_1", "atk_right_1", "die_common"],
+  "generationPolicy": "one image per action; no grids; stop after pilot contact for Leo visual gate",
+  "specGate": "pending",
+  "visualGate": "pending",
+  "rawOutputs": [
+    "raw/walk_right_1_attempt1.png",
+    "raw/atk_right_1_attempt1.png",
+    "raw/die_common_attempt1.png"
+  ],
+  "normalizedOutputs": [
+    "normalized/walk_right_1.png",
+    "normalized/atk_right_1.png",
+    "normalized/die_common.png"
+  ],
+  "qa": [
+    "qa/pilot_contact.png",
+    "qa/summary.json"
+  ],
+  "runtimeRelease": false,
+  "sourceManifest": "assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/manifest.json"
+}

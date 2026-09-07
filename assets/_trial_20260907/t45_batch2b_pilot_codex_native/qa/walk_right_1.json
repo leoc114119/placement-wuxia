@@ -1,0 +1,34 @@
+{
+  "key": "walk_right_1",
+  "source": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/raw/walk_right_1_attempt1.png",
+  "output": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/walk_right_1.png",
+  "size": [
+    240,
+    320
+  ],
+  "sourceAlphaBBox": [
+    355,
+    177,
+    783,
+    1091
+  ],
+  "bbox": [
+    60,
+    44,
+    180,
+    300
+  ],
+  "visualWidth": 120,
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.0,
+  "widthHeightRatio": 0.46875,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "45fb76dc7d47dd074cf811b484f3e32dc4b047df408c7c1abce5ecd2b09b816f",
+  "outputSha256": "beea7a3802931ecd3fba0f1034ed0bbc2d077d8f280741577f01ab9e1564ad6b",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize; 240x320 RGBA frame; no redraw",
+  "mechanicalPass": true
+}

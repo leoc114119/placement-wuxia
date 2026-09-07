@@ -1,0 +1,108 @@
+{
+  "count": 3,
+  "mechanicalPass": true,
+  "files": [
+    {
+      "key": "walk_right_1",
+      "source": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/raw/walk_right_1_attempt1.png",
+      "output": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/walk_right_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "sourceAlphaBBox": [
+        355,
+        177,
+        783,
+        1091
+      ],
+      "bbox": [
+        60,
+        44,
+        180,
+        300
+      ],
+      "visualWidth": 120,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.46875,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "45fb76dc7d47dd074cf811b484f3e32dc4b047df408c7c1abce5ecd2b09b816f",
+      "outputSha256": "beea7a3802931ecd3fba0f1034ed0bbc2d077d8f280741577f01ab9e1564ad6b",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize; 240x320 RGBA frame; no redraw",
+      "mechanicalPass": true
+    },
+    {
+      "key": "atk_right_1",
+      "source": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/raw/atk_right_1_attempt1.png",
+      "output": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/atk_right_1.png",
+      "size": [
+        240,
+        320
+      ],
+      "sourceAlphaBBox": [
+        386,
+        147,
+        804,
+        1200
+      ],
+      "bbox": [
+        69,
+        44,
+        171,
+        300
+      ],
+      "visualWidth": 102,
+      "visualHeight": 256,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 0.3984375,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "e2a4fa47b2f13f3807da21b0f70ef0f33da145b0a0cf37b730dabeddde8f3c43",
+      "outputSha256": "f25024040d647e132a2c3f06ce26bcaa3e4f61d80cf3a24f27c1bfdd9995d2ba",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize; 240x320 RGBA frame; no redraw",
+      "mechanicalPass": true
+    },
+    {
+      "key": "die_common",
+      "source": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/raw/die_common_attempt1.png",
+      "output": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/die_common.png",
+      "size": [
+        240,
+        320
+      ],
+      "sourceAlphaBBox": [
+        213,
+        334,
+        1358,
+        718
+      ],
+      "bbox": [
+        15,
+        230,
+        225,
+        300
+      ],
+      "visualWidth": 210,
+      "visualHeight": 70,
+      "feetY": 300,
+      "centroidX": 120.0,
+      "widthHeightRatio": 3.0,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sourceSha256": "33cfe522a9cfc9e75de4925758e80f679ce1cdc9f9b50b17f8b376af9e26363e",
+      "outputSha256": "e133a8a5c79362158387e9e9b7a65a6f1af6ada08b5d94467c2a4d218874735c",
+      "processing": "connected neutral-background flood-cut; aspect-preserving resize; 240x320 RGBA frame; no redraw",
+      "mechanicalPass": true
+    }
+  ]
+}

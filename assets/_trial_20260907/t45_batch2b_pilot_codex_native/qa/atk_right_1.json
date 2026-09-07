@@ -1,0 +1,34 @@
+{
+  "key": "atk_right_1",
+  "source": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/raw/atk_right_1_attempt1.png",
+  "output": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/atk_right_1.png",
+  "size": [
+    240,
+    320
+  ],
+  "sourceAlphaBBox": [
+    386,
+    147,
+    804,
+    1200
+  ],
+  "bbox": [
+    69,
+    44,
+    171,
+    300
+  ],
+  "visualWidth": 102,
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.0,
+  "widthHeightRatio": 0.3984375,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "e2a4fa47b2f13f3807da21b0f70ef0f33da145b0a0cf37b730dabeddde8f3c43",
+  "outputSha256": "f25024040d647e132a2c3f06ce26bcaa3e4f61d80cf3a24f27c1bfdd9995d2ba",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize; 240x320 RGBA frame; no redraw",
+  "mechanicalPass": true
+}
