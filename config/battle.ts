@@ -154,6 +154,12 @@ export const SKILL_BTN = {
 // ===== 加速（A1 Q13：全局时间倍率，演出层 dt × 系数） =====
 export const SPEED_FACTOR = { normal: 1, fast: 2 } as const;
 
+/** 【AS 出招速度 · 需求 v1.3 AS-4 · 技术方案 v0.2 §2.2/§4.4 · TASK-AS-BE】收招窗口 ms（表现常量，
+ * 第二段伤害结算锚=t2=t1+300ms）。BE（battle-session t2）/FE（battle-hex CHOREO.strikeSec 别名）
+ * 共享引用本唯一常量，禁各自复制 300；battle-hex 侧只做别名引用（不 import battle-core——
+ * T15 验收红线「渲染/输入层 import battle-core = 0」由共享配置落位保住）。 */
+export const FINISH_WINDOW_MS = 300;
+
 // ===== 结算遮罩 / 占位（A1 Q5：胜负遮罩+战报统计，奖励与疗伤占位文案） =====
 export const RESULT_OVERLAY = {
   fadeInSec: 0.3,

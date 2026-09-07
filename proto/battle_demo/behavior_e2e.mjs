@@ -118,7 +118,13 @@ console.log(bootLogs.join('\n'));
   const neili0 = st.hero.neili, hp0 = st.foes.find((f) => f.id === 'e1').hp, ev0 = st.evN;
   const p = await page.evaluate(([fq, fr]) => window.__demo.cellCss(fq, fr), [eq, er]);
   await page.mouse.click(p.x, p.y);
-  await page.waitForTimeout(500);
+  // 【AS 采样窗口改写·PM Q2 授权（TASK-AS-BE）】技能=提交即排程，段1 事件在 t1≈3s（v1.3 AS-2/3）——
+  // 等结算事件落地再采样（断言体零改；敌条已清、我方条未满，窗内无他事件源）。
+  await page.waitForFunction(
+    (n0) => window.__demo.session.events.slice(n0).some((e) => e.type === 'skill' || e.type === 'miss'),
+    ev0,
+    { timeout: 12000 },
+  );
   st = await snapState();
   const evTypes = await page.evaluate(
     (n0) => window.__demo.session.events.slice(n0).map((e) => e.type),
@@ -183,7 +189,12 @@ const clearHeroCooldowns = () =>
   });
   if (!target) throw new Error('BE2 无空红格');
   await page.mouse.click(target.p.x, target.p.y);
-  await page.waitForTimeout(800);
+  // 【AS 采样窗口改写·PM Q2 授权】空放事件移至 t1≈3s（v1.3 AS-6）——等事件落地再采样（断言体零改）。
+  await page.waitForFunction(
+    (n0) => window.__demo.session.events.length > n0,
+    st0.evN,
+    { timeout: 12000 },
+  );
   const st1 = await snapState();
   // 新断言（方案 §五 BE2 行 · 预期绿四件）：selected null + evN+1 + neili−1 + 敌 hp 不变——
   // 施放受理本身即可观测反馈（toast 不再是反馈通道，§七-15）；evN+1 由 SP-2 确定性背书
@@ -240,7 +251,12 @@ const clearHeroCooldowns = () =>
   const st0 = await snapState();
   if (!vis.inAttackCells) throw new Error('BE3a 可见格 ∉ attackCells：' + JSON.stringify(vis.renderPos));
   await page.mouse.click(vis.p.x, vis.p.y);
-  await page.waitForTimeout(400);
+  // 【AS 采样窗口改写·PM Q2 授权】两段结算在 t1≈3s/t2≈3.3s（v1.3 AS-3/4）——等两段落地再采样。
+  await page.waitForFunction(
+    (n0) => window.__demo.session.events.slice(n0).filter((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1').length >= 2,
+    st0.evN,
+    { timeout: 12000 },
+  );
   const st1 = await snapState();
   // 【T22 v2.2 断言翻转（ATK-7 简化/五点④）】演出位∈射程=施放全范围生效——e1 逻辑位 ∈ 射程被 AOE 命中，
   // 「敌 hp 不变」翻转「e1 hp ≤ hp0 + 恰 1 条 targetId='e1' 的 skill|miss」（miss 偶发容错 ≤；
@@ -252,9 +268,9 @@ const clearHeroCooldowns = () =>
   const e1Before = st0.foes.find((x) => x.id === 'e1');
   const e1After = st1.foes.find((f) => f.id === 'e1');
   const casted =
-    st1.selected === null && st1.evN === st0.evN + 1 &&
+    st1.selected === null && st1.evN === st0.evN + 2 && // 【AS】两段=evN+2（段1+段2，v1.3 AS-3/4）
     st1.hero.neili === st0.hero.neili - 1 &&
-    e1Settled.length === 1 && e1After.hp <= (e1Before ? e1Before.hp : 0);
+    e1Settled.length === 2 && e1After.hp <= (e1Before ? e1Before.hp : 0); // 恰 2 条（两段各一）
   report('BE3a 演出位∈射程=施放全范围生效（N2/T22 v2.2）', false, casted,
     `敌 pos=${JSON.stringify(vis.pos)} 可见位=${JSON.stringify(vis.renderPos)} 选中=${st1.selected} 事件${st0.evN}→${st1.evN} 内力${st0.hero.neili}→${st1.hero.neili} e1结算事件=${e1Settled.length} e1hp${e1Before ? e1Before.hp : '?'}→${e1After ? e1After.hp : '?'}`);
 }
@@ -290,7 +306,7 @@ const clearHeroCooldowns = () =>
   if (!(vis.outOfRange && vis.notInAttack)) throw new Error('BE3b 前置不满足（可见位应在射程外）：' + JSON.stringify(vis));
   const st0 = await snapState();
   await page.mouse.click(vis.p.x, vis.p.y);
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(400); // 【AS】取消路径零 cast 零事件——定时窗保持（等待结算事件必超时）
   const st1 = await snapState();
   const evTypes = await page.evaluate(
     (n0) => window.__demo.session.events.slice(n0).map((e) => e.type),
@@ -436,7 +452,7 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
     const p = await page.evaluate(([fq, fr]) => window.__demo.cellCss(fq, fr), [ep.q, ep.r]);
     await page.mouse.click(p.x, p.y);
     try {
-      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 4000 });
+      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 12000 }); // 【AS】t1≈3s 后才冒字，窗放宽（普攻路径不受影响）
       const obs = await page.evaluate((n0) => {
         const v = window.__demo.getView();
         const ev = window.__demo.session.events.slice(n0).find((e) => e.type === 'basic' || e.type === 'miss');
@@ -476,7 +492,7 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
     const p = await page.evaluate(([fq, fr]) => window.__demo.cellCss(fq, fr), [ep.q, ep.r]);
     await page.mouse.click(p.x, p.y);
     try {
-      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 4000 });
+      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 12000 }); // 【AS】t1≈3s 后才冒字，窗放宽（普攻路径不受影响）
       const obs = await page.evaluate((n0) => {
         const v = window.__demo.getView();
         // 【T22 v2.2 · 方案 §四-9】多目标下首条事件可能是其他目标的 miss——取事件策略改 find targetId='e1'
@@ -529,7 +545,12 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
     if (!target) throw new Error('HF2 无空红格');
     await page.mouse.click(target.p.x, target.p.y);
     const dmgAtClick = await page.evaluate(() => window.__demo.getView().fx.filter((f) => f.kind === 'dmg').length);
-    await page.waitForTimeout(900);
+    // 【AS 采样窗口改写·PM Q2 授权】空放事件在 t1≈3s（v1.3 AS-6）——等事件落地再采样。
+    await page.waitForFunction(
+      (n0) => window.__demo.session.events.length > n0,
+      before.evN,
+      { timeout: 12000 },
+    );
     const after = await page.evaluate(() => {
       const v = window.__demo.getView();
       return { dmgN: v.fx.filter((f) => f.kind === 'dmg').length, pendN: v.pendingHits.length };
@@ -601,7 +622,7 @@ await forceReset(); // HF 段开局强制新局：BE 系列耗时不定，防 HF
     const p = await page.evaluate(([fq, fr]) => window.__demo.cellCss(fq, fr), [ep.q, ep.r]);
     await page.mouse.click(p.x, p.y);
     try {
-      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 4000 });
+      await page.waitForFunction(() => window.__demo.getView().fx.some((f) => f.kind === 'dmg'), null, { timeout: 12000 }); // 【AS】t1≈3s 后才冒字，窗放宽（普攻路径不受影响）
       const obs = await page.evaluate(() => {
         const v = window.__demo.getView();
         const hit = v.fx.find((f) => f.kind === 'dmg' && f.text !== '闪避');

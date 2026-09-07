@@ -2,7 +2,7 @@
 // 依据：战场布局规格-六边形战棋.md 96 号（s=31 / 7×7 视口 / 平顶公式）、战斗界面视觉骨架.md v8 定稿
 //（色彩/组件布局）、主架构《战斗界面接入技术方案》§2（渲染分层）。数值真值仍在 battle-core / 云端 settle。
 
-import { BATTLE_FRAME } from './battle';
+import { BATTLE_FRAME, FINISH_WINDOW_MS } from './battle'; // 【AS · TASK-AS-BE】收招窗 300ms 唯一真值在共享配置（方案 §4.4：BE/FE 不各自复制，本文件 CHOREO 只做别名引用，不 import battle-core——T15 验收红线）
 import type { BattleFacingHex } from '../types'; // 六向帧接线 §2.1 契约类型（type-only，零运行时耦合）
 
 // ===== 六边形几何（96 号定值：平顶 flat-top，s=31 → 格 62×54pt） =====
@@ -173,11 +173,13 @@ export const ANIM_FRAMES: Record<string, readonly number[]> = {
 /** 循环型帧组（walk 循环重放；其余单播型：播到组尾帧保持，直到 session 切状态） */
 export const ANIM_LOOP_GROUPS: readonly string[] = ['walk'];
 
-/** 出招演出时序（🟡 手感项，preview 目验可调；mock 按此驱动 animState 时间线） */
+/** 出招演出时序（🟡 手感项，preview 目验可调；mock 按此驱动 animState 时间线）
+ * 【AS · TASK-AS-BE】strikeSec 改为 core FINISH_WINDOW_MS 别名引用（值不变 0.3）——
+ * 收招窗 300ms 是 t2 段结算锚（AS-4），唯一真值 battle-core，本处禁再硬编码。 */
 export const CHOREO = {
   chargeSec: 0.1, // 蓄力段（04）
-  strikeSec: 0.3, // 出招挥出（05）
-  basicSec: 0.32, // 普攻全程（06+前冲回位口径）
+  strikeSec: FINISH_WINDOW_MS / 1000, // 出招挥出（05）=收招窗别名（AS-4 · 方案 §2.2/§4.4）
+  basicSec: 0.32, // 普攻全程（06+前冲回位口径；普攻表现 1s 常量归 FE 卡接线）
   hitSec: 0.18, // 受击段
 } as const;
 
