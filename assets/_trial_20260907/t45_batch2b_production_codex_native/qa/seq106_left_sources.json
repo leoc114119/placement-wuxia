@@ -1,0 +1,67 @@
+{
+  "task": "T45",
+  "instruction": "seq106",
+  "count": 12,
+  "files": [
+    {
+      "name": "shanzei_a_atk_left_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_atk_left_2.png",
+      "cleanupApplied": true
+    },
+    {
+      "name": "shanzei_a_atk_leftdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_atk_leftdown_2.png",
+      "cleanupApplied": true
+    },
+    {
+      "name": "shanzei_a_atk_leftup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_atk_leftup_2.png",
+      "cleanupApplied": true
+    },
+    {
+      "name": "shanzei_a_walk_left_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_walk_left_2.png",
+      "cleanupApplied": true
+    },
+    {
+      "name": "shanzei_a_walk_leftdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_walk_leftdown_2.png",
+      "cleanupApplied": true
+    },
+    {
+      "name": "shanzei_a_walk_leftup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_walk_leftup_2.png",
+      "cleanupApplied": true
+    },
+    {
+      "name": "shanzei_b_atk_left_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_atk_left_2.png",
+      "cleanupApplied": false
+    },
+    {
+      "name": "shanzei_b_atk_leftdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_atk_leftdown_2.png",
+      "cleanupApplied": false
+    },
+    {
+      "name": "shanzei_b_atk_leftup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_b_atk_leftup_2.png",
+      "cleanupApplied": true
+    },
+    {
+      "name": "shanzei_b_walk_left_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_walk_left_2.png",
+      "cleanupApplied": false
+    },
+    {
+      "name": "shanzei_b_walk_leftdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_b_walk_leftdown_2.png",
+      "cleanupApplied": true
+    },
+    {
+      "name": "shanzei_b_walk_leftup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_walk_leftup_2.png",
+      "cleanupApplied": false
+    }
+  ]
+}

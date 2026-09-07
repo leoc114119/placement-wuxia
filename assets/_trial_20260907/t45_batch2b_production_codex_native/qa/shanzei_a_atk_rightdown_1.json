@@ -1,0 +1,45 @@
+{
+  "key": "shanzei_a_atk_rightdown_1",
+  "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_atk_rightdown_1_attempt1.png",
+  "output": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_rightdown_1.png",
+  "size": [
+    240,
+    320
+  ],
+  "mode": "RGBA",
+  "sourceAlphaBBox": [
+    892,
+    31,
+    1195,
+    709
+  ],
+  "bboxT30": [
+    59,
+    44,
+    173,
+    300
+  ],
+  "visualWidth": 114,
+  "visualHeight": 256,
+  "feetY": 300,
+  "alpha32CentroidX": 120.32528096396709,
+  "alpha32CentroidY": 171.9014598540146,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "components": 1,
+  "largestComponent": 17262,
+  "borderNonzero": 0,
+  "lightBoundaryPixelsDiagnostic": 442,
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; removed 2 detached alpha>32 components smaller than 32 pixels; full alpha>32 centroid recenter; 240x320 RGBA frame; no redraw",
+  "sourceSha256": "c50cfa50c09f36f621f958f451f63a7e5bc4d3923f5cb51276edcfec6440c0d6",
+  "outputSha256": "c9cc66ad5401b389efd70e6aac7edacdc1006a3c8a8f86a8dca1c74869a7f65b",
+  "ratioGate": "exempt_action_and_walk_per_seq87",
+  "recenterDx": 0,
+  "detachedComponentsRemoved": [
+    10,
+    1
+  ],
+  "mechanicalPass": true
+}

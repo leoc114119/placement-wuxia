@@ -89,5 +89,24 @@
         "prompt": "prompts/shanzei_b_atk_rightdown_2_seedream_handfix.txt"
       }
     ]
+  },
+  "activeGeneration": null,
+  "releaseState": {
+    "instruction": "seq106",
+    "status": "release_ready",
+    "visualReview": "selected_by_Leo",
+    "specGate": "pass",
+    "integrationGate": "not_handed_off",
+    "integratedManifest": "integrated_candidate/manifest.json",
+    "releasePreflight": "qa/release_preflight_seq106_final.json",
+    "directions": [
+      "right",
+      "rightup",
+      "rightdown",
+      "left",
+      "leftup",
+      "leftdown"
+    ],
+    "frameCount": 42
   }
 }

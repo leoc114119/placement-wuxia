@@ -2,7 +2,7 @@
   "task": "T45",
   "batch": "2b-production",
   "status": "release_ready",
-  "scope": "shanzei_a/b × right/rightup/rightdown × walk2+atk2; idle anchors reused; die common per identity; left系 deterministic mirror after right系 gate",
+  "scope": "shanzei_a/b × six directions × battle45 idle anchors + walk/atk phases 1/2; shared die_common; left系 _2 deterministic mirror with Leo-approved cleanup revisions",
   "ratioGate": "idle/neutral frames only: 0.375<=bboxWidth/visualHeight<=0.515625; walk/atk/cast/jump exempt per rd seq87; other mechanical gates remain hard",
   "dieGate": "width<=220, feetY=300, bboxCenterX=120",
   "weaponPolicy": "empty-body frames; pudao separate",
@@ -58,10 +58,73 @@
     "qa/shanzei_b_atk_rightdown_2_seedream.json",
     "credits.json",
     "seedream_corrections.json",
-    "integrated_candidate/manifest.json"
+    "integrated_candidate/manifest.json",
+    "raw/shanzei_b_atk_right_1_attempt1.png",
+    "normalized/shanzei_b_atk_right_1.png",
+    "qa/shanzei_b_atk_right_1.json",
+    "prompts/shanzei_b_atk_1_right.txt",
+    "contact/shanzei_b_atk_right_1_dark_check.png",
+    "raw/shanzei_b_walk_rightup_1_attempt1.png",
+    "normalized/shanzei_b_walk_rightup_1.png",
+    "qa/shanzei_b_walk_rightup_1.json",
+    "prompts/shanzei_b_walk_1_rightup.txt",
+    "contact/shanzei_b_walk_rightup_1_dark_check.png",
+    "raw/shanzei_b_atk_rightup_1_attempt1.png",
+    "normalized/shanzei_b_atk_rightup_1.png",
+    "qa/shanzei_b_atk_rightup_1.json",
+    "prompts/shanzei_b_atk_1_rightup.txt",
+    "contact/shanzei_b_atk_rightup_1_dark_check.png",
+    "raw/shanzei_b_walk_rightdown_1_attempt1.png",
+    "normalized/shanzei_b_walk_rightdown_1.png",
+    "qa/shanzei_b_walk_rightdown_1.json",
+    "prompts/shanzei_b_walk_1_rightdown.txt",
+    "contact/shanzei_b_walk_rightdown_1_dark_check.png",
+    "raw/shanzei_b_atk_rightdown_1_attempt1.png",
+    "normalized/shanzei_b_atk_rightdown_1.png",
+    "qa/shanzei_b_atk_rightdown_1.json",
+    "prompts/shanzei_b_atk_1_rightdown.txt",
+    "contact/shanzei_b_atk_rightdown_1_dark_check.png",
+    "raw/shanzei_b_atk_rightdown_1_attempt2.png",
+    "normalized/shanzei_b_atk_rightdown_1_attempt2.png",
+    "qa/shanzei_b_atk_rightdown_1_attempt2.json",
+    "normalized/shanzei_b_atk_rightdown_1_handspacing.png",
+    "qa/shanzei_b_atk_rightdown_1_handspacing.json",
+    "prompts/shanzei_b_atk_1_rightdown_handspacing.txt",
+    "contact/shanzei_b_atk_rightdown_1_attempt2_compare.png",
+    "contact/shanzei_b_atk_rightdown_1_handspacing_dark_check.png",
+    "raw/shanzei_a_walk_rightup_1_attempt1.png",
+    "normalized/shanzei_a_walk_rightup_1.png",
+    "qa/shanzei_a_walk_rightup_1.json",
+    "prompts/shanzei_a_walk_1_rightup.txt",
+    "contact/shanzei_a_walk_rightup_1_dark_check.png",
+    "raw/shanzei_a_atk_rightup_1_attempt1.png",
+    "normalized/shanzei_a_atk_rightup_1.png",
+    "qa/shanzei_a_atk_rightup_1.json",
+    "prompts/shanzei_a_atk_1_rightup.txt",
+    "contact/shanzei_a_atk_rightup_1_dark_check.png",
+    "raw/shanzei_a_walk_rightdown_1_attempt1.png",
+    "normalized/shanzei_a_walk_rightdown_1.png",
+    "qa/shanzei_a_walk_rightdown_1.json",
+    "prompts/shanzei_a_walk_1_rightdown.txt",
+    "contact/shanzei_a_walk_rightdown_1_dark_check.png",
+    "raw/shanzei_a_atk_rightdown_1_attempt1.png",
+    "normalized/shanzei_a_atk_rightdown_1.png",
+    "qa/shanzei_a_atk_rightdown_1.json",
+    "prompts/shanzei_a_atk_1_rightdown.txt",
+    "contact/shanzei_a_atk_rightdown_1_dark_check.png",
+    "raw/shanzei_a_atk_rightdown_1_attempt2.png",
+    "normalized/shanzei_a_atk_rightdown_1_attempt2_distinct.png",
+    "qa/shanzei_a_atk_rightdown_1_attempt2_distinct.json",
+    "prompts/shanzei_a_atk_1_rightdown_attempt2_distinct.txt",
+    "contact/shanzei_a_atk_rightdown_1_attempt2_distinct_dark_check.png",
+    "prompts/shanzei_b_die_common.txt",
+    "raw/shanzei_b_die_common_attempt1.png",
+    "normalized/shanzei_b_die_common.png",
+    "qa/shanzei_b_die_common.json",
+    "contact/shanzei_b_die_common_dark_check.png"
   ],
   "runtimeRelease": true,
-  "blocker": "Right系 batch 2b release is in formal enemy battle45 directories; left系 deterministic mirror and ZCode runtime接线 remain separate follow-up.",
+  "blocker": "Release package is complete and awaits rd integration gate; pudao weapon layer remains a separate follow-up.",
   "handCorrections": {
     "shanzei_b_atk_right_2": {
       "userSource": "raw/shanzei_b_atk_right_2_user_fixed.png",
@@ -132,5 +195,84 @@
   "releasePaths": [
     "assets/characters/enemy/shanzei_a/battle45/",
     "assets/characters/enemy/shanzei_b/battle45/"
-  ]
+  ],
+  "continuationStatus": "superseded_shared_die_bone_requirement",
+  "continuationFrame": null,
+  "continuationOutputs": {
+    "raw": "raw/shanzei_b_die_common_attempt1.png",
+    "normalized": "normalized/shanzei_b_die_common.png",
+    "qa": "qa/shanzei_b_die_common.json",
+    "prompt": "prompts/shanzei_b_die_common.txt",
+    "darkAlphaCheck": "contact/shanzei_b_die_common_dark_check.png"
+  },
+  "continuationPolicy": "one frame at a time; do not start next frame until Leo visual review; unified cross-frame proportion comparison remains a later gate",
+  "nativeCorrections": {
+    "shanzei_b_atk_rightdown_1": {
+      "attempt1": "raw/shanzei_b_atk_rightdown_1_attempt1.png",
+      "attempt2": "raw/shanzei_b_atk_rightdown_1_attempt2.png",
+      "target": "increase visible gap between the two closed fists while keeping both fists near the chest",
+      "candidate": "normalized/shanzei_b_atk_rightdown_1_handspacing.png",
+      "qa": "qa/shanzei_b_atk_rightdown_1_handspacing.json",
+      "visualReview": "pending",
+      "specGate": "pending"
+    }
+  },
+  "attempts": {
+    "shanzei_a_atk_rightdown_1": 2
+  },
+  "attemptResults": {
+    "shanzei_a_atk_rightdown_1": {
+      "attempt1": {
+        "raw": "raw/shanzei_a_atk_rightdown_1_attempt1.png",
+        "normalized": "normalized/shanzei_a_atk_rightdown_1.png",
+        "visualStatus": "rejected_by_Leo_feedback",
+        "issue": "near-neutral stance; visually not distinguishable as attack frame"
+      },
+      "attempt2": {
+        "raw": "raw/shanzei_a_atk_rightdown_1_attempt2.png",
+        "normalized": "normalized/shanzei_a_atk_rightdown_1_attempt2_distinct.png",
+        "visualStatus": "pending_leo_visual_review",
+        "issueFixed": "clear asymmetric attack wind-up: leading fist extended, rear fist retracted, torso lean, lunge"
+      }
+    },
+    "shanzei_b_die_common": {
+      "attempt1": {
+        "raw": "raw/shanzei_b_die_common_attempt1.png",
+        "normalized": "normalized/shanzei_b_die_common.png",
+        "visualStatus": "pending_leo_visual_review"
+      }
+    }
+  },
+  "activeGeneration": null,
+  "supersededCandidates": {
+    "shanzei_b_die_common": {
+      "raw": "raw/shanzei_b_die_common_attempt1.png",
+      "normalized": "normalized/shanzei_b_die_common.png",
+      "status": "obsolete_shared_die_bone_policy",
+      "reason": "PM/Leo口径：所有角色共用一张Q版白骨die_common，不生成角色专属人形死亡帧"
+    }
+  },
+  "finalRelease": {
+    "instruction": "seq106",
+    "count": 42,
+    "allHardGatesPass": true,
+    "integratedManifest": "integrated_candidate/manifest.json",
+    "releasePreflight": "qa/release_preflight_seq106_final.json",
+    "sourceLedger": [
+      "qa/seq106_sources.json",
+      "qa/seq106_left_sources.json"
+    ],
+    "contactSheets": [
+      "contact/release_right_action1_12_seq106.png",
+      "contact/release_idle_anchors_6_seq106.png",
+      "contact/release_left_action2_12_seq106.png",
+      "contact/release_all_42_seq106.png"
+    ],
+    "runtimeManifests": [
+      "assets/characters/enemy/shanzei_a/battle45/manifest.json",
+      "assets/characters/enemy/shanzei_b/battle45/manifest.json"
+    ],
+    "runtimeFrameCountPerIdentity": 22,
+    "sharedDie": "assets/_trial_20260907/t45_shared_die_bone_codex_native/normalized/die_common_bone_pose6_gag_white.png"
+  }
 }

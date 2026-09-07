@@ -1,0 +1,39 @@
+{
+  "key": "shanzei_b_die_common",
+  "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_die_common_attempt1.png",
+  "output": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_die_common.png",
+  "size": [
+    240,
+    320
+  ],
+  "mode": "RGBA",
+  "sourceAlphaBBox": [
+    65,
+    494,
+    1319,
+    882
+  ],
+  "bboxT30": [
+    15,
+    235,
+    225,
+    300
+  ],
+  "visualWidth": 210,
+  "visualHeight": 65,
+  "feetY": 300,
+  "alpha32CentroidX": 104.16063492063492,
+  "alpha32CentroidY": 271.5384126984127,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "components": 1,
+  "largestComponent": 7875,
+  "borderNonzero": 0,
+  "processing": "connected neutral-background flood-cut; aspect-preserving width normalization to 210px; bottom baseline y=300; full alpha>32 centroid recenter; 240x320 RGBA frame; no redraw",
+  "sourceSha256": "44168d25d0c66e48815def1740e98e3ee5272cc0344d52765d4d44270263f28f",
+  "outputSha256": "b1b2f1b37d921ced2aa0fbf359e14d4716268685f1c0a51a0565047ab6ea2b77",
+  "ratioGate": "die width<=220, feetY=300, bboxCenterX=120",
+  "mechanicalPass": true
+}

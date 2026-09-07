@@ -1,0 +1,33 @@
+{
+  "task": "T45",
+  "batch": "2b",
+  "instruction": "seq106",
+  "rightAction1": {
+    "shanzei_a_walk_right_1.png": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/walk_right_1.png",
+    "shanzei_a_atk_right_1.png": "assets/_trial_20260907/t45_batch2b_pilot_codex_native/normalized/atk_right_1.png",
+    "shanzei_a_walk_rightup_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_walk_rightup_1.png",
+    "shanzei_a_atk_rightup_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_rightup_1.png",
+    "shanzei_a_walk_rightdown_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_walk_rightdown_1.png",
+    "shanzei_a_atk_rightdown_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_rightdown_1_attempt2_distinct.png",
+    "shanzei_b_walk_right_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_walk_right_1.png",
+    "shanzei_b_atk_right_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_right_1.png",
+    "shanzei_b_walk_rightup_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_walk_rightup_1.png",
+    "shanzei_b_atk_rightup_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_rightup_1.png",
+    "shanzei_b_walk_rightdown_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_walk_rightdown_1.png",
+    "shanzei_b_atk_rightdown_1.png": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_rightdown_1_handspacing.png"
+  },
+  "idleAnchors": {
+    "shanzei_a_battle_idle_right.png": "assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/normalized/shanzei_a_right.png",
+    "shanzei_a_battle_idle_rightup.png": "assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/normalized/shanzei_a_rightup.png",
+    "shanzei_a_battle_idle_rightdown.png": "assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/normalized/shanzei_a_rightdown.png",
+    "shanzei_b_battle_idle_right.png": "assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/normalized/shanzei_b_right.png",
+    "shanzei_b_battle_idle_rightup.png": "assets/_trial_20260906/t45_batch2a_b_rightup_singleframe_v5_codex_native/normalized/shanzei_b_rightup.png",
+    "shanzei_b_battle_idle_rightdown.png": "assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/normalized/shanzei_b_rightdown.png"
+  },
+  "selection": {
+    "shanzei_a_atk_right_1": "pilot",
+    "shanzei_a_walk_right_1": "pilot",
+    "shanzei_a_atk_rightdown_1": "attempt2_distinct",
+    "shanzei_b_atk_rightdown_1": "handspacing"
+  }
+}

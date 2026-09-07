@@ -1,0 +1,37 @@
+{
+  "key": "shanzei_b_walk_right_1",
+  "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_walk_right_1_attempt1.png",
+  "output": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_walk_right_1.png",
+  "size": [
+    240,
+    320
+  ],
+  "mode": "RGBA",
+  "sourceAlphaBBox": [
+    878,
+    39,
+    1290,
+    683
+  ],
+  "bboxT30": [
+    41,
+    44,
+    205,
+    300
+  ],
+  "visualWidth": 164,
+  "visualHeight": 256,
+  "feetY": 300,
+  "alpha32CentroidX": 119.5119584866865,
+  "alpha32CentroidY": 164.25947045063467,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+  "sourceSha256": "f414a53b5e0fd372c4f182576ba0ae25231aa3784cea6879b0f10c1bb23dbc68",
+  "outputSha256": "cf17106061c1688a3fe9e1d182d56767ba57b648a5a3f34292dda89716155598",
+  "ratioGate": "exempt_action_and_walk_per_seq87",
+  "mechanicalPass": true,
+  "recenterDx": 3
+}
