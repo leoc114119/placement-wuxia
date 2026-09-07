@@ -1,0 +1,5 @@
+Edit the Leo-provided shanzei_b right-facing attack frame.
+
+The punching arm and fist in the source image are correct and must remain exactly unchanged: keep its shoulder, sleeve, forearm, wrist, fist, reach, angle, and silhouette pixel-for-pixel in spirit. Make one and only one local change: repair the opposite retracted hand near the lower screen-left side of the torso so it is a clean, compact closed fist with a natural wrist and sleeve connection, matching the existing punching fist's hand language. Do not move that arm or change its pose; only correct the hand shape.
+
+Preserve the red headscarf, face, hair, clothing, palette, body proportions, right-facing side view, feet, framing, attack phase, and empty-body-layer policy. No weapons, no text, no watermark, no shadow, no extra limbs, no redesign, no background pattern, one full-body frame only on a plain light background.

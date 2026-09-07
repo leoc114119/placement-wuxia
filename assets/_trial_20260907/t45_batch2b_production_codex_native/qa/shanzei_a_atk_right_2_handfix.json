@@ -1,0 +1,29 @@
+{
+  "key": "shanzei_a_atk_right_2_handfix",
+  "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_atk_right_2_handfix_attempt1.png",
+  "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_right_2_handfix.png",
+  "size": [
+    240,
+    320
+  ],
+  "bboxT30": [
+    33,
+    44,
+    207,
+    300
+  ],
+  "visualWidth": 174,
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.0,
+  "widthHeightRatio": 0.6796875,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "a96e1ecc63b02d9f0d18526923f86f1cdc364b5eb47f23d58bf630db62221056",
+  "outputSha256": "75643994abee64d3217633afe911fcac8d17554eb9f978b88ab10634c6f4d165",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+  "ratioPass": false,
+  "mechanicalPass": false
+}

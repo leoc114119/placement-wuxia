@@ -1,0 +1,338 @@
+{
+  "task": "T45",
+  "batch": "2b-production",
+  "artifactStage": "release",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "files": [
+    {
+      "name": "shanzei_a_walk_right_2.png",
+      "source": "release_candidate/shanzei_a_walk_right_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "a0a75a54bdd66a64f3cb0d50c3a80e4005419316573c4036ae47bd364adf0548",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        48,
+        44,
+        201,
+        300
+      ],
+      "alpha32CentroidX": 119.89221822209915,
+      "alpha32CentroidY": 174.53259484907227,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_rightup_2.png",
+      "source": "release_candidate/shanzei_a_walk_rightup_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "d61b1d765f6c3a09f719fd020b0c0e204b128c451948e3392710609968920357",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        53,
+        44,
+        186,
+        300
+      ],
+      "alpha32CentroidX": 119.7827490261547,
+      "alpha32CentroidY": 173.35731775180858,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_rightdown_2.png",
+      "source": "release_candidate/shanzei_a_walk_rightdown_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "103f48a3e71a686b28b3ed5316f40b50313c45d6ec734b6ba02278c278f35a72",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        56,
+        44,
+        185,
+        300
+      ],
+      "alpha32CentroidX": 120.03929515418503,
+      "alpha32CentroidY": 167.14455212922172,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_right_2.png",
+      "source": "release_candidate/shanzei_a_atk_right_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "72389c7651305cb19061d5337a38fa8bc472e29b61c2a2a8b27dfecfd31c218a",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        53,
+        44,
+        207,
+        300
+      ],
+      "alpha32CentroidX": 119.69703969363565,
+      "alpha32CentroidY": 168.17123579113732,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_rightup_2.png",
+      "source": "release_candidate/shanzei_a_atk_rightup_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "c8bb48831cde088abbcdc7ac999d1586c91293fd5e3b93c699b66cfef2ef81a8",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        61,
+        44,
+        216,
+        300
+      ],
+      "alpha32CentroidX": 120.2900737184982,
+      "alpha32CentroidY": 169.60323447054117,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_rightdown_2.png",
+      "source": "release_candidate/shanzei_a_atk_rightdown_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "06706b8729f49cb78d19d61be07f77414bd93510b7b47f3360f3e5fc24179de8",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        48,
+        44,
+        194,
+        300
+      ],
+      "alpha32CentroidX": 120.46961016315855,
+      "alpha32CentroidY": 170.4351102254328,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_right_2.png",
+      "source": "release_candidate/shanzei_b_walk_right_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "771452ae1b4fb0565bca0de14aafd34da7e2dd5e70642f1c2681247b7580e4e4",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        48,
+        44,
+        189,
+        300
+      ],
+      "alpha32CentroidX": 120.21708333333333,
+      "alpha32CentroidY": 160.55838541666665,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_rightup_2.png",
+      "source": "release_candidate/shanzei_b_walk_rightup_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "8433699da3a0858cf25990d8e0510cc00f0e86a22956b9fc4cb7ca0e4cd9b7ef",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        47,
+        44,
+        185,
+        300
+      ],
+      "alpha32CentroidX": 120.18364381713455,
+      "alpha32CentroidY": 160.7292823413419,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_rightdown_2.png",
+      "source": "release_candidate/shanzei_b_walk_rightdown_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "d9c9cbd261d37fea9e4f3da1bda51ddbaa2152e64f0f934c8d1601aa7a6459c3",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        54,
+        44,
+        181,
+        300
+      ],
+      "alpha32CentroidX": 119.59640522875817,
+      "alpha32CentroidY": 160.09262663398692,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_right_2.png",
+      "source": "release_candidate/shanzei_b_atk_right_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "9729be6f684f31077c5f4347c03f178869593679576c8d1320f5587cd68fa31f",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        46,
+        44,
+        217,
+        300
+      ],
+      "alpha32CentroidX": 120.23526230394808,
+      "alpha32CentroidY": 162.34446137961552,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_rightup_2.png",
+      "source": "release_candidate/shanzei_b_atk_rightup_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "6b4b6cb086d0cb6bfc16c8b958ec39fb3c79ec67216ed03f7da65e18bb5333ca",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        52,
+        44,
+        216,
+        300
+      ],
+      "alpha32CentroidX": 120.04065734106676,
+      "alpha32CentroidY": 159.0736381212328,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_rightdown_2.png",
+      "source": "release_candidate/shanzei_b_atk_rightdown_2.png",
+      "sourceType": "release_preflight",
+      "sha256": "e2269ff12ed7b78005653d24144cda955fe608ec550257f6ca82862d61319126",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        42,
+        44,
+        207,
+        300
+      ],
+      "alpha32CentroidX": 119.94370565045992,
+      "alpha32CentroidY": 158.17466491458606,
+      "feetY": 300,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "hardGatesPass": true
+    }
+  ],
+  "hardGatesAllPass": true,
+  "runtimeRelease": true,
+  "releaseSource": "release_candidate/",
+  "releasePolicy": "right/rightup/rightdown real frames; left系 mirror remains separate later batch"
+}

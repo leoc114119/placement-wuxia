@@ -1,0 +1,136 @@
+{
+  "task": "T45",
+  "batch": "2b-production",
+  "status": "release_ready",
+  "scope": "shanzei_a/b × right/rightup/rightdown × walk2+atk2; idle anchors reused; die common per identity; left系 deterministic mirror after right系 gate",
+  "ratioGate": "idle/neutral frames only: 0.375<=bboxWidth/visualHeight<=0.515625; walk/atk/cast/jump exempt per rd seq87; other mechanical gates remain hard",
+  "dieGate": "width<=220, feetY=300, bboxCenterX=120",
+  "weaponPolicy": "empty-body frames; pudao separate",
+  "identityAnchors": {
+    "shanzei_a": {
+      "right": "assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/normalized/shanzei_a_right.png",
+      "rightup": "assets/_trial_20260906/t45_batch2a_a_rightup_singleframe_v1_codex_native/normalized/shanzei_a_rightup.png",
+      "rightdown": "assets/_trial_20260906/t45_batch2a_a_rightdown_singleframe_v1_codex_native/normalized/shanzei_a_rightdown.png"
+    },
+    "shanzei_b": {
+      "right": "assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/normalized/shanzei_b_right.png",
+      "rightup": "assets/_trial_20260906/t45_batch2a_b_rightup_singleframe_v5_codex_native/normalized/shanzei_b_rightup.png",
+      "rightdown": "assets/_trial_20260906/t45_batch2a_b_rightdown_singleframe_v1_codex_native/normalized/shanzei_b_rightdown.png"
+    }
+  },
+  "directionReferences": {
+    "right": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_right.png",
+    "rightup": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_rightup.png",
+    "rightdown": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_rightdown.png"
+  },
+  "outputs": [
+    "raw/shanzei_a_walk_right_2_attempt1.png",
+    "raw/shanzei_a_atk_right_2_attempt1.png",
+    "raw/shanzei_b_walk_right_2_attempt1.png",
+    "raw/shanzei_b_atk_right_2_attempt1.png",
+    "raw/shanzei_b_atk_right_2_attempt2.png",
+    "raw/shanzei_a_walk_rightup_2_attempt1.png",
+    "raw/shanzei_a_atk_rightup_2_attempt1.png",
+    "raw/shanzei_b_walk_rightup_2_attempt1.png",
+    "raw/shanzei_b_atk_rightup_2_attempt1.png",
+    "raw/shanzei_a_walk_rightdown_2_attempt1.png",
+    "raw/shanzei_a_atk_rightdown_2_attempt1.png",
+    "raw/shanzei_b_walk_rightdown_2_attempt1.png",
+    "raw/shanzei_b_atk_rightdown_2_attempt1.png",
+    "qa/summary.json",
+    "raw/shanzei_b_atk_right_2_user_fixed.png",
+    "normalized/shanzei_b_atk_right_2_user_fixed.png",
+    "qa/shanzei_b_atk_right_2_user_fixed.json",
+    "raw/shanzei_a_atk_right_2_seedream_attempt1.png",
+    "normalized/shanzei_a_atk_right_2_seedream.png",
+    "qa/shanzei_a_atk_right_2_seedream.json",
+    "raw/shanzei_a_atk_rightup_2_seedream_attempt1.png",
+    "normalized/shanzei_a_atk_rightup_2_seedream.png",
+    "qa/shanzei_a_atk_rightup_2_seedream.json",
+    "raw/shanzei_a_atk_rightdown_2_seedream_attempt1.png",
+    "normalized/shanzei_a_atk_rightdown_2_seedream.png",
+    "qa/shanzei_a_atk_rightdown_2_seedream.json",
+    "raw/shanzei_b_atk_rightup_2_seedream_attempt1.png",
+    "normalized/shanzei_b_atk_rightup_2_seedream.png",
+    "qa/shanzei_b_atk_rightup_2_seedream.json",
+    "raw/shanzei_b_atk_rightdown_2_seedream_attempt1.png",
+    "normalized/shanzei_b_atk_rightdown_2_seedream.png",
+    "qa/shanzei_b_atk_rightdown_2_seedream.json",
+    "credits.json",
+    "seedream_corrections.json",
+    "integrated_candidate/manifest.json"
+  ],
+  "runtimeRelease": true,
+  "blocker": "Right系 batch 2b release is in formal enemy battle45 directories; left系 deterministic mirror and ZCode runtime接线 remain separate follow-up.",
+  "handCorrections": {
+    "shanzei_b_atk_right_2": {
+      "userSource": "raw/shanzei_b_atk_right_2_user_fixed.png",
+      "punchingHand": "preserved exactly from Leo-provided source",
+      "changeScope": "deterministic background/size/center normalization only; no semantic redraw",
+      "candidate": "normalized/shanzei_b_atk_right_2_user_fixed.png",
+      "visualReview": "pending",
+      "specGate": "pending"
+    },
+    "shanzei_a_atk_right_2": {
+      "source": "raw/shanzei_a_atk_right_2_attempt1.png",
+      "correctedBy": "mxai seedream-5.0-pro",
+      "candidate": "normalized/shanzei_a_atk_right_2_seedream_v2.png",
+      "raw": "raw/shanzei_a_atk_right_2_seedream_attempt2_rightarm.png",
+      "changeScope": "repair malformed hand shapes only; preserve identity, pose, direction, clothing, feet, scale, and framing",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pending",
+      "credits": 12,
+      "reference": "raw/shanzei_a_atk_rightup_2_user_reference.png"
+    },
+    "shanzei_a_atk_rightup_2": {
+      "source": "raw/shanzei_a_atk_rightup_2_attempt1.png",
+      "correctedBy": "mxai seedream-5.0-pro",
+      "candidate": "normalized/shanzei_a_atk_rightup_2_seedream.png",
+      "raw": "raw/shanzei_a_atk_rightup_2_seedream_attempt1.png",
+      "changeScope": "repair malformed hand shapes only; preserve identity, pose, direction, clothing, feet, scale, and framing",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pending",
+      "credits": 6
+    },
+    "shanzei_a_atk_rightdown_2": {
+      "source": "raw/shanzei_a_atk_rightdown_2_attempt1.png",
+      "correctedBy": "mxai seedream-5.0-pro",
+      "candidate": "normalized/shanzei_a_atk_rightdown_2_seedream_v2.png",
+      "raw": "raw/shanzei_a_atk_rightdown_2_seedream_attempt2_rightarm.png",
+      "changeScope": "repair malformed hand shapes only; preserve identity, pose, direction, clothing, feet, scale, and framing",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pending",
+      "credits": 12,
+      "reference": "raw/shanzei_a_atk_rightup_2_user_reference.png"
+    },
+    "shanzei_b_atk_rightup_2": {
+      "source": "raw/shanzei_b_atk_rightup_2_attempt1.png",
+      "correctedBy": "mxai seedream-5.0-pro",
+      "candidate": "normalized/shanzei_b_atk_rightup_2_seedream_v2.png",
+      "raw": "raw/shanzei_b_atk_rightup_2_seedream_attempt1.png",
+      "changeScope": "repair malformed hand shapes only; preserve identity, pose, direction, clothing, feet, scale, and framing",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pending",
+      "credits": 6
+    },
+    "shanzei_b_atk_rightdown_2": {
+      "source": "raw/shanzei_b_atk_rightdown_2_attempt1.png",
+      "correctedBy": "mxai seedream-5.0-pro",
+      "candidate": "normalized/shanzei_b_atk_rightdown_2_seedream_v2.png",
+      "raw": "raw/shanzei_b_atk_rightdown_2_seedream_attempt2_rightarm.png",
+      "changeScope": "repair malformed hand shapes only; preserve identity, pose, direction, clothing, feet, scale, and framing",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pending",
+      "credits": 12,
+      "reference": "raw/shanzei_b_atk_rightup_2_seedream_attempt1.png"
+    }
+  },
+  "artifactStage": "release",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "releasePaths": [
+    "assets/characters/enemy/shanzei_a/battle45/",
+    "assets/characters/enemy/shanzei_b/battle45/"
+  ]
+}

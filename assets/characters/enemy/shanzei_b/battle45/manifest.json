@@ -1,0 +1,215 @@
+{
+  "task": "T45",
+  "batch": "2b-production",
+  "assetRole": "enemy empty-body battle45 frame layer",
+  "identity": "shanzei_b",
+  "artifactStage": "release",
+  "runtimeRelease": true,
+  "visualReview": "selected_by_Leo",
+  "specGate": "pass",
+  "integrationGate": "not_handed_off",
+  "generatedDirections": [
+    "right",
+    "rightup",
+    "rightdown"
+  ],
+  "mirrorPolicy": "left系由右系确定性水平镜像，另批处理；本批不写左系",
+  "sourceJob": "assets/_trial_20260907/t45_batch2b_production_codex_native/job.json",
+  "qaEvidence": "assets/_trial_20260907/t45_batch2b_production_codex_native/qa/release_preflight.json",
+  "credits": "assets/_trial_20260907/t45_batch2b_production_codex_native/credits.json",
+  "releasedAt": "2026-09-07T13:02:19.292207+08:00",
+  "frames": [
+    {
+      "name": "atk_right_2.png",
+      "path": "assets/characters/enemy/shanzei_b/battle45/atk_right_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/release_candidate/shanzei_b_atk_right_2.png",
+      "sha256": "9729be6f684f31077c5f4347c03f178869593679576c8d1320f5587cd68fa31f",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        46,
+        44,
+        217,
+        300
+      ],
+      "visualWidth": 171,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.23526230394808,
+      "alpha32CentroidY": 162.34446137961552,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "integrationGate": "not_handed_off"
+    },
+    {
+      "name": "atk_rightdown_2.png",
+      "path": "assets/characters/enemy/shanzei_b/battle45/atk_rightdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/release_candidate/shanzei_b_atk_rightdown_2.png",
+      "sha256": "e2269ff12ed7b78005653d24144cda955fe608ec550257f6ca82862d61319126",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        42,
+        44,
+        207,
+        300
+      ],
+      "visualWidth": 165,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.94370565045992,
+      "alpha32CentroidY": 158.17466491458606,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "integrationGate": "not_handed_off"
+    },
+    {
+      "name": "atk_rightup_2.png",
+      "path": "assets/characters/enemy/shanzei_b/battle45/atk_rightup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/release_candidate/shanzei_b_atk_rightup_2.png",
+      "sha256": "6b4b6cb086d0cb6bfc16c8b958ec39fb3c79ec67216ed03f7da65e18bb5333ca",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        52,
+        44,
+        216,
+        300
+      ],
+      "visualWidth": 164,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.04065734106676,
+      "alpha32CentroidY": 159.0736381212328,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "integrationGate": "not_handed_off"
+    },
+    {
+      "name": "walk_right_2.png",
+      "path": "assets/characters/enemy/shanzei_b/battle45/walk_right_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/release_candidate/shanzei_b_walk_right_2.png",
+      "sha256": "771452ae1b4fb0565bca0de14aafd34da7e2dd5e70642f1c2681247b7580e4e4",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        48,
+        44,
+        189,
+        300
+      ],
+      "visualWidth": 141,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.21708333333333,
+      "alpha32CentroidY": 160.55838541666665,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "integrationGate": "not_handed_off"
+    },
+    {
+      "name": "walk_rightdown_2.png",
+      "path": "assets/characters/enemy/shanzei_b/battle45/walk_rightdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/release_candidate/shanzei_b_walk_rightdown_2.png",
+      "sha256": "d9c9cbd261d37fea9e4f3da1bda51ddbaa2152e64f0f934c8d1601aa7a6459c3",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        54,
+        44,
+        181,
+        300
+      ],
+      "visualWidth": 127,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.59640522875817,
+      "alpha32CentroidY": 160.09262663398692,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "integrationGate": "not_handed_off"
+    },
+    {
+      "name": "walk_rightup_2.png",
+      "path": "assets/characters/enemy/shanzei_b/battle45/walk_rightup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/release_candidate/shanzei_b_walk_rightup_2.png",
+      "sha256": "8433699da3a0858cf25990d8e0510cc00f0e86a22956b9fc4cb7ca0e4cd9b7ef",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        47,
+        44,
+        185,
+        300
+      ],
+      "visualWidth": 138,
+      "visualHeight": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 120.18364381713455,
+      "alpha32CentroidY": 160.7292823413419,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "components": 1,
+      "borderNonzero": 0,
+      "ratioGate": "exempt_action_and_walk_per_seq87",
+      "visualReview": "selected_by_Leo",
+      "specGate": "pass",
+      "integrationGate": "not_handed_off"
+    }
+  ]
+}

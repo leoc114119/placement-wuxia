@@ -1,0 +1,33 @@
+{
+  "key": "shanzei_b_atk_rightup_2_seedream_v2",
+  "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_rightup_2_seedream_attempt1.png",
+  "output": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_rightup_2_seedream_v2.png",
+  "size": [
+    240,
+    320
+  ],
+  "bboxT32": [
+    52,
+    44,
+    216,
+    300
+  ],
+  "visualWidth": 164,
+  "visualHeight": 256,
+  "feetY": 300,
+  "alpha32CentroidX": 120.02505100884153,
+  "alpha32CentroidY": 159.1571072319202,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "ratioGateExempt": true,
+  "hardGatesPass": true,
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending",
+  "runtimeRelease": false,
+  "sourceSha256": "c0ab0b7989ddef344223e036c7a5e31dbcbc08a390112f3d7d1dffc93f22662a",
+  "outputSha256": "e35ef26b23a9ea6d9d6704319eb5cdccf374ce11f51a278405fefd08f840f71a",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; deterministic +14px x recenter by full alpha>32 centroid; 240x320 RGBA frame; no redraw",
+  "correction": "hand-shape correction only; Leo-confirmed action"
+}

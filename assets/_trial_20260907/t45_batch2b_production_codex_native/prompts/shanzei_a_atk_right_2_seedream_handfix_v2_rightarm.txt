@@ -1,0 +1,5 @@
+Edit image 1, a single shanzei_a attack phase 2 frame facing right. Image 1 is the authority for the target frame's identity, face, hair, clothing, body proportions, feet, camera, and framing. Image 2 is Leo's approved shanzei_a right-up frame and is used only as the authority for which arm is the character's right punching arm and for the correct right-arm-to-fist path.
+
+Correct one semantic error only: in the target frame, the character's RIGHT arm must be the arm that crosses in front of the torso and extends toward screen right into the punch. The other arm must remain retracted near the torso as a compact closed fist. Do not let the left arm become the punching arm. Keep the target frame's right-facing attack phase, stance, feet, clothing, identity, face, hair, palette, scale, and composition unchanged.
+
+Repair the two hand shapes into clear compact closed fists with natural wrist and sleeve connections, but make no other observable change. No weapon, no extra fingers, no extra limbs, no open palms, no text, no watermark, no shadow, no particles, no second character. Output one full-body character on a plain light neutral background, no sheet.

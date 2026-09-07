@@ -1,0 +1,27 @@
+{
+  "task": "T45",
+  "batch": "2b-pilot",
+  "purpose": "tighten future vertical-frame width/height gate without rejecting Leo-approved pilot",
+  "anchorRatios": {
+    "shanzei_a": {
+      "right": 0.375,
+      "rightup": 0.421875,
+      "rightdown": 0.46875
+    },
+    "shanzei_b": {
+      "right": 0.515625,
+      "rightup": 0.5,
+      "rightdown": 0.51171875
+    }
+  },
+  "pilotRatios": {
+    "walk_right_1": 0.46875,
+    "atk_right_1": 0.3984375
+  },
+  "recommendedStrictGate": {
+    "verticalFrames": "0.375 <= width/visualHeight <= 0.515625 (inclusive, T=30, visualHeight=256)",
+    "die": "no width/height ratio gate; keep width <=220, feet y=300, bbox center x=120",
+    "identityLock": "continue using the canonical A/B direction anchor and Leo visual gate; width/height is a geometry gate, not a semantic head segmentation metric"
+  },
+  "reason": "The six accepted idle anchors define the observed production envelope; the pilot walk/attack ratios are inside it. A tighter single band than 0.38..0.55 is possible, but a narrower band would reject accepted A-right geometry or the approved pilot."
+}

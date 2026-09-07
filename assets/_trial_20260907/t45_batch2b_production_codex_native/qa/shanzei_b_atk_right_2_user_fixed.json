@@ -1,0 +1,36 @@
+{
+  "key": "shanzei_b_atk_right_2_user_fixed",
+  "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_b_atk_right_2_user_fixed.png",
+  "output": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_b_atk_right_2_user_fixed.png",
+  "size": [
+    240,
+    320
+  ],
+  "bboxT30": [
+    46,
+    44,
+    217,
+    300
+  ],
+  "visualWidth": 171,
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.23350702979059,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "1aec6b3d1ab8531d05927e7d4e35b83130921c8849b206eab1352e25a48efde0",
+  "outputSha256": "e5bd5c053e6d200ec5ce5400a66ceeb9ba696a399b4c6d62418420009fcd8e84",
+  "processing": "connected warm-neutral-background flood-cut; anti-aliased background-color decontamination; full alpha>32 centroid recenter to x=120; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+  "sourceAuthority": "Leo-provided corrected frame; punching hand and opposite hand accepted as source",
+  "styleCheck": "preserved source rendering; no semantic redraw",
+  "punchingHand": "preserved",
+  "visualReview": "pending",
+  "specGate": "pending",
+  "runtimeRelease": false,
+  "edgeCleanup": {
+    "nearWhiteFringePixelsRemoved": 486,
+    "semiAlphaPixelsDecontaminated": 3121
+  }
+}
