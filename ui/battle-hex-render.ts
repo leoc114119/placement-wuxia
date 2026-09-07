@@ -17,6 +17,7 @@ import {
   BOARD,
   BOARD_SHAPE,
   CAMERA,
+  CAST_FRAME_PERIOD_MS,
   CHOREO,
   COMPONENT_LAYOUT,
   CTRL_ACTIVE,
@@ -558,7 +559,10 @@ export function updateView(
 ): void {
   view.time += dt;
   const riseToAttack = new Set<string>(); // T21 冲刷条件 a：本帧切到 basic/strike 的攻击者（演出循环后统一冲刷）
-  const poseEndAttack = new Set<string>(); // 【AS-8 · TASK-AS-FE】冲刷条件 e：本帧离开 basic/strike 的攻击者（攻击态收尾沿=段 2 冒字锚）
+  // 【AS-8 · TASK-AS-FE】冲刷条件 e：本帧离开 basic/strike/charge 的攻击者——
+  // 【v0.3 · TASK-AS-v03】charge（施法相）收势沿并入：t1 段 2 结算同刻 session 先回 idle 再 drain
+  // 段 2 事件（循环末帧即收势，AS-4；300ms strike 收招相已废止），第二跳由 charge→idle 沿兜住。
+  const poseEndAttack = new Set<string>();
   for (const a of snapshot.actors) {
     const prev = view.anim.get(a.id);
     const prevAnim = view.moveAnims.get(a.id);
@@ -628,10 +632,13 @@ export function updateView(
         // shakes 震动，见本文件 §T21 注释）；下面这个 animState==='hit' 分支是休眠钩子——session 从不
         // 产生 'hit' 态，属永不执行的既有验收代码，维持休眠不删不接。与 drawPieces 内同名休眠行互指。
         view.fx.push({ kind: 'hit', x: w.x, y: w.y, t: 0, sec: FX.hitSec });
-      } else if (prev && (prev.state === 'strike' || prev.state === 'basic') && a.animState !== 'dead') {
-        // 【AS-8 · TASK-AS-FE】攻击态收尾沿（strike/basic→他态）：「收势=段 2 终点」冒字锚——
-        // 固定步长下 t2 与 strike 收招窗（=FINISH_WINDOW_MS）同刻到期，session tick 动画机先翻
-        // idle 再 drain 段 2 事件 → 条件 a/b 双缺，第二跳会挂至 1.5s 兜底；本沿同帧补冲刷。
+      } else if (prev && (prev.state === 'strike' || prev.state === 'basic' || prev.state === 'charge') && a.animState !== 'dead') {
+        // 【AS-8 · TASK-AS-FE】攻击态/施法相收尾沿（strike/basic/charge→他态）：「收势=段 2 终点」冒字锚——
+        // v0.2 固定步长下 t2 与 strike 收招窗同刻到期，session tick 动画机先翻 idle 再 drain 段 2 事件 →
+        // 条件 a/b 双缺，第二跳会挂至 1.5s 兜底，本沿同帧补冲刷；
+        // 【v0.3 · TASK-AS-v03】技能两段改 t0/t1 后收招相废止，段 2 锚=charge→idle 收势沿
+        //（t1 同刻：resolveSegment2 先发事件后 setAnim(idle)，快照已 idle——本沿=唯一命中臂）；
+        // strike/basic 两臂保留（普攻演出线与 mock 机制锁仍消费）。
         poseEndAttack.add(a.id);
       }
       view.anim.set(a.id, { state: a.animState, t: 0 });
@@ -662,13 +669,18 @@ export function updateView(
     for (const ph of view.pendingHits) {
       const attacker = snapshot.actors.find((a) => a.id === ph.attackerId);
       const inAttackState = attacker ? attacker.animState === 'basic' || attacker.animState === 'strike' : false;
-      // a 上升沿 / b 已在态兜底 / c 超时（攻击者挂死防御）/ d 攻击者已 dead（hp 减少是既成事实）
-      // e【AS-8 · TASK-AS-FE】攻击态收尾沿（strike/basic→他态同帧）——固定步长下 t2 与收招窗同刻
-      //   到期时 a/b 双缺（session 先翻 idle 再 drain 段 2 事件），本沿兜住「收势=段 2 终点」第二跳
+      // 【v0.3 · TASK-AS-v03】施法相首跳（b 的 cast 臂）：段 1=t0 提交内联结算（需求 v1.4 AS-3），
+      // 事件入队帧攻击者恰在 charge（施法相循环至 t1）→ 当帧冲刷第一跳命中反馈（方案 v0.3 §4.4
+      // 「t0 事件触发命中反馈」）；charge 只由 scheduleSkillCast 进入，普攻线 basic/strike 不受扰。
+      const inCastState = attacker ? attacker.animState === 'charge' : false;
+      // a 上升沿 / b 已在态兜底 / b'【v0.3】施法相首跳 / c 超时（攻击者挂死防御）/ d 攻击者已 dead（hp 减少是既成事实）
+      // e【AS-8 · TASK-AS-FE】攻击态/施法相收尾沿（strike/basic/charge→他态同帧）——v0.2 下 t2 与收招窗
+      //   同刻到期时 a/b 双缺；v0.3 下段 2@t1 同刻 charge→idle 收势沿，两形状皆由本沿兜住「收势=段 2 终点」
       const flush =
         riseToAttack.has(ph.attackerId) ||
         poseEndAttack.has(ph.attackerId) ||
         inAttackState ||
+        inCastState ||
         view.time - ph.t > DMG.flushDeadlineSec ||
         attacker?.animState === 'dead';
       if (!flush) {
@@ -990,7 +1002,7 @@ export interface DirectionalFrameSel {
  * ordinal 恒 1 经 profile.frameSrc 映射 jump_{facing}_2.png；旧两段切换/jumpFrameThreshold 已废；
  * 禁复用 animState clock 判跳，否则 jump 非 session 状态会永卡；walk 沿演出钟 1↔2 循环）>
  * 【AS · TASK-AS-FE】普攻保持窗（快照 idle 但 1s 窗内 → basic 计划续播，见分支注）> animState
- * 经 profile.stateMap（循环态区间循环——charge=cast 1→3 整套循环至 session 切 strike，AS-2/开放点①；
+ * 经 profile.stateMap（循环态区间循环——charge=cast 1→3 整套循环至 t1 回 idle，v0.3 AS-2/AS-4；
  * 单播态 from→to 播至尾帧保持，组切换由 updateView 重置）。
  * 纯导出供用例；调用方须保证 spriteKey 有 directional profile（drawPieces 已分支保证）。 */
 export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): DirectionalFrameSel {
@@ -1028,7 +1040,10 @@ export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): D
   const plan = profile.stateMap[state] ?? profile.stateMap.idle;
   const clock = view.anim.get(actor.id);
   if (!clock || clock.state !== state) return { clip: plan.clip, ordinal: plan.from }; // 新组从 from 重放
-  const idx = Math.floor((clock.t * 1000) / PIECE.walkFrameMs);
+  // 【v0.3 · TASK-AS-v03】charge 循环步频走独立 CAST_FRAME_PERIOD_MS=280（方案 §4.4，与 walkFrameMs
+  // 解耦）；walk 循环（无 moveAnim 时钟臂）与其余态保持 walkFrameMs 不动。
+  const periodMs = state === 'charge' ? CAST_FRAME_PERIOD_MS : PIECE.walkFrameMs;
+  const idx = Math.floor((clock.t * 1000) / periodMs);
   if (ANIM_LOOP_GROUPS.includes(state)) {
     const span = plan.to - plan.from + 1;
     return { clip: plan.clip, ordinal: plan.from + (idx % span) };

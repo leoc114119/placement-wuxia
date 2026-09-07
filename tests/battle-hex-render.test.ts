@@ -12,6 +12,7 @@ import {
   ARC_BTNS,
   BOARD,
   BOARD_SHAPE,
+  CAST_FRAME_PERIOD_MS,
   CHOREO,
   COMPONENT_LAYOUT,
   CTRL_ACTIVE,
@@ -1629,18 +1630,18 @@ describe('[六向接线 §3.1] hero directional profile 资源完整性（缺任
 });
 
 describe('[六向接线 §3.2] directional 选帧语义（frameOf 升级：语义 clip 解析 + 时钟取 ordinal）', () => {
-  it('charge cast1→2→3 整套循环（AS-2/开放点①）；strike cast2→cast3；basic atk1→atk2 播至尾帧保持（anim 钟驱动）', () => {
+  it('charge cast1→2→3 整套循环（v0.3 步频=CAST_FRAME_PERIOD_MS 280 独立常量）；strike cast2→cast3；basic atk1→atk2 播至尾帧保持（anim 钟驱动）', () => {
     const view = createView();
     const charge = dirActor({ animState: 'charge' });
     let snap = makeSnapshot([charge]);
     updateView(view, snap, 0.016, 375, 667); // 上升沿：钟 t=0
     expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 1 });
-    updateView(view, snap, 0.15, 375, 667); // 钟累计 0.15s ∈ [140,280)ms → 第 2 帧
+    updateView(view, snap, 0.3, 375, 667); // 钟累计 0.316s=316ms ∈ [280,560)ms → 第 2 帧（280ms 步频）
     expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 2 });
-    updateView(view, snap, 0.14, 375, 667); // 0.29s ∈ [280,420)ms → 第 3 帧
+    updateView(view, snap, 0.3, 375, 667); // 0.616s=616ms ∈ [560,840)ms → 第 3 帧
     expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 3 });
-    updateView(view, snap, 0.14, 375, 667); // 0.43s ≥ 420ms=周期(3×walkFrameMs) → 循环回第 1 帧
-    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 1 }); // 【AS · TASK-AS-FE 随卡回调】旧「恒 cast1」定格断言按卡改循环
+    updateView(view, snap, 0.3, 375, 667); // 0.916s ≥ 840ms=周期(3×CAST_FRAME_PERIOD_MS) → 循环回第 1 帧
+    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 1 }); // 【AS · TASK-AS-v03 随卡改写】v0.2 walkFrameMs(140) 步频废止：v1.4 AS-2/方案 v0.3 §4.4 charge 循环解耦独立 280ms
 
     const strike = dirActor({ animState: 'strike' });
     snap = makeSnapshot([strike]);
@@ -1870,26 +1871,27 @@ describe('[L 环锚点修正] directional 脚底基线 y=300 / legacy 脚底基�
   });
 });
 
-// ══════════ 【AS · TASK-AS-FE】出招速度+两段式伤害 表现接线（需求 v1.3 AS-2/AS-4/口径③/开放点①③ · 方案 v0.2 §4.4）══════════
+// ══════════ 【AS · TASK-AS-v03】出招速度+两段式伤害 表现接线（需求 v1.4 AS-2/AS-4 · 方案 v0.3 §4.4）══════════
 describe('[AS · TASK-AS-FE] 出招速度+两段式伤害 表现接线', () => {
-  it('配置面别名锁：ANIM_LOOP_GROUPS=[walk,charge]；BASIC_DURATION_MS=1000 且 CHOREO.basicSec/strikeSec 只做共享常量别名（BE/FE 禁各自复制，§4.4）', () => {
+  it('配置面别名锁：ANIM_LOOP_GROUPS=[walk,charge]；BASIC_DURATION_MS=1000 且 CHOREO.basicSec/strikeSec 只做共享常量别名（BE/FE 禁各自复制，§4.4）；v0.3 charge 循环步频=CAST_FRAME_PERIOD_MS 280 独立常量', () => {
     expect(ANIM_LOOP_GROUPS).toEqual(['walk', 'charge']);
     expect(BASIC_DURATION_MS).toBe(1000);
     expect(CHOREO.basicSec).toBe(BASIC_DURATION_MS / 1000);
-    expect(CHOREO.strikeSec).toBe(FINISH_WINDOW_MS / 1000);
+    expect(CHOREO.strikeSec).toBe(FINISH_WINDOW_MS / 1000); // 【v0.3 勘注】表现兼容暂留别名，非段 2 结算锚
+    expect(CAST_FRAME_PERIOD_MS).toBe(280); // 【TASK-AS-v03】charge 循环解耦 walkFrameMs（方案 v0.3 §4.4）
   });
 
-  it('charge 循环时长=出招时长（AS-2/开放点①：循环多久由施法相定、帧不单独锚定）：3s 施法相全程 70ms 步长采样，帧序恒 [1,1,2,2,3,3,1]（周期 3×walkFrameMs，无定格）', () => {
+  it('charge 循环时长=出招时长（v1.4 AS-2：循环多久由施法相定、帧不单独锚定）：280ms 步长采样，帧序 [1,2,3,1]（周期 3×CAST_FRAME_PERIOD_MS=840ms，无定格）', () => {
     const view = createView();
     const hero = dirActor({ animState: 'charge' });
     const snap = makeSnapshot([hero]);
     updateView(view, snap, 0.001, 375, 667); // 上升沿：钟 t=0 起算
     const ordinals = [directionalFrameOf(view, hero).ordinal];
-    for (let k = 1; k <= 6; k++) {
-      updateView(view, snap, 0.07, 375, 667); // 采样点 70/140/210/280/350/420ms
+    for (let k = 1; k <= 3; k++) {
+      updateView(view, snap, 0.28, 375, 667); // 采样点 281/561/841ms（各跨一个 280ms 帧界）
       ordinals.push(directionalFrameOf(view, hero).ordinal);
     }
-    expect(ordinals).toEqual([1, 1, 2, 2, 3, 3, 1]); // idx=floor(t/140) 取模循环回第 1 帧
+    expect(ordinals).toEqual([1, 2, 3, 1]); // idx=floor(t/280) 取模循环回第 1 帧（【TASK-AS-v03 随卡改写】v0.2 70ms 步频/walkFrameMs 口径废止）
   });
 
   it('普攻保持窗（口径③/开放点③=1s）：快照 basic→idle 翻转后 atk 帧续播无 2→1 回跳；窗到期回 idle1 且 Map 惰性清理', () => {

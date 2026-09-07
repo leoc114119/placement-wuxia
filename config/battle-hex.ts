@@ -176,12 +176,20 @@ export const ANIM_FRAMES: Record<string, readonly number[]> = {
  * 组循环自身=定格帧 4（敌型降级不坏，循环语义对单帧组幂等）。 */
 export const ANIM_LOOP_GROUPS: readonly string[] = ['walk', 'charge'];
 
+/** 【AS · TASK-AS-v03】施法相 cast 循环帧周期（ms）——独立常量，与 PIECE.walkFrameMs(140) 解耦
+ *（需求 v1.4 AS-2 · 方案 v0.3 §4.4「cast 帧以独立 CAST_FRAME_PERIOD_MS=280 循环至 t1」）。
+ * 消费面仅 directional 选帧 charge 循环分支（ui/battle-hex-render directionalFrameOf）；
+ * walk/basic 保持窗仍走 walkFrameMs，禁回耦。 */
+export const CAST_FRAME_PERIOD_MS = 280;
+
 /** 出招演出时序（🟡 手感项，preview 目验可调；mock 按此驱动 animState 时间线）
  * 【AS · TASK-AS-BE】strikeSec 改为 core FINISH_WINDOW_MS 别名引用（值不变 0.3）——
- * 收招窗 300ms 是 t2 段结算锚（AS-4），唯一真值 battle-core，本处禁再硬编码。 */
+ * 【v0.3 勘注 · TASK-AS-v03】300ms 已不是技能段 2 结算锚（段 2 唯一锚=t1=t0+castDurationMs，
+ * 方案 v0.3 §2.2/§4.4）；本别名仅为 legacy tick 动画机/mock 演出线表现兼容暂留，BE/FE 禁用它
+ * 推导任何段结算时点。 */
 export const CHOREO = {
   chargeSec: 0.1, // 蓄力段（04）——legacy tick 动画机旧线口径；AS 线施法相 charge 由 pendingCasts 保持（时长=出招时长，B5）
-  strikeSec: FINISH_WINDOW_MS / 1000, // 出招挥出（05）=收招窗别名（AS-4 · 方案 §2.2/§4.4）
+  strikeSec: FINISH_WINDOW_MS / 1000, // 出招挥出（05）=收招窗别名（表现兼容暂留；非结算锚，见上勘注）
   basicSec: BASIC_DURATION_MS / 1000, // 【AS · TASK-AS-FE】普攻表现时长别名（需求口径③/开放点③=1s；渲染层 basic 保持窗消费——只改表现计时，不延迟普攻事件或血量）
   hitSec: 0.18, // 受击段
 } as const;

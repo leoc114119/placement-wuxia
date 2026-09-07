@@ -1,13 +1,15 @@
-// ═══ 【AS · TASK-AS-FE】出招速度+两段式伤害 表现证据链驱动（需求 v1.3 AS-2/3/4/8 · 方案 v0.2 §4.4/§6 FE DoD）═══
+// ═══ 【AS · TASK-AS-v03】出招速度+两段式伤害 表现证据链驱动（需求 v1.4 AS-2/3/4/6 · 方案 v0.3 §4.4/§6 FE DoD）═══
 // 用法：node proto/battle_demo/shot_as_cast.mjs
 // 产出：shots/ascast_{x1|x2}_{档}_{相位}.png —— 两速 × 三档（375×667 / 560×700 / 900×560）×
-//       五相位：loop_a/loop_b（施法相 cast 循环两个不同帧=整套循环多帧可见，AS-2/开放点①）、
-//       seg1（t1 段1 冒字+血条首降，AS-3）、strike（收招相 cast 帧=收招窗内，AS-4）、
-//       seg2（t2 段2 冒字+两跳同屏错位，AS-4/AS-8）。
+//       五相位：seg1（t0 段 1 首跳：施法相 charge 当帧冒字+血条首降，AS-3「提交即时结算」）、
+//       loop_a/loop_b（280ms cast 循环第 2/3 帧互异=整套循环多帧可见，AS-2）、
+//       loop_late（段 1 后施法相循环持续 ≥1.8s——循环至 t1，无 strike 收招相，AS-4）、
+//       seg2（t1 段 2 二跳冒字+回 idle+血条再降，AS-4/方案 §4.4「t1 事件触发第二跳并回 idle」）。
 // 白盒说明：与 shot_sixdir.mjs 同款（_debug.units 摆位清条、__demo.getView() 读演出钟）；
-//       帧相位=按 view.anim 钟轮询定帧（PIECE.walkFrameMs 步频公式在页内复算，禁猜等待时长）；
+//       帧相位=按 view.anim 钟轮询定帧（charge 步频=独立常量 CAST_FRAME_PERIOD_MS=280，
+//       方案 v0.3 §4.4/config battle-hex 定值，单测别名锁同源，页内不读 walkFrameMs）；
 //       事件等待=waitForFunction 真事件（skill|miss × targetId）。只留档+控制台校验，
-//       校验不过（循环帧未互异/事件非恰 2 条/段2 冒字未现）退出码 1。
+//       校验不过（循环帧未互异/事件非恰 2 条/段 2 未回 idle/冒字未现）退出码 1。
 // x2：点 ctrl 加速钮（layout.ctrlRect 真实链路，T23-V4 同款换算）——宿主逻辑 dt 唯一真源下
 //       cast 帧/血条/行动条同倍率（方案 §4.4「x2 只能有一个速度真源」）。
 import { createRequire } from 'node:module';
@@ -20,6 +22,8 @@ const { chromium } = require('playwright-core');
 const here = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.join(here, 'shots');
 fs.mkdirSync(outDir, { recursive: true });
+
+const CAST_FRAME_PERIOD_MS = 280; // 【v0.3】施法相 cast 循环步频（config/battle-hex 同名常量；与 PIECE.walkFrameMs 解耦）
 
 const browser = await chromium.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -105,7 +109,7 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
     const ev0 = await page.evaluate(() => window.__demo.session.events.length);
     const hp0 = await page.evaluate(() => window.__demo.session.snapshot().actors.find((a) => a.id === 'e1').hp);
 
-    // 点敌格：cast=提交即排程（AS-2），t0 起 charge 整套循环
+    // 点敌格：cast=提交即结算段 1（v1.4 AS-3），t0 起 charge 整套循环（280ms 步频）
     const cell = await page.evaluate(() => {
       const s = window.__demo.session.snapshot();
       const e1p = s.actors.find((a) => a.id === 'e1').pos;
@@ -127,38 +131,11 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
       throw new Error(`cast 未提交（${speedTag}/${tag} cell=${JSON.stringify(plan.cell)}）：${JSON.stringify(st)}`);
     }
 
-    // ① 施法相循环多帧可见：轮询到 cast 第 2 帧 / 第 3 帧各留一影（旧「定格第 1 帧」行为下两影同帧=校验红）
-    await page.waitForFunction(
-      () => {
-        const c = window.__demo.getView().anim.get('hero');
-        return !!c && c.state === 'charge' && 1 + (Math.floor((c.t * 1000) / window.__demo.PIECE.walkFrameMs) % 3) === 2;
-      },
-      null,
-      { timeout: 4000 },
-    );
-    await shot(`${speedTag}_${tag}_loop_a`);
-    await page.waitForFunction(
-      () => {
-        const c = window.__demo.getView().anim.get('hero');
-        const ord = c && c.state === 'charge' ? 1 + (Math.floor((c.t * 1000) / window.__demo.PIECE.walkFrameMs) % 3) : null;
-        if (ord === 3) {
-          window.__asLoopB = { anim: c.state, ord }; // 命中相位页内留痕（x2 下钟 2x 速，事后采样会跨相位）
-          return true;
-        }
-        return false;
-      },
-      null,
-      { timeout: 4000 },
-    );
-    await shot(`${speedTag}_${tag}_loop_b`);
-    const loopStates = await page.evaluate(() => window.__asLoopB ?? { anim: null, ord: null });
-    check(`${speedTag}/${tag} 施法相=charge 且循环帧互异（cast2/cast3 两影）`, loopStates.anim === 'charge' && loopStates.ord === 3, `animState=${loopStates.anim} loop_b 帧=cast${loopStates.ord}`);
-
-    // ② t1 段1：等首条 e1 结算事件 → 立即留影（冒字当帧；strike 收招相开启）
+    // ① t0 段 1 首跳：等首条 e1 结算事件（提交同刻已在）→ 立即留影（施法相 charge 当帧冒字）
     await page.waitForFunction(
       (n0) => window.__demo.session.events.slice(n0).some((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1'),
       ev0,
-      { timeout: 12000 },
+      { timeout: 8000 },
     );
     await shot(`${speedTag}_${tag}_seg1`);
     const seg1 = await page.evaluate(() => {
@@ -171,27 +148,64 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
         pendN: v.pendingHits.length,
       };
     });
-    check(`${speedTag}/${tag} 段1=strike 收招相+冒字已冲刷`, seg1.heroAnim === 'strike' && seg1.dmgTexts.length >= 1 && seg1.pendN === 0, `animState=${seg1.heroAnim} 冒字=${JSON.stringify(seg1.dmgTexts)} e1hp=${seg1.e1hp}`);
+    check(
+      `${speedTag}/${tag} 段1@t0=施法相 charge 首跳冒字（命中反馈，AS-3/§4.4）`,
+      seg1.heroAnim === 'charge' && seg1.dmgTexts.length >= 1 && seg1.pendN === 0,
+      `animState=${seg1.heroAnim} 冒字=${JSON.stringify(seg1.dmgTexts)} e1hp=${seg1.e1hp}`,
+    );
 
-    // ③ 收招帧：strike 单播第 3 帧（cast3=收势）留影
+    // ② 施法相循环多帧可见：轮询到 cast 第 2 帧 / 第 3 帧各留一影（280ms 步频；旧「定格第 1 帧」行为下两影同帧=校验红）
+    await page.waitForFunction(
+      (period) => {
+        const c = window.__demo.getView().anim.get('hero');
+        return !!c && c.state === 'charge' && 1 + (Math.floor((c.t * 1000) / period) % 3) === 2;
+      },
+      CAST_FRAME_PERIOD_MS,
+      { timeout: 4000 },
+    );
+    await shot(`${speedTag}_${tag}_loop_a`);
+    await page.waitForFunction(
+      (period) => {
+        const c = window.__demo.getView().anim.get('hero');
+        const ord = c && c.state === 'charge' ? 1 + (Math.floor((c.t * 1000) / period) % 3) : null;
+        if (ord === 3) {
+          window.__asLoopB = { anim: c.state, ord }; // 命中相位页内留痕（x2 下钟 2x 速，事后采样会跨相位）
+          return true;
+        }
+        return false;
+      },
+      CAST_FRAME_PERIOD_MS,
+      { timeout: 4000 },
+    );
+    await shot(`${speedTag}_${tag}_loop_b`);
+    const loopStates = await page.evaluate(() => window.__asLoopB ?? { anim: null, ord: null });
+    check(`${speedTag}/${tag} 施法相=charge 且循环帧互异（cast2/cast3 两影，280ms 步频）`, loopStates.anim === 'charge' && loopStates.ord === 3, `animState=${loopStates.anim} loop_b 帧=cast${loopStates.ord}`);
+
+    // ③ 循环至 t1：段 1 后施法相仍循环（charge 钟 ≥1.8s 留影——无 strike 收招相，AS-2 循环=出招时长）
     await page.waitForFunction(
       () => {
         const c = window.__demo.getView().anim.get('hero');
-        return !!c && c.state === 'strike' && Math.min(2 + Math.floor((c.t * 1000) / window.__demo.PIECE.walkFrameMs), 3) === 3;
+        return !!c && c.state === 'charge' && c.t >= 1.8;
       },
       null,
-      { timeout: 3000 },
+      { timeout: 8000 },
     );
-    await shot(`${speedTag}_${tag}_strike`);
+    await shot(`${speedTag}_${tag}_loop_late`);
+    const late = await page.evaluate(() => {
+      const s = window.__demo.session.snapshot();
+      const c = window.__demo.getView().anim.get('hero');
+      return { heroAnim: s.actors.find((a) => a.id === 'hero').animState, chargeT: c ? c.t : null };
+    });
+    check(`${speedTag}/${tag} 段1 后循环持续至 t1（charge ≥1.8s，AS-2）`, late.heroAnim === 'charge' && late.chargeT >= 1.8, `animState=${late.heroAnim} chargeT=${late.chargeT?.toFixed(2)}`);
 
-    // ④ t2 段2：等第二条 e1 结算事件 → 立即留影（两跳同屏错位：第一跳寿命 0.6s>收招窗 0.3s）
+    // ④ t1 段 2：等第二条 e1 结算事件 → 立即留影（回 idle；二跳冒字；血条再降）
     await page.waitForFunction(
       (n0) => window.__demo.session.events.slice(n0).filter((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1').length >= 2,
       ev0,
       { timeout: 12000 },
     );
     await shot(`${speedTag}_${tag}_seg2`);
-    const seg2 = await page.evaluate(() => {
+    const seg2 = await page.evaluate((hpBefore) => {
       const s = window.__demo.session.snapshot();
       const v = window.__demo.getView();
       return {
@@ -200,12 +214,13 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
         dmgFx: v.fx.filter((f) => f.kind === 'dmg').map((f) => ({ text: f.text, dx: f.dx ?? 0 })),
         pendN: v.pendingHits.length,
         evs: window.__demo.session.events.filter((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1').length,
+        hpBefore,
       };
-    });
+    }, seg1.e1hp);
     check(
-      `${speedTag}/${tag} 段2冒字已冲刷（两跳错位防重叠）`,
-      seg2.evs === 2 && seg2.dmgFx.length >= 1 && seg2.pendN === 0,
-      `e1结算事件=${seg2.evs} 冒字=${JSON.stringify(seg2.dmgFx)} e1hp ${hp0}→${seg1.e1hp}→${seg2.e1hp}（血条两次下移入影 seg1/seg2）`,
+      `${speedTag}/${tag} 段2@t1=二跳冒字+回 idle（AS-4/§4.4）`,
+      seg2.evs === 2 && seg2.dmgFx.length >= 1 && seg2.pendN === 0 && seg2.heroAnim === 'idle',
+      `e1结算事件=${seg2.evs} 冒字=${JSON.stringify(seg2.dmgFx)} animState=${seg2.heroAnim} e1hp ${hp0}→${seg1.e1hp}→${seg2.e1hp}（血条逐段下移入影 seg1/seg2）`,
     );
     await page.close();
   }

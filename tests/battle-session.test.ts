@@ -555,7 +555,9 @@ function settleFor(s: HexBattleSession, sec: number): void {
   }
 }
 
-/** settleFor 的两段全收口口径：越过 t1+0.3（段 2 落地）再采样 */
+/** settleFor 的两段全收口口径：越过 t1+0.3（段 2 落地）再采样
+ * 【v0.3 勘注 · TASK-AS-v03】段 2 唯一锚=t1=t0+3.0（300ms 收招节点废止），3.35s 恒越过 t1
+ * 收口两段——时长不动（0.35s 尾差无行为面），仅语义勘注。 */
 function settleBoth(s: HexBattleSession): void {
   settleFor(s, 3.0 + 0.3 + 0.05);
 }
@@ -1756,7 +1758,11 @@ describe('[AI-1] AI 出技射形同规则(规格 v2.4 · 体检 Q01:禁仅距离
       i0 = a.events.findIndex((e) => e.actorId === 'p' && (e.type === 'skill' || e.type === 'miss'));
     }
     expect(i0).toBeGreaterThanOrEqual(0);
-    for (let i = 0; i < 8; i++) a.tick(DT); // 【AS 采样时刻改写·同类盘点遗漏项】AI 臂越过 t2（段 2 采样对齐手动臂）
+    // 【AS 采样时刻适配·v1.4 依据 · TASK-AS-v03】段 1=t0 提交内联（首事件在出技当刻即得，i0 采样点=t0），
+    // 段 2 唯一 due=t1=t0+出招时长 3.0s → 采样窗须再推进 ≥3.0s 跨 t1（32×DT=3.2s，余量 0.2s）；
+    // 旧 v0.2「8 tick 越过 t2=3.3」废止。窗内仅含 p 出技后 bar 回满的首次再行动（te 冷却中=位移/普攻臂，
+    // 不产 skill|miss），采样面与手动臂同口径。
+    for (let i = 0; i < 32; i++) a.tick(DT);
     expect(targetIds(a, 'p')).toEqual(targetIds(m, 'p')); // 出技受击目标序逐位全等(SP-2；两段口径)
     expect(targetIds(a, 'p')).toContain('e0');
     expect(targetIds(a, 'p')).toContain('e2');

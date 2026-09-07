@@ -151,24 +151,22 @@ describe('R1 普攻冒字+震动（V1/E6/E9）', () => {
 });
 
 // ---------- R2 特技 strike 对齐 ----------
-describe('R2 特技 strike 对齐（V2 前半/E1）', () => {
-  it('skill 入队→charge 帧不冲刷→charge→strike 帧冲刷且同帧 fx 同时含 slash（与出招弧同沿）', () => {
+describe('R2 特技首跳对齐（v1.4 AS-3 · 方案 v0.3 §4.4「t0 事件触发命中反馈」· TASK-AS-v03 随卡改写）', () => {
+  it('skill 入队→charge 帧（t0 施法相）当帧冲刷首跳；strike 上升沿 slash 弧=独立瞬时机制保持（FX.slashSec 不动，技能结算已不经过 strike）', () => {
     const view = createView();
     const snap = twoActorSnap({ animState: 'idle' }, { animState: 'idle' });
     feed(view, snap);
     enqueueHit(view, 'hero', 'e1', String(14), true); // 宿主 skill 分支映射（同 basic）
     snap.actors[0].animState = 'charge';
     feed(view, snap);
-    expect(view.fx.filter((f) => f.kind === 'dmg')).toHaveLength(0); // 蓄力段不出字
-    expect(view.pendingHits).toHaveLength(1);
-    snap.actors[0].animState = 'strike';
-    feed(view, snap);
-    expect(view.pendingHits).toHaveLength(0);
+    expect(view.pendingHits).toHaveLength(0); // 【v0.3】施法相当帧冲刷首跳（b' 臂；v0.2「charge 帧不冲刷→strike 冲刷」废止）
     const kinds = view.fx.map((f) => f.kind);
     expect(kinds).toContain('dmg');
-    expect(kinds).toContain('slash'); // 同沿（既有上升沿 slash 派生）
     expect(view.fx.find((f) => f.kind === 'dmg')?.text).toBe('14');
     expect(view.shakes.has('e1')).toBe(true);
+    snap.actors[0].animState = 'strike';
+    feed(view, snap);
+    expect(view.fx.map((f) => f.kind)).toContain('slash'); // strike 上升沿 slash 仍派生（普攻线/mock 机制锁；§4.4 独立瞬时斩击弧）
   });
 });
 
@@ -396,16 +394,14 @@ describe('R10 红线自查（V5/E5：禁碰文件源码锁+渲染层无 core/ses
 
 // ══════════ 【AS · TASK-AS-FE】两段式伤害冒字（需求 v1.3 AS-4/AS-8 · 方案 v0.2 §4.4/§7.1 AS-T12）══════════
 describe('[AS · TASK-AS-FE] 两段式伤害冲刷（收势=段2 终点）', () => {
-  it('段2 对齐翻转形状（固定步长 t2 与收招窗同刻到期：session tick 先翻 idle 再 drain 段2 事件，条件 a/b 双缺）→ 攻击态收尾沿（条件 e）同帧冲刷，不落 1.5s 兜底', () => {
+  it('段2 对齐翻转形状（v0.3：t1 session resolveSegment2 先发段2 事件再 setAnim(idle)——宿主消费帧快照已 idle、prev=charge，条件 a/b 双缺）→ 施法相收势沿（条件 e 扩展臂 charge→idle）同帧冲刷，不落 1.5s 兜底', () => {
     const view = createView();
     const snap = twoActorSnap({ animState: 'idle' }, { animState: 'idle' });
     feed(view, snap);
     snap.actors[0].animState = 'charge';
-    feed(view, snap); // 施法相：不冲刷（R2 已锁）
+    feed(view, snap); // 施法相（t0 段1 已当帧冲刷=R2 v0.3 形状；此处无挂起可冲）
     expect(view.pendingHits).toHaveLength(0);
-    snap.actors[0].animState = 'strike';
-    feed(view, snap); // t1：charge→strike 上升沿（段1 沿=R2 同款，此处补段2 前置）
-    snap.actors[0].animState = 'idle'; // t2 同刻：快照已翻 idle（对齐形状）
+    snap.actors[0].animState = 'idle'; // t1 同刻：循环末帧即收势（v0.3 无 strike 收招相）
     enqueueHit(view, 'hero', 'e1', String(7), true); // 宿主段2 skill 白名单入队（次序镜像：先入队后冲刷）
     feed(view, snap);
     expect(view.pendingHits).toHaveLength(0); // 当帧冲刷（禁挂 1.5s）
@@ -430,7 +426,7 @@ describe('[AS · TASK-AS-FE] 两段式伤害冲刷（收势=段2 终点）', () 
     expect(dmgs[1].dx).toBe(DMG.staggerPx); // 滑动窗口内命中序 1 → 错位一步防重叠
   });
 
-  it('真 session 两段全链（AS-T12/方案 §4.4）：固定 50ms 步长施法相 charge 保持整套循环帧（1/2/3 均可见）、t1 段1 冒字、t2 段2 冒字，两跳时刻差=收招窗 300ms±1 步；两段事件恰 2 条（skill|miss×targetId）', async () => {
+  it('真 session 两段全链（v1.4 AS-3/AS-4 · 方案 v0.3 §4.4 · TASK-AS-v03 随卡改写）：固定 50ms 步长施法相 charge 保持整套循环帧（1/2/3 均可见，280ms 步频）、t0 段1 冒字、t1 段2 冒字+回 idle，两跳时刻差=出招时长 3.0s±1 步；两段事件恰 2 条（skill|miss×targetId）', async () => {
     const { createHexBattle } = await import('../systems/battle-session');
     const unit = (over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 'side'>): CombatantInput => ({
       name: over.id, hp: 100, maxHp: 100, neili: 60, maxNeili: 100, atk: 10, def: 2, neigongLevel: 5,
@@ -438,7 +434,8 @@ describe('[AS · TASK-AS-FE] 两段式伤害冲刷（收势=段2 终点）', () 
     });
     const session = createHexBattle({
       player: unit({
-        id: 'hero', side: 'player', skills: [
+        id: 'hero', side: 'player', shizhan: 15_000_000, // 恒命中 harness（段结算时机断言不依赖 seed 扫描；battle-cast 同款）
+        skills: [
           { id: 'te', name: '特', kind: 'special', weapon: 'fist', grade: 1.3, growth: 1, level: 20, cooldownTurns: 2, neiliCost: 20 },
         ],
       }),
@@ -453,16 +450,17 @@ describe('[AS · TASK-AS-FE] 两段式伤害冲刷（收势=段2 终点）', () 
     e1.hex = { q: heroHex.q + 1, r: heroHex.r };
     e1.renderQ = e1.hex.q; e1.renderR = e1.hex.r; e1.moveFromQ = e1.hex.q; e1.moveFromR = e1.hex.r;
     e1.moveT = 1; e1.bar = 0; e1.barWasMax = false; e1.dead = false;
+    const hp0 = e1.hp;
     expect(session.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
-    expect(session.submit({ type: 'attack', targetId: 'e1', skillId: 'te' })).toBe(true); // cast=提交即排程（AS-2）
+    expect(session.submit({ type: 'attack', targetId: 'e1', skillId: 'te' })).toBe(true); // cast=提交即结算段 1（v1.4 AS-3）
+    expect(session.events.some((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1')).toBe(true); // 段 1 事件在提交同刻已在
     const view = createView();
     let evCursor = 0;
     const spawnAt: number[] = [];
+    let spawnTotal = 0;
     const chargeOrdinals = new Set<number>();
-    const statesBeforeSeg1 = new Set<string>();
-    let prevDmgN = 0;
-    let seg1Seen = false;
-    for (let i = 0; i < 100; i++) { // 5s 覆盖 t0→t2（3.3s）+余量
+    const chargeStates = new Set<string>();
+    for (let i = 0; i < 100; i++) { // 5s 覆盖 t0→t1（3.0s）+余量
       session.tick(0.05);
       const snap = session.snapshot();
       const evs = session.events;
@@ -475,26 +473,35 @@ describe('[AS · TASK-AS-FE] 两段式伤害冲刷（收势=段2 终点）', () 
         }
       }
       const heroActor = snap.actors.find((a) => a.id === 'hero')!;
-      // t1 同刻快照已是 strike（resolveT1 setAnim）——施法相采样只收段1 事件落地前的 tick
-      if (evs.some((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1')) seg1Seen = true;
-      if (!seg1Seen) {
-        statesBeforeSeg1.add(heroActor.animState);
-        chargeOrdinals.add(directionalFrameOf(view, heroActor).ordinal); // charge 循环多帧可见性
+      // 施法相采样：段 1 已在 t0 落地（提交同刻），charge 循环持续至 t1（AS-2 循环=出招时长）
+      if (heroActor.animState === 'charge') {
+        chargeStates.add(heroActor.animState);
+        chargeOrdinals.add(directionalFrameOf(view, heroActor).ordinal); // cast 1..3 整套循环多帧可见性（280ms 步频）
       }
+      // spawn 探针按 fx 引用增量统计（v0.3 两跳间隔 3.0s ≫ DMG.sec 0.6s，首跳先到期——
+      // v0.2 的「存活计数递增」探针在长间隔下失效，见同提交勘注）
+      const beforeFx = new Set(view.fx.filter((f) => f.kind === 'dmg'));
       updateView(view, snap, 0.05, 375, 667);
-      const dmgN = view.fx.filter((f) => f.kind === 'dmg').length;
-      if (dmgN > prevDmgN) { spawnAt.push(session._debug.clock()); prevDmgN = dmgN; }
-      if (dmgN >= 2) break;
+      const added = view.fx.filter((f) => f.kind === 'dmg' && !beforeFx.has(f)).length;
+      if (added > 0) {
+        spawnTotal += added;
+        spawnAt.push(session._debug.clock());
+      }
+      if (spawnTotal >= 2) break;
     }
-    // 事件面：恰 2 条 e1 结算事件（两段各一，AS-5；hero 普攻/敌行动零污染）
+    // 事件面：恰 2 条 e1 结算事件（段1@t0 + 段2@t1 各一，AS-5；hero 普攻/敌行动零污染）
     const settled = session.events.filter((e) => (e.type === 'skill' || e.type === 'miss') && e.targetId === 'e1' && e.actorId === 'hero');
     expect(settled).toHaveLength(2);
-    // 施法相：charge 保持（B5）且 cast 三帧均可见（AS-2 整套循环）
-    expect([...statesBeforeSeg1]).toEqual(['charge']);
+    expect(settled[0].t).toBe(settled[1].t - 3.0); // 两段事件 t 恰差=出招时长（v1.4 AS-4：段2 唯一锚=t1=t0+3000ms）
+    // 施法相：charge 保持（B5）且 cast 三帧均可见（AS-2 整套循环 · 280ms 步频）
+    expect([...chargeStates]).toEqual(['charge']);
     expect(chargeOrdinals).toEqual(new Set([1, 2, 3]));
-    // 两跳：均落地冲刷（无挂起）、时刻差=收招窗 300ms±1 步（AS-4/AS-8）
+    // 两跳：均落地冲刷（无挂起）、时刻差=出招时长 3.0s±1 步（v1.4 AS-3/AS-4；300ms 收招窗口径废止）
     expect(spawnAt).toHaveLength(2);
     expect(view.pendingHits).toHaveLength(0);
-    expect(Math.abs((spawnAt[1] - spawnAt[0]) - FINISH_WINDOW_MS / 1000)).toBeLessThanOrEqual(0.06);
+    expect(Math.abs((spawnAt[1] - spawnAt[0]) - 3.0)).toBeLessThanOrEqual(0.06);
+    expect(session.snapshot().actors.find((a) => a.id === 'hero')!.animState).toBe('idle'); // t1 后回 idle（无 strike 收招相）
+    // 金黄值（独立手算对照）：base=max(10−3,1)=7 → 7×1.3=9.1 → 段伤 floor(9.1×0.5)=4；两段恰 −8
+    expect(e1.hp).toBe(hp0 - 8);
   });
 });
