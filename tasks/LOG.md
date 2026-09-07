@@ -5,6 +5,7 @@
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
 | 2026-09-07 | 主架构（Codex） → 研发线 | 📐 出招速度与两段式伤害技术方案 v0.1 | `docs/design/03-战斗系统/出招速度与两段式伤害技术方案-v0.1.md`；依据需求 `9081e29`/schema `a9e1502`；scheduler、core 段结算、AOE 目标快照、事件/动画/BE-FE 拆分与验收矩阵已落盘，待 PM/Leo 评审。 |
+| 2026-09-07 | 主架构（Codex） → 研发线 | 🧭 出招方案边界补充 | 追加锁定：每个 due 段后立即终局检查并停队列；finishWindow/basic 时长归共享展示配置，FE `CHOREO` 只引用别名，BE 不依赖 UI config。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ 1c 右下跳跃双帧目验通过 | `jump_rightdown_{1,2}.png` 候选通过；已写入正式路径，manifest/QA 标记视觉 selected、规格门 pending，准备提交并交研发线规格门。 |
 | 2026-09-06 | Codex（art） → rd | 📤 T45 1c 右下行走双帧已交规格门 | commit `5e09f88` 已推送；projbus `seq=42` / messageId `edd6a3d5963b4814921dc2c69ebb3131`；Leo 目验通过，等待规格 PASS 后进入跳跃双帧。 |
 | 2026-09-06 | Leo → Codex（art） | ✅ T45 1c 右下行走双帧目验通过 | `walk_rightdown_{1,2}.png` 已写入正式路径；manifest/QA 标记视觉 selected、规格门 pending，待研发线复核后进入跳跃双帧。 |
