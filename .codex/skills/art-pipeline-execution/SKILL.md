@@ -1,13 +1,13 @@
 ---
 name: art-pipeline-execution
-description: 执行 placement-wuxia 的 Codex 原生美术生产、编辑、确定性加工、门检与交接。适用于角色、动作帧、换装、武器、UI 和场景；默认使用 Codex 原生，动作帧同一单帧同一手脚异常连续三次原生失败时允许一次经授权的 mxai Seedream 5 Pro 单图回退；不用于游戏代码实现或审美定稿。
+description: 执行 placement-wuxia 的 Codex 原生美术生产、编辑、确定性加工、门检与交接。适用于角色、动作帧、换装、武器、UI 和场景；默认使用 Codex 原生，动作帧同一单帧同一手脚异常连续三次原生失败时允许一次经授权的 mxai `seedream-5.0-pro` 单图回退；不用于游戏代码实现或审美定稿。
 ---
 
 # Codex 原生美术管线执行手册 v1.2
 
 > 状态：项目级 Codex skill；同时是仓库内可审查的执行真源。
 > 适用：角色、动作帧、换装、武器、UI、场景的原生生图/编辑、条件扣图、规格化、门检与交接。
-> 决策：Codex 原生是默认通道；仅 §5.1 的动作帧单图异常回退可调用一次 mxai Seedream 5 Pro，历史脚本暂不删除。
+> 决策：Codex 原生是默认通道；仅 §5.1 的动作帧单图异常回退可调用一次 mxai `seedream-5.0-pro`（Seedream 5 Pro），历史脚本暂不删除。
 
 ## 1. 开工真源
 
@@ -82,11 +82,11 @@ Leo 确认三拍动作设计
 - 普通上限不授权自行换引擎。只有同一动作单帧、同一手/脚或动作异常已连续三次由 Codex 原生处理仍未解决，且任务上下文已有 Leo 对该条件回退的授权时，才进入 §5.1；这三次必须逐次保留 raw、prompt 和 QA 证据。
 - 已被该条件回退授权覆盖的单帧，第三次原生尝试只用于完成这条触发条件；不得做第四次原生尝试，第三次失败后立即进入 §5.1 或停报。
 
-### 5.1 Seedream 5 Pro 单图回退（严格例外）
+### 5.1 `seedream-5.0-pro` 单图回退（严格例外）
 
-1. 只处理触发异常的那一张目标帧；使用 mxai API 的 Seedream 5 Pro 单图修正，成本固定 **6 积分/张**。禁止批量提交、禁止把 contact sheet 当输入、禁止顺带生成同动作其他帧。
+1. 只处理触发异常的那一张目标帧；使用 mxai API 的精确模型 slug `seedream-5.0-pro`（Seedream 5 Pro）单图修正，成本固定 **6 积分/张**。任何其他 Seedream 变体或其他厂商模型均视为违红线。禁止批量提交、禁止把 contact sheet 当输入、禁止顺带生成同动作其他帧。
 2. 回退只修已登记的手、脚或动作异常；身份锚、服装、色板、比例、朝向和画布规格继续按原任务冻结。它不是新的设计轮次，也不是无限重摇许可。
-3. 在作业包写入 `credits.json`，至少记录 `provider=mxai`、`model=Seedream 5 Pro`、`cost=6`、时间、触发帧、连续原生失败次数、具体异常、输入源 SHA 和输出 SHA；保留三次原生失败的 raw/prompt/QA。
+3. 在作业包写入 `credits.json`，至少记录 `provider=mxai`、`model=seedream-5.0-pro`、`modelDisplayName=Seedream 5 Pro`、`cost=6`、时间、触发帧、连续原生失败次数、具体异常、输入源 SHA 和输出 SHA；保留三次原生失败的 raw/prompt/QA。
 4. 回退结果仍从 `raw/` 开始，执行与原生候选相同的模式、真实 alpha、外围透明、主体连通、尺寸、脚底、质心和命名检查，再进入 `normalized/` 与 `qa/`。成功不等于 release。
 5. 必须重新经过 Leo 目验和 PM 规格门；两道门都通过前维持 candidate 状态，不写运行时目录。若 API 不可用、回退结果仍失败或门检失败，停止该帧并如实上报，不再换其他引擎或追加回退。
 

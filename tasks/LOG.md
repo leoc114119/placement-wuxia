@@ -481,3 +481,5 @@
 | 2026-09-07 | Leo → Codex（art） | 📌 T45 动作帧异常回退授权 | 同一单帧同一手脚/动作异常连续 3 次 Codex 原生处理仍失败时，可用 mxai API 的 Seedream 5 Pro 做一次单图修正，固定 6 积分；禁止批量换源、连环重试或顺带生成其他帧，须保留失败证据并重新走 Leo 目验与 PM 规格门。 |
 | 2026-09-07 | Codex（art） | 📝 T45 条件回退流程与 skill v1.2 落地 | `.codex/skills/art-pipeline-execution/SKILL.md`、`CODEX-ART-README.md` 与全天复盘增补同口径；当前 `shanzei_b_atk_right_2_user_fixed` 已成功，不触发 mxai，仍停 Leo 单帧目验。 |
 | 2026-09-07 | Codex（art） → rd | 📤 T45 条件回退流程交付 | commit `cb02f06` 已推送当前隔离分支；projbus `seq=88` / messageId `bbed146475ed4f8dbb5e0df9af54858b`；交付 skill、入场须知、全天复盘增补与 T45 留痕，当前动作候选仍 pending Leo 单帧目验。 |
+| 2026-09-07 | rd → Codex（art） | ✅ T45 seq=89 流程批批准生效 | Leo 终裁流程批即批即生效；回退模型硬限定为 mxai `seedream-5.0-pro`（Seedream 5 Pro），其他变体/厂商模型违红线；其余三连败、单帧一次6积分、禁批量/连环、回退后全门复验护栏不变。 |
+| 2026-09-07 | Codex（art） | 🧾 T45 seq=89 回执与精确 slug 落盘 | 已 ACK seq=89（messageId `6c5126f10e854c5cb00da01c32c4334b`）；skill、入场须知与全天复盘改为精确 `seedream-5.0-pro`，credits.json 同时记录 slug 与展示名。当前动作候选不触发回退。 |
