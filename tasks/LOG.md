@@ -480,3 +480,4 @@
 | 2026-09-07 | Codex（art） | 🎨 T45 乙·右普攻单帧确定性优化候选 | 用户源复制至 `raw/shanzei_b_atk_right_2_user_fixed.png`；未语义重绘，仅暖中性背景连通域透明化、等比归一 240×320、视觉高256、脚底y300、全 alpha>32 质心 x=120.2146；候选 `normalized/shanzei_b_atk_right_2_user_fixed.png`，待 Leo 单帧目验，未写 runtime。 |
 | 2026-09-07 | Leo → Codex（art） | 📌 T45 动作帧异常回退授权 | 同一单帧同一手脚/动作异常连续 3 次 Codex 原生处理仍失败时，可用 mxai API 的 Seedream 5 Pro 做一次单图修正，固定 6 积分；禁止批量换源、连环重试或顺带生成其他帧，须保留失败证据并重新走 Leo 目验与 PM 规格门。 |
 | 2026-09-07 | Codex（art） | 📝 T45 条件回退流程与 skill v1.2 落地 | `.codex/skills/art-pipeline-execution/SKILL.md`、`CODEX-ART-README.md` 与全天复盘增补同口径；当前 `shanzei_b_atk_right_2_user_fixed` 已成功，不触发 mxai，仍停 Leo 单帧目验。 |
+| 2026-09-07 | Codex（art） → rd | 📤 T45 条件回退流程交付 | commit `cb02f06` 已推送当前隔离分支；projbus `seq=88` / messageId `bbed146475ed4f8dbb5e0df9af54858b`；交付 skill、入场须知、全天复盘增补与 T45 留痕，当前动作候选仍 pending Leo 单帧目验。 |
