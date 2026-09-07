@@ -1,0 +1,29 @@
+{
+  "key": "shanzei_a_atk_rightdown_2_seedream_rightarm",
+  "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_atk_rightdown_2_seedream_attempt2_rightarm.png",
+  "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_rightdown_2_seedream_rightarm.png",
+  "size": [
+    240,
+    320
+  ],
+  "bboxT30": [
+    47,
+    44,
+    193,
+    300
+  ],
+  "visualWidth": 146,
+  "visualHeight": 256,
+  "feetY": 300,
+  "centroidX": 120.0,
+  "widthHeightRatio": 0.5703125,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "sourceSha256": "d8eb6d3eca0abe4307e12c11afac464e087b815193925dcb5b6a5fb6bb18eea2",
+  "outputSha256": "20abe38cf1e163aca7263810ff07496ff4345174dcb22cfc0ea3213a56525224",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; 240x320 RGBA frame; no redraw",
+  "ratioPass": false,
+  "mechanicalPass": false
+}

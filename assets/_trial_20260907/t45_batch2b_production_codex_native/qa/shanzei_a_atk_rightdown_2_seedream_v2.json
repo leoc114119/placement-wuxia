@@ -1,0 +1,33 @@
+{
+  "key": "shanzei_a_atk_rightdown_2_seedream_v2",
+  "source": "assets/_trial_20260907/t45_batch2b_production_codex_native/raw/shanzei_a_atk_rightdown_2_seedream_attempt2_rightarm.png",
+  "output": "assets/_trial_20260907/t45_batch2b_production_codex_native/normalized/shanzei_a_atk_rightdown_2_seedream_v2.png",
+  "size": [
+    240,
+    320
+  ],
+  "bboxT32": [
+    48,
+    44,
+    194,
+    300
+  ],
+  "visualWidth": 146,
+  "visualHeight": 256,
+  "feetY": 300,
+  "alpha32CentroidX": 120.46684102372501,
+  "alpha32CentroidY": 170.43720032380597,
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "ratioGateExempt": true,
+  "hardGatesPass": true,
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending",
+  "runtimeRelease": false,
+  "sourceSha256": "d8eb6d3eca0abe4307e12c11afac464e087b815193925dcb5b6a5fb6bb18eea2",
+  "outputSha256": "2f7062182325d4e6edf1532093d8c2b88713392028b3e3a59354678becf617f4",
+  "processing": "connected neutral-background flood-cut; aspect-preserving resize to visual height 256; deterministic +1px x recenter by full alpha>32 centroid; 240x320 RGBA frame; no redraw",
+  "correction": "right-arm punching path and hand-shape correction only; Leo-confirmed action"
+}

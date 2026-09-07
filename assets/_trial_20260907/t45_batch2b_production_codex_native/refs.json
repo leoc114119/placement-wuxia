@@ -47,5 +47,47 @@
       "hero": "assets/characters/hero/battle45/atk_{d}_2.png",
       "semantics": "attack phase 2: one closed fist extends toward screen right while the other fist retracts near the torso, feet planted"
     }
+  },
+  "seedreamCorrectionPolicy": {
+    "provider": "mxai",
+    "model": "seedream-5.0-pro",
+    "modelDisplayName": "Seedream 5 Pro",
+    "mode": "one-by-one single-image correction",
+    "costPerImage": 6,
+    "sourceAuthority": "each listed raw source is the sole action/identity/frame authority for its own correction; no contact sheet used as input",
+    "allowed": "repair malformed hand shapes and wrist-to-sleeve connections only",
+    "forbidden": "identity, face, hair, clothing, palette, proportions, pose, feet, direction, attack phase, framing, weapons, text, watermark, extra limbs or redesign",
+    "candidates": [
+      {
+        "source": "raw/shanzei_a_atk_right_2_attempt1.png",
+        "output": "raw/shanzei_a_atk_right_2_seedream_attempt1.png",
+        "normalized": "normalized/shanzei_a_atk_right_2_seedream.png",
+        "prompt": "prompts/shanzei_a_atk_right_2_seedream_handfix.txt"
+      },
+      {
+        "source": "raw/shanzei_a_atk_rightup_2_attempt1.png",
+        "output": "raw/shanzei_a_atk_rightup_2_seedream_attempt1.png",
+        "normalized": "normalized/shanzei_a_atk_rightup_2_seedream.png",
+        "prompt": "prompts/shanzei_a_atk_rightup_2_seedream_handfix.txt"
+      },
+      {
+        "source": "raw/shanzei_a_atk_rightdown_2_attempt1.png",
+        "output": "raw/shanzei_a_atk_rightdown_2_seedream_attempt1.png",
+        "normalized": "normalized/shanzei_a_atk_rightdown_2_seedream.png",
+        "prompt": "prompts/shanzei_a_atk_rightdown_2_seedream_handfix.txt"
+      },
+      {
+        "source": "raw/shanzei_b_atk_rightup_2_attempt1.png",
+        "output": "raw/shanzei_b_atk_rightup_2_seedream_attempt1.png",
+        "normalized": "normalized/shanzei_b_atk_rightup_2_seedream.png",
+        "prompt": "prompts/shanzei_b_atk_rightup_2_seedream_handfix.txt"
+      },
+      {
+        "source": "raw/shanzei_b_atk_rightdown_2_attempt1.png",
+        "output": "raw/shanzei_b_atk_rightdown_2_seedream_attempt1.png",
+        "normalized": "normalized/shanzei_b_atk_rightdown_2_seedream.png",
+        "prompt": "prompts/shanzei_b_atk_rightdown_2_seedream_handfix.txt"
+      }
+    ]
   }
 }
