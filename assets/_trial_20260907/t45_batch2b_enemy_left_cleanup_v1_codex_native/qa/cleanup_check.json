@@ -1,0 +1,404 @@
+{
+  "task": "T45",
+  "batch": "2b-enemy-left-cleanup-v1",
+  "count": 8,
+  "allMechanicalPass": true,
+  "allAddedAlphaZero": true,
+  "records": [
+    {
+      "name": "shanzei_a_walk_left_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_walk_left_2.png",
+      "output": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_walk_left_2.png",
+      "sourceSha256": "e866b62f4c331077d00863a54bc13eb7b2d004d78c6d5d0940168e96a636cf68",
+      "outputSha256": "89e03625396390692c401fe8dd228ce1694d8b9669285d48044990888a664ef0",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        39,
+        44,
+        192,
+        300
+      ],
+      "bboxAlphaPositive": [
+        39,
+        44,
+        192,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.07858744394619,
+      "alpha32CentroidY": 174.48273542600896,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "edgeFringeRemovedByPass": 256,
+      "whiteIslandComponents": [
+        {
+          "pixelCount": 41,
+          "bbox": [
+            140,
+            184,
+            145,
+            201
+          ]
+        },
+        {
+          "pixelCount": 5,
+          "bbox": [
+            149,
+            195,
+            154,
+            196
+          ]
+        },
+        {
+          "pixelCount": 12,
+          "bbox": [
+            149,
+            197,
+            156,
+            201
+          ]
+        }
+      ],
+      "residualWhitePixelsInClearRoi": 0,
+      "changedPixels": 314,
+      "removedAlphaPixels": 314,
+      "addedAlphaPixels": 0,
+      "edgeAlphaZero": true,
+      "connectedComponentsT32": 1,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_leftup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_walk_leftup_2.png",
+      "output": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_walk_leftup_2.png",
+      "sourceSha256": "63efec8ec9d37caaa6b6c9397061ace3a9851c68430b7057c57d18254e509cf5",
+      "outputSha256": "7351a3cfbae789a0114a2dc2553be456b8126f1274b2217ad9ce06ba230f99d5",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        54,
+        44,
+        187,
+        300
+      ],
+      "bboxAlphaPositive": [
+        54,
+        44,
+        187,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.23693946188341,
+      "alpha32CentroidY": 173.38744394618834,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "edgeFringeRemovedByPass": 209,
+      "whiteIslandComponents": [],
+      "residualWhitePixelsInClearRoi": 0,
+      "changedPixels": 209,
+      "removedAlphaPixels": 209,
+      "addedAlphaPixels": 0,
+      "edgeAlphaZero": true,
+      "connectedComponentsT32": 1,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_walk_leftdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_walk_leftdown_2.png",
+      "output": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_walk_leftdown_2.png",
+      "sourceSha256": "55bfda84434dc2e714a4ac0d70b5dc458c8fcb04231028c2c1be26488754d83f",
+      "outputSha256": "6fa0bea953ce2009152a02a872d41853ad1372f45f5c94159aecfdd67dbaafb3",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        55,
+        44,
+        184,
+        300
+      ],
+      "bboxAlphaPositive": [
+        55,
+        44,
+        184,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.95995990093171,
+      "alpha32CentroidY": 167.24407359358415,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "edgeFringeRemovedByPass": 157,
+      "whiteIslandComponents": [],
+      "residualWhitePixelsInClearRoi": 0,
+      "changedPixels": 157,
+      "removedAlphaPixels": 157,
+      "addedAlphaPixels": 0,
+      "edgeAlphaZero": true,
+      "connectedComponentsT32": 1,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_left_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_atk_left_2.png",
+      "output": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_atk_left_2.png",
+      "sourceSha256": "b34195fa4ba91759fd2a1b4fba1a744c002f8f1a2d7f0f90464d368a63536939",
+      "outputSha256": "5cedb013986594b72f62eb63650f663d82025ebeff81af781fe8004ef0330289",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        33,
+        44,
+        187,
+        300
+      ],
+      "bboxAlphaPositive": [
+        33,
+        44,
+        187,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.29161833831878,
+      "alpha32CentroidY": 168.16793846529515,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "edgeFringeRemovedByPass": 173,
+      "whiteIslandComponents": [],
+      "residualWhitePixelsInClearRoi": 0,
+      "changedPixels": 173,
+      "removedAlphaPixels": 173,
+      "addedAlphaPixels": 0,
+      "edgeAlphaZero": true,
+      "connectedComponentsT32": 1,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_leftup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_atk_leftup_2.png",
+      "output": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_atk_leftup_2.png",
+      "sourceSha256": "e4b6618b9bf66d048cea4915f2e2146a69ce00e2134e99b9bc0cc1fcb75419b5",
+      "outputSha256": "3c41744586e1cf2f2680c4c27043c7e8a86602754aece2a5e6c2dc31a0c86943",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        24,
+        44,
+        179,
+        300
+      ],
+      "bboxAlphaPositive": [
+        24,
+        44,
+        179,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.67563054243925,
+      "alpha32CentroidY": 169.63180928250605,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "edgeFringeRemovedByPass": 186,
+      "whiteIslandComponents": [
+        {
+          "pixelCount": 31,
+          "bbox": [
+            151,
+            167,
+            156,
+            177
+          ]
+        }
+      ],
+      "residualWhitePixelsInClearRoi": 0,
+      "changedPixels": 217,
+      "removedAlphaPixels": 217,
+      "addedAlphaPixels": 0,
+      "edgeAlphaZero": true,
+      "connectedComponentsT32": 1,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_a_atk_leftdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_a_atk_leftdown_2.png",
+      "output": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_a_atk_leftdown_2.png",
+      "sourceSha256": "71cb24db2503901db459879673cc722a72b8d05cea576fb1ca2a9326d3f7188e",
+      "outputSha256": "c74a7c074fd65929c4ec94bf766a84f769dafeee081ac1bdbd756c84bbdd5e6c",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        46,
+        44,
+        192,
+        300
+      ],
+      "bboxAlphaPositive": [
+        46,
+        44,
+        192,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.52702534015728,
+      "alpha32CentroidY": 170.49843964548745,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "edgeFringeRemovedByPass": 104,
+      "whiteIslandComponents": [],
+      "residualWhitePixelsInClearRoi": 0,
+      "changedPixels": 104,
+      "removedAlphaPixels": 104,
+      "addedAlphaPixels": 0,
+      "edgeAlphaZero": true,
+      "connectedComponentsT32": 1,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_walk_leftdown_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_walk_leftdown_2.png",
+      "output": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_b_walk_leftdown_2.png",
+      "sourceSha256": "8d5e30b0a72c00eae003d2909c36de5a79fa83b04acfae6cc137f4386f0bcc42",
+      "outputSha256": "707767843d560a032639b3b79951e66c79fb0ef1e577f0b0598ab0a1c1e3f0eb",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        59,
+        44,
+        186,
+        300
+      ],
+      "bboxAlphaPositive": [
+        59,
+        44,
+        186,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 119.20439730988102,
+      "alpha32CentroidY": 159.88266942576305,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "edgeFringeRemovedByPass": 147,
+      "whiteIslandComponents": [
+        {
+          "pixelCount": 142,
+          "bbox": [
+            143,
+            162,
+            153,
+            182
+          ]
+        }
+      ],
+      "residualWhitePixelsInClearRoi": 0,
+      "changedPixels": 289,
+      "removedAlphaPixels": 289,
+      "addedAlphaPixels": 0,
+      "edgeAlphaZero": true,
+      "connectedComponentsT32": 1,
+      "hardGatesPass": true
+    },
+    {
+      "name": "shanzei_b_atk_leftup_2.png",
+      "source": "assets/_trial_20260907/t45_batch2b_enemy_left_mirror_codex_native/normalized/shanzei_b_atk_leftup_2.png",
+      "output": "assets/_trial_20260907/t45_batch2b_enemy_left_cleanup_v1_codex_native/normalized/shanzei_b_atk_leftup_2.png",
+      "sourceSha256": "ad1c82f44c0eea6e3a2dec14120720da282c1f4ee7c269f310d3db40b8800ee9",
+      "outputSha256": "b67c47e3b1b85624daa7e109440111606fe4989f1f53465db0846def8e10a74c",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "bboxT32": [
+        24,
+        44,
+        188,
+        300
+      ],
+      "bboxAlphaPositive": [
+        24,
+        44,
+        188,
+        300
+      ],
+      "visualHeightT32": 256,
+      "feetY": 300,
+      "alpha32CentroidX": 118.9347167438404,
+      "alpha32CentroidY": 158.95501057565883,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "edgeFringeRemovedByPass": 161,
+      "whiteIslandComponents": [
+        {
+          "pixelCount": 7,
+          "bbox": [
+            143,
+            157,
+            147,
+            160
+          ]
+        },
+        {
+          "pixelCount": 1,
+          "bbox": [
+            147,
+            160,
+            148,
+            161
+          ]
+        }
+      ],
+      "residualWhitePixelsInClearRoi": 0,
+      "changedPixels": 169,
+      "removedAlphaPixels": 169,
+      "addedAlphaPixels": 0,
+      "edgeAlphaZero": true,
+      "connectedComponentsT32": 1,
+      "hardGatesPass": true
+    }
+  ]
+}
