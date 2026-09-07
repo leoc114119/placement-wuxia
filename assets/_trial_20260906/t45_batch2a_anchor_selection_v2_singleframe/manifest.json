@@ -20,20 +20,21 @@
       ],
       "mode": "RGBA",
       "bbox": [
-        72,
+        78,
         44,
-        168,
+        174,
         300
       ],
       "visualHeight": 256,
       "feetY": 300,
-      "centroidX": 120.0,
+      "centroidX": 120.27236432534849,
       "widthHeightRatio": 0.375,
       "alphaExtrema": [
         0,
         255
       ],
-      "sha256": "b42174f1764a7e305a0644de8f57a4e41322ebba4b04dd7afa4cb5335dd3e7b1"
+      "sha256": "aade20248a357e58da1697d99bc84862b7ff1d766ed3d61a9106bff1abff0f46",
+      "correction": "deterministic horizontal translation +6px after full-pixel alpha>32 centroid review"
     },
     {
       "role": "shanzei_a",

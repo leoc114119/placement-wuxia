@@ -9,6 +9,8 @@
 
 - 统一 manifest：`assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/manifest.json`
 - 六张对照：`assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/contact_six_selected.png`
+- 甲·右居中修正 QA：`assets/_trial_20260906/t45_batch2a_anchor_selection_v2_singleframe/qa/recenter_canonical_a_right_qa.json`
+- 修正说明：canonical 甲·右仅做确定性水平平移 +6px（全像素 alpha>32 质心 `114.2724 → 120.2724`），无重画；原图备份在同目录 `qa/shanzei_a_right_before_recenter_canonical.png`。
 
 所有 PNG 均为 240×320 RGBA；manifest 逐项记录 alpha、可见框、可见高度、脚底基线、中心和 SHA-256。
 
