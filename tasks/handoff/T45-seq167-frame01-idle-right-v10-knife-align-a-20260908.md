@@ -7,6 +7,7 @@
 - **遮挡解释**：刀位统一后，B 精确拳 ROI 与刀层局部重叠为 0；因此 B 的 D 面板不会产生局部像素减少，这不是漏检。遮罩契约仍保留给研发 in-engine 合成，报告只写“刀位对齐通过、局部无重叠”。
 - **程序化门检**：候选包 26 项活动路径；身体两张 SHA 冻结、A/B 武器层 SHA 相同、握点相同、B 精确拳 310px、无 torso/sleeve bridge、平移像素核验 PASS、RGBA/尺寸/2x/零生成门 PASS。
 - **状态**：`artifactStage=candidate`、`visualReview=pending_Leo`、`specGate=pending_pm_scan`、`integrationGate=not_handed_off`、`runtimeRelease=false`。正式 runtime 未写入，下一帧不启动。
+- **交付基线**：素材包与本 handoff 随 commit `cd10cddeefbe8cad2b76c56c1b15b4412dbb8624` 推送；后续 delivery 留痕写入 `22b97c08`；projbus delivery `seq=172`，message `8d36c334682948a2919a781b73e0b737`。
 
 ## 关键证据
 
