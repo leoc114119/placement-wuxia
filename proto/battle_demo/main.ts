@@ -4,8 +4,8 @@
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
 import type { CombatantInput } from '../../types';
 import { SPEED_FACTOR } from '../../config/battle';
-import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, TRIAL_FX_01, hexToWorld, type BattleClip } from '../../config/battle-hex';
-import { FxPlayer, loadFxFramePack, type FxFramePack } from '../../ui/fx-player';
+import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, TRIAL_FX_01, TRIAL_FX_FALLBACK_DURATION_MS, hexToWorld, type BattleClip } from '../../config/battle-hex';
+import { FxCastGate, FxPlayer, findCastSnapshot, loadFxFramePack, type FxFramePack } from '../../ui/fx-player';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
   createView,
@@ -137,7 +137,7 @@ async function loadAssets(): Promise<BattleHexAssets> {
       `ctrlFaces=[${facePairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
       `statusIcons=[${iconPairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
       `帧=[${[...frames.entries()].map(([k2, v]) => `${k2}:${frameStat(v)}`).join(' ')}] ` +
-      `FX=${TRIAL_FX_01.id}:${fxResult.pack.size - fxResult.missing.length}/${fxResult.pack.size}` +
+      `FX=${TRIAL_FX_01.id}:${fxResult.loadedCount}/${fxResult.expectedCount}` +
       (fxResult.missing.length > 0 ? `（缺失！${fxResult.missing.join(',')}）` : ''),
   );
   return { env, topbar, plaque, ctrlFaces, statusIcons, frames };
@@ -194,12 +194,11 @@ const view = createView();
 let fxPack: FxFramePack = new Map();
 const fxPlayer = new FxPlayer(fxPack);
 view.fxWorld = fxPlayer; // 渲染 hook：drawFrame 在棋子后/血条前调用（方案 §3.2）
-/** 已启动 FX 的 accepted cast（actorId → 事件 t）：同一 t0 的多目标事件流只启动一次
- *（scheduleSkillCast 空放发 1 条 skill、非空按目标各发 1 条 skill/miss——同一 cast 的
- * 事件 t 相同，据 (actorId, t) 去重；施法中无输入态+行动者串行 → 不同 cast 不可能同刻）。 */
-const fxCastStarted = new Map<string, number>();
 /** 特功技能 id 集（DEMO_SKILLS kind='special'）：FX 只挂特功施放 t0（任务卡需求表 #5） */
 const SPECIAL_SKILL_IDS = new Set(DEMO_SKILLS.filter((s) => s.kind === 'special').map((s) => s.id));
+/** 特功 accepted cast 触发门（T25-R2）：skill/miss 事件双源 + (actorId,t) 去重——全闪避
+ * 只有 miss 事件也必启动；一次 accepted cast 只启动一次（方案 §5.1）。 */
+const fxCastGate = new FxCastGate(SPECIAL_SKILL_IDS);
 let assets: BattleHexAssets = {
   env: null,
   topbar: null,
@@ -219,32 +218,33 @@ const input = createBattleInput({
   mode: () => session._debug.mode(),
 });
 
-/** 【T25 · 方案 §5.1】特功 accepted cast t0 触发一次三层光影：
- * - 只挂 accepted：rejected 走 rejected 事件（不进本函数）；伤害/命中/空放不改变时间轴
- *   （非伤害事件监听——段 1 是否命中、目标是否为空、暴击与否均不影响）。
- * - T=该次 castDurationMs：从 session 快照队列读 startedAtSec/finishAtSec（core 唯一真值
- *   session 已算好——宿主只读快照，不重算公式、不经手 battle-core，R10 红线）。
+/** 【T25 · 方案 §5.1 / T25-R2 缺陷 1】特功 accepted cast t0 触发一次三层光影：
+ * - 只挂 accepted：rejected 走 rejected 事件（不进本函数）；事件双源 skill+miss——段 1
+ *   命中发 skill、闪避发 miss、空放发 skill，任一源首条即启动（去重已由 fxCastGate 完成），
+ *   命中/闪避/空放/致死终局均不影响时间轴（非伤害事件监听）。
+ * - T=该次 castDurationMs：findCastSnapshot 从 session 快照队列（pending+presentation）读
+ *   startedAtSec/finishAtSec（core 唯一真值 session 已算好——宿主只读快照，不重算公式、
+ *   不经手 battle-core，R10 红线）；段 1 致死终局的 cast 已被挪入 presentationCasts 同查。
  * - 锚=施法者中心格（WF-8）：hexToWorld(renderPos) 世界坐标 start 时定格；施法期间不可移动
  *   （session R1），死亡消散不移动锚——视觉实例照常播完 t0+T。
  * - 时钟=start 于演出钟 view.time（与 session 钟 x1/x2 同速缩放），速度只改播放速率。 */
 function tryStartCastFx(actorId: string, skillId: string, evT: number): void {
-  if (fxCastStarted.get(actorId) !== undefined && Math.abs(evT - fxCastStarted.get(actorId)!) < 0.005) {
-    return; // 同一 cast 的第 2..N 条目标事件：去重（一次 accepted cast 只启动一次）
-  }
   const casts = [...session._debug.pendingCasts(), ...session._debug.presentationCasts()];
-  const cast = casts.find(
-    (c) => c.actorId === actorId && c.skillId === skillId && Math.abs(c.startedAtSec - evT) <= 0.011,
-  );
-  if (!cast) {
-    console.warn(`[battle_demo] FX 触发未找到 cast 快照（不启动）：actor=${actorId} skill=${skillId} t=${evT}`);
-    return;
+  const cast = findCastSnapshot(casts, actorId, skillId, evT);
+  let durMs: number;
+  if (cast) {
+    durMs = Math.round((cast.finishAtSec - cast.startedAtSec) * 1000);
+  } else {
+    // 段 1 致胜终局（AS-9）：session 直接 return 未建 cast 快照，T 无快照可读——
+    // 演出走表现域兜底常量（TRIAL_FX_FALLBACK_DURATION_MS）并告警留痕，禁当结算真值。
+    durMs = TRIAL_FX_FALLBACK_DURATION_MS;
+    console.warn(`[battle_demo] FX 无 cast 快照（段 1 致胜终局口径），演出时长走兜底 ${durMs}ms：actor=${actorId} skill=${skillId} t=${evT}`);
   }
   const actor = session.snapshot().actors.find((a) => a.id === actorId);
   if (!actor) return;
-  const durMs = Math.round((cast.finishAtSec - cast.startedAtSec) * 1000);
   const anchor = hexToWorld(actor.renderPos.q, actor.renderPos.r);
-  fxCastStarted.set(actorId, evT);
   fxPlayer.start(TRIAL_FX_01, anchor, view.time, durMs);
+  fxCastGate.commitStart(actorId, evT, durMs); // 登记时窗：段 2 结算事件（t=finishAtSec）据此判别拦截
 }
 
 function resetDemo(): void {
@@ -253,7 +253,7 @@ function resetDemo(): void {
   evCursor = 0;
   speedOn = false;
   fxPlayer.clearAll(); // 【T25】session 重建按实例清空未完成 FX（方案 §5.2：不跨局残留）
-  fxCastStarted.clear();
+  fxCastGate.reset(); // 触发门跨局清空（去重键不跨局残留）
   view.anim.clear();
   view.moveAnims.clear();
   view.camInit = false; // 重开重新定位镜头
@@ -408,9 +408,10 @@ function loop(t: number): void {
       spawnNoteFx(view, w.x, w.y, REJECT_HINTS[e.reason ?? 'invalid'] ?? '无法执行');
       continue;
     }
-    // 【T25 · 方案 §5.1】特功 accepted cast t0：与出招 04→05（charge 入相）同帧启动三层光影；
-    // rejected 不进此路（上分支 continue），伤害/命中形态不改时间轴（非伤害事件监听）。
-    if (e.type === 'skill' && e.actorId && e.skillId && SPECIAL_SKILL_IDS.has(e.skillId)) {
+    // 【T25 · 方案 §5.1 / T25-R2 缺陷 1】特功 accepted cast t0：事件双源 skill+miss——
+    // 命中发 skill / 闪避发 miss / 空放发 skill，任一源首条启动（gate 去重保证一次一次）；
+    // 与出招 04→05（charge 入相）同帧；rejected 不进此路（上分支 continue）。
+    if ((e.type === 'skill' || e.type === 'miss') && e.actorId && e.skillId && SPECIAL_SKILL_IDS.has(e.skillId) && fxCastGate.shouldStart(e)) {
       tryStartCastFx(e.actorId, e.skillId, e.t);
     }
     // T21 白名单（§2.2）：basic/skill 且有 targetId 且 damage>0 → 冒数字+震动；

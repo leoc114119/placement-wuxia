@@ -10,9 +10,11 @@ import path from 'node:path';
 
 // vitest 运行时注入（vite-node）；node:fs / node:path 的最小类型声明见 env.d.ts（全局 ambient）
 declare const __dirname: string;
-import { FxPlayer, loadFxFramePack, pickLayerFrame, validateRecipe, type FxFramePack } from '../ui/fx-player';
-import { TRIAL_FX_01 } from '../config/battle-hex';
-import type { FxRecipe } from '../types';
+import { FxCastGate, FxPlayer, findCastSnapshot, loadFxFramePack, pickLayerFrame, validateRecipe, type FxFramePack } from '../ui/fx-player';
+import { TRIAL_FX_01, TRIAL_FX_FALLBACK_DURATION_MS } from '../config/battle-hex';
+import { createHexBattle } from '../systems/battle-session';
+import { offsetToAxial } from '../systems/hex';
+import type { CombatantInput, FxRecipe, SkillDef } from '../types';
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -245,17 +247,31 @@ describe('T25 · FxPlayer 生命周期', () => {
 // ---------- 预载器（方案 §4.2：注入式，全部 settle；缺图告警+null 槽） ----------
 
 describe('T25 · loadFxFramePack 注入式预载', () => {
-  it('40 张全部请求；全就绪 missing=[]；失败帧 null 槽+missing 记路径', async () => {
+  it('40 张全部请求；全就绪 missing=[]；失败帧 null 槽+missing 记路径+数量字段', async () => {
     const requested: string[] = [];
     const loadImage = async (url: string): Promise<{ width: number; height: number } | null> => {
       requested.push(url);
       return url.includes('125-1_f06') ? null : { width: 150, height: 150 };
     };
-    const { pack, missing } = await loadFxFramePack(TRIAL_FX_01, loadImage);
+    const { pack, missing, expectedCount, loadedCount } = await loadFxFramePack(TRIAL_FX_01, loadImage);
     expect(requested.length).toBe(40); // 12+22+6
     expect(pack.size).toBe(40);
     expect(missing).toEqual(['assets/ui/fx/trial_fx_01/L3/125-1_f06.png']);
     expect(pack.get('assets/ui/fx/trial_fx_01/L3/125-1_f06.png')).toBeNull();
+    expect(expectedCount).toBe(40);
+    expect(loadedCount).toBe(39);
+  });
+
+  it('【T25-R2 缺陷 2】注入 loader reject 收敛为 null 槽+warn：预载 Promise 链不失败', async () => {
+    const loadImage = async (url: string): Promise<{ width: number; height: number } | null> => {
+      if (url.includes('14-1_f01')) throw new Error('decode boom'); // reject 路径（非 resolve null）
+      return { width: 150, height: 150 };
+    };
+    const { pack, missing, expectedCount, loadedCount } = await loadFxFramePack(TRIAL_FX_01, loadImage);
+    expect(pack.get('assets/ui/fx/trial_fx_01/L2/14-1_f01.png')).toBeNull(); // 收敛为缺帧槽
+    expect(missing).toEqual(['assets/ui/fx/trial_fx_01/L2/14-1_f01.png']);
+    expect(expectedCount).toBe(40);
+    expect(loadedCount).toBe(39); // 数量不符显式暴露（DoD 断言面）
   });
 
   it('非法配方 fail-fast throw（进场阶段暴露，不进战斗中途）', async () => {
@@ -289,5 +305,153 @@ describe('T25 · 素材目录与配方一致（40 张口径）', () => {
       expect(hash).toMatch(/^[0-9a-f]{64}$/);
       expect(existsSync(path.join(FX_DIR, rel))).toBe(true);
     }
+  });
+});
+
+// ---------- 触发矩阵（T25-R2 缺陷 1：真 session 四路径 × FxCastGate，事件流驱动） ----------
+// 口径：方案 §5.1「accepted cast 的 t0 必启动一次，非伤害事件监听」——段 1 命中发 skill /
+// 闪避发 miss / 空放发 skill / 致死终局 cast 挪 presentationCasts，四路径 gate 均恰启动一次，
+// 且 findCastSnapshot 合并队列（pending+presentation）必可达（T=快照差值，禁重算）。
+
+describe('T25-R2 · 触发矩阵：命中/全 miss/空放/段 1 致死终局 四路径 FX 均启动一次', () => {
+  const teSkill = (over: Partial<SkillDef> = {}): SkillDef => ({
+    id: 'te', name: '特技', kind: 'special', weapon: 'sword',
+    grade: 1.7, growth: 3, level: 20, cooldownTurns: 2, neiliCost: 10,
+    ...over,
+  });
+  function unit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 'side'>): CombatantInput {
+    return {
+      name: over.id,
+      hp: 999999, maxHp: 999999,
+      neili: 60, maxNeili: 100,
+      atk: 12, def: 3,
+      neigongLevel: 0, jimin: 0, danshi: 0, shizhan: 0,
+      pos: { x: 0, y: 0 }, weapon: 'sword', skills: [],
+      ...over,
+    };
+  }
+  /** 布点（offset col/row → axial；hero=可动区左下 (4,13)，敌默认同行 col+2=cube 距 2） */
+  function place(s: ReturnType<typeof createHexBattle>, id: string, col: number, row: number, over: Partial<CombatantInput> = {}): void {
+    const u = s._debug.units.find((x) => x.id === id)!;
+    const hex = offsetToAxial(col, row);
+    u.hex = { ...hex };
+    u.renderQ = hex.q; u.renderR = hex.r; u.moveFromQ = hex.q; u.moveFromR = hex.r;
+    u.moveT = 1; u.isJump = false; u.animState = 'idle'; u.animLeftMs = 0;
+    u.pendingAnim = null; u.movePath = []; u.bar = 0; u.barWasMax = false; u.dead = false;
+    Object.assign(u, over);
+    if (u.hp <= 0) u.hp = 50;
+  }
+  function makeSession(heroOver: Partial<CombatantInput>, foeOver: Partial<CombatantInput>) {
+    return createHexBattle({
+      player: unit({ id: 'p', side: 'player', skills: [teSkill()], ...heroOver }),
+      enemies: [unit({ id: 'e1', side: 'enemy', ...foeOver })],
+      mode: 'manual',
+      seed: 42,
+    });
+  }
+  function ready(s: ReturnType<typeof createHexBattle>): void {
+    const hero = s._debug.units.find((x) => x.id === 'p')!;
+    hero.bar = 100;
+    s.tick(0.001);
+  }
+  /** 宿主事件循环同构：全部事件喂 gate，应启动则经 findCastSnapshot 取 T（main.ts 同谓词） */
+  function driveGate(s: ReturnType<typeof createHexBattle>, gate: FxCastGate): Array<{ evT: number; durMs: number | null }> {
+    const starts: Array<{ evT: number; durMs: number | null }> = [];
+    for (const e of s.events) {
+      if ((e.type === 'skill' || e.type === 'miss') && gate.shouldStart(e)) {
+        const cast = findCastSnapshot([...s._debug.pendingCasts(), ...s._debug.presentationCasts()], e.actorId!, e.skillId!, e.t);
+        // 与宿主 tryStartCastFx 同构：快照存在读差值；无快照（段 1 致胜 AS-9 未建 cast）走表现域兜底
+        const durMs = cast ? Math.round((cast.finishAtSec - cast.startedAtSec) * 1000) : TRIAL_FX_FALLBACK_DURATION_MS;
+        gate.commitStart(e.actorId!, e.t, durMs); // 登记时窗（段 2 事件判别，宿主同款）
+        starts.push({ evT: e.t, durMs });
+      }
+    }
+    return starts;
+  }
+
+  it('路径 1 命中：skill 事件 → 启动 1 次，T=快照差值（恒命中 harness：shizhan=15_000_000）', () => {
+    const s = makeSession({ shizhan: 15_000_000 }, {});
+    place(s, 'p', 4, 13);
+    place(s, 'e1', 6, 13);
+    ready(s);
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true); // 选中态=cast 受理前提(BE1 同款)
+    expect(s.submit({ type: 'cast', to: offsetToAxial(6, 13), skillId: 'te' })).toBe(true);
+    const kinds = s.events.map((e) => e.type);
+    expect(kinds).toContain('skill');
+    expect(kinds).not.toContain('miss');
+    // 推进到 t1：段 2 结算再发 skill 事件（t=finishAtSec，AS-4）——gate 必须判别拦截（浏览器实证回归锁）
+    for (let i = 0; i < 100 && s.events.filter((e) => e.type === 'skill').length < 2; i++) s.tick(0.05);
+    expect(s.events.filter((e) => e.type === 'skill').length).toBeGreaterThanOrEqual(2); // 段 1+段 2 事件俱在
+    const gate = new FxCastGate(new Set(['te']));
+    const starts = driveGate(s, gate);
+    expect(starts.length).toBe(1); // 段 1+段 2 全事件流恰一次启动
+    expect(starts[0].durMs).toBe(3000); // castSpeed 缺省合成 1.0 → 3000ms
+  });
+
+  it('路径 2 全 miss：只发 miss 事件（缺陷 1 修复点）→ 仍启动 1 次（hitRate<0 恒 miss harness）', () => {
+    // shizhan=-85_000_001 → hitRate=0.85-0.85000001<0 → rng()>=hitRate 恒真 → 首掷恒 miss（F-04）
+    const s = makeSession({ shizhan: -85_000_001 }, {});
+    place(s, 'p', 4, 13);
+    place(s, 'e1', 6, 13);
+    ready(s);
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.submit({ type: 'cast', to: offsetToAxial(6, 13), skillId: 'te' })).toBe(true);
+    const kinds = s.events.map((e) => e.type);
+    expect(kinds).not.toContain('skill'); // 全闪避：无 skill 事件可挂（旧实现缺口）
+    expect(kinds).toContain('miss');
+    const gate = new FxCastGate(new Set(['te']));
+    const starts = driveGate(s, gate);
+    expect(starts.length).toBe(1); // miss 双源兜住：仍恰启动一次
+    expect(starts[0].durMs).toBe(3000);
+  });
+
+  it('路径 3 空放：射程内无存活敌 → 无目标 skill 事件 → 启动 1 次', () => {
+    const s = makeSession({ shizhan: 15_000_000 }, {});
+    place(s, 'p', 4, 13);
+    place(s, 'e1', 11, 2); // 拉到对角：t0 圈内无敌（AS-6 空放）
+    ready(s);
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.submit({ type: 'cast', to: offsetToAxial(6, 13), skillId: 'te' })).toBe(true); // 点射程内空格=空放受理（BE2 口径）
+    const skillEvs = s.events.filter((e) => e.type === 'skill');
+    expect(skillEvs.length).toBe(1);
+    expect(skillEvs[0].targetId).toBeUndefined(); // 无目标空放事件
+    const gate = new FxCastGate(new Set(['te']));
+    const starts = driveGate(s, gate);
+    expect(starts.length).toBe(1);
+    expect(starts[0].durMs).toBe(3000);
+  });
+
+  it('路径 4 段 1 致死终局：skill+death 事件、phase=won、cast 入 presentationCasts → 仍启动 1 次', () => {
+    const s = makeSession({ shizhan: 15_000_000, atk: 999 }, { hp: 1, maxHp: 1 }); // 段 1 必杀
+    place(s, 'p', 4, 13);
+    place(s, 'e1', 6, 13);
+    ready(s);
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.submit({ type: 'cast', to: offsetToAxial(6, 13), skillId: 'te' })).toBe(true);
+    const kinds = s.events.map((e) => e.type);
+    expect(kinds).toContain('skill');
+    expect(kinds).toContain('death');
+    expect(kinds).toContain('win'); // 唯一敌段 1 阵亡 → 立即终局（AS-9）
+    expect(s.phase).toBe('won');
+    const gate = new FxCastGate(new Set(['te']));
+    const starts = driveGate(s, gate); // 合并队列含 presentationCasts（终局挪入）
+    expect(starts.length).toBe(1);
+    expect(starts[0].durMs).toBe(3000);
+  });
+
+  it('gate 去重：段 1 双源/多目标只首条 true；段 2 事件（t=t0+T）判别拦截；reset 清键', () => {
+    const gate = new FxCastGate(new Set(['te']));
+    const seg1 = { type: 'skill', actorId: 'p', skillId: 'te', t: 5.0 }; // 段 1 首条（t0）
+    expect(gate.shouldStart(seg1)).toBe(true);
+    gate.commitStart('p', 5.0, 3000);
+    expect(gate.shouldStart({ ...seg1, type: 'miss' })).toBe(false); // 同 cast 段 1 的 miss 事件（多源/多目标）
+    expect(gate.shouldStart({ ...seg1 })).toBe(false); // 段 1 重复 feed
+    expect(gate.shouldStart({ ...seg1, t: 8.0 })).toBe(false); // 段 2 结算事件（t=t0+T=8.0）——非新 cast（T25-R2 回归锁）
+    expect(gate.shouldStart({ ...seg1, t: 8.0, type: 'miss' })).toBe(false); // 段 2 的 miss 形态同拦
+    expect(gate.shouldStart({ ...seg1, type: 'basic' })).toBe(false); // 非双源事件
+    expect(gate.shouldStart({ ...seg1, skillId: 'jue' })).toBe(false); // 非特功
+    expect(gate.shouldStart({ ...seg1, t: 9.99 })).toBe(true); // 新 cast（t0 窗外）放行
+    gate.reset();
+    expect(gate.shouldStart(seg1)).toBe(true); // 跨局清键后重新放行
   });
 });

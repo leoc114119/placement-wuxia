@@ -538,3 +538,8 @@ export const TRIAL_FX_01: FxRecipe = {
     },
   ],
 };
+
+/** T25-R2：FX 时长兜底（段 1 致胜终局时 session 按 AS-9 不建 cast 快照——pendingCasts/
+ * presentationCasts 均无该次记录，演出 T 无快照可读。此兜底=演示缺省出招合成口径 3000ms，
+ * 属表现参数非结算真值；快照存在路径一律读快照，禁把本值当 castDurationMs）。 */
+export const TRIAL_FX_FALLBACK_DURATION_MS = 3000;

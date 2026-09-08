@@ -16,10 +16,13 @@ export interface FxImg {
 /** 帧资源包：key = `${frameDir}/${frames[i]}`；null = 该帧加载失败（draw 跳过，预载已告警） */
 export type FxFramePack = Map<string, FxImg | null>;
 
-/** 预载结果：missing=加载失败帧的完整路径清单（空数组=40/40 全就绪；非空 → DoD FAIL） */
+/** 预载结果：missing=加载失败帧的完整路径清单（空数组=全就绪；非空 → DoD FAIL）；
+ * expectedCount=配方声明帧总数、loadedCount=实际就绪数——数量不符的显式断言面（§4.2 DoD） */
 export interface FxFramePackResult {
   pack: FxFramePack;
   missing: string[];
+  expectedCount: number;
+  loadedCount: number;
 }
 
 /** 世界锚点（Canvas 世界像素；hex 战场由宿主经 hexToWorld(actor.renderPos) 换算后传入——
@@ -105,7 +108,9 @@ export function pickLayerFrame(
 /**
  * 注入式预载器（方案 §4.2）：loadImage 由宿主注入——小游戏生产传 wx.createImage 封装、
  * battle_demo 传浏览器 Image 封装、单测传 stub；播放器本体不在施法中途懒加载。
- * 每张失败帧 console.warn 记录路径；pack 对应槽位 null（draw 跳过，不抛异常不打崩战斗）。
+ * 注入 loader 的 reject 一律收敛（T25-R2 缺陷 2）：catch → null 槽 + warn 记路径，绝不向上
+ * 传播打崩战斗入口预载；加载失败帧 draw 跳帧。数量不符经 missing/loadedCount 显式暴露
+ * （DoD 断言 loadedCount===expectedCount 且 missing 空）。
  * 配方先过 validateRecipe，违规 throw（配方为开发期常量，进场阶段 fail-fast 暴露）。
  */
 export async function loadFxFramePack(
@@ -116,12 +121,20 @@ export async function loadFxFramePack(
   if (errs.length > 0) throw new Error(`[fx-player] 配方 ${recipe?.id} 非法：${errs.join('；')}`);
   const pack: FxFramePack = new Map();
   const missing: string[] = [];
+  let expectedCount = 0;
   await Promise.all(
     recipe.layers.map(async (layer: FxLayerRecipe) => {
       await Promise.all(
         layer.frames.map(async (name) => {
+          expectedCount += 1;
           const key = `${layer.frameDir}/${name}`;
-          const img = await loadImage(key);
+          let img: FxImg | null = null;
+          try {
+            img = await loadImage(key);
+          } catch (err) {
+            console.warn(`[fx-player] FX 帧加载器异常（收敛为缺帧）：${key}`, err);
+            img = null;
+          }
           pack.set(key, img);
           if (!img) {
             missing.push(key);
@@ -131,7 +144,75 @@ export async function loadFxFramePack(
       );
     }),
   );
-  return { pack, missing };
+  return { pack, missing, expectedCount, loadedCount: expectedCount - missing.length };
+}
+
+// ============ 触发门（T25-R2 缺陷 1：accepted cast 事件双源） ============
+
+/** cast 快照最小结构（session _debug pendingCasts/presentationCasts 条目同形） */
+export interface FxCastSnapshotLike {
+  actorId: string;
+  skillId: string;
+  startedAtSec: number;
+  finishAtSec: number;
+}
+
+/** 触发矩阵事件最小结构（BattleUiEvent 子集同形） */
+export interface FxTriggerEventLike {
+  type: string;
+  actorId?: string;
+  skillId?: string;
+  t: number;
+}
+
+/**
+ * 特功 accepted cast 触发门（方案 §5.1「t0 必启动一次，非伤害事件监听」）：
+ * 事件双源=skill 与 miss——非空 cast 段 1 逐目标发 skill（命中）/miss（闪避），全闪避时
+ * 只有 miss 事件；空放只发 skill。两源共用 (actorId, evT) 去重：首条到达返回 true（启动）。
+ * 段 2 结算事件（AS-4：t=finishAtSec 逐目标再发 skill/miss）不是新 cast——宿主 start 后
+ * 须 commitStart(actorId, t0, durMs)，本门对 evT≈t0+T 的事件判别为段 2 拦截
+ * （一次 accepted cast 只启动一次：段 1 多目标、双源、段 2 全部收敛到同一次）。
+ * 施法中无输入态+行动者串行 → 不同 cast 的 t0/t1 不可能撞刻，键无歧义。
+ */
+export class FxCastGate {
+  private started = new Map<string, { t0: number; durMs: number }>();
+
+  constructor(private readonly specialSkillIds: ReadonlySet<string>) {}
+
+  /** 该事件是否应启动 FX（true=候选放行，宿主 start 后必须 commitStart 登记时窗） */
+  shouldStart(e: FxTriggerEventLike): boolean {
+    if (e.type !== 'skill' && e.type !== 'miss') return false;
+    if (!e.actorId || !e.skillId || !this.specialSkillIds.has(e.skillId)) return false;
+    const rec = this.started.get(e.actorId);
+    if (rec) {
+      if (Math.abs(e.t - rec.t0) < 0.005) return false; // 同 cast 段 1：多目标/双源事件（t 同刻）
+      if (Math.abs(e.t - (rec.t0 + rec.durMs / 1000)) <= 0.011) return false; // 段 2 结算事件（t=finishAtSec）
+    }
+    return true;
+  }
+
+  /** 宿主启动 FX 后登记该次 cast 时窗（t0=事件 t、durMs=启动时长），供段 2 事件判别 */
+  commitStart(actorId: string, t0Sec: number, durMs: number): void {
+    this.started.set(actorId, { t0: t0Sec, durMs });
+  }
+
+  /** 跨局清空（session 重建时与 fxPlayer.clearAll 同调） */
+  reset(): void {
+    this.started.clear();
+  }
+}
+
+/**
+ * 从 cast 快照队列找该次 accepted cast（T=finishAtSec-startedAtSec，core 唯一真值 session 已
+ * 算好——宿主只读快照禁重算）。evT 为事件 t（emitAt 取整 2 位，误差 <0.005，容差 0.011）。
+ */
+export function findCastSnapshot<T extends FxCastSnapshotLike>(
+  casts: ReadonlyArray<T>,
+  actorId: string,
+  skillId: string,
+  evT: number,
+): T | null {
+  return casts.find((c) => c.actorId === actorId && c.skillId === skillId && Math.abs(c.startedAtSec - evT) <= 0.011) ?? null;
 }
 
 /**
