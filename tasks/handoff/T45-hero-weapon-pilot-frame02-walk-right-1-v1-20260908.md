@@ -57,3 +57,11 @@
 - `assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/raw/hero_sword_held_transparent_source_attempt1.png` · SHA256 `853bee2393fa263bbb46710d6bc10b4fa0a6065b68d7797f049b68585243bf7e`
 - `assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/refs.json` · SHA256 `00bf60a5f1b785ef4eb90ff3a3d14c5d2d88ecd75fda2d763293c9d3b3c87df1`
 - `assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/request.md` · SHA256 `c861727348ff9a7aa9f76c1c4848f45c22942a4b7cc68c2d07c2fa5f5e35149a`
+
+## 运输证据
+
+- artifact commit（候选包）：`da5b910f0998d6d1e51d9cac1ad1e1887753966e`
+- 文档/线程/LOG 交付证据 commit：`e0bbaf861f4b12b9cf61328c29d2e9b2d4c2db5e`
+- `check_delivery.py`：候选包+交接+线程+LOG 共 18/18 PASS（以 artifact commit `da5b910f` 核验）
+- projbus delivery：`seq=204`，messageId=`c91aadbdee134b18a063458d8fc270bb`
+- 当前仍为 `candidate-only`；runtime 未写入；Leo 目验与 PM 第二道规格门待办（PM 门按 Leo 授权延后至全部动作帧确定后统一处理）。
