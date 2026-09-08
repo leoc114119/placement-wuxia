@@ -61,7 +61,7 @@
 ## 运输证据
 
 - artifact commit（候选包）：`da5b910f0998d6d1e51d9cac1ad1e1887753966e`
-- 文档/线程/LOG 交付证据 commit：`e0bbaf861f4b12b9cf61328c29d2e9b2d4c2db5e`
+- 文档/线程/LOG 交付证据 commit：`e0bbaf86d90cc1489cb73eeb2d83839c8cefa214`
 - `check_delivery.py`：候选包+交接+线程+LOG 共 18/18 PASS（以 artifact commit `da5b910f` 核验）
 - projbus delivery：`seq=204`，messageId=`c91aadbdee134b18a063458d8fc270bb`
 - 当前仍为 `candidate-only`；runtime 未写入；Leo 目验与 PM 第二道规格门待办（PM 门按 Leo 授权延后至全部动作帧确定后统一处理）。
