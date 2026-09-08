@@ -83,8 +83,8 @@ def draw_weapon(grip: tuple[float, float], angle_deg: float) -> Image.Image:
     # Broad, single-edged dao silhouette: long reach (77 px from base to
     # tip), fuller lower edge and a slightly swept tip rather than a sword.
     blade = [
-        p(15, -6), p(42, -8), p(78, -10), p(110, -7), p(132, -3),
-        p(92, 0), p(86, 5), p(72, 11), p(56, 14), p(38, 13),
+        p(15, -6), p(34, -8), p(56, -10), p(78, -8), p(92, -3),
+        p(86, 0), p(82, 5), p(72, 11), p(56, 14), p(38, 13),
         p(25, 9), p(15, 6),
     ]
     d.polygon(blade, fill=(156, 170, 181, 255))
@@ -254,7 +254,7 @@ def main() -> None:
             sheet.save(out / "contact" / f"{identity}_d_trial_{'2x' if scale == 2 else 'native'}.png")
 
     calibration = {
-        "task": "T45", "seq": 134, "batch": "podao-d-zero-generation-validation", "revision": "v2-leo-right-hand-right-up-dao-placeholder", "generatedAt": "2026-09-08", "trialOnly": True,
+        "task": "T45", "seq": 134, "batch": "podao-d-zero-generation-validation", "revision": "v2.1-leo-right-hand-right-up-dao-span-fix", "generatedAt": "2026-09-08", "trialOnly": True,
         "generation": {"provider": None, "model": None, "credits": 0, "method": "Pillow deterministic placeholder blade + body ROI mask", "rawImageGeneration": False},
         "specSource": "docs/design/01-基础功能/角色帧规范.md §4c v1.5; projbus seq=134",
         "calibrationStatus": "revision v2: all frames use the character right-hand fist and a uniform right-up axis; grip/ROI/layer fields are trial calibration data; angle values are provisional placeholder axes and are not final朴刀 art",
@@ -269,7 +269,7 @@ def main() -> None:
                 "artifactPaths": [str(p.relative_to(repo)) for p in sorted(out.rglob('*')) if p.is_file() and p.name not in {"manifest.json", "qa_preflight.json"}]}
     (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
     qa = {
-        "task": "T45", "seq": 134, "revision": "v2-leo-right-hand-right-up-dao-placeholder", "package": str(out.relative_to(repo)), "generationCredits": 0,
+        "task": "T45", "seq": 134, "revision": "v2.1-leo-right-hand-right-up-dao-span-fix", "package": str(out.relative_to(repo)), "generationCredits": 0,
         "expected": {"frames": 8, "triptychPanelsPerFrame": 3, "nativeTriptychs": 8, "2xTriptychs": 8, "identities": ["shanzei_a", "shanzei_b"]},
         "actual": {"frames": len(records), "nativeTriptychs": len(list((out / 'triptychs_native').glob('*.png'))), "2xTriptychs": len(list((out / 'triptychs_2x').glob('*.png'))), "occlusionMasks": len(list((out / 'occlusion_masks').glob('*.png'))), "weaponLayers": len(list((out / 'weapon_layers').glob('*.png')))},
         "checks": {"allEightPass": all(r["checks"]["allPass"] for r in records), "bodyShaFrozen8of8": sum(r["checks"]["bodyShaFrozen"] for r in records) == 8, "bodyGeometry8of8": sum(r["checks"]["bodyCanvasPass"] and r["checks"]["bodyFeetPass"] and r["checks"]["bodyBorderTransparent"] for r in records) == 8, "dOcclusion8of8": sum(r["checks"]["dOcclusionReducesWeapon"] for r in records) == 8, "handleBothSides8of8": sum(r["checks"]["handleVisibleBeforeRoi"] and r["checks"]["handleVisibleAfterRoi"] for r in records) == 8, "longDaoPlaceholder8of8": sum(r["checks"]["longDaoPlaceholderPass"] for r in records) == 8, "nativeAnd2x8of8": sum(r["checks"]["nativeSizePass"] and r["checks"]["2xSizePass"] for r in records) == 8, "noRuntimeWrites": True, "noGeneration": True},

@@ -2,7 +2,7 @@
   "task": "T45",
   "seq": 134,
   "batch": "podao-d-zero-generation-validation",
-  "revision": "v2-leo-right-hand-right-up-dao-placeholder",
+  "revision": "v2.1-leo-right-hand-right-up-dao-span-fix",
   "generatedAt": "2026-09-08",
   "trialOnly": true,
   "generation": {
@@ -117,7 +117,7 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/a_idle_right_placeholder_blade.png",
-        "sha256": "3112304e146950bd80f1056a527bbb0d82c5414056fcaf1200b676abe456f738",
+        "sha256": "09250ae4cbdcd215d374eb4a9b2afe7d4f5d152b7910da341d8b1355887c8e64",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
         "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
@@ -132,9 +132,9 @@
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/a_idle_right_triptych.png",
-        "nativeSha256": "dec4246f5442e40c955bc9a7a39e6f79ebd1e01630a2cce44965e2a9f5506c72",
+        "nativeSha256": "f3833605c76b85038ff9713657eee8795e5af9a4b1e8e4c867f079e3e542d722",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/a_idle_right_triptych_2x.png",
-        "2xSha256": "0c83829244971c61545d56fe45cb6cdbabce1ea6cfbe762d07e24163d0dc49c4"
+        "2xSha256": "0e1d30edaac05fdc66b26322d43ff8bb83b4829d33f3455e523cfeada138c5fe"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -227,7 +227,7 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/a_atk_right_2_placeholder_blade.png",
-        "sha256": "940b7ab8c88c7952974dd010bf79ad217c9b71d67921635197a985bcd1188a71",
+        "sha256": "5e698a3adfe1c30673c29d6e608b7bfca63ca9bd98ec877feae0433b1ed2b7fd",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
         "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
@@ -242,9 +242,9 @@
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/a_atk_right_2_triptych.png",
-        "nativeSha256": "14db4af1d9696193edf05897079aba62a731fcb58d4e044aedf550fa47c4c0a1",
+        "nativeSha256": "0239753d1959de542d9bee8950b81e6ccc688ac8ccda1f8b100648b6ff5836f8",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/a_atk_right_2_triptych_2x.png",
-        "2xSha256": "d9f012edd344f25a4ff81935706a24d8ed1042eafade06c881b0984634c44917"
+        "2xSha256": "5fd9ffddd5f1e6d43cbc41bf8a73796df78699e4ea65c73f16d5e9a1f17710ab"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -337,7 +337,7 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/a_idle_rightup_placeholder_blade.png",
-        "sha256": "127724cff8ccc1df74bf2b6ca2ac910800bf28dec1038271f4f7c5f1864dbff1",
+        "sha256": "2821530224821a91a3a5c2a283e3817b4412e069d518a7c205fd0868ec3839f4",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
         "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
@@ -352,9 +352,9 @@
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/a_idle_rightup_triptych.png",
-        "nativeSha256": "900da26009210b63a2c3f54d7a34d90262d3de01bbe9a29b916ebfc81a5e3f47",
+        "nativeSha256": "59dd049074f2caeb94cbbbc785a601f7dd23b3d69ed469c96b8aed11ef04ba2d",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/a_idle_rightup_triptych_2x.png",
-        "2xSha256": "b1249bbaba851f6cea72f9be49f9f3cf6ecff09c761d7c69bcd4edee99fd0177"
+        "2xSha256": "66160267769888a1c016bec332d10bef4c4b167bce62a4ec383a692823642d49"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -447,7 +447,7 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/a_walk_rightdown_1_placeholder_blade.png",
-        "sha256": "c462c01a2dc8ed19f2d63dad2a9cd073dfbafb57c113dcb5fd6c6e4a1fbc64b5",
+        "sha256": "a5e47953df028eb6663c5b8d745146d1db7345b9020fe2a2033cc40d116278f8",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
         "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
@@ -462,9 +462,9 @@
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/a_walk_rightdown_1_triptych.png",
-        "nativeSha256": "25e7ee51af2cd7c890b146c79dd67e3be728a909a12799ae72503f05934a4688",
+        "nativeSha256": "96c8933778e39e29190534d69011b1a9038737418ad71d633a443ea4d3311e4a",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/a_walk_rightdown_1_triptych_2x.png",
-        "2xSha256": "a8c23461022ac17a1c00f1683e0eb7432b2a7a04f78a1be0aba0ab127849dc6d"
+        "2xSha256": "9cff9c7c21d5a8e3f90f847ec26e9797c345a1bc16f6ed04536cc46787ed08b0"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -561,7 +561,7 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/b_idle_right_placeholder_blade.png",
-        "sha256": "145020bc061612a01b9d5a5653c18932e425500a6ea5068da3d21e5ba72b0e35",
+        "sha256": "9a0c81515e29318f46b0c35bcfa4edf544a05aaa0d96f2b6c562186bcbe4c62b",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
         "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
@@ -576,9 +576,9 @@
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/b_idle_right_triptych.png",
-        "nativeSha256": "942b63d02cb283afa184a6af3aeb54b15340fba8b2439b9653994f084d375960",
+        "nativeSha256": "e7f8084e6c2802b00f61f5a22790dcadc685d92fc06c38bc157191e1e6c9c106",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/b_idle_right_triptych_2x.png",
-        "2xSha256": "44d523f3fae10952ae009b07aac83a8afbb3cf7db62b8c4695f9c7f22a795d8b"
+        "2xSha256": "d2acfe27bca23405f96a463139845d7b89aadbcd5eeee4b201d754336decfd6f"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -671,7 +671,7 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/b_atk_right_2_placeholder_blade.png",
-        "sha256": "5c5a19281700bdab4f72293848901fe1dd16c30d52708ebf4084d0c2ed45f9fb",
+        "sha256": "a269d2e8854136ebeed8e9d0cd8e6b6ba69b4a16d6f93fefc35a4990b61e9fa1",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
         "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
@@ -686,9 +686,9 @@
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/b_atk_right_2_triptych.png",
-        "nativeSha256": "d0cc3c5527ab2c32e8e5592b67b794a0b9f6e02424b0b207bedfcf51a70b226d",
+        "nativeSha256": "8bdd78e13cebc514d9dd6b6bc361adffc364e551b06b9f956e106d76ed46c095",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/b_atk_right_2_triptych_2x.png",
-        "2xSha256": "bcc454d1b16103a9241d81869a0426e8483457fe5a5b57a07e4b08e290e0d0ef"
+        "2xSha256": "72592b1e6ad046a64343f1e161f785be52bddae54d6c68bbee2558d6fed5bbdb"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -781,7 +781,7 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/b_idle_rightup_placeholder_blade.png",
-        "sha256": "91920368dbd6adea1577ff4e35f552e6e64633096415612736f013cc678fa903",
+        "sha256": "204ea24d0513d05e36301e8d476b2fe9f6a6f3425d0ac792a2fab4bf8de29f90",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
         "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
@@ -796,9 +796,9 @@
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/b_idle_rightup_triptych.png",
-        "nativeSha256": "894c56bd241036a485cfcab6646271db81e300a33a215ac860334c821e81b4ce",
+        "nativeSha256": "92be9457cd6798ea58503283fae54b307b8aaef9ac63362e8a30aba9941c2579",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/b_idle_rightup_triptych_2x.png",
-        "2xSha256": "50659ea67c979890cc751e9b8277a5115a4d60a2ab1cbb6ac016064cc73b770f"
+        "2xSha256": "9a790644e6c737676939a39a492b2d61bcfc718799392957d0cae8b3920cea4e"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -895,7 +895,7 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/b_walk_rightdown_1_placeholder_blade.png",
-        "sha256": "4c1f61891317e4faddf75cd2d5d46684ca52c7bc1466d0c837cfaf30e44d90ff",
+        "sha256": "a304bf828c72ca077b0b6d9c7edec989eb88d662f9479d952b9ad69db43f198d",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
         "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
@@ -910,9 +910,9 @@
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/b_walk_rightdown_1_triptych.png",
-        "nativeSha256": "40530535ffa37803a28201da7c7515b86ca9dcf44d420d987e2d32adf9127ced",
+        "nativeSha256": "316ef135517deb015b4da73679aa81a59b21a5948ef8f0210b27d659779fc377",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/b_walk_rightdown_1_triptych_2x.png",
-        "2xSha256": "12d118193dce4bf2538422821e765f11f8861da7f4debaf4f877ac18f71b7a93"
+        "2xSha256": "43f1b5a0c0228a963dc87b3abf03ed8f50d1c60d24d5585954d66bb8cb835d14"
       },
       "checks": {
         "bodyShaFrozen": true,
