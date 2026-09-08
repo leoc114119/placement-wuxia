@@ -1,0 +1,9 @@
+2026-09-08 PRE-FLIGHT B1-B6 已过 —— 合并 task/fx-trial-01 → main（T25 光影试点+T26 武功名条）
+B1 四门原文 ✓ test:battle 375/0、behavior 14/14、tsc/lint 零错、e2e 11/11+shot 16+wf_banner 28/28（R1 复验实测）
+B2 主架构验收 PASS ✓ T25 seq=162（c189741）、T26-R1 seq=178/179（f8fb7100，已 ack accepted）
+B3 PM 纯净态 ✓ T25-R2/T26/T26-R1 三轮实测（tsc exit=0+全量单测+SHA 40/40+视觉实图）
+B4 L 环 ✓ Leo 09-08 实测"光影很流畅/名条 OK，字体大小后面再优化"（df47d1b；f8fb7100 为技术验收环节时序修复，视觉零差异）
+B5 归档顺序 ✓ T25/T26 卡+回执均在 tasks/done/（commit 13e8766/a039343）
+B6 LOG/记忆 ✓ LOG 全程双写；记忆 wuxia-fx-trial-t25t26 已建
+C git ✓ rd worktree 干净；main@b036b78；分支领先 6 commit 全为本战役产物（2 docs 方案+2 feat+2 fix）
+2026-09-08 PRE-FLIGHT B1-B6 已过 checked by T25+T26 并 main（四门 375/0+主架构 seq=162/178 PASS+L 环 Leo 实测+归档+LOG）
