@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame01",
+  "revision": "fist-center-up-v5",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "reviewReason": "Leo follow-up correction: move the v4 sword upward by three-quarters of the ready-pose fist height; keep body and angle unchanged",
+  "correction": {
+    "from": "v4 grip (100,205) / -40° up-right",
+    "to": "same x=100, y=185; upward shift=20px=round(0.75×26px fist height); angle unchanged"
+  },
+  "method": "deterministic reuse of existing transparent sword layer; no new generation; body frozen",
+  "runtimeWrite": false
+}

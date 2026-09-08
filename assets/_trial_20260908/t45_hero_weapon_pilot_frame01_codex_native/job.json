@@ -13,7 +13,7 @@
   "editAttempts": 1,
   "generationMethod": "OpenAI built-in image_gen; targeted transparency edit",
   "runtimeTouched": false,
-  "supersededBy": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-up-v4/manifest.json",
-  "status": "superseded_by_fist_center_up_v4",
-  "visualReviewNote": "v4 moves the v3 sword up 3px so the handle aligns with the ready-pose fist center; runtime remains untouched."
+  "supersededBy": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-up-v5/manifest.json",
+  "status": "superseded_by_fist_center_up_v5",
+  "visualReviewNote": "v5 moves the v4 sword up 20px (round(0.75×26px fist height)); body and angle remain unchanged, runtime untouched."
 }

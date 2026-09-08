@@ -15,9 +15,9 @@
   "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/calibration/frame01_idle_right.json",
   "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/qa/pilot.json",
   "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/contact/hero_idle_right_sword_pilot.png",
-  "visualReviewNote": "v1, v2 and v3 superseded: v4 keeps the right-hand screen-left-fist grip and -40° up-right axis, moving the sword up 3px to center the handle on the ready-pose fist.",
+  "visualReviewNote": "v1–v4 superseded: v5 preserves the character, hand placement and -40° angle, then moves the sword up 20px (three-quarters of the 26px fist height) per Leo instruction.",
   "formalRuntimeTouched": false,
-  "supersededBy": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-up-v4/manifest.json",
-  "status": "superseded_by_fist_center_up_v4",
+  "supersededBy": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-up-v5/manifest.json",
+  "status": "superseded_by_fist_center_up_v5",
   "runtimeTouched": false
 }
