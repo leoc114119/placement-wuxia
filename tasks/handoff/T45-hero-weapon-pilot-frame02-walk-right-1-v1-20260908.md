@@ -65,3 +65,4 @@
 - `check_delivery.py`：候选包+交接+线程+LOG 共 18/18 PASS（以 artifact commit `da5b910f` 核验）
 - projbus delivery：`seq=204`，messageId=`c91aadbdee134b18a063458d8fc270bb`
 - 当前仍为 `candidate-only`；runtime 未写入；Leo 目验与 PM 第二道规格门待办（PM 门按 Leo 授权延后至全部动作帧确定后统一处理）。
+- superseding delivery pointer：`seq=205`，messageId=`c1ec362f6d454cf1bd773cab7bf0689e`，commit=`0ba57b42f0d9535ea0ef4c273cf99bbb085b4413`。
