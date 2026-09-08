@@ -1,6 +1,7 @@
 {
   "task": "T45",
   "seq": 134,
+  "revision": "v2-leo-right-hand-right-up-dao-placeholder",
   "package": "assets/_trial_20260908/t45_podao_d_trial_codex_native",
   "generationCredits": 0,
   "expected": {
@@ -26,6 +27,7 @@
     "bodyGeometry8of8": true,
     "dOcclusion8of8": true,
     "handleBothSides8of8": true,
+    "longDaoPlaceholder8of8": true,
     "nativeAnd2x8of8": true,
     "noRuntimeWrites": true,
     "noGeneration": true

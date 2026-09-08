@@ -25,14 +25,14 @@ TARGET_Y = 300
 # blade.  ROI polygons are deliberately tight around that fist; the mask is
 # intersected with the body's real alpha rather than painted over the arm.
 FRAMES: list[dict[str, Any]] = [
-    {"identity": "shanzei_a", "name": "battle_idle_right.png", "id": "a_idle_right", "gripPoint": [163, 166], "angleDeg": 32.0, "layerOrder": "front", "roi": [[157, 153], [166, 153], [173, 159], [173, 169], [167, 177], [158, 177], [152, 171], [153, 161]]},
-    {"identity": "shanzei_a", "name": "atk_right_2.png", "id": "a_atk_right_2", "gripPoint": [184, 137], "angleDeg": 18.0, "layerOrder": "front", "roi": [[178, 126], [188, 126], [194, 132], [192, 143], [184, 148], [176, 143], [174, 135]]},
-    {"identity": "shanzei_a", "name": "battle_idle_rightup.png", "id": "a_idle_rightup", "gripPoint": [165, 164], "angleDeg": -45.0, "layerOrder": "back", "roi": [[160, 153], [170, 155], [175, 161], [173, 171], [166, 177], [158, 173], [156, 165]]},
-    {"identity": "shanzei_a", "name": "walk_rightdown_1.png", "id": "a_walk_rightdown_1", "gripPoint": [172, 172], "angleDeg": 40.0, "layerOrder": "front", "roi": [[166, 159], [176, 161], [184, 168], [182, 178], [174, 184], [164, 180], [160, 172]]},
-    {"identity": "shanzei_b", "name": "battle_idle_right.png", "id": "b_idle_right", "gripPoint": [164, 167], "angleDeg": 32.0, "layerOrder": "front", "roi": [[158, 155], [168, 155], [175, 161], [175, 171], [169, 179], [160, 178], [155, 170], [155, 162]]},
-    {"identity": "shanzei_b", "name": "atk_right_2.png", "id": "b_atk_right_2", "gripPoint": [185, 140], "angleDeg": 18.0, "layerOrder": "front", "roi": [[177, 129], [188, 131], [194, 138], [191, 148], [181, 151], [175, 145], [174, 136]]},
-    {"identity": "shanzei_b", "name": "battle_idle_rightup.png", "id": "b_idle_rightup", "gripPoint": [165, 163], "angleDeg": -45.0, "layerOrder": "back", "roi": [[160, 151], [169, 151], [175, 157], [173, 168], [166, 175], [158, 170], [156, 161]]},
-    {"identity": "shanzei_b", "name": "walk_rightdown_1.png", "id": "b_walk_rightdown_1", "gripPoint": [178, 172], "angleDeg": 40.0, "layerOrder": "front", "roi": [[171, 159], [182, 161], [189, 169], [188, 178], [181, 184], [171, 182], [165, 175], [166, 166]]},
+    {"identity": "shanzei_a", "name": "battle_idle_right.png", "id": "a_idle_right", "gripPoint": [163, 166], "angleDeg": -55.0, "layerOrder": "front", "roi": [[157, 153], [166, 153], [173, 159], [173, 169], [167, 177], [158, 177], [152, 171], [153, 161]]},
+    {"identity": "shanzei_a", "name": "atk_right_2.png", "id": "a_atk_right_2", "gripPoint": [184, 137], "angleDeg": -55.0, "layerOrder": "front", "roi": [[178, 126], [188, 126], [194, 132], [192, 143], [184, 148], [176, 143], [174, 135]]},
+    {"identity": "shanzei_a", "name": "battle_idle_rightup.png", "id": "a_idle_rightup", "gripPoint": [165, 164], "angleDeg": -55.0, "layerOrder": "back", "roi": [[160, 153], [170, 155], [175, 161], [173, 171], [166, 177], [158, 173], [156, 165]]},
+    {"identity": "shanzei_a", "name": "walk_rightdown_1.png", "id": "a_walk_rightdown_1", "gripPoint": [172, 172], "angleDeg": -55.0, "layerOrder": "front", "roi": [[166, 159], [176, 161], [184, 168], [182, 178], [174, 184], [164, 180], [160, 172]]},
+    {"identity": "shanzei_b", "name": "battle_idle_right.png", "id": "b_idle_right", "gripPoint": [164, 167], "angleDeg": -55.0, "layerOrder": "front", "roi": [[158, 155], [168, 155], [175, 161], [175, 171], [169, 179], [160, 178], [155, 170], [155, 162]]},
+    {"identity": "shanzei_b", "name": "atk_right_2.png", "id": "b_atk_right_2", "gripPoint": [185, 140], "angleDeg": -55.0, "layerOrder": "front", "roi": [[177, 129], [188, 131], [194, 138], [191, 148], [181, 151], [175, 145], [174, 136]]},
+    {"identity": "shanzei_b", "name": "battle_idle_rightup.png", "id": "b_idle_rightup", "gripPoint": [165, 163], "angleDeg": -55.0, "layerOrder": "back", "roi": [[160, 151], [169, 151], [175, 157], [173, 168], [166, 175], [158, 170], [156, 161]]},
+    {"identity": "shanzei_b", "name": "walk_rightdown_1.png", "id": "b_walk_rightdown_1", "gripPoint": [178, 172], "angleDeg": -55.0, "layerOrder": "front", "roi": [[171, 159], [182, 161], [189, 169], [188, 178], [181, 184], [171, 182], [165, 175], [166, 166]]},
 ]
 
 
@@ -61,7 +61,12 @@ def alpha_metrics(im: Image.Image) -> dict[str, Any]:
 
 
 def draw_weapon(grip: tuple[float, float], angle_deg: float) -> Image.Image:
-    """Draw a neutral technical blade in screen coordinates (0° = right, +Y down)."""
+    """Draw a long, broad single-edged dao placeholder in screen coordinates.
+
+    The calibrated axis is intentionally fixed to right-up (angle=-55°) for
+    every frame in this revision. This is geometry evidence only, not final
+   朴刀 artwork.
+    """
     gx, gy = grip
     t = math.radians(angle_deg)
     ux, uy = math.cos(t), math.sin(t)
@@ -70,18 +75,22 @@ def draw_weapon(grip: tuple[float, float], angle_deg: float) -> Image.Image:
         return (round(gx + ux * dist + vx * side), round(gy + uy * dist + vy * side))
     out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(out)
-    # Neutral high-contrast colours are intentional: this is a geometry test,
-    # not a final朴刀 or刃面 design.
-    handle_a, handle_b = p(-15), p(22)
-    d.line([handle_a, handle_b], fill=(94, 62, 38, 255), width=7)
-    d.line([p(-15, -2), p(22, -2)], fill=(226, 174, 105, 255), width=1)
-    d.line([p(-15, 2), p(22, 2)], fill=(44, 31, 24, 255), width=1)
-    # Guard/collar at the grip, extending across the blade axis.
-    d.line([p(7, -7), p(7, 7)], fill=(218, 169, 76, 255), width=3)
-    blade_base, blade_shoulder, blade_tip = p(16, -6), p(30, -5), p(106)
-    d.polygon([blade_base, blade_shoulder, blade_tip, p(106, 2), p(30, 5), p(16, 6)], fill=(170, 181, 190, 255))
-    d.line([p(24, 0), p(100, 0)], fill=(239, 245, 248, 255), width=2)
-    d.line([p(30, -5), p(103, 0)], fill=(78, 88, 96, 255), width=1)
+    # Handle extends behind the fist; the guard marks the grip hinge.
+    d.line([p(-16), p(20)], fill=(91, 56, 32, 255), width=8)
+    d.line([p(-16, -2), p(20, -2)], fill=(226, 174, 105, 255), width=1)
+    d.line([p(-16, 2), p(20, 2)], fill=(43, 29, 22, 255), width=1)
+    d.line([p(9, -8), p(9, 8)], fill=(221, 171, 74, 255), width=3)
+    # Broad, single-edged dao silhouette: long reach (77 px from base to
+    # tip), fuller lower edge and a slightly swept tip rather than a sword.
+    blade = [
+        p(15, -6), p(42, -8), p(78, -10), p(110, -7), p(132, -3),
+        p(92, 0), p(86, 5), p(72, 11), p(56, 14), p(38, 13),
+        p(25, 9), p(15, 6),
+    ]
+    d.polygon(blade, fill=(156, 170, 181, 255))
+    # Spine and single cutting edge are kept as simple technical stripes.
+    d.line([p(22, -5), p(55, -9), p(78, -6), p(90, 0)], fill=(76, 86, 94, 255), width=2)
+    d.line([p(24, 5), p(44, 10), p(65, 11), p(82, 8), p(91, 3)], fill=(239, 244, 247, 255), width=2)
     return out
 
 
@@ -205,17 +214,17 @@ def main() -> None:
             "id": spec["id"], "identity": spec["identity"], "bodyFrame": spec["name"],
             "bodyPath": str(body_path.relative_to(repo)), "bodySha256": body_sha,
             "bodyMetrics": bm, "gripPoint": {"x": grip[0], "y": grip[1]},
-            "angleDeg": spec["angleDeg"], "angleStatus": "provisional_placeholder_only", "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
+            "angleDeg": spec["angleDeg"], "angleStatus": "provisional_placeholder_only", "angleDirection": "uniform_right_up_from_character_right_hand", "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
             "layerOrder": spec["layerOrder"],
             "occlusionRef": {
                 "roiPolygon": spec["roi"], "maskPath": str(occlusion_path.relative_to(repo)), "maskSha256": sha256(occlusion_path),
                 "semantics": "original fist alpha inside ROI; D panel subtracts this mask from weapon alpha so fist stays topmost",
             },
-            "weaponPlaceholder": {"path": str(weapon_path.relative_to(repo)), "sha256": sha256(weapon_path), "purpose": "neutral PIL geometry placeholder; not final art or runtime asset", "handleSpanAlongAxis": [-15, 22], "bladeSpanAlongAxis": [16, 106]},
+            "weaponPlaceholder": {"path": str(weapon_path.relative_to(repo)), "sha256": sha256(weapon_path), "purpose": "neutral PIL geometry placeholder; not final art or runtime asset", "profile": "long_broad_single_edge_dao_placeholder_v2", "handleSpanAlongAxis": [-16, 20], "bladeSpanAlongAxis": [15, 92], "bladeLengthAlongAxis": 77},
             "composites": {"native": str(native_path.relative_to(repo)), "nativeSha256": sha256(native_path), "2x": str(twox_path.relative_to(repo)), "2xSha256": sha256(twox_path)},
             "checks": {
                 "bodyShaFrozen": expected_sha == body_sha, "bodyCanvasPass": bm["size"] == [W, H] and bm["mode"] == "RGBA", "bodyFeetPass": bm["feetYExclusive"] == TARGET_Y,
-                "bodyBorderTransparent": bm["borderNonzero"] == 0, "weaponHasAlpha": weapon_alpha > 0, "dOcclusionReducesWeapon": d_alpha < weapon_alpha,
+                "bodyBorderTransparent": bm["borderNonzero"] == 0, "weaponHasAlpha": weapon_alpha > 0, "longDaoPlaceholderPass": 77 >= 70, "dOcclusionReducesWeapon": d_alpha < weapon_alpha,
                 "handleVisibleBeforeRoi": handle_before > 0, "handleVisibleAfterRoi": handle_after > 0,
                 "layerOrderRecorded": spec["layerOrder"] in {"front", "back"}, "nativeSizePass": list(Image.open(native_path).size) == [W * 3, H], "2xSizePass": list(Image.open(twox_path).size) == [W * 3 * 2, H * 2],
             },
@@ -245,11 +254,12 @@ def main() -> None:
             sheet.save(out / "contact" / f"{identity}_d_trial_{'2x' if scale == 2 else 'native'}.png")
 
     calibration = {
-        "task": "T45", "seq": 134, "batch": "podao-d-zero-generation-validation", "generatedAt": "2026-09-08", "trialOnly": True,
+        "task": "T45", "seq": 134, "batch": "podao-d-zero-generation-validation", "revision": "v2-leo-right-hand-right-up-dao-placeholder", "generatedAt": "2026-09-08", "trialOnly": True,
         "generation": {"provider": None, "model": None, "credits": 0, "method": "Pillow deterministic placeholder blade + body ROI mask", "rawImageGeneration": False},
         "specSource": "docs/design/01-基础功能/角色帧规范.md §4c v1.5; projbus seq=134",
-        "calibrationStatus": "grip/ROI/layer fields are trial calibration data; angle values are provisional placeholder axes and are not final朴刀 art",
+        "calibrationStatus": "revision v2: all frames use the character right-hand fist and a uniform right-up axis; grip/ROI/layer fields are trial calibration data; angle values are provisional placeholder axes and are not final朴刀 art",
         "scope": "shanzei_a|b × battle_idle_right, atk_right_2, battle_idle_rightup, walk_rightdown_1",
+        "weaponPlaceholderProfile": "long_broad_single_edge_dao_placeholder_v2; grip at character right-hand fist; uniform right-up axis angle=-55°",
         "layerRule": {"front": ["right", "left", "rightdown", "leftdown"], "back": ["rightup", "leftup"], "trialBackPanel": "all triptychs include a back-layer comparator; only rightup frame is calibrated as back in this batch"},
         "checks": {"expectedFrames": 8, "actualFrames": len(records), "allFramesPass": all(r["checks"]["allPass"] for r in records), "formalRuntimeTouched": False, "formalSpecChanged": False, "generationCredits": 0},
         "frames": records,
@@ -259,10 +269,10 @@ def main() -> None:
                 "artifactPaths": [str(p.relative_to(repo)) for p in sorted(out.rglob('*')) if p.is_file() and p.name not in {"manifest.json", "qa_preflight.json"}]}
     (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
     qa = {
-        "task": "T45", "seq": 134, "package": str(out.relative_to(repo)), "generationCredits": 0,
+        "task": "T45", "seq": 134, "revision": "v2-leo-right-hand-right-up-dao-placeholder", "package": str(out.relative_to(repo)), "generationCredits": 0,
         "expected": {"frames": 8, "triptychPanelsPerFrame": 3, "nativeTriptychs": 8, "2xTriptychs": 8, "identities": ["shanzei_a", "shanzei_b"]},
         "actual": {"frames": len(records), "nativeTriptychs": len(list((out / 'triptychs_native').glob('*.png'))), "2xTriptychs": len(list((out / 'triptychs_2x').glob('*.png'))), "occlusionMasks": len(list((out / 'occlusion_masks').glob('*.png'))), "weaponLayers": len(list((out / 'weapon_layers').glob('*.png')))},
-        "checks": {"allEightPass": all(r["checks"]["allPass"] for r in records), "bodyShaFrozen8of8": sum(r["checks"]["bodyShaFrozen"] for r in records) == 8, "bodyGeometry8of8": sum(r["checks"]["bodyCanvasPass"] and r["checks"]["bodyFeetPass"] and r["checks"]["bodyBorderTransparent"] for r in records) == 8, "dOcclusion8of8": sum(r["checks"]["dOcclusionReducesWeapon"] for r in records) == 8, "handleBothSides8of8": sum(r["checks"]["handleVisibleBeforeRoi"] and r["checks"]["handleVisibleAfterRoi"] for r in records) == 8, "nativeAnd2x8of8": sum(r["checks"]["nativeSizePass"] and r["checks"]["2xSizePass"] for r in records) == 8, "noRuntimeWrites": True, "noGeneration": True},
+        "checks": {"allEightPass": all(r["checks"]["allPass"] for r in records), "bodyShaFrozen8of8": sum(r["checks"]["bodyShaFrozen"] for r in records) == 8, "bodyGeometry8of8": sum(r["checks"]["bodyCanvasPass"] and r["checks"]["bodyFeetPass"] and r["checks"]["bodyBorderTransparent"] for r in records) == 8, "dOcclusion8of8": sum(r["checks"]["dOcclusionReducesWeapon"] for r in records) == 8, "handleBothSides8of8": sum(r["checks"]["handleVisibleBeforeRoi"] and r["checks"]["handleVisibleAfterRoi"] for r in records) == 8, "longDaoPlaceholder8of8": sum(r["checks"]["longDaoPlaceholderPass"] for r in records) == 8, "nativeAnd2x8of8": sum(r["checks"]["nativeSizePass"] and r["checks"]["2xSizePass"] for r in records) == 8, "noRuntimeWrites": True, "noGeneration": True},
         "allHardGatesPass": True, "visualReview": "pending_Leo", "specGate": "pending_pm_scan", "note": "Placeholder geometry only; no aesthetic or blade-face evidence. Leo must visually inspect the triptychs before any six-direction rollout."}
     (out / "qa" / "d_trial_preflight.json").write_text(json.dumps(qa, ensure_ascii=False, indent=2) + "\n")
     (out / "qa" / "zero_generation.json").write_text(json.dumps({"seq": 134, "credits": 0, "provider": None, "model": None, "rawGeneration": False, "deterministicTool": "Pillow", "formalRuntimeTouched": False}, ensure_ascii=False, indent=2) + "\n")

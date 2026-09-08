@@ -1,7 +1,7 @@
 {
   "task": "T45",
   "seq": 134,
-  "purpose": "D-route zero-generation calibration; refs are read-only body sources, not generation inputs",
+  "purpose": "D-route zero-generation calibration v2; refs are read-only body sources, not generation inputs",
   "generation": {"provider": null, "model": null, "credits": 0, "method": "Pillow deterministic composition"},
   "bodySources": {
     "shanzei_a": {
@@ -19,7 +19,7 @@
   },
   "responsibilities": {
     "bodyFrames": "identity, clothing, pose, feet, canvas and proportions; frozen byte-for-byte from current runtime",
-    "placeholderBlade": "technical geometry only; no final weapon identity, palette or aesthetic evidence",
+    "placeholderBlade": "v2 long broad single-edged dao geometry only; uniform character-right-hand grip and right-up axis; no final weapon identity, palette or aesthetic evidence",
     "roiPolygons": "original fist occlusion boundary for D-route mask; recorded per frame in calibration/calibration.json",
     "contactSheets": "review-only labels and triptych comparison; never used as generation or identity input"
   }

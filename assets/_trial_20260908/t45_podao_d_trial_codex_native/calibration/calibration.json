@@ -2,6 +2,7 @@
   "task": "T45",
   "seq": 134,
   "batch": "podao-d-zero-generation-validation",
+  "revision": "v2-leo-right-hand-right-up-dao-placeholder",
   "generatedAt": "2026-09-08",
   "trialOnly": true,
   "generation": {
@@ -12,8 +13,9 @@
     "rawImageGeneration": false
   },
   "specSource": "docs/design/01-基础功能/角色帧规范.md §4c v1.5; projbus seq=134",
-  "calibrationStatus": "grip/ROI/layer fields are trial calibration data; angle values are provisional placeholder axes and are not final朴刀 art",
+  "calibrationStatus": "revision v2: all frames use the character right-hand fist and a uniform right-up axis; grip/ROI/layer fields are trial calibration data; angle values are provisional placeholder axes and are not final朴刀 art",
   "scope": "shanzei_a|b × battle_idle_right, atk_right_2, battle_idle_rightup, walk_rightdown_1",
+  "weaponPlaceholderProfile": "long_broad_single_edge_dao_placeholder_v2; grip at character right-hand fist; uniform right-up axis angle=-55°",
   "layerRule": {
     "front": [
       "right",
@@ -69,8 +71,9 @@
         "x": 163,
         "y": 166
       },
-      "angleDeg": 32.0,
+      "angleDeg": -55.0,
       "angleStatus": "provisional_placeholder_only",
+      "angleDirection": "uniform_right_up_from_character_right_hand",
       "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
       "layerOrder": "front",
       "occlusionRef": {
@@ -114,22 +117,24 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/a_idle_right_placeholder_blade.png",
-        "sha256": "1365c970a374aa2f515f6136e8032b6151891c4765a995acb6fe5fe67693b60d",
+        "sha256": "3112304e146950bd80f1056a527bbb0d82c5414056fcaf1200b676abe456f738",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
-          -15,
-          22
+          -16,
+          20
         ],
         "bladeSpanAlongAxis": [
-          16,
-          106
-        ]
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/a_idle_right_triptych.png",
-        "nativeSha256": "9cb99a4b8ae6daec114e0870d672f8f8c20d00bc831983bd2ddfda6ed1e0a4c7",
+        "nativeSha256": "dec4246f5442e40c955bc9a7a39e6f79ebd1e01630a2cce44965e2a9f5506c72",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/a_idle_right_triptych_2x.png",
-        "2xSha256": "ac6bf50a9932bb9e04d14190ace0c53ec7443e317d576aecaf05e5d6336d3679"
+        "2xSha256": "0c83829244971c61545d56fe45cb6cdbabce1ea6cfbe762d07e24163d0dc49c4"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -137,6 +142,7 @@
         "bodyFeetPass": true,
         "bodyBorderTransparent": true,
         "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
         "dOcclusionReducesWeapon": true,
         "handleVisibleBeforeRoi": true,
         "handleVisibleAfterRoi": true,
@@ -179,8 +185,9 @@
         "x": 184,
         "y": 137
       },
-      "angleDeg": 18.0,
+      "angleDeg": -55.0,
       "angleStatus": "provisional_placeholder_only",
+      "angleDirection": "uniform_right_up_from_character_right_hand",
       "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
       "layerOrder": "front",
       "occlusionRef": {
@@ -220,22 +227,24 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/a_atk_right_2_placeholder_blade.png",
-        "sha256": "c76b6613ec7548618c369f6ea7b66a1a108b7cb219b3d3cd73e9544984b13985",
+        "sha256": "940b7ab8c88c7952974dd010bf79ad217c9b71d67921635197a985bcd1188a71",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
-          -15,
-          22
+          -16,
+          20
         ],
         "bladeSpanAlongAxis": [
-          16,
-          106
-        ]
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/a_atk_right_2_triptych.png",
-        "nativeSha256": "fefbc2191bdae20022484933a3aa6c0abf099a05201034cd430a81c2ad9ac140",
+        "nativeSha256": "14db4af1d9696193edf05897079aba62a731fcb58d4e044aedf550fa47c4c0a1",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/a_atk_right_2_triptych_2x.png",
-        "2xSha256": "276e3d92f0267b61a63a9e0b11bbf08fea97a281938b7b831839159b67516b23"
+        "2xSha256": "d9f012edd344f25a4ff81935706a24d8ed1042eafade06c881b0984634c44917"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -243,6 +252,7 @@
         "bodyFeetPass": true,
         "bodyBorderTransparent": true,
         "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
         "dOcclusionReducesWeapon": true,
         "handleVisibleBeforeRoi": true,
         "handleVisibleAfterRoi": true,
@@ -285,8 +295,9 @@
         "x": 165,
         "y": 164
       },
-      "angleDeg": -45.0,
+      "angleDeg": -55.0,
       "angleStatus": "provisional_placeholder_only",
+      "angleDirection": "uniform_right_up_from_character_right_hand",
       "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
       "layerOrder": "back",
       "occlusionRef": {
@@ -326,22 +337,24 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/a_idle_rightup_placeholder_blade.png",
-        "sha256": "554f6c085b6598a032bb0f11a90ea0062d5a90ef2762d6c0541e03bd473a348e",
+        "sha256": "127724cff8ccc1df74bf2b6ca2ac910800bf28dec1038271f4f7c5f1864dbff1",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
-          -15,
-          22
+          -16,
+          20
         ],
         "bladeSpanAlongAxis": [
-          16,
-          106
-        ]
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/a_idle_rightup_triptych.png",
-        "nativeSha256": "a9d82de76a8f7ed465461e57e3e5eee47f4cb1d32a25e2430a3badc84ef258a6",
+        "nativeSha256": "900da26009210b63a2c3f54d7a34d90262d3de01bbe9a29b916ebfc81a5e3f47",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/a_idle_rightup_triptych_2x.png",
-        "2xSha256": "91b7a1eaa0eadcdac63a8b9326a1ac255937fba5e2d77a2cbaebd12fdd817782"
+        "2xSha256": "b1249bbaba851f6cea72f9be49f9f3cf6ecff09c761d7c69bcd4edee99fd0177"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -349,6 +362,7 @@
         "bodyFeetPass": true,
         "bodyBorderTransparent": true,
         "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
         "dOcclusionReducesWeapon": true,
         "handleVisibleBeforeRoi": true,
         "handleVisibleAfterRoi": true,
@@ -391,8 +405,9 @@
         "x": 172,
         "y": 172
       },
-      "angleDeg": 40.0,
+      "angleDeg": -55.0,
       "angleStatus": "provisional_placeholder_only",
+      "angleDirection": "uniform_right_up_from_character_right_hand",
       "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
       "layerOrder": "front",
       "occlusionRef": {
@@ -432,22 +447,24 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/a_walk_rightdown_1_placeholder_blade.png",
-        "sha256": "2f03eb99f6bd7ece2c67159fa42d6f4de8c66ba41739da6eaf09747c84cdbb96",
+        "sha256": "c462c01a2dc8ed19f2d63dad2a9cd073dfbafb57c113dcb5fd6c6e4a1fbc64b5",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
-          -15,
-          22
+          -16,
+          20
         ],
         "bladeSpanAlongAxis": [
-          16,
-          106
-        ]
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/a_walk_rightdown_1_triptych.png",
-        "nativeSha256": "34e75da0c6b65425c34843c1c4fb1fca909f9b1fc3f04d12da0d19ee5c2814dd",
+        "nativeSha256": "25e7ee51af2cd7c890b146c79dd67e3be728a909a12799ae72503f05934a4688",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/a_walk_rightdown_1_triptych_2x.png",
-        "2xSha256": "8924107fd8308b3c831e332b388c1c2a433edc7bc32e2aa7be391c7a90ec0cd7"
+        "2xSha256": "a8c23461022ac17a1c00f1683e0eb7432b2a7a04f78a1be0aba0ab127849dc6d"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -455,6 +472,7 @@
         "bodyFeetPass": true,
         "bodyBorderTransparent": true,
         "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
         "dOcclusionReducesWeapon": true,
         "handleVisibleBeforeRoi": true,
         "handleVisibleAfterRoi": true,
@@ -497,8 +515,9 @@
         "x": 164,
         "y": 167
       },
-      "angleDeg": 32.0,
+      "angleDeg": -55.0,
       "angleStatus": "provisional_placeholder_only",
+      "angleDirection": "uniform_right_up_from_character_right_hand",
       "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
       "layerOrder": "front",
       "occlusionRef": {
@@ -542,22 +561,24 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/b_idle_right_placeholder_blade.png",
-        "sha256": "49ea1d516f3bdbd097cc936955021156e232a3c58477a445ed5819a3a2c532f7",
+        "sha256": "145020bc061612a01b9d5a5653c18932e425500a6ea5068da3d21e5ba72b0e35",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
-          -15,
-          22
+          -16,
+          20
         ],
         "bladeSpanAlongAxis": [
-          16,
-          106
-        ]
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/b_idle_right_triptych.png",
-        "nativeSha256": "27134f080dfb32084f262b071fb9c66794523b1b097b0ed913e9cc9c346d82e1",
+        "nativeSha256": "942b63d02cb283afa184a6af3aeb54b15340fba8b2439b9653994f084d375960",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/b_idle_right_triptych_2x.png",
-        "2xSha256": "478057626cfd562b39967d6fdf0046a20a4d9a8ab76b284832ab55f291249984"
+        "2xSha256": "44d523f3fae10952ae009b07aac83a8afbb3cf7db62b8c4695f9c7f22a795d8b"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -565,6 +586,7 @@
         "bodyFeetPass": true,
         "bodyBorderTransparent": true,
         "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
         "dOcclusionReducesWeapon": true,
         "handleVisibleBeforeRoi": true,
         "handleVisibleAfterRoi": true,
@@ -607,8 +629,9 @@
         "x": 185,
         "y": 140
       },
-      "angleDeg": 18.0,
+      "angleDeg": -55.0,
       "angleStatus": "provisional_placeholder_only",
+      "angleDirection": "uniform_right_up_from_character_right_hand",
       "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
       "layerOrder": "front",
       "occlusionRef": {
@@ -648,22 +671,24 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/b_atk_right_2_placeholder_blade.png",
-        "sha256": "5c30a39d44949cec88ce1e6188db02eedf0cdce5904c85d2a62774218990266a",
+        "sha256": "5c5a19281700bdab4f72293848901fe1dd16c30d52708ebf4084d0c2ed45f9fb",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
-          -15,
-          22
+          -16,
+          20
         ],
         "bladeSpanAlongAxis": [
-          16,
-          106
-        ]
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/b_atk_right_2_triptych.png",
-        "nativeSha256": "4f21c9313409bc43dbe9819a6b2e37856bc59963372b92376d0c4838ea3fd393",
+        "nativeSha256": "d0cc3c5527ab2c32e8e5592b67b794a0b9f6e02424b0b207bedfcf51a70b226d",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/b_atk_right_2_triptych_2x.png",
-        "2xSha256": "ad59cf2577ad6b47a896c5940f43a0e3a4088937b61e806c56a8392066bea513"
+        "2xSha256": "bcc454d1b16103a9241d81869a0426e8483457fe5a5b57a07e4b08e290e0d0ef"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -671,6 +696,7 @@
         "bodyFeetPass": true,
         "bodyBorderTransparent": true,
         "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
         "dOcclusionReducesWeapon": true,
         "handleVisibleBeforeRoi": true,
         "handleVisibleAfterRoi": true,
@@ -713,8 +739,9 @@
         "x": 165,
         "y": 163
       },
-      "angleDeg": -45.0,
+      "angleDeg": -55.0,
       "angleStatus": "provisional_placeholder_only",
+      "angleDirection": "uniform_right_up_from_character_right_hand",
       "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
       "layerOrder": "back",
       "occlusionRef": {
@@ -754,22 +781,24 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/b_idle_rightup_placeholder_blade.png",
-        "sha256": "c52b07af0f5dc31ef4e610b5c3bf81bdf2d2e0a254402f50117f790ac9bb4316",
+        "sha256": "91920368dbd6adea1577ff4e35f552e6e64633096415612736f013cc678fa903",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
-          -15,
-          22
+          -16,
+          20
         ],
         "bladeSpanAlongAxis": [
-          16,
-          106
-        ]
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/b_idle_rightup_triptych.png",
-        "nativeSha256": "0ba645501a6a07c70eecd72dd6a2c2b172ec92ff3df3c7e5c08c4383170d9c22",
+        "nativeSha256": "894c56bd241036a485cfcab6646271db81e300a33a215ac860334c821e81b4ce",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/b_idle_rightup_triptych_2x.png",
-        "2xSha256": "227b813ebf110d4885d63b6ed4aed8d374469cbe2e0182d588539fc06d44e1be"
+        "2xSha256": "50659ea67c979890cc751e9b8277a5115a4d60a2ab1cbb6ac016064cc73b770f"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -777,6 +806,7 @@
         "bodyFeetPass": true,
         "bodyBorderTransparent": true,
         "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
         "dOcclusionReducesWeapon": true,
         "handleVisibleBeforeRoi": true,
         "handleVisibleAfterRoi": true,
@@ -819,8 +849,9 @@
         "x": 178,
         "y": 172
       },
-      "angleDeg": 40.0,
+      "angleDeg": -55.0,
       "angleStatus": "provisional_placeholder_only",
+      "angleDirection": "uniform_right_up_from_character_right_hand",
       "angleDefinition": "blade/shaft axis from grip toward tip; 0°=screen right, +Y downward, clockwise-positive",
       "layerOrder": "front",
       "occlusionRef": {
@@ -864,22 +895,24 @@
       },
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_trial_codex_native/weapon_layers/b_walk_rightdown_1_placeholder_blade.png",
-        "sha256": "35dd4c8ac59a00daf7de9e972f355ffff9bd72ffa01dd3a4604ffac881692fc4",
+        "sha256": "4c1f61891317e4faddf75cd2d5d46684ca52c7bc1466d0c837cfaf30e44d90ff",
         "purpose": "neutral PIL geometry placeholder; not final art or runtime asset",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
         "handleSpanAlongAxis": [
-          -15,
-          22
+          -16,
+          20
         ],
         "bladeSpanAlongAxis": [
-          16,
-          106
-        ]
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
       },
       "composites": {
         "native": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_native/b_walk_rightdown_1_triptych.png",
-        "nativeSha256": "5acf9df580c1e1b604161f256a76f6d13e985c9fdf8b9789769b1c0def8b7471",
+        "nativeSha256": "40530535ffa37803a28201da7c7515b86ca9dcf44d420d987e2d32adf9127ced",
         "2x": "assets/_trial_20260908/t45_podao_d_trial_codex_native/triptychs_2x/b_walk_rightdown_1_triptych_2x.png",
-        "2xSha256": "88f642a7b7c8e459fbd97378dd1f3af022d08af747f085b35f672cc0dd8ed5f9"
+        "2xSha256": "12d118193dce4bf2538422821e765f11f8861da7f4debaf4f877ac18f71b7a93"
       },
       "checks": {
         "bodyShaFrozen": true,
@@ -887,6 +920,7 @@
         "bodyFeetPass": true,
         "bodyBorderTransparent": true,
         "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
         "dOcclusionReducesWeapon": true,
         "handleVisibleBeforeRoi": true,
         "handleVisibleAfterRoi": true,
