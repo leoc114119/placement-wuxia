@@ -1,0 +1,35 @@
+{
+  "task": "T45",
+  "seq": 167,
+  "frame": "idle_right",
+  "revision": "full-fist-occlusion-v10",
+  "translationFromV9": [
+    9,
+    10
+  ],
+  "sourceV9BWeaponSha256": "b6d9e6d1ffcb4eba22e0e3f0d1a4614ec214f26b9c5fbd5fdd8a3ecc234793e7",
+  "targetV10BWeaponSha256": "b3d17ad4387e6a8711903faaf44e836723b7bddda165d78bf35c151ab6b9b8e5",
+  "aWeaponSha256": "b3d17ad4387e6a8711903faaf44e836723b7bddda165d78bf35c151ab6b9b8e5",
+  "targetEqualsABytes": true,
+  "translatedPixelExact": true,
+  "sourceV9BBox": [
+    103,
+    73,
+    182,
+    184
+  ],
+  "targetV10BBox": [
+    112,
+    83,
+    191,
+    194
+  ],
+  "gripPointAandB": [
+    125,
+    175
+  ],
+  "selectedFistPixelsB": 310,
+  "selectedFistWeaponOverlapAfterAlignment": 0,
+  "occlusionInterpretation": "zero local overlap after exact A alignment; in-engine layer contract remains recorded",
+  "allHardGatesPass": true
+}

@@ -1,0 +1,13 @@
+{
+  "seq": 167,
+  "frame": "idle_right",
+  "revision": "full-fist-occlusion-v10",
+  "credits": 0,
+  "provider": null,
+  "model": null,
+  "rawGeneration": false,
+  "deterministicTool": "Pillow",
+  "bodyBytesFrozen": true,
+  "weaponBytesFrozen": true,
+  "formalRuntimeTouched": false
+}

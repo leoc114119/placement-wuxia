@@ -1,0 +1,19 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "jobId": "frame01-idle-right",
+  "revision": "full-fist-occlusion-v10",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "generationCredits": 0,
+  "currentFrameOnly": true,
+  "supersedes": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v9/manifest.json",
+  "visualReviewScope": "v10 B exact orange fist pixel occlusion plus exact A/B knife-layer alignment",
+  "reviewedAt": "2026-09-08",
+  "note": "v10 preserves v9's 4-connected orange-skin fist mask and moves only B's placeholder dao layer +9,+10 to exact A coordinates; formal runtime remains untouched pending Leo and PM gates.",
+  "visualReviewReason": "Leo 2026-09-08: B knife position must match A; align B by copying A's frozen placeholder layer bytes.",
+  "reviewReason": "v10 supersedes v9 for the requested A/B knife-position alignment; no body redraw or generation."
+}

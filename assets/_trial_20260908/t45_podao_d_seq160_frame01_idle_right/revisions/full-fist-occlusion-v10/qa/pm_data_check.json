@@ -1,0 +1,25 @@
+{
+  "task": "T45",
+  "seq": 167,
+  "frame": "idle_right",
+  "revision": "full-fist-occlusion-v10",
+  "checks": {
+    "framePair2of2": true,
+    "bodyShaFrozen2of2": true,
+    "weaponShaFrozen2of2": true,
+    "weaponLayerBytesEqualAandB": true,
+    "gripPointsEqualAandB": true,
+    "preciseFistPixelMaskB": true,
+    "noTorsoBridgeB": true,
+    "maskPixelsMatchSkinRule": true,
+    "maskConnected4": true,
+    "selectedFistWeaponResidualZero": true,
+    "nativeAnd2x2of2": true,
+    "noRuntimeWrites": true,
+    "noGeneration": true
+  },
+  "allHardGatesPass": true,
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "runtimeRelease": false
+}
