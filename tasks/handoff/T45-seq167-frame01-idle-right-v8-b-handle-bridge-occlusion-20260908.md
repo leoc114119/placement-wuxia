@@ -40,4 +40,4 @@
 ## 研发消费边界
 研发仅消费 v8 标定 JSON 的握持点、角度、layerOrder、A 紧拳遮挡 polygon 与 B 窄柄桥遮挡 polygon，以及占位刀层作为 D 校准输入。三联图和 coverage sheet 只作诊断证据；Leo 目验与 PM 第二道规格门通过前不得接线。
 
-**交付 commit**：提交后回填；本包不含正式 runtime 文件。
+**交付 commit**：`80cbe4c8355c6a531ac9fe9376553defcc7c3362`（已推送）；本包不含正式 runtime 文件。
