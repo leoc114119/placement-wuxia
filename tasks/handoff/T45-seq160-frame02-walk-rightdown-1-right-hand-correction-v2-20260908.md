@@ -56,3 +56,4 @@
 - artifact commit：`c2d99b6f8ed0d093428f056177c883b367bbbe13`（分支 `codex/t45-shanzei-2b-pilot`，已推送）。
 - `check_delivery.py`：26/26 activity paths PASS，核验同一 artifact commit；该检查只证明路径与字节，不替代 Leo 视觉门或 PM 规格门。
 - projbus delivery：seq=180，messageId=`fbddaa2c91714715ae373942ec1d9f96`；后续 docs commit 会补发更正交接。
+- superseding delivery：seq=181，messageId=`f70e74f3108949049d231de39ca5f405`；payload 同时回显 artifact commit `c2d99b6f8ed0d093428f056177c883b367bbbe13`、docs commit `de1f3bfb2a1de384d6dd759e362eee01a24304b7`、check_delivery 26/26 PASS；seq=180 已被本次更正取代。
