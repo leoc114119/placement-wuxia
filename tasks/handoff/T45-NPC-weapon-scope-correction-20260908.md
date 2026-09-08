@@ -21,3 +21,5 @@
 - `docs/design/03-战斗系统/素材落地账.md`
 
 状态：范围纠正已记录，seq=186 已达排产；本文件是交研发线的口径通知，不代表 NPC 带武器新帧已生成或通过 Leo/PM 门。
+
+交付证据：文档与交接 commit `7155990e2f4cd8f5f1d92be8360eea0cc1c9aa96` 已推送分支 `codex/t45-shanzei-2b-pilot`；projbus delivery `seq=189` / messageId `cfaa0c2d2b1b4e9c89ba163c5d61c062` 已发送至 rd。runtime 未改，NPC 36 张带武器角色帧仍待生成与双门验收。
