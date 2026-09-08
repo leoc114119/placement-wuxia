@@ -711,3 +711,5 @@
 | 2026-09-08 | Leo → Codex（art） | 🔧 T45 主角武器首帧 v9 半剑柄右上位移纠正 | Leo 确认当前角度正确，要求剑向右上拉半个剑柄；拳头中心应对着剑柄中心。保持角色与 `-40°` 剑轴不变，按实测柄轴跨度取半柄位移。 |
 | 2026-09-08 | Codex（art） | 🧪 T45 主角武器首帧 handle-center-half-length-v9 候选完成 | v9 以 v8 透明剑层为源，沿 `-40°` 轴取半柄 `14.916px` 的最近整数平移 `(+11,-10)`；柄中心距拳心 `0.593px`，QA `allMachineChecksPass=true`，runtime 未改；候选交接 `tasks/handoff/T45-hero-weapon-pilot-frame01-handle-center-half-length-v9-20260908.md`，等待 Leo 视觉门。 |
 | 2026-09-08 | Leo → Codex（art） | ✅ T45 主角武器首帧 handle-center-half-length-v9 视觉目验通过 | Leo 确认“好，可以了，目测通过”；v9 状态更新为 `selected_by_Leo`，候选送 PM 第二道规格门，正式 runtime 仍未改。 |
+| 2026-09-08 | Codex（art） → rd | 📤 T45 主角武器首帧 v9 视觉通过后 PM 送检（seq=199） | Leo 视觉门通过；候选 artifact commit=`0a3c5fd49f5850006906a91c58cfd0146ffba406`，v9 `selected_by_Leo`、`specGate=pending_pm_scan`、`runtimeRelease=false`；52 项活动路径与 handoff 已交付；seq=199 的 SHA 指针随后更正。 |
+| 2026-09-08 | Codex（art） → rd | 📤 T45 主角武器首帧 v9 PM 送检交付更正（seq=200，supersedes seq=199） | 正确 artifact commit=`0a3c5fd49f5850006906a91c58cfd0146ffba406`，52 项活动路径核验齐全；`visualReview=selected_by_Leo`、`specGate=pending_pm_scan`、`runtimeRelease=false`；projbus messageId=`0a77267c986f4f209e57d1bbeb498dbc`。 |
