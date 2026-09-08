@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame01",
+  "revision": "red-arrow-angle-v3",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "reviewReason": "Leo correction: sword must be in the character's right hand and use the user-reference up-right sword angle",
+  "correction": {
+    "from": "v2 screen-left fist / 60° down-right",
+    "to": "character-right screen-left fist / -40° up-right per Leo red-arrow reference"
+  },
+  "method": "deterministic reuse of existing transparent sword layer; no new generation; body frozen",
+  "runtimeWrite": false
+}

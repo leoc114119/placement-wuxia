@@ -7,11 +7,14 @@
   "specGate": "pending_pm_scan",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
-  "reviewReason": "Leo correction: sword must be in the character's right hand and use the canonical down-right battle angle",
+  "reviewReason": "Leo follow-up correction: preserve the right-hand screen-left-fist grip but align the sword up-right to the supplied red-arrow reference.",
   "correction": {
     "from": "v1 screen-right fist / 46.3774°",
-    "to": "character-right screen-left fist / 60° down-right"
+    "to": "character-right screen-left fist / -40° up-right per Leo red-arrow reference"
   },
   "method": "deterministic reuse of existing transparent sword layer; no new generation; body frozen",
-  "runtimeWrite": false
+  "runtimeWrite": false,
+  "supersededBy": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/red-arrow-angle-v3/manifest.json",
+  "status": "superseded_by_red_arrow_angle_v3",
+  "visualReviewNote": "v2 superseded after Leo clarified the red-arrow sword direction; v3 uses -40° up-right."
 }

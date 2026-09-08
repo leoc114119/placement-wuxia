@@ -1,0 +1,65 @@
+{
+  "task": "T45",
+  "revision": "hero-weapon-pilot-frame01-red-arrow-angle-v3",
+  "trialOnly": true,
+  "frame": "battle_idle_right.png",
+  "bodyPath": "assets/characters/hero/battle45/battle_idle_right.png",
+  "bodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/red-arrow-angle-v3/normalized/hero_sword_held_rightup_v3.png",
+  "weaponSha256": "135f5e148e4534ee9a50cfe25bff9e8dfc196af5633cfcad6a46fcb1361ea811",
+  "handSemantic": "character_right_hand",
+  "screenProjection": "screen-left fist",
+  "gripPoint": {
+    "x": 100.0,
+    "y": 208.0
+  },
+  "angleDeg": -40.0,
+  "angleDefinition": "blade axis from grip toward tip; 0°=screen-right, +Y down, clockwise-positive",
+  "layerOrder": "front",
+  "occlusionRef": {
+    "roiPolygon": [
+      [
+        91,
+        193
+      ],
+      [
+        103,
+        193
+      ],
+      [
+        111,
+        197
+      ],
+      [
+        115,
+        204
+      ],
+      [
+        112,
+        214
+      ],
+      [
+        104,
+        218
+      ],
+      [
+        95,
+        216
+      ],
+      [
+        90,
+        209
+      ],
+      [
+        89,
+        201
+      ]
+    ],
+    "maskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/red-arrow-angle-v3/occlusion_masks/hero_idle_right_character_right_fist.png",
+    "maskSha256": "6291bfd584bd8d4c3e915bf0b8a5a0548e5d368222e5d607e461070ab22b5c87"
+  },
+  "sourceRevision": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/right-hand-angle-v2/manifest.json",
+  "supersedes": "hero-weapon-pilot-frame01-v2",
+  "status": "candidate_stop_for_Leo_visual_and_PM_spec_review",
+  "runtimeRelease": false
+}
