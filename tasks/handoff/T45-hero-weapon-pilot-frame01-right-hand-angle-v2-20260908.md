@@ -39,6 +39,7 @@ Leo 指出上一版首帧的两个可见问题：剑接在画面右侧拳（角�
 - `revisions/right-hand-angle-v2/job.json`
 - `revisions/right-hand-angle-v2/request.md`
 - `revisions/right-hand-angle-v2/refs.json`
+- `revisions/right-hand-angle-v2/refs/user_fist_center_sword_reference.png`（Leo 提供的握拳中心/剑轴视觉参照，仅作 placement 参考）
 
 ## 门状态与消费边界
 

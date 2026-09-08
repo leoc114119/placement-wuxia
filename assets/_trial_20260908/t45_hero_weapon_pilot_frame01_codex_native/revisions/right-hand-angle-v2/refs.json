@@ -16,11 +16,19 @@
       "allowed": "deterministic rotation and relocation only",
       "forbidden": "redraw/shape change/new generation",
       "sha256": "3e4524c1a0bac0d1abe56f8d7c7e53c35b191d110427da9d0377b47175e50208"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/right-hand-angle-v2/refs/user_fist_center_sword_reference.png",
+      "role": "Leo-provided visual reference for fist-center placement and down-right sword axis",
+      "allowed": "visual placement and grip-center orientation only",
+      "forbidden": "identity/body redraw, pixel-copying, runtime asset replacement",
+      "sha256": "b5b744597d730236e7eeb1b2aca503e64f242a5461345f81e4d6b89dba4aae3c"
     }
   ],
   "correction": {
     "hand": "character_right_hand_screen_left_fist",
     "angleDeg": 60.0,
     "rotationDeltaDeg": 13.62257341251977
-  }
+  },
+  "referenceNote": "User attachment copied into package for provenance; it is a visual placement reference, not an input for generation."
 }
