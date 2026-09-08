@@ -123,10 +123,10 @@ def contact_pages(out_dir, items, out_base, per_page=16, frame_h=64):
                 rows.append((m, imgs))
         if not rows:
             continue
-        row_w = max(sum(x.width for x in imgs) + 2 * (len(imgs) - 1) for _, imgs in rows)
+        row_w = max(sum(x.width + 2 for x in imgs) for _, imgs in rows)
         W = max(row_w, 360) + 8
         H = sum(frame_h + 20 for _ in rows) + 8
-        canvas = Image.new("RGB", (W, H), (25, 25, 25))
+        canvas = Image.new("RGB", (W, H), (60, 60, 66))
         d = ImageDraw.Draw(canvas)
         y = 4
         for m, imgs in rows:
@@ -135,6 +135,8 @@ def contact_pages(out_dir, items, out_base, per_page=16, frame_h=64):
             x = 4
             for im in imgs:
                 canvas.paste(im, (x, y + 14), im)
+                d.rectangle([x, y + 14, x + im.width - 1, y + 14 + im.height - 1],
+                            outline=(180, 180, 190))
                 x += im.width + 2
             y += frame_h + 20
         fp = f"{out_base}_p{len(pages) + 1}.png"
