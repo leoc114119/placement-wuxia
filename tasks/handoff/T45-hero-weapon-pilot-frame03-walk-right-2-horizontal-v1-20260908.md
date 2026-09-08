@@ -62,4 +62,5 @@ frame02 的水平剑 v2 已获 Leo 目验通过；本帧只将已接受的水平
 - artifact commit：`ea7c46ff8c21e7f1dc11a746b4a3cdd9b76d8383`。
 - check_delivery.py：19/19 PASS（候选包、frame02 状态证据与生成脚本路径逐文件 SHA 核验）。
 - docs/handoff commit：本文件随本次证据提交。
+- projbus delivery：seq=207，messageId=`16154c79412f442a8df270106df13ea6`。
 - runtimeRelease=false；Leo 目验待办；PM 第二道规格门按授权延后至全部动作帧确定后统一处理。
