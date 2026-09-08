@@ -9,6 +9,7 @@
 - **状态**：`artifactStage=candidate`、`visualReview=pending_Leo`、`specGate=pending_pm_scan`、`integrationGate=not_handed_off`、`runtimeRelease=false`；manifest 已补齐 `status`/`occlusionRule`/`checks`/`sourceRevision`/`knifeAdjustment` 元数据。
 - **交付提交**：`7d7e774ea4fc475843fb584720ae5c287bc0150f`（已推送 `origin/codex/t45-shanzei-2b-pilot`）；此前 seq=176 的 63833c2f 仅为旧元数据版本，已由本提交 supersede。
 - **运输核验**：skill `check_delivery.py` 对 26 项活动路径逐文件 SHA 核验 PASS；该工具仅证明 commit/path/bytes，不替代 Leo 审美门或 PM 第二道规格门。
+- **delivery 记录**：初次 seq=176 已被 seq=177 更正交付取代；更正 messageId=`6557f2e425664ac9950d0f5b951a4926`，projbus payload commit=`57f17911e093074c7ee93b12a06c4193c79d1e16`，artifact commit=`7d7e774ea4fc475843fb584720ae5c287bc0150f`。
 
 ## 关键证据
 
