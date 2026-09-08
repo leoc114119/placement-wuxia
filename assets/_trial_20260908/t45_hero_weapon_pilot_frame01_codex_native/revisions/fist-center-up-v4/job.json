@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame01",
+  "revision": "fist-center-up-v4",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "reviewReason": "Leo follow-up correction: move the v3 sword upward so the handle center aligns with the ready-pose fist center",
+  "correction": {
+    "from": "v3 grip (100,208) / -40° up-right",
+    "to": "same grip x=100, y=205 (3px upward) / -40° up-right per Leo fist-center instruction"
+  },
+  "method": "deterministic reuse of existing transparent sword layer; no new generation; body frozen",
+  "runtimeWrite": false
+}

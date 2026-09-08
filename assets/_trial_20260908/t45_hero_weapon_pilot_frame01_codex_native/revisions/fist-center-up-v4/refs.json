@@ -1,0 +1,46 @@
+{
+  "task": "T45",
+  "revision": "fist-center-up-v4",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_right.png",
+      "role": "frozen hero battle body and hand geometry",
+      "allowed": "screen-left fist/right-hand grip and body placement",
+      "forbidden": "redraw body/identity/pose",
+      "sha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/red-arrow-angle-v3/normalized/hero_sword_held_rightup_v3.png",
+      "role": "v3 normalized transparent sword geometry",
+      "allowed": "deterministic integer translation upward only",
+      "forbidden": "redraw/rotation/shape change/new generation",
+      "sha256": "135f5e148e4534ee9a50cfe25bff9e8dfc196af5633cfcad6a46fcb1361ea811"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-up-v4/refs/user_fist_center_sword_reference.png",
+      "role": "Leo supplied red-arrow direction and fist-center placement reference",
+      "allowed": "direction/placement interpretation only",
+      "forbidden": "pixel tracing or body redraw",
+      "sha256": "b5b744597d730236e7eeb1b2aca503e64f242a5461345f81e4d6b89dba4aae3c"
+    }
+  ],
+  "correction": {
+    "hand": "character_right_hand_screen_left_fist",
+    "sourceGrip": [
+      100.0,
+      208.0
+    ],
+    "targetGrip": [
+      100.0,
+      205.0
+    ],
+    "translationPx": [
+      0,
+      -3
+    ],
+    "angleDeg": -40.0,
+    "rotationDeltaDeg": 0.0,
+    "directionReference": "Leo red arrow points up-right from fist center"
+  }
+}
