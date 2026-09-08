@@ -533,3 +533,4 @@
 | 09-07 | Leo | 🏗️ PM 窗口拆分批准 | 研发 PM（本窗口）+美术 PM（新窗口）双窗制：美术 PM 接管 art 通道门检/口径/排产，研发 PM 专注 arch 通道+研发卡；护栏=事务域切死/git worktree 纪律/额度分账；入职快照 tasks/handoff/PM2-art-onboard-2026-09-07.md |
 | 09-07 | ZCode（backend-battle） | 📦 TASK-AS-BE 交付（task/attack-speed-be @ fcd7067，未 push） | 出招速度+两段式伤害 BE 卡：scheduler 提交即排程/t1 动态重搜（R1 锚=施法者格，二读裁定待复核）/两段独立 F-04/死亡消散/终局截断；四门+proto 门全绿（battle 294+14、behavior 14/14、shot 16、e2e 全 MATCH、DBG=0、verTag bump）；详见 tasks/threads/ARCH-AS.md 交付行 |
 | 09-07 | ZCode（backend-battle·复验） | ✅ TASK-AS-BE 独立复验收口 | 四门+proto 门全数复跑吻合（battle 294+14 / behavior 14/14 / shot 16 PASS / e2e 11 MATCH 0 不符 / DBG=0 / bundle 逐字节=重建产物）；FACE-1 ②b seed 5/7 实跑未漂移，结论已补 ARCH-AS 交付行（Q1 条件闭合）；前任被 kill 残留（半截 shots/verTag）按处置令重跑覆盖，未 commit 残留 |
+| 09-07 | ZCode | ✅ PM 纯净态复验 PASS（main@92ba7de，补做） | typecheck/lint/build 三零+test:battle 322+14+behavior 14/14+shot 16+e2e 11 MATCH 0 不符合（22=脚本输出+汇总双计，明细核实）+DBG=0——与 v04 交付自报全数吻合；e2e HF3"移动纯移动"断言确认 v2.5 修正入库生效；追溯验收结论候主架构（seq=135） |
