@@ -1,0 +1,90 @@
+{
+  "task": "T45",
+  "revision": "hero-weapon-pilot-frame02-walk-right-1-v1",
+  "trialOnly": true,
+  "frame": "walk_right_1.png",
+  "visualReview": "pending_Leo",
+  "bodyPath": "assets/characters/hero/battle45/walk_right_1.png",
+  "bodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/normalized/hero_sword_held_rightup_walk_right_1_v1.png",
+  "weaponSha256": "8e412206f0e55af9295267fef6a72b3bbc7c3864556087100f335e6cb072ee78",
+  "handSemantic": "character_right_hand",
+  "screenProjection": "screen-left fist",
+  "fistCenterPx": {
+    "x": 84,
+    "y": 207
+  },
+  "skinCoreCentroidPx": {
+    "x": 83.95348837209302,
+    "y": 206.67441860465115,
+    "pixels": 129
+  },
+  "handleCenterPx": {
+    "target": {
+      "x": 83.573696,
+      "y": 206.5878
+    },
+    "distanceToFistCenterPx": 0.5929957338936024
+  },
+  "gripPoint": {
+    "x": 95.0,
+    "y": 197.0
+  },
+  "angleDeg": -40.0,
+  "angleDefinition": "blade axis from grip toward tip; 0°=screen-right, +Y down, clockwise-positive",
+  "layerOrder": "front",
+  "occlusionRef": {
+    "roiPolygon": [
+      [
+        77,
+        198
+      ],
+      [
+        84,
+        196
+      ],
+      [
+        91,
+        197
+      ],
+      [
+        96,
+        201
+      ],
+      [
+        98,
+        207
+      ],
+      [
+        96,
+        213
+      ],
+      [
+        91,
+        216
+      ],
+      [
+        84,
+        216
+      ],
+      [
+        78,
+        213
+      ],
+      [
+        74,
+        208
+      ],
+      [
+        74,
+        203
+      ]
+    ],
+    "maskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/occlusion_masks/hero_walk_right_1_character_right_fist.png",
+    "maskSha256": "f13d411c43ee95a7b0666ec6e93bf16853c225815a00b6360f27a9949270c1a1"
+  },
+  "sourceRevision": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/manifest.json",
+  "supersedes": "hero-weapon-pilot-frame01-handle-center-half-length-v9",
+  "status": "candidate_only",
+  "runtimeRelease": false
+}

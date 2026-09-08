@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame02-walk-right-1",
+  "revision": "frame02-walk-right-1-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "sourceRevision": "frame01 handle-center-half-length-v9",
+  "method": "deterministic reuse + integer translation (-18,+1); no generation/rotation/resampling; body frozen",
+  "runtimeWrite": false,
+  "nextGate": "Leo visual review before PM second gate"
+}

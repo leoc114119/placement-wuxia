@@ -1,0 +1,31 @@
+{
+  "task": "T45",
+  "revision": "hero-weapon-pilot-frame02-walk-right-1-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "scope": "hero battle walk_right_1 second frame; deterministic reuse of selected frame01 sword with hand-center translation",
+  "sourceBody": "assets/characters/hero/battle45/walk_right_1.png",
+  "sourceBodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+  "sourceWeaponLayerSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/normalized/hero_sword_held_rightup_walk_right_1_v1.png",
+  "weaponSha256": "8e412206f0e55af9295267fef6a72b3bbc7c3864556087100f335e6cb072ee78",
+  "handSemantic": "character_right_hand_screen_left_fist",
+  "gripPoint": {
+    "x": 95.0,
+    "y": 197.0
+  },
+  "angleDeg": -40.0,
+  "layerOrder": "front",
+  "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/calibration/frame02_walk_right_1_v1.json",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/qa/pilot_walk_right_1_v1.json",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/contact/hero_walk_right_1_sword_pilot_v1.png",
+  "fistCenterZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/contact/walk_right_1_fist_center_zoom_v1.png",
+  "formalRuntimeTouched": false,
+  "status": "candidate_only",
+  "visualReviewEvidence": null,
+  "note": "v9 sword geometry and -40° angle frozen; integer shift (-18,+1) aligns handle center with walk_right_1 fist center (84,207)"
+}
