@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "jobId": "frame01-idle-right",
+  "revision": "full-fist-occlusion-v11",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "generationCredits": 0,
+  "currentFrameOnly": true,
+  "supersedes": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v10/manifest.json",
+  "visualReviewScope": "v11 B v9 knife restored, 3px lower into fist, rear handle 6px shorter; A/body/masks frozen",
+  "reviewedAt": "2026-09-08",
+  "note": "v11 changes only B's v9 placeholder layer by an exact (0,+3) translation and t<-14 rear-handle trim; no resampling, body redraw, generation, or runtime write.",
+  "visualReviewReason": "Leo 2026-09-08: restore B v9 knife position, move it a little deeper into the hand, and shorten exposed handle.",
+  "reviewReason": "v11 supersedes v10 after Leo requested the v9 B knife position restored with a small downward correction and shorter exposed handle.",
+  "sourceRevision": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v9/manifest.json"
+}

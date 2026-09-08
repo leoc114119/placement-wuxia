@@ -1,0 +1,52 @@
+{
+  "task": "T45",
+  "seq": 167,
+  "frame": "idle_right",
+  "revision": "full-fist-occlusion-v11",
+  "sourceRevision": "full-fist-occlusion-v9",
+  "translationFromV9": [
+    0,
+    3
+  ],
+  "gripPointV9": [
+    116,
+    165
+  ],
+  "gripPointV11": [
+    116,
+    168
+  ],
+  "angleDeg": -55.0,
+  "handleSpanV9": [
+    -20,
+    14
+  ],
+  "handleSpanV11": [
+    -14,
+    14
+  ],
+  "bladeSpan": [
+    15,
+    110
+  ],
+  "sourceV9BBox": [
+    103,
+    73,
+    182,
+    184
+  ],
+  "targetV11BBox": [
+    106,
+    76,
+    182,
+    182
+  ],
+  "sourceV9WeaponSha256": "b6d9e6d1ffcb4eba22e0e3f0d1a4614ec214f26b9c5fbd5fdd8a3ecc234793e7",
+  "targetV11WeaponSha256": "ff8bbba82ab7c218c2cff91517440652448c5c622c81d2b9844041c86acc840f",
+  "expectedByteMapping": "target(x,y)=source(x,y-3) for source t>=-14; pixels before t=-14 removed",
+  "pixelMappingExact": true,
+  "bladeSpanUnchanged": true,
+  "rearHandleTrimmed": true,
+  "noResampling": true,
+  "allHardGatesPass": true
+}
