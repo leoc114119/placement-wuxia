@@ -1,0 +1,130 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "walk_rightdown_1",
+  "revision": "right-hand-correction-v2",
+  "method": "binary body alpha restricted to explicit tight complete-fist polygon",
+  "records": [
+    {
+      "id": "a_walk_rightdown_1",
+      "maskPixels": 527,
+      "polygon": [
+        [
+          57,
+          202
+        ],
+        [
+          60,
+          198
+        ],
+        [
+          67,
+          196
+        ],
+        [
+          75,
+          197
+        ],
+        [
+          82,
+          202
+        ],
+        [
+          85,
+          208
+        ],
+        [
+          83,
+          216
+        ],
+        [
+          78,
+          221
+        ],
+        [
+          69,
+          221
+        ],
+        [
+          62,
+          217
+        ],
+        [
+          58,
+          212
+        ]
+      ],
+      "weaponPixelsInMaskBefore": 196,
+      "weaponPixelsInMaskAfter": 0,
+      "maskCoverageRatio": 1.0,
+      "dFistBodyDiffPixels": 0,
+      "handleVisibleBefore": {
+        "negative": 11,
+        "positive": 10
+      },
+      "noSleeveTorsoBridge": true,
+      "allHardGatesPass": true
+    },
+    {
+      "id": "b_walk_rightdown_1",
+      "maskPixels": 383,
+      "polygon": [
+        [
+          75,
+          195
+        ],
+        [
+          79,
+          190
+        ],
+        [
+          86,
+          189
+        ],
+        [
+          92,
+          192
+        ],
+        [
+          96,
+          197
+        ],
+        [
+          97,
+          203
+        ],
+        [
+          94,
+          210
+        ],
+        [
+          89,
+          214
+        ],
+        [
+          82,
+          214
+        ],
+        [
+          77,
+          210
+        ],
+        [
+          74,
+          204
+        ]
+      ],
+      "weaponPixelsInMaskBefore": 141,
+      "weaponPixelsInMaskAfter": 0,
+      "maskCoverageRatio": 1.0,
+      "dFistBodyDiffPixels": 0,
+      "handleVisibleBefore": {
+        "negative": 11,
+        "positive": 10
+      },
+      "noSleeveTorsoBridge": true,
+      "allHardGatesPass": true
+    }
+  ],
+  "allHardGatesPass": true
+}

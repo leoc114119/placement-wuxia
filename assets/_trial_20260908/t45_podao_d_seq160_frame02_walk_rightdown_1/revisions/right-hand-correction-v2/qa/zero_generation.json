@@ -1,0 +1,13 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "walk_rightdown_1",
+  "revision": "right-hand-correction-v2",
+  "credits": 0,
+  "provider": null,
+  "model": null,
+  "rawGeneration": false,
+  "deterministicTool": "Pillow",
+  "bodyBytesFrozen": true,
+  "formalRuntimeTouched": false
+}

@@ -1,0 +1,21 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "walk_rightdown_1",
+  "revision": "right-hand-correction-v2",
+  "checks": {
+    "framePair2of2": true,
+    "bodyShaFrozen2of2": true,
+    "daoLengthBand2of2": true,
+    "bladeBand2of2": true,
+    "handleBand2of2": true,
+    "fistOcclusionResidualZero2of2": true,
+    "nativeAnd2x2of2": true,
+    "noRuntimeWrites": true,
+    "noGeneration": true
+  },
+  "allHardGatesPass": true,
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "runtimeRelease": false
+}

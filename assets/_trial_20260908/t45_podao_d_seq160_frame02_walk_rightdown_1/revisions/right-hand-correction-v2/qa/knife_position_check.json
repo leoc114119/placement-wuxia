@@ -1,0 +1,56 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "walk_rightdown_1",
+  "revision": "right-hand-correction-v2",
+  "geometry": {
+    "profile": "long_broad_single_edge_dao_placeholder_v5",
+    "angleDeg": -55.0,
+    "angleDefinition": "blade axis from grip toward tip; 0° screen-right, +Y down, clockwise-positive",
+    "handleSpanAlongAxis": [
+      -20,
+      14
+    ],
+    "bladeSpanAlongAxis": [
+      15,
+      110
+    ],
+    "handleLength": 34,
+    "bladeLength": 95,
+    "totalLength": 129,
+    "resampling": "none"
+  },
+  "frames": [
+    {
+      "id": "a_walk_rightdown_1",
+      "gripPoint": [
+        70,
+        208
+      ],
+      "layerOrder": "front",
+      "weaponSha256": "50cbb73fa9f9145be63e25e5711e4c75a1e9f274a16328de49132868c79f457c",
+      "weaponBBox": [
+        56,
+        116,
+        136,
+        227
+      ]
+    },
+    {
+      "id": "b_walk_rightdown_1",
+      "gripPoint": [
+        84,
+        202
+      ],
+      "layerOrder": "front",
+      "weaponSha256": "8b35837c5de79cbe41ee7f82784c2dc89d72e195ea15a6a696b06044a427bdaa",
+      "weaponBBox": [
+        70,
+        110,
+        150,
+        221
+      ]
+    }
+  ],
+  "allHardGatesPass": true
+}

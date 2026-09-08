@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "walk_rightdown_1",
+  "revision": "right-hand-correction-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "generationCredits": 0,
+  "reviewReason": "frame01 v11 PM ack released frame02; create the next two-frame D calibration candidate",
+  "note": "Bodies are copied byte-for-byte from runtime. Weapon placeholders are deterministic Pillow geometry only. D masks are tight complete-fist binary body-alpha silhouettes.",
+  "runtimeWrite": false
+}
