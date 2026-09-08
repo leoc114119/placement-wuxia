@@ -1,0 +1,51 @@
+{
+  "task": "T45",
+  "revision": "frame03-walk-right-2-angle-up15-v2",
+  "trialOnly": true,
+  "frame": "walk_right_2.png",
+  "visualReview": "pending_Leo",
+  "bodyPath": "assets/characters/hero/battle45/walk_right_2.png",
+  "bodySha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-angle-up15-v2/normalized/hero_sword_held_up15_walk_right_2_v2.png",
+  "weaponSha256": "2761f8ce877e5a960eb18de19126fa74c0657582a801f3c0a64b09753178425e",
+  "handSemantic": "character_right_hand",
+  "screenProjection": "screen-left fist",
+  "fistCenterPx": {
+    "x": 102,
+    "y": 204
+  },
+  "skinCoreCentroidPx": {
+    "x": 101.53631284916202,
+    "y": 203.75418994413408,
+    "pixels": 179
+  },
+  "handleCenterPx": {
+    "source": [
+      101.573696,
+      203.5878
+    ],
+    "target": [
+      101.573696,
+      203.5878
+    ],
+    "distanceToFistCenterPx": 0.5929957338936024
+  },
+  "gripPointPx": {
+    "x": 115.9814206992,
+    "y": 199.7272669341
+  },
+  "angleDeg": -15.0,
+  "angleDefinition": "screen angle; 0°=screen-right, -15°=up-right, +Y down",
+  "layerOrder": "front",
+  "occlusionRef": {
+    "maskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-angle-up15-v2/occlusion_masks/hero_walk_right_2_character_right_fist_v2.png",
+    "maskSha256": "20f268a866555c2c45f0c40b77f980dca24b14136ab3ad9fd39785d753404395"
+  },
+  "sourceRevision": "frame03-walk-right-2-horizontal-v1",
+  "translationPx": [
+    0,
+    0
+  ],
+  "status": "candidate_only",
+  "runtimeRelease": false
+}

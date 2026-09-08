@@ -3,7 +3,7 @@
   "revision": "frame03-walk-right-2-horizontal-v1",
   "trialOnly": true,
   "frame": "walk_right_2.png",
-  "visualReview": "pending_Leo",
+  "visualReview": "superseded_by_user_angle_correction",
   "bodyPath": "assets/characters/hero/battle45/walk_right_2.png",
   "bodySha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
   "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/normalized/hero_sword_held_horizontal_walk_right_2_v1.png",
@@ -46,6 +46,8 @@
     18,
     -3
   ],
-  "status": "candidate_only",
-  "runtimeRelease": false
+  "status": "superseded_by_frame03_angle_up15_v2",
+  "runtimeRelease": false,
+  "visualReviewEvidence": "Leo 2026-09-08: 剑柄位置通过；要求剑轴上抬15°，与拳头上沿形成垂直关系；v1 superseded。",
+  "supersededBy": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-angle-up15-v2/manifest.json"
 }

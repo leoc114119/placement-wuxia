@@ -2,7 +2,7 @@
   "task": "T45",
   "revision": "frame03-walk-right-2-horizontal-v1",
   "artifactStage": "candidate",
-  "visualReview": "pending_Leo",
+  "visualReview": "superseded_by_user_angle_correction",
   "specGate": "pending_pm_scan",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
@@ -38,7 +38,8 @@
   "fistCenterZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/contact/walk_right_2_fist_center_zoom.png",
   "formalRuntimeTouched": false,
   "supersedes": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
-  "status": "candidate_only",
-  "visualReviewEvidence": null,
-  "note": "Next frame built by translating accepted frame02 horizontal layer; no rotation, generation, body edit, or runtime write"
+  "status": "superseded_by_frame03_angle_up15_v2",
+  "visualReviewEvidence": "Leo 2026-09-08: 剑柄位置通过；要求剑轴上抬15°，与拳头上沿形成垂直关系；v1 superseded。",
+  "note": "Next frame built by translating accepted frame02 horizontal layer; no rotation, generation, body edit, or runtime write",
+  "supersededBy": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-angle-up15-v2/manifest.json"
 }

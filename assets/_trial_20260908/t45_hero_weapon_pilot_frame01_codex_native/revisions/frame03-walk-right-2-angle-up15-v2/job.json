@@ -1,0 +1,16 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame03-walk-right-2",
+  "revision": "frame03-walk-right-2-angle-up15-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "sourceRevision": "frame03-walk-right-2-horizontal-v1",
+  "correction": "Rotate the accepted horizontal sword layer upward 15° around fixed handle center (101.5737,203.5878); preserve handle position and sword geometry",
+  "method": "deterministic nearest-neighbor fixed-pivot rotation; no generation, translation, body edit, or runtime write",
+  "runtimeWrite": false,
+  "nextGate": "Leo visual review; PM gate deferred until all action frames are determined"
+}

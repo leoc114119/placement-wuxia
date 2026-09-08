@@ -3,11 +3,11 @@
   "seq": "hero-weapon-pilot-frame03-walk-right-2",
   "revision": "frame03-walk-right-2-horizontal-v1",
   "artifactStage": "candidate",
-  "visualReview": "pending_Leo",
+  "visualReview": "superseded_by_user_angle_correction",
   "specGate": "pending_pm_scan",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
-  "status": "candidate_only",
+  "status": "superseded_by_frame03_angle_up15_v2",
   "generation": {
     "provider": null,
     "model": null,
@@ -154,5 +154,7 @@
     "runtimeUntouched": true,
     "generationCreditsZero": true,
     "allMachineChecksPass": true
-  }
+  },
+  "visualReviewEvidence": "Leo 2026-09-08: 剑柄位置通过；要求剑轴上抬15°，与拳头上沿形成垂直关系；v1 superseded。",
+  "supersededBy": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-angle-up15-v2/manifest.json"
 }
