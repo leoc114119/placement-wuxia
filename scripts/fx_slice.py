@@ -63,7 +63,8 @@ def detect_frame_h(im_l):
         if best is None or key < best:
             best = (mx, fh, n)
     if best is None:
-        return None, None, None, None
+        # 纵向无整除候选（如横向多剑排布的 16:9 单图）→ 整张作单帧保留
+        return H, 1, "single", 0
     mx, fh, n = best
     status_mx = mx if mx <= PASS_CUT_MAX else mx  # scan 个案如实报告
     return fh, n, "scan", status_mx

@@ -1,17 +1,14 @@
 {
  "label": "KF4",
  "sources": 88,
- "total_frames": 923,
- "saved_frames": 911,
+ "total_frames": 925,
+ "saved_frames": 913,
  "status": {
-  "ok": 38,
   "scan-ok": 43,
-  "suspicious": 5
+  "suspicious": 5,
+  "ok": 40
  },
- "errors": [
-  "25-1",
-  "26-1"
- ],
+ "errors": [],
  "items": [
   {
    "file": "1-1",
@@ -257,7 +254,13 @@
     399,
     225
    ],
-   "error": "no divisible candidate"
+   "frames": 1,
+   "frame_h": 225,
+   "detect": "single",
+   "cut_max": 0,
+   "status": "ok",
+   "empty_frames": 0,
+   "saved": 1
   },
   {
    "file": "26-1",
@@ -265,7 +268,13 @@
     399,
     225
    ],
-   "error": "no divisible candidate"
+   "frames": 1,
+   "frame_h": 225,
+   "detect": "single",
+   "cut_max": 0,
+   "status": "ok",
+   "empty_frames": 0,
+   "saved": 1
   },
   {
    "file": "27-1",
