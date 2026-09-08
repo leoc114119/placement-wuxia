@@ -608,3 +608,15 @@
 | 2026-09-08 | Codex（art） | ✅ T45 seq=134 D 路线零生成校准试产完成 | 甲乙×4 帧共 8 帧：`battle_idle_right`/`atk_right_2`/`battle_idle_rightup`/`walk_rightdown_1`；Pillow 占位刀+原拳 ROI 遮挡+front/back 三联图，原尺寸+2x；身体 SHA 冻结、锚点/角度/层序/遮挡 mask 全记录，QA 8/8 PASS，credits=0，正式 runtime 未改；待 Leo 目验与 PM 第二道规格门。试产包 `assets/_trial_20260908/t45_podao_d_trial_codex_native/`。
 | 2026-09-08 | Codex（art） | ✅ T45 ack seq=136 | 已核对 PM 对 seq=133 盘点的六问对账；仅朴刀 D 校准及后续铺量继续，其余不重复排产。
 | 09-07 | Leo | 📋 执行前流程检查单制度确立 | tasks/PRE-FLIGHT-CHECKLIST.md（A 派单前六项/B 交付合并前六项/C git 操作前三项/D 无人值守三项+违反先例登记表）——每次派卡前与合并 main 前逐项打勾，执行者附"检查单已过"于交付回执；源起=出招速度战役跳过主架构验收的顺序违规 |
+| 2026-09-08 | Codex（art） → rd | 📤 T45 seq=134 D 路线零生成校准交付（seq=137，5d16325） | 8 帧标定+三联图已推送；Pillow 占位刀、body SHA/握持点/angleDeg/ROI mask/layerOrder 全齐，native+2x 各 8 张；QA 8/8、`check_delivery` PASS，credits=0，正式 runtime 未改；待 Leo 目验与 PM 门检。
+| 2026-09-08 | Codex（art） | ✅ seq=134 accepted | 观察 commit `5d16325a8e81a7b4da93e183d5b3e661d98638a3`，fetch 成功且交付路径完整；D 校准包待 Leo 目验/PM 门检。
+| 2026-09-08 | Leo → Codex（art） | 🔧 T45 D 试产 v2 方向与武器外形纠正 | 上版占位刀偏短剑且方向错误；按明确要求统一角色右手握持、刀身从拳点斜向右上；仅修 D 验证占位几何与方向，正式 runtime/规格不动。
+| 2026-09-08 | Codex（art） → rd | 📤 T45 seq=134 D 试产 v2 修订交付（seq=139，89c215e） | supersedes seq=137；8/8 帧统一右手+右上轴线 `angleDeg=-55°`，占位刀为长宽单刃朴刀轮廓；Pillow 零生成/credits=0，QA allHardGatesPass=true、longDaoPlaceholder8of8=true，`check_delivery` 44/44 PASS；正式 runtime 未改，待 Leo 目验与 PM 第二道规格门。
+| 09-07 | Leo → PM2 | ✅ 五条流程优化全量落地（052fc66 已 push） | ①素材落地账建账（design/03-战斗系统/素材落地账.md v1.0：hero61/甲31/乙31/白骨×3 全 runtime、候选存量 0、在飞=朴刀 D 验证）②落地日结=PM2 每日 LOG 汇总行（即刻执行）③④⑤交付显式声明 runtime/候选悬挂 24h/状态表述带证据=三条入 AGENTS.md（素材落地纪律三条）+bus 通知美术线（seq=137）；注：首笔 commit 因新文件未 add 短路，已分步补齐 |
+| 09-07 | ZCode | 🔒 PRE-FLIGHT main 守卫钩子上线（硬保证） | PreToolUse(Bash) 拦截 push 写 main 命令：无当日 .preflight-log 留痕=exit 2 阻断并提示 B 段六项；有当日留痕=放行；本地 merge 不拦（可逆）；四分支测试全过（含 BSD grep 正则修正）；边界=仅覆盖 ZCode 会话 Bash，Codex 侧需自行配置 |
+| 2026-09-08 | Codex（art） | 🧰 T45 D 试产 v2.1 几何范围修正 | 复核发现 v2 绘制多边形残留轴向点超出 manifest 声明；已将刀体严格收敛至 `bladeSpanAlongAxis=[15,92]`（77px），攻击帧不越出 240×320 画布，revision=`v2.1-leo-right-hand-right-up-dao-span-fix`。
+| 2026-09-08 | Codex（art） → rd | 📤 T45 seq=134 D 试产 v2.1 更正交付（seq=142，21737ba） | supersedes seq=139；8/8 帧仍统一角色右手+右上 `angleDeg=-55°`，长宽单刃占位刀与 manifest 轴向范围一致；Pillow 零生成/credits=0，QA allHardGatesPass=true、longDaoPlaceholder8of8=true，`check_delivery` 44/44 PASS；正式 runtime 未改，待 Leo 目验与 PM 第二道规格门。
+| 2026-09-08 | Leo → Codex（art） | ⛔ T45 朴刀 D 试产视觉否决，新增竖拳前置标准 | Leo 判定 v2.1 效果不可收货；根因是 NPC 出拳为横平拳，刀柄贴拳后违和。新标准：出拳拳头必须竖立，不能平拳；先锁身体帧姿势，再重做刀层校准。
+| 2026-09-08 | Codex（art） | ❓ Q2-T45 出拳竖拳姿势范围待裁 | 问题单 `tasks/questions/Q2-T45-upright-fist.md`；待明确适用于全部 24 张 NPC 普攻身体帧，还是仅 D 试产 `atk_right_2` 甲乙两帧。范围未裁前暂停调刀、铺量与批量重做，正式 runtime 不动。
+| 09-08 | Codex（arch） | ✅ 追溯验收 PASS（main@92ba7de）+留痕入库 b036b78 | seq=117/121/130/131/135 全部关闭；门禁独立复核全绿；PRE-FLIGHT 流程补救闭环 |
+| 09-08 | Codex（art） → rd | 📤 T45 D 路线试产 v2.1 交付（seq=137/139/142） | 甲乙×4 帧零生成校准（程序化占位朴刀+右手持刀+刀轴 -55°+锚点/遮挡 manifest）——朴刀武器层 DoR 材料首批；另有 Q2-T45 疑点（NPC 出拳竖拳姿势适用范围待裁） |
