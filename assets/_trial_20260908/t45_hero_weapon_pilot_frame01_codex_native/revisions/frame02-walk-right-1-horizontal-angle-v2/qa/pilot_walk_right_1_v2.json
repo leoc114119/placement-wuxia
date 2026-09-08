@@ -1,0 +1,183 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame02-walk-right-1",
+  "revision": "frame02-walk-right-1-horizontal-angle-v2",
+  "generatedAt": "2026-09-08",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "generation": {
+    "provider": null,
+    "model": null,
+    "credits": 0,
+    "method": "deterministic nearest-neighbor pivot rotation of v1 selected sword layer",
+    "rawImageGeneration": false
+  },
+  "body": {
+    "path": "assets/characters/hero/battle45/walk_right_1.png",
+    "sha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        39,
+        44,
+        200,
+        300
+      ],
+      "visualWidth": 161,
+      "visualHeight": 256,
+      "alpha32CentroidX": 120.31743763729975,
+      "alpha32CentroidY": 165.44256906413978,
+      "borderNonzero": 0
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/normalized/hero_sword_held_rightup_walk_right_1_v1.png",
+    "sourceLayerSha256": "8e412206f0e55af9295267fef6a72b3bbc7c3864556087100f335e6cb072ee78",
+    "normalizedPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
+    "normalizedSha256": "e4daf035adf788de89c44fadde74ba4cf337b3b7373d8bb001f465b0470bb1d4",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        68,
+        200,
+        185,
+        217
+      ],
+      "visualWidth": 117,
+      "visualHeight": 17,
+      "alpha32CentroidX": 123.55551341504761,
+      "alpha32CentroidY": 207.72800983789313,
+      "borderNonzero": 0
+    },
+    "axisDefinition": "grip toward tip; 0°=screen-right, +Y down, clockwise-positive",
+    "axisExtentsFromTargetGrip": [
+      -30.489671728700003,
+      85.5103282713
+    ],
+    "axisLengthPx": 116.0,
+    "sourceAngleDeg": -40.0,
+    "targetAngleDeg": 0.0,
+    "pivotPx": [
+      83.573696,
+      206.5878
+    ],
+    "rotationMethod": "Pillow NEAREST rotate(-40°) around fixed handle center"
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "screenProjection": "screen-left fist in walk_right_1",
+    "gripPointPx": {
+      "source": [
+        95.0,
+        197.0
+      ],
+      "target": [
+        98.4896717287,
+        206.587805724
+      ]
+    },
+    "fistCenterPx": {
+      "x": 84,
+      "y": 207
+    },
+    "skinCoreCentroidPx": {
+      "x": 83.95348837209302,
+      "y": 206.67441860465115,
+      "pixels": 129
+    },
+    "handleCenterPx": {
+      "fixed": [
+        83.573696,
+        206.5878
+      ],
+      "distanceToFistCenterPx": 0.5929957338936024
+    },
+    "angleCorrection": "horizontal 0°; handle center fixed"
+  },
+  "occlusion": {
+    "maskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/occlusion_masks/hero_walk_right_1_character_right_fist.png",
+    "maskSha256": "f13d411c43ee95a7b0666ec6e93bf16853c225815a00b6360f27a9949270c1a1",
+    "maskPixels": 398,
+    "weaponPixelsBefore": 796,
+    "weaponPixelsAfter": 656,
+    "weaponInFistBefore": 140,
+    "weaponInFistAfter": 0,
+    "semantics": "original body alpha under tight character-right-fist polygon; no painted replacement pixels"
+  },
+  "transform": {
+    "sourceRevision": "frame02-walk-right-1-v1",
+    "sourceGrip": [
+      95.0,
+      197.0
+    ],
+    "targetGrip": [
+      98.4896717287,
+      206.587805724
+    ],
+    "pivotPx": [
+      83.573696,
+      206.5878
+    ],
+    "sourceAngleDeg": -40.0,
+    "targetAngleDeg": 0.0,
+    "rotationDeltaScreenDeg": 40.0,
+    "pilRotationDeg": -40.0,
+    "translationPx": [
+      0,
+      0
+    ],
+    "resampling": "nearest; deterministic pivot rotation"
+  },
+  "composites": {
+    "native": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/composites_native/hero_walk_right_1_sword_triptych_v2.png",
+    "nativeSha256": "b10e73cc9e4c09dd57e44397ace64de3bb854f99877dccd85f919e3dd864382c",
+    "2x": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/composites_2x/hero_walk_right_1_sword_triptych_v2_2x.png",
+    "2xSha256": "7b9f9c2fc76e3c0db6b1e4e8f1a2ddaa7443a253e323e5ac3a6f20e9b4001ce3",
+    "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/contact/hero_walk_right_1_sword_pilot_v2.png",
+    "contactSha256": "f8d00f5562b2e3142c39f928173e86da1e7d000aeb02175942adb8f4987d7c2a",
+    "fistCenterZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/contact/walk_right_1_fist_center_zoom_v2.png",
+    "fistCenterZoomSha256": "833fcac40a06ede8df61f101d03d1b1b2e21f7fb7b160fc9f50df1a831fbea59"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "bodyFeetPass": true,
+    "bodyBorderTransparent": true,
+    "weaponCanvasPass": true,
+    "weaponRealAlphaPass": true,
+    "weaponSingleConnectedSilhouette": true,
+    "weaponLengthBandPass": true,
+    "weaponAngleHorizontalPass": true,
+    "characterRightHandScreenLeftFist": true,
+    "gripRecorded": true,
+    "fistOcclusionRemovesOverlap": true,
+    "nativeTriptychSizePass": true,
+    "twoXTriptychSizePass": true,
+    "skinCoreRoundsToFistCenter": true,
+    "handleCenterPivotPixelPass": true,
+    "handleCenterFixedDistancePass": true,
+    "handlePositionUnchangedFromV1": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  }
+}

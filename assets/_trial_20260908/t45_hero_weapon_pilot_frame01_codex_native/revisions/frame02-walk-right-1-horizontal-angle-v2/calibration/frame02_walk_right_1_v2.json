@@ -1,0 +1,96 @@
+{
+  "task": "T45",
+  "revision": "frame02-walk-right-1-horizontal-angle-v2",
+  "trialOnly": true,
+  "frame": "walk_right_1.png",
+  "visualReview": "pending_Leo",
+  "bodyPath": "assets/characters/hero/battle45/walk_right_1.png",
+  "bodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
+  "weaponSha256": "e4daf035adf788de89c44fadde74ba4cf337b3b7373d8bb001f465b0470bb1d4",
+  "handSemantic": "character_right_hand",
+  "screenProjection": "screen-left fist",
+  "fistCenterPx": {
+    "x": 84,
+    "y": 207
+  },
+  "skinCoreCentroidPx": {
+    "x": 83.95348837209302,
+    "y": 206.67441860465115,
+    "pixels": 129
+  },
+  "handleCenterPx": {
+    "fixed": {
+      "x": 83.573696,
+      "y": 206.5878
+    },
+    "distanceToFistCenterPx": 0.5929957338936024
+  },
+  "gripPointPx": {
+    "source": {
+      "x": 95.0,
+      "y": 197.0
+    },
+    "target": {
+      "x": 98.4896717287,
+      "y": 206.587805724
+    }
+  },
+  "angleDeg": 0.0,
+  "angleDefinition": "blade axis from grip toward tip; 0°=screen-right, +Y down, clockwise-positive",
+  "layerOrder": "front",
+  "occlusionRef": {
+    "roiPolygon": [
+      [
+        77,
+        198
+      ],
+      [
+        84,
+        196
+      ],
+      [
+        91,
+        197
+      ],
+      [
+        96,
+        201
+      ],
+      [
+        98,
+        207
+      ],
+      [
+        96,
+        213
+      ],
+      [
+        91,
+        216
+      ],
+      [
+        84,
+        216
+      ],
+      [
+        78,
+        213
+      ],
+      [
+        74,
+        208
+      ],
+      [
+        74,
+        203
+      ]
+    ],
+    "maskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/occlusion_masks/hero_walk_right_1_character_right_fist.png",
+    "maskSha256": "f13d411c43ee95a7b0666ec6e93bf16853c225815a00b6360f27a9949270c1a1"
+  },
+  "sourceRevision": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/manifest.json",
+  "supersedes": "hero-weapon-pilot-frame02-walk-right-1-v1",
+  "status": "candidate_only",
+  "runtimeRelease": false
+}

@@ -1,0 +1,40 @@
+{
+  "task": "T45",
+  "revision": "frame02-walk-right-1-horizontal-angle-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "scope": "hero battle walk_right_1 frame02; horizontal sword-angle correction around fixed handle center",
+  "sourceBody": "assets/characters/hero/battle45/walk_right_1.png",
+  "sourceBodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/normalized/hero_sword_held_rightup_walk_right_1_v1.png",
+  "sourceWeaponLayerSha256": "8e412206f0e55af9295267fef6a72b3bbc7c3864556087100f335e6cb072ee78",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
+  "weaponSha256": "e4daf035adf788de89c44fadde74ba4cf337b3b7373d8bb001f465b0470bb1d4",
+  "handSemantic": "character_right_hand_screen_left_fist",
+  "fistCenterPx": {
+    "x": 84,
+    "y": 207
+  },
+  "handleCenterPx": {
+    "x": 83.573696,
+    "y": 206.5878
+  },
+  "gripPointPx": {
+    "x": 98.4896717287,
+    "y": 206.587805724
+  },
+  "angleDeg": 0.0,
+  "layerOrder": "front",
+  "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/calibration/frame02_walk_right_1_v2.json",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/qa/pilot_walk_right_1_v2.json",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/contact/hero_walk_right_1_sword_pilot_v2.png",
+  "fistCenterZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/contact/walk_right_1_fist_center_zoom_v2.png",
+  "formalRuntimeTouched": false,
+  "supersedes": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/manifest.json",
+  "status": "candidate_only",
+  "visualReviewEvidence": null,
+  "note": "Only angle changed: v1 sword rotated to horizontal 0° about fixed handle center; no translation"
+}

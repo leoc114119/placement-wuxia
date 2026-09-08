@@ -1,0 +1,16 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame02-walk-right-1",
+  "revision": "frame02-walk-right-1-horizontal-angle-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "sourceRevision": "frame02-walk-right-1-v1",
+  "correction": "Change sword axis from -40° up-right to horizontal 0° while keeping handle center fixed at (83.5737,206.5878) aligned with fist center (84,207)",
+  "method": "deterministic nearest-neighbor pivot rotation; no translation/generation/resampling beyond nearest pixel mapping",
+  "runtimeWrite": false,
+  "nextGate": "Leo visual review; PM gate deferred until all action frames are determined"
+}
