@@ -57,3 +57,11 @@ qa/pilot_walk_right_1_v2.json 的 checks.allMachineChecksPass=true：
 - assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/raw/hero_sword_held_transparent_source_attempt1.png · SHA256 853bee2393fa263bbb46710d6bc10b4fa0a6065b68d7797f049b68585243bf7e
 - assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/refs.json · SHA256 2570543237d21cdf7da6b1c6c9bc893110fe8260767e8828d2f7e4c59a510378
 - assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/request.md · SHA256 25367425c0893f4ac5aff66706f62930f044509bdedc2d4158fb7014a0372dc7
+
+## 运输证据
+
+- artifact + docs commit：361e672438749d975625eb7976043008f195ca54
+- check_delivery.py：18/18 PASS（候选包、交接、线程与 LOG）
+- projbus delivery：seq=206，messageId=e74bcf2a11f340dca64c49b881b13e49
+- supersedes：frame02-walk-right-1-v1
+- runtimeRelease=false；Leo 目验待办；PM 第二道规格门按授权延后至全部动作帧确定后统一处理。
