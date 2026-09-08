@@ -19,7 +19,7 @@
 - [ ] B2 **主架构技术验收 PASS 已取得**（书面结论，不是"应该没问题"）——**L 环通过 ≠ 可跳过此步**
 - [ ] B3 **PM 纯净态复验已做**（checkout 干净分支复跑，或明确声明本轮豁免理由并记录）
 - [ ] B4 **Leo L 环验收通过**（功能面验收；与 B2 是两道独立的门，**顺序=B2 在 B4 前完成、合并前两者都须在案**）
-- [ ] B5 **归档顺序正确**：B1→B2→B3→B4 全 ✓ 才 merge main；shared worktree 下 merge 走临时分支+push refspec
+- [ ] B5 **归档顺序正确**：B1→B2→B3→B4 全 ✓ 才 merge main；shared worktree 下 merge 走临时分支+push refspec。**硬保证：push main 会被 .zcode 钩子拦截——先在 tasks/.preflight-log 追加一行「<日期> PRE-FLIGHT B1-B6 已过 checked by <事由>」方可通过**
 - [ ] B6 **LOG 双写+收官记忆**：threads 交付行 + LOG 一行 + 关键裁定进记忆
 
 ## C. 每次 git 操作前（日常）
