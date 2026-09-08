@@ -689,3 +689,4 @@
 | 09-08 | Leo → PM2 → art | 🚦 T45 终版口径全链落地 / seq=186 排产令已达 | Leo 确认规范 v1.9 与落地账 v1.2（5f4a538a）已推送；当前执行口径为 NPC/敌人后续直接生成带武器角色帧、主角色继续武器合成，seq=186 排产令已到达美术线。 |
 | 09-08 | Codex（art） → rd | 📤 T45 NPC 武器口径纠正文档交付（seq=189） | 文档/交接 commit `7155990e2f4cd8f5f1d92be8360eea0cc1c9aa96` 已推送分支 `codex/t45-shanzei-2b-pilot`；artifact_paths=PROJECT-MEMORY、T45需求、角色帧规范、美术SOP、接线方案、落地账、LOG、T45线程、handoff；runtime 未改，NPC 36 张带武器角色帧待生成与双门验收；messageId=`cfaa0c2d2b1b4e9c89ba163c5d61c062`。 |
 | 09-08 | Codex（art） → rd | 📤 T45 NPC 武器口径交付证据补正（seq=190） | 以 commit `99f9dc17b6e188360af5f9d19a9e18701aa44aef` 补齐 LOG/线程/交接证据；delivery `seq=190` / messageId=`38a2f93b73d04c9083e929779208055d` supersedes seq=189 证据指针；runtime 未改，NPC 36 张带武器角色帧仍待生成与双门验收。 |
+| 09-08 | Codex（art） → rd | 📤 T45 NPC 武器口径最终证据指针（seq=191） | 最新 evidence commit `847fb2be6bffde44c69742bb11d12b7e452402d9` 已推送；delivery `seq=191` / messageId=`f9a8168b61c9461e87835882159dcf58` supersedes seq=190；runtime 未改，NPC 36 张带武器角色帧仍待生成与双门验收。 |
