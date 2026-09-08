@@ -1,0 +1,30 @@
+{
+  "task": "T45",
+  "revision": "frame05-idle-rightup-sword-right-hand-v4-body-front-up2",
+  "bodyPath": "assets/characters/hero/battle45/battle_idle_rightup.png",
+  "bodySha256": "84da13aea03fadea7d363befe7fbe073aa554c164bb4c1710125a5534b0faf66",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/normalized/hero_sword_held_idle_rightup_character_right_hand_v4.png",
+  "weaponSha256": "ae500aef1a9921c06373f7bd4ff144c8be24548433d8379999faee410c83ca57",
+  "handSemantic": "character_right_hand",
+  "screenProjection": "screen-right fist in idle_rightup",
+  "fistCenterPx": [
+    178.10526315789474,
+    204.5
+  ],
+  "handleCenterSourcePx": [
+    101.57368615160716,
+    205.58781573590227
+  ],
+  "handleCenterTargetPx": [
+    177.57368615160715,
+    199.58781573590227
+  ],
+  "translationPx": [
+    76,
+    -6
+  ],
+  "angleDeg": -40.0,
+  "layerOrder": "body_front",
+  "status": "candidate_only",
+  "runtimeRelease": false
+}

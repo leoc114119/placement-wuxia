@@ -1,0 +1,55 @@
+{
+  "task": "T45",
+  "revision": "frame05-idle-rightup-sword-right-hand-v4-body-front-up2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "scope": "hero battle_idle_rightup sword placement with complete body-front occlusion and additional 2px upward shift",
+  "sourceBody": "assets/characters/hero/battle45/battle_idle_rightup.png",
+  "sourceBodySha256": "84da13aea03fadea7d363befe7fbe073aa554c164bb4c1710125a5534b0faf66",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+  "sourceWeaponLayerSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/normalized/hero_sword_held_idle_rightup_character_right_hand_v4.png",
+  "weaponSha256": "ae500aef1a9921c06373f7bd4ff144c8be24548433d8379999faee410c83ca57",
+  "runtimeConsumption": "preview_only_until_FE_anchor_integration",
+  "runtimeWeaponSource": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+  "runtimeWeaponSourceSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+  "handSemantic": "character_right_hand_screen_right_fist",
+  "fistCenterPx": {
+    "x": 178.10526315789474,
+    "y": 204.5
+  },
+  "handleCenterSourcePx": {
+    "x": 101.57368615160716,
+    "y": 205.58781573590227
+  },
+  "translationPx": [
+    76,
+    -6
+  ],
+  "handleCenterTargetPx": {
+    "x": 177.57368615160715,
+    "y": 199.58781573590227
+  },
+  "fistToHandleOffsetPx": [
+    -0.531576615,
+    -4.912184265
+  ],
+  "gripPointPx": {
+    "x": 189.0,
+    "y": 190.0
+  },
+  "angleDeg": -40.0,
+  "layerOrder": "body_front",
+  "maskPolicy": "none",
+  "diagnosticMask": "occlusion_masks/hero_idle_rightup_screen_right_fist_v4.png",
+  "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/calibration/frame05_idle_rightup_right_hand_v4.json",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/qa/pilot_idle_rightup_right_hand_v4.json",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/contact/hero_idle_rightup_sword_right_hand_v4_2x.png",
+  "fistZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/contact/idle_rightup_right_fist_center_zoom_v4.png",
+  "formalRuntimeTouched": false,
+  "status": "candidate_only",
+  "note": "Leo requested the complete character body render above the sword to close the hand/sword seam. Reused selected v9 sword at unchanged -40 degree angle and moved it another 2px upward from v3 (total translation +76,-6). Preview edge crop remains preview-only; runtime must consume the independent source layer via WeaponAnchor."
+}

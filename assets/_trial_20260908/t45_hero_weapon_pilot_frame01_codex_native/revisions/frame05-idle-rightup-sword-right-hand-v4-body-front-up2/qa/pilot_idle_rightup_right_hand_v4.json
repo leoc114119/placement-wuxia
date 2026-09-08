@@ -1,0 +1,121 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame05-idle-rightup",
+  "revision": "frame05-idle-rightup-sword-right-hand-v4-body-front-up2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "generation": {
+    "credits": 0,
+    "method": "deterministic integer translation of Leo-selected v9 sword layer",
+    "rawImageGeneration": false
+  },
+  "body": {
+    "path": "assets/characters/hero/battle45/battle_idle_rightup.png",
+    "sha256": "84da13aea03fadea7d363befe7fbe073aa554c164bb4c1710125a5534b0faf66",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        50,
+        44,
+        188,
+        300
+      ],
+      "visualWidth": 138,
+      "visualHeight": 256,
+      "borderNonzero": 0
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sourceLayerSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "normalizedPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/normalized/hero_sword_held_idle_rightup_character_right_hand_v4.png",
+    "normalizedSha256": "ae500aef1a9921c06373f7bd4ff144c8be24548433d8379999faee410c83ca57",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        166,
+        145,
+        240,
+        213
+      ],
+      "visualWidth": 74,
+      "visualHeight": 68,
+      "borderNonzero": 11
+    },
+    "translationPx": [
+      76,
+      -6
+    ],
+    "angleDeg": -40.0,
+    "handleCenterSourcePx": [
+      101.57368615160716,
+      205.58781573590227
+    ],
+    "handleCenterTargetPx": [
+      177.57368615160715,
+      199.58781573590227
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "screenProjection": "screen-right fist in idle_rightup",
+    "fistCenterPx": [
+      178.10526315789474,
+      204.5
+    ],
+    "fistPixels": 76,
+    "gripPointPx": [
+      189.0,
+      190.0
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "body_front",
+    "maskPolicy": "none",
+    "diagnosticMaskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/occlusion_masks/hero_idle_rightup_screen_right_fist_v4.png",
+    "diagnosticMaskSha256": "4829e6c71040eacba021dfd1bb8cdfb3cac496cc3ebe56423006cb09e8e9db31",
+    "weaponInFistBefore": 93,
+    "weaponInFistAfter": 0
+  },
+  "composites": {
+    "native": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/composites_native/hero_idle_rightup_sword_right_hand_triptych_v4.png",
+    "twoX": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/composites_2x/hero_idle_rightup_sword_right_hand_triptych_v4_2x.png",
+    "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/contact/hero_idle_rightup_sword_right_hand_v4.png",
+    "fistZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/contact/idle_rightup_right_fist_center_zoom_v4.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "bodyAlphaPass": true,
+    "bodyBorderTransparent": true,
+    "weaponCanvasPass": true,
+    "weaponRealAlphaPass": true,
+    "weaponSingleConnectedSilhouette": true,
+    "weaponLengthBandPass": false,
+    "weaponAnglePass": true,
+    "handleOffsetUp5Pass": true,
+    "bodyFrontOcclusionMode": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": false
+  },
+  "note": "Body-front composite requested by Leo: render complete character body above the sword to close the hand/sword seam; sword keeps -40 degree angle and moves another 2px upward from v3 (translation total +76,-6). Preview edge crop remains preview-only."
+}

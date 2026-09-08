@@ -1,0 +1,28 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame05-idle-rightup",
+  "revision": "frame05-idle-rightup-sword-right-hand-v4-body-front-up2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "sourceRevision": "handle-center-half-length-v9",
+  "method": "deterministic reuse + integer translation (+76,-6), angle unchanged; complete body rendered in front of sword; no generation or runtime write",
+  "handSemantic": "character_right_hand_screen_right_fist",
+  "fistCenterPx": [
+    178.10526315789474,
+    204.5
+  ],
+  "handleCenterTargetPx": [
+    177.57368615160715,
+    199.58781573590227
+  ],
+  "angleDeg": -40.0,
+  "layerOrder": "body_front",
+  "maskPolicy": "none",
+  "diagnosticMask": "occlusion_masks/hero_idle_rightup_screen_right_fist_v4.png",
+  "checks": "allMachineChecksPass=false only because preview weaponLengthBandPass=false at right edge; body-front occlusion, handleOffsetUp5, angle, runtime and generation checks pass",
+  "nextGate": "Leo visual review of body-front seam and unchanged angle; then PM spec scan",
+  "formalRuntimeTouched": false
+}
