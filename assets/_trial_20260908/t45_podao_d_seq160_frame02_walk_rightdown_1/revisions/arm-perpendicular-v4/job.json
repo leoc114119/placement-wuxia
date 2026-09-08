@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "walk_rightdown_1",
+  "revision": "arm-perpendicular-v4",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "generationCredits": 0,
+  "reviewReason": "Leo correction: rotate frame02 blade to horizontal so knife and forearm are orthogonal; create corrected two-frame D calibration candidate",
+  "note": "Bodies are copied byte-for-byte from runtime. Weapon placeholders are deterministic Pillow geometry only; blade axis is horizontal (0deg) to satisfy the 90deg forearm relation. D masks are tight complete-fist binary body-alpha silhouettes.",
+  "runtimeWrite": false
+}

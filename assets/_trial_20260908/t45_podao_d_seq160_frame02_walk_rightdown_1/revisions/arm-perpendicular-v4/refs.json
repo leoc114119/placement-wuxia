@@ -1,0 +1,47 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "walk_rightdown_1",
+  "revision": "arm-perpendicular-v4",
+  "references": [
+    {
+      "path": "assets/characters/enemy/shanzei_a/battle45/walk_rightdown_1.png",
+      "role": "selected runtime body; bytes frozen",
+      "allowed": "deterministic weapon anchor and fist-only mask calibration",
+      "forbidden": "body redraw, torso/sleeve bridge, runtime write",
+      "sha256": "fd0e961cf6e415b9997eb8acb9843a466bd5149d7dfaf2d80127e13c5202e7cb"
+    },
+    {
+      "path": "assets/characters/enemy/shanzei_b/battle45/walk_rightdown_1.png",
+      "role": "selected runtime body; bytes frozen",
+      "allowed": "deterministic weapon anchor and fist-only mask calibration",
+      "forbidden": "body redraw, torso/sleeve bridge, runtime write",
+      "sha256": "73fc8728cc3e18e73cc1a1fca8024049a80ab1ce4fbf66b31ddd916bffa5e4b6"
+    }
+  ],
+  "geometry": {
+    "profile": "long_broad_single_edge_dao_placeholder_v5",
+    "handleSpanAlongAxis": [
+      -20,
+      14
+    ],
+    "bladeSpanAlongAxis": [
+      15,
+      110
+    ],
+    "bladeLength": 95,
+    "totalLength": 129,
+    "angleDegByFrame": {
+      "a_walk_rightdown_1": 18.0,
+      "b_walk_rightdown_1": -41.0
+    },
+    "armBladeRelation": "90deg target; per-frame blade axis perpendicular to visible elbow-to-grip forearm",
+    "resampling": "none"
+  },
+  "generation": {
+    "provider": null,
+    "model": null,
+    "credits": 0,
+    "method": "Pillow deterministic only"
+  }
+}

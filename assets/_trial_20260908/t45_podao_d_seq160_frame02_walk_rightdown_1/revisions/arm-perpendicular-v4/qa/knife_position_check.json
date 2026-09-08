@@ -1,0 +1,72 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "walk_rightdown_1",
+  "revision": "arm-perpendicular-v4",
+  "geometry": {
+    "profile": "long_broad_single_edge_dao_placeholder_v5",
+    "angleDegByFrame": {
+      "a_walk_rightdown_1": 18.0,
+      "b_walk_rightdown_1": -41.0
+    },
+    "armBladeTargetDeg": 90.0,
+    "angleDefinition": "blade axis from grip toward tip; 0° screen-right, +Y down, clockwise-positive",
+    "handleSpanAlongAxis": [
+      -20,
+      14
+    ],
+    "bladeSpanAlongAxis": [
+      15,
+      110
+    ],
+    "handleLength": 34,
+    "bladeLength": 95,
+    "totalLength": 129,
+    "resampling": "none"
+  },
+  "frames": [
+    {
+      "id": "a_walk_rightdown_1",
+      "gripPoint": [
+        70,
+        208
+      ],
+      "angleDeg": 18.0,
+      "armAxisDeg": 108.435,
+      "includedAngleDeg": 90.435,
+      "layerOrder": "front",
+      "weaponSha256": "646f5739fc68209b8dd9946b9fada89805c5d0511a072eada1c6ccb442feabbb",
+      "weaponBBox": [
+        50,
+        199,
+        177,
+        247
+      ],
+      "weaponPixelsInFistBeforeOcclusion": 232,
+      "weaponPixelsInFistAfterOcclusion": 0,
+      "handleUnderFistPass": true
+    },
+    {
+      "id": "b_walk_rightdown_1",
+      "gripPoint": [
+        84,
+        202
+      ],
+      "angleDeg": -41.0,
+      "armAxisDeg": 49.399,
+      "includedAngleDeg": 90.399,
+      "layerOrder": "front",
+      "weaponSha256": "cdb9705ee5723e2b64a1d3c7843f1827e17bcd22712c815da425c05883c5fb09",
+      "weaponBBox": [
+        66,
+        128,
+        169,
+        219
+      ],
+      "weaponPixelsInFistBeforeOcclusion": 168,
+      "weaponPixelsInFistAfterOcclusion": 0,
+      "handleUnderFistPass": true
+    }
+  ],
+  "allHardGatesPass": true
+}
