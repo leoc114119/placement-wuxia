@@ -47,4 +47,4 @@
 
 ## 交付记录
 
-本交接文件随 v9 candidate 包提交；commit `3e1d795c43b3b1e10bc3e7b4b0b5f6e67b7d2b8f` 已推送到 `origin/codex/t45-shanzei-2b-pilot`。
+本交接文件随 v9 candidate 包提交；素材包 commit `3e1d795c43b3b1e10bc3e7b4b0b5f6e67b7d2b8f` 已推送；交付留痕 follow-up commit `a6764a3e` 也已推送到 `origin/codex/t45-shanzei-2b-pilot`。
