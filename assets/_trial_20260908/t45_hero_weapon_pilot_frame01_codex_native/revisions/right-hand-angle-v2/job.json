@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame01",
+  "revision": "right-hand-angle-v2",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "reviewReason": "Leo correction: sword must be in the character's right hand and use the canonical down-right battle angle",
+  "correction": {
+    "from": "v1 screen-right fist / 46.3774°",
+    "to": "character-right screen-left fist / 60° down-right"
+  },
+  "method": "deterministic reuse of existing transparent sword layer; no new generation; body frozen",
+  "runtimeWrite": false
+}

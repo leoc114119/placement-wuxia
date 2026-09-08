@@ -1,0 +1,26 @@
+{
+  "task": "T45",
+  "revision": "right-hand-angle-v2",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_right.png",
+      "role": "frozen hero battle body and hand geometry",
+      "allowed": "screen-left fist/right-hand grip and body placement",
+      "forbidden": "redraw body/identity/pose",
+      "sha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+      "role": "existing transparent sword geometry",
+      "allowed": "deterministic rotation and relocation only",
+      "forbidden": "redraw/shape change/new generation",
+      "sha256": "3e4524c1a0bac0d1abe56f8d7c7e53c35b191d110427da9d0377b47175e50208"
+    }
+  ],
+  "correction": {
+    "hand": "character_right_hand_screen_left_fist",
+    "angleDeg": 60.0,
+    "rotationDeltaDeg": 13.62257341251977
+  }
+}

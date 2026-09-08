@@ -1,0 +1,28 @@
+{
+  "task": "T45",
+  "revision": "hero-weapon-pilot-frame01-right-hand-angle-v2",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "scope": "hero battle_idle_right first-frame only; deterministic correction; no runtime integration",
+  "supersedes": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/manifest.json",
+  "sourceBody": "assets/characters/hero/battle45/battle_idle_right.png",
+  "sourceBodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+  "sourceWeaponLayerSha256": "3e4524c1a0bac0d1abe56f8d7c7e53c35b191d110427da9d0377b47175e50208",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/right-hand-angle-v2/normalized/hero_sword_held_rightdown_v2.png",
+  "weaponSha256": "5f8521fd0b522d0a68073903463a9d34c50a7c4e8daa2f0700b69ebadfc6c4e7",
+  "handSemantic": "character_right_hand_screen_left_fist",
+  "gripPoint": {
+    "x": 100.0,
+    "y": 208.0
+  },
+  "angleDeg": 60.0,
+  "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/right-hand-angle-v2/calibration/frame01_idle_right_v2.json",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/right-hand-angle-v2/qa/pilot_v2.json",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/right-hand-angle-v2/contact/hero_idle_right_sword_pilot_v2.png",
+  "visualReviewNote": "v1 superseded: screen-right fist/46.3774°; v2 uses character-right screen-left fist/60° down-right",
+  "formalRuntimeTouched": false
+}
