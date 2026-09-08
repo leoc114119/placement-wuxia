@@ -3,7 +3,7 @@ name: art-pipeline-execution
 description: 执行 placement-wuxia 的 Codex 原生美术生产、编辑、确定性加工、门检与交接。适用于角色、动作帧、换装、武器、UI 和场景；默认使用 Codex 原生，动作帧同一单帧同一手脚异常连续三次原生失败时允许一次经授权的 mxai `seedream-5.0-pro` 单图回退；不用于游戏代码实现或审美定稿。
 ---
 
-# Codex 原生美术管线执行手册 v1.2
+# Codex 原生美术管线执行手册 v1.3
 
 > 状态：项目级 Codex skill；同时是仓库内可审查的执行真源。
 > 适用：角色、动作帧、换装、武器、UI、场景的原生生图/编辑、条件扣图、规格化、门检与交接。
@@ -58,6 +58,8 @@ contact sheet 只用于审阅和对照，不得作为身份锚、姿势锚或后
 一般角色、换装、武器、UI 和场景任务按各自需求选择最少的参考图，生成后检查内容、尺寸、背景与 alpha，再执行任务允许的确定性加工。以下主路线和修帧模板仅适用于角色动作帧，不自动约束持械敌人、武器素材、换装、UI、场景或新角色。
 
 ### 动作帧主路线
+
+以下为已批准序列表任务的模板，不是所有任务一律三帧。若现行任务明确逐张生成或两帧动作，按该任务的帧数与目验停点执行；不得用本模板扩大帧数或批量生成。
 
 ```text
 Leo 确认三拍动作设计
@@ -153,6 +155,8 @@ assets-pipeline/characters/{role}/{skin}/{action}/{job_id}/
 - `integrationGate`: `not_handed_off | accepted_by_zcode | runtime_verified`
 
 运行时目录只放 release 文件和 `manifest.json`。候选必须同时满足 `visualReview=selected` 与 `specGate=pass` 才能晋级 release；用户口头“可用/可入阵”若未明确替代 PM 规格门，只更新视觉状态。manifest 记录每个选定文件的来源、确定性处理、SHA-256 和门检状态。左系独立 PNG 的 manifest 必须记录 `derivedFrom` 与 `flipX`；左右不对称时按 `mirrorPolicy` 停止裸镜像。
+
+多帧集成、镜像清理或发交付前，读取 [批次收尾与返工定位](references/batch-closeout.md)。其中包含加工/验算分离、精确帧集核账、镜像差分口径和只读交付检查工具。
 
 ## 10. Codex → ZCode
 
