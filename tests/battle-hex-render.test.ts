@@ -2282,17 +2282,22 @@ describe('[六向接线 §9.2] enemy directional profile 结构与资源完整�
     for (const p of a) expect(b.has(p)).toBe(false); // 目录零交集
   });
 
-  it('敌 stateMap（§9.2.1 降级数据映射）：charge→atk_1 / strike→atk_2 / basic→atk_1..2 / hit→idle_1 / dead→die_1', () => {
+  it('敌 stateMap（§9.2.1 降级数据映射 + L 环 2026-09-08 循环裁定）：charge/strike→atk_1..2 循环 / basic→atk_1..2 / hit→idle_1 / dead→die_1', () => {
     for (const key of ['npc-shanzei-a', 'npc-shanzei-b']) {
-      const m = (SPRITE_PROFILES[key] as DirectionalSpriteProfile).stateMap;
+      const p = SPRITE_PROFILES[key] as DirectionalSpriteProfile;
+      const m = p.stateMap;
       expect(m.idle).toEqual({ clip: 'idle', from: 1, to: 1 });
       expect(m.walk).toEqual({ clip: 'walk', from: 1, to: 2 });
-      expect(m.charge).toEqual({ clip: 'atk', from: 1, to: 1 }); // 敌无 cast 成品→atk_1 定格
-      expect(m.strike).toEqual({ clip: 'atk', from: 2, to: 2 }); // 敌无 cast 成品→atk_2 单播保持
+      expect(m.charge).toEqual({ clip: 'atk', from: 1, to: 2 }); // 敌无 cast 成品→atk_1↔atk_2 循环（L 环：不卡静帧）
+      expect(m.strike).toEqual({ clip: 'atk', from: 1, to: 2 }); // 同上（strike 循环经 loopStates 声明）
       expect(m.basic).toEqual({ clip: 'atk', from: 1, to: 2 });
       expect(m.hit).toEqual({ clip: 'idle', from: 1, to: 1 }); // 敌无 hit clip（候选面禁接线）→idle
       expect(m.dead).toEqual({ clip: 'die', from: 1, to: 1 }); // die_common 单帧静态
+      // 循环态数据留痕：strike 不在共享 ANIM_LOOP_GROUPS（hero strike=cast 单播受保护）→敌经
+      // loopStates 声明；charge 已在共享组；hero 不声明 loopStates=cast 三帧循环行为不变
+      expect(p.loopStates).toEqual(['strike']);
     }
+    expect((SPRITE_PROFILES.hero as DirectionalSpriteProfile).loopStates).toBeUndefined();
   });
 
   it('降级映射只落 profile 数据表：directionalFrameOf 函数体内无 actor.side 特判（§9.1.1 红线源码扫描）', () => {
@@ -2357,19 +2362,29 @@ describe('[六向接线 §9.1.1/§9.2.1] enemy directional 选帧语义（direct
     expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'walk', ordinal: 1 }); // 循环
   });
 
-  it('施法相降级（§9.2.1）：charge 经 280ms 循环恒 atk_1（单帧组循环幂等）/ strike→atk_2 单播保持', () => {
+  it('施法循环（§9.2.1 + L 环 2026-09-08 裁定）：charge 280ms 步频 atk_1↔atk_2 交替 / strike 140ms 步频 atk_1↔atk_2 交替——施法全阶段帧存在交替而非定格', () => {
     const view = createView();
     const foe = enemyActor({ animState: 'charge' });
     const snap = makeSnapshot([foe]);
     updateView(view, snap, 0.001, 375, 667);
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 }); // 相位 0
+    updateView(view, snap, 0.28, 375, 667); // ≥280ms：翻相
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 2 });
+    updateView(view, snap, 0.28, 375, 667); // 累计 560ms+：回相（循环不保持）
     expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 });
     for (let i = 0; i < 30; i++) updateView(view, snap, 0.05, 375, 667); // 施法相 1.5s 全程跨多周期
-    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 }); // 恒 atk_1
+    const chargeSel = directionalFrameOf(view, snap.actors[0]);
+    expect([1, 2]).toContain(chargeSel.ordinal); // 任意时刻恒在两帧之一（循环交替，无第三态/定格语义）
+    // strike：经 profile.loopStates 进同一循环公式，步频=walkFrameMs=140（组切换时钟重置）
     snap.actors[0].animState = 'strike';
-    updateView(view, snap, 0.016, 375, 667);
+    updateView(view, snap, 0.001, 375, 667);
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 }); // 相位 0
+    updateView(view, snap, 0.14, 375, 667); // ≥140ms：翻相
     expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 2 });
-    updateView(view, snap, 0.2, 375, 667); // 远超单帧周期：仍 atk_2（单播保持）
-    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 2 });
+    updateView(view, snap, 0.14, 375, 667); // 累计 280ms+：回相
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 });
+    updateView(view, snap, 0.5, 375, 667); // 长施法相尾：仍循环（不尾帧保持）
+    expect([1, 2]).toContain(directionalFrameOf(view, snap.actors[0]).ordinal);
   });
 
   it('basic atk_1→2 尾帧保持（§9.1.1：1→2，尾帧保持）', () => {

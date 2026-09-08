@@ -395,7 +395,9 @@ export type BattleClip = 'idle' | 'walk' | 'jump' | 'atk' | 'cast' | 'die';
 
 /** session animState → clip 帧序计划（§3.2 帧序表；from/to 为 clip 内 ordinal 区间）。
  * 循环态（walk）在 [from,to] 循环；单播态播至 to 保持。敌型 charge/strike→atk 降级映射
- *（seq=47）落第二段敌型 profile，不落 frameOf——hero 恒 charge/strike→cast 不受降级影响。 */
+ *（seq=47）落第二段敌型 profile，不落 frameOf——hero 恒 charge/strike→cast 不受降级影响。
+ * 【L 环补记 2026-09-08】Leo 裁定敌施法降级不定格：charge/strike 全阶段循环 atk_1↔atk_2
+ *（区间改 1..2；charge 沿共享循环组 280ms、strike 经 profile.loopStates 140ms——见下）。 */
 export interface DirectionalClipPlan {
   clip: BattleClip;
   from: number;
@@ -413,13 +415,17 @@ export interface LegacySpriteProfile {
 }
 
 /** directional profile：六向独立 PNG 零运行时镜像（左系=美术管线确定性派生成品）。
- * sharedSrc 声明六向共用帧（如 die_common，loader 只解码一次）。 */
+ * sharedSrc 声明六向共用帧（如 die_common，loader 只解码一次）。
+ * loopStates【L 环 T27 2026-09-08】：在共享 ANIM_LOOP_GROUPS（walk/charge）之外追加本 profile
+ * 的循环态——纯数据声明，渲染按同一循环公式消费，无 side/技能特判；不声明=行为不变（hero 未用）。
+ * 可选值不含 dead（die_common 单帧静态在 directionalFrameOf 早期返回，声明无效）。 */
 export interface DirectionalSpriteProfile {
   mode: 'directional';
   clipCounts: Readonly<Record<BattleClip, number>>;
   frameSrc(clip: BattleClip, facing: BattleFacingHex, ordinal: number): string;
   sharedSrc: Readonly<Partial<Record<BattleClip, string>>>;
   stateMap: DirectionalStateMap;
+  loopStates?: ReadonlyArray<'idle' | 'walk' | 'charge' | 'strike' | 'basic' | 'hit'>;
 }
 
 export type BattleSpriteProfile = LegacySpriteProfile | DirectionalSpriteProfile;
@@ -447,9 +453,13 @@ const SHANZEI_B_BATTLE45 = 'assets/characters/enemy/shanzei_b/battle45';
  * 禁复用同一变体）。敌型没有独立 cast/jump 成品是 MVP 已定口径，全部落在本 profile 数据映射：
  * - clipCounts：jump:0 / cast:0=不声明该 clip（loader 零预载，渲染永不解析到该 clip；
  *   session 不给敌产生 isJump，敌 charge/strike 走 atk 降级）——敌不读 cast 目录，禁借帧。
- * - stateMap 降级（§9.2.1）：charge→atk_1（循环组对单帧幂等=定格）；strike→atk_2（单播保持）；
- *   basic→atk_1→2 尾帧保持；hit 无专用素材→idle（与 hero 同口径）；dead→die_common。
- * 降级只写本数据表，禁在 frameOf/directionalFrameOf 里加 actor.side 特判（§9.1.1 红线）。
+ * - stateMap 降级（§9.2.1 + L 环补记 2026-09-08 · Leo 裁定「施法循环复用普攻帧，不卡静帧」）：
+ *   charge→atk_1↔atk_2 循环（charge 在共享 ANIM_LOOP_GROUPS，步频=CAST_FRAME_PERIOD_MS=280，
+ *   与 hero cast 循环同源节拍）；strike→atk_1↔atk_2 循环（经 loopStates 声明进同一循环公式，
+ *   步频=walkFrameMs=140，与普攻同节拍——施法释放相更快翻帧读作发力）；basic→atk_1→2 尾帧
+ *   保持；hit 无专用素材→idle（与 hero 同口径）；dead→die_common。
+ * 降级/循环只写本数据表（loopStates 数据字段），禁在 frameOf/directionalFrameOf 里加
+ * actor.side 特判（§9.1.1 红线）。施法结束回 idle 时序=session 既有链路，本表不触。
  */
 function shanzeiDirectionalProfile(dir: string): DirectionalSpriteProfile {
   return {
@@ -462,12 +472,15 @@ function shanzeiDirectionalProfile(dir: string): DirectionalSpriteProfile {
     stateMap: {
       idle: { clip: 'idle', from: 1, to: 1 },
       walk: { clip: 'walk', from: 1, to: 2 },
-      charge: { clip: 'atk', from: 1, to: 1 }, // 降级：敌无 cast 成品→atk_1 定格（§9.2.1）
-      strike: { clip: 'atk', from: 2, to: 2 }, // 降级：敌无 cast 成品→atk_2 单播保持（§9.2.1）
+      charge: { clip: 'atk', from: 1, to: 2 }, // 降级循环（L 环 09-08）：280ms 步频 atk_1↔atk_2
+      strike: { clip: 'atk', from: 1, to: 2 }, // 降级循环（L 环 09-08）：140ms 步频 atk_1↔atk_2
       basic: { clip: 'atk', from: 1, to: 2 },
       hit: { clip: 'idle', from: 1, to: 1 }, // 敌无 hit clip（中间面候选不接线，§9.1.2）→idle
       dead: { clip: 'die', from: 1, to: 1 }, // die_common 单帧静态：不镜像不循环（§9.3）
     },
+    // strike 不在共享 ANIM_LOOP_GROUPS（hero strike=cast_2→3 单播，动共享表必伤 hero）——
+    // 经本 profile 数据字段追加循环态；charge 已在共享组无需重复声明（写明防误删）。
+    loopStates: ['strike'],
   };
 }
 

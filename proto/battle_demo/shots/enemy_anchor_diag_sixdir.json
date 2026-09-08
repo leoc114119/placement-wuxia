@@ -3,7 +3,7 @@
     "enemy": "e1",
     "spriteKey": "npc-shanzei-a",
     "facingHex": "right",
-    "verTag": "v1788868837895",
+    "verTag": "v1788872340214",
     "cell": {
       "x": 280,
       "y": 350
@@ -23,7 +23,7 @@
     "enemy": "e2",
     "spriteKey": "npc-shanzei-b",
     "facingHex": "right",
-    "verTag": "v1788868837895",
+    "verTag": "v1788872340214",
     "cell": {
       "x": 280,
       "y": 350

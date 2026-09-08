@@ -1033,7 +1033,8 @@ export interface DirectionalFrameSel {
  * 禁复用 animState clock 判跳，否则 jump 非 session 状态会永卡；walk 沿演出钟 1↔2 循环）>
  * 【AS · TASK-AS-FE】普攻保持窗（快照 idle 但 1s 窗内 → basic 计划续播，见分支注）> animState
  * 经 profile.stateMap（循环态区间循环——charge=cast 1→3 整套循环至 t1 回 idle，v0.3 AS-2/AS-4；
- * 单播态 from→to 播至尾帧保持，组切换由 updateView 重置）。
+ * 单播态 from→to 播至尾帧保持，组切换由 updateView 重置；循环态集=共享 ANIM_LOOP_GROUPS +
+ * profile.loopStates 数据追加【L 环 T27 2026-09-08：敌施法 strike 循环 atk_1↔atk_2】）。
  * 纯导出供用例；调用方须保证 spriteKey 有 directional profile（drawPieces 已分支保证）。 */
 export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): DirectionalFrameSel {
   const profile = SPRITE_PROFILES[actor.spriteKey];
@@ -1072,9 +1073,12 @@ export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): D
   if (!clock || clock.state !== state) return { clip: plan.clip, ordinal: plan.from }; // 新组从 from 重放
   // 【v0.3 · TASK-AS-v03】charge 循环步频走独立 CAST_FRAME_PERIOD_MS=280（方案 §4.4，与 walkFrameMs
   // 解耦）；walk 循环（无 moveAnim 时钟臂）与其余态保持 walkFrameMs 不动。
+  // 【L 环 T27 2026-09-08】循环态判定追加 profile.loopStates 数据声明（敌 strike 循环 atk_1↔atk_2
+  // 用；纯 profile 数据消费，无 side/技能特判；不声明=行为不变，hero 未用）。
   const periodMs = state === 'charge' ? CAST_FRAME_PERIOD_MS : PIECE.walkFrameMs;
   const idx = Math.floor((clock.t * 1000) / periodMs);
-  if (ANIM_LOOP_GROUPS.includes(state)) {
+  const looping = ANIM_LOOP_GROUPS.includes(state) || profile.loopStates?.includes(state) === true;
+  if (looping) {
     const span = plan.to - plan.from + 1;
     return { clip: plan.clip, ordinal: plan.from + (idx % span) };
   }
