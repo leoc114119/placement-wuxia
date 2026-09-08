@@ -1,0 +1,61 @@
+{
+  "task": "T45",
+  "revision": "hero-weapon-pilot-frame01-v1",
+  "trialOnly": true,
+  "frame": "battle_idle_right.png",
+  "bodyPath": "assets/characters/hero/battle45/battle_idle_right.png",
+  "bodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+  "weaponSha256": "3e4524c1a0bac0d1abe56f8d7c7e53c35b191d110427da9d0377b47175e50208",
+  "gripPoint": {
+    "x": 175.0,
+    "y": 195.0
+  },
+  "weaponHandlePivot": [
+    24.0,
+    21.0
+  ],
+  "angleDeg": 46.37742658748023,
+  "angleDefinition": "blade axis from grip toward tip; 0°=screen-right, +Y down, clockwise-positive",
+  "layerOrder": "front",
+  "occlusionRef": {
+    "roiPolygon": [
+      [
+        168,
+        184
+      ],
+      [
+        181,
+        184
+      ],
+      [
+        189,
+        189
+      ],
+      [
+        191,
+        198
+      ],
+      [
+        186,
+        207
+      ],
+      [
+        175,
+        207
+      ],
+      [
+        169,
+        202
+      ],
+      [
+        167,
+        192
+      ]
+    ],
+    "maskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/occlusion_masks/hero_idle_right_fist_roi.png",
+    "maskSha256": "32216986ceff01808dfca8eb087389228f81090834311ed6eb76f122deda2710"
+  },
+  "status": "candidate_stop_for_Leo_visual_and_PM_spec_review",
+  "runtimeRelease": false
+}

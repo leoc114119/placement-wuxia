@@ -1,0 +1,5 @@
+Use case: background-extraction
+Asset type: game weapon layer sprite
+Input images: Image 1 is the exact edit target. Preserve the entire sword silhouette, blade shape, guard, wrapped grip, colors, pixel rendering, scale, and the grip-upper-left to tip-lower-right downward diagonal orientation.
+Primary request: remove the baked checkerboard background only and output a genuinely transparent RGBA cutout. Keep every sword pixel unchanged except edge cleanup needed to remove the checkerboard contamination. The sword must remain one complete isolated weapon, with no character or hand.
+Constraints: alpha must contain transparent 0 pixels around the sword and opaque 255 pixels in the sword core; no checkerboard pixels, no white background, no halo, no shadow, no glow, no text, no watermark, no extra props, no crop.

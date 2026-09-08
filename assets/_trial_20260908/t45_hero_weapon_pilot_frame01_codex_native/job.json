@@ -1,0 +1,16 @@
+{
+  "task": "T45",
+  "jobId": "hero-weapon-pilot-frame01",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "currentFrameOnly": true,
+  "bodyFrame": "assets/characters/hero/battle45/battle_idle_right.png",
+  "weaponKind": "sword",
+  "generationAttempts": 1,
+  "editAttempts": 1,
+  "generationMethod": "OpenAI built-in image_gen; targeted transparency edit",
+  "runtimeTouched": false
+}

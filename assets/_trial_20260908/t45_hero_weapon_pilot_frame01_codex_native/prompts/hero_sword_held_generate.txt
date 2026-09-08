@@ -1,0 +1,9 @@
+Use case: stylized-concept
+Asset type: game weapon layer sprite
+Input images: Image 1 is a reference for the existing pixel-art sword material language and silhouette quality only.
+Primary request: Generate one isolated Chinese wuxia long sword, unsheathed, for compositing over a 240x320 HD-2D pixel battle character. The sword must be a single complete weapon with a straight silver blade, compact gold-bronze guard, wrapped dark-brown grip, and small pommel. Orient the whole weapon on one diagonal axis: grip/pivot at the upper-left and blade tip toward the lower-right, approximately 45 degrees downward to screen-right. The blade should be 85-105 px long at final 240x320 sprite scale and the grip 25-35 px; keep the total visible weapon length in the 110-140 px range after normalization.
+Scene/backdrop: genuinely transparent background with no baked checkerboard.
+Style/medium: refined Chinese HD-2D pixel-game weapon art matching Image 1, crisp dark outline, small controlled pixel clusters, readable metallic highlights, no photorealism.
+Composition/framing: one weapon only, centered with generous transparent padding, no cropping, no character or hand.
+Constraints: preserve a clean single connected weapon silhouette; handle pivot must be clearly identifiable at the upper-left grip end; no text, no watermark, no extra props, no scabbard, no glow, no shadow, no ground.
+Avoid: upward-pointing blade, horizontal sword, multiple weapons, hands, people, background objects, UI.

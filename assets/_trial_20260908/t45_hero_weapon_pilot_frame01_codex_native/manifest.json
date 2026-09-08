@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "revision": "hero-weapon-pilot-frame01-v1",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "scope": "hero battle_idle_right first-frame only; no runtime integration",
+  "sourceBody": "assets/characters/hero/battle45/battle_idle_right.png",
+  "sourceBodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+  "weaponProfile": "hero_sword_held_rightdown_v1",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+  "weaponSha256": "3e4524c1a0bac0d1abe56f8d7c7e53c35b191d110427da9d0377b47175e50208",
+  "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/calibration/frame01_idle_right.json",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/qa/pilot.json",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/contact/hero_idle_right_sword_pilot.png",
+  "visualReviewNote": "awaiting Leo eye review; native pilot uses transparent generated sword and provisional measured axis",
+  "formalRuntimeTouched": false
+}

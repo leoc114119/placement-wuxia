@@ -1,0 +1,6 @@
+{
+  "body": {"role": "identity_and_frame_source", "path": "assets/characters/hero/battle45/battle_idle_right.png"},
+  "swordStyle": {"role": "material_and_silhouette_reference_only", "path": "assets/_trial_20260903/c05/sword_held.png", "note": "old right-up trial; not consumed as final asset"},
+  "generatedCheckerboard": {"role": "rejected_raw_attempt", "path": "raw/hero_sword_held_checkerboard_rejected_attempt1.png"},
+  "generatedTransparent": {"role": "selected_raw_candidate_input", "path": "raw/hero_sword_held_transparent_attempt1.png"}
+}
