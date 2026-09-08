@@ -50,3 +50,9 @@
 ## 研发消费边界
 
 研发接线消费 manifest/calibration 中每帧 `gripPoint`、`angleDeg`、`layerOrder`、`armBladeRelation` 与 `occlusionRef`；D 三联图和覆盖图仅作诊断证据。v4 待 Leo 视觉目验与 PM 第二道规格门，保持 candidate-only，不写正式 runtime。
+
+## 交付记录
+
+- artifact commit：`65272b3b8cd10b3eff6c1d3a48447e5bbe489634`（分支 `codex/t45-shanzei-2b-pilot`，已推送）。
+- `check_delivery.py`：26/26 activity paths PASS；角度/刀柄自检均已写入 `qa/knife_position_check.json`。
+- projbus delivery：seq=182，messageId=`ae8e83b5866249efacad5ae40961b416`；v3 已被 v4 supersede。
