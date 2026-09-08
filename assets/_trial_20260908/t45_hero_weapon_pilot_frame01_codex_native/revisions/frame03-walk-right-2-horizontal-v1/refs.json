@@ -1,0 +1,45 @@
+{
+  "task": "T45",
+  "revision": "frame03-walk-right-2-horizontal-v1",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/walk_right_2.png",
+      "role": "frozen hero walk_right_2 body and hand geometry",
+      "allowed": "hand center and precise fist occlusion mask only",
+      "forbidden": "body redraw/pose/identity changes",
+      "sha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
+      "role": "Leo-accepted frame02 horizontal sword layer",
+      "allowed": "integer translation only",
+      "forbidden": "rotation, redraw, resampling, generation",
+      "sha256": "e4daf035adf788de89c44fadde74ba4cf337b3b7373d8bb001f465b0470bb1d4"
+    }
+  ],
+  "transform": {
+    "sourceRevision": "frame02-walk-right-1-horizontal-angle-v2",
+    "sourceHandleCenterPx": [
+      83.573696,
+      206.5878
+    ],
+    "targetHandleCenterPx": [
+      101.573696,
+      203.5878
+    ],
+    "sourceFistCenterPx": [
+      84.0,
+      207.0
+    ],
+    "targetFistCenterPx": [
+      102.0,
+      204.0
+    ],
+    "translationPx": [
+      18,
+      -3
+    ],
+    "angleDeg": 0.0
+  }
+}

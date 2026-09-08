@@ -1,0 +1,44 @@
+{
+  "task": "T45",
+  "revision": "frame03-walk-right-2-horizontal-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "scope": "hero battle walk_right_2 frame03; accepted horizontal sword translated to next fist center",
+  "sourceBody": "assets/characters/hero/battle45/walk_right_2.png",
+  "sourceBodySha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
+  "sourceWeaponLayerSha256": "e4daf035adf788de89c44fadde74ba4cf337b3b7373d8bb001f465b0470bb1d4",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/normalized/hero_sword_held_horizontal_walk_right_2_v1.png",
+  "weaponSha256": "e9332f9671badc6f0bc6436caddc212391162c8078eb25e74582f88c7801f434",
+  "handSemantic": "character_right_hand_screen_left_fist",
+  "fistCenterPx": {
+    "x": 102,
+    "y": 204
+  },
+  "handleCenterPx": {
+    "x": 101.573696,
+    "y": 203.5878
+  },
+  "gripPointPx": {
+    "x": 159.57369599999998,
+    "y": 203.5878
+  },
+  "angleDeg": 0.0,
+  "layerOrder": "front",
+  "translationPx": [
+    18,
+    -3
+  ],
+  "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/calibration/frame03_walk_right_2_v1.json",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/qa/pilot_walk_right_2_v1.json",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/contact/hero_walk_right_2_sword_pilot.png",
+  "fistCenterZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/contact/walk_right_2_fist_center_zoom.png",
+  "formalRuntimeTouched": false,
+  "supersedes": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
+  "status": "candidate_only",
+  "visualReviewEvidence": null,
+  "note": "Next frame built by translating accepted frame02 horizontal layer; no rotation, generation, body edit, or runtime write"
+}

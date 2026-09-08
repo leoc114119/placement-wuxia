@@ -3,7 +3,7 @@
   "revision": "frame02-walk-right-1-horizontal-angle-v2",
   "trialOnly": true,
   "frame": "walk_right_1.png",
-  "visualReview": "pending_Leo",
+  "visualReview": "selected_by_Leo",
   "bodyPath": "assets/characters/hero/battle45/walk_right_1.png",
   "bodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
   "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
@@ -91,6 +91,8 @@
   },
   "sourceRevision": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-v1/manifest.json",
   "supersedes": "hero-weapon-pilot-frame02-walk-right-1-v1",
-  "status": "candidate_only",
-  "runtimeRelease": false
+  "status": "selected_by_Leo_pending_pm",
+  "runtimeRelease": false,
+  "visualReviewEvidence": "Leo 2026-09-08: 角度和位置都对了，剑变模糊不是当前门槛；下帧。",
+  "specGate": "pending_pm_scan"
 }

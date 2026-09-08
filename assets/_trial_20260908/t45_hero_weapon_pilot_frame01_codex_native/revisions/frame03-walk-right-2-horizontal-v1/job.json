@@ -1,0 +1,16 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame03-walk-right-2",
+  "revision": "frame03-walk-right-2-horizontal-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "sourceRevision": "frame02-walk-right-1-horizontal-angle-v2",
+  "correction": "Translate the accepted horizontal sword layer (+18,-3) to walk_right_2 character-right fist center (102,204); preserve angle 0° and sword geometry",
+  "method": "deterministic integer RGBA translation; no generation, rotation, body edit, or runtime write",
+  "runtimeWrite": false,
+  "nextGate": "Leo visual review; PM gate deferred until all action frames are determined"
+}

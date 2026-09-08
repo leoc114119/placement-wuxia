@@ -4,11 +4,11 @@
   "revision": "frame02-walk-right-1-horizontal-angle-v2",
   "generatedAt": "2026-09-08",
   "artifactStage": "candidate",
-  "visualReview": "pending_Leo",
+  "visualReview": "selected_by_Leo",
   "specGate": "pending_pm_scan",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
-  "status": "candidate_only",
+  "status": "selected_by_Leo_pending_pm",
   "generation": {
     "provider": null,
     "model": null,
@@ -179,5 +179,6 @@
     "runtimeUntouched": true,
     "generationCreditsZero": true,
     "allMachineChecksPass": true
-  }
+  },
+  "visualReviewEvidence": "Leo 2026-09-08: 角度和位置都对了，剑变模糊不是当前门槛；下帧。"
 }

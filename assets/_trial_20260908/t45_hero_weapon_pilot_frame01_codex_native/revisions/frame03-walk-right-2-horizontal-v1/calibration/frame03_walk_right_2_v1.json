@@ -1,0 +1,51 @@
+{
+  "task": "T45",
+  "revision": "frame03-walk-right-2-horizontal-v1",
+  "trialOnly": true,
+  "frame": "walk_right_2.png",
+  "visualReview": "pending_Leo",
+  "bodyPath": "assets/characters/hero/battle45/walk_right_2.png",
+  "bodySha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/normalized/hero_sword_held_horizontal_walk_right_2_v1.png",
+  "weaponSha256": "e9332f9671badc6f0bc6436caddc212391162c8078eb25e74582f88c7801f434",
+  "handSemantic": "character_right_hand",
+  "screenProjection": "screen-left fist",
+  "fistCenterPx": {
+    "x": 102,
+    "y": 204
+  },
+  "skinCoreCentroidPx": {
+    "x": 101.53631284916202,
+    "y": 203.75418994413408,
+    "pixels": 179
+  },
+  "handleCenterPx": {
+    "source": [
+      83.573696,
+      206.5878
+    ],
+    "target": [
+      101.573696,
+      203.5878
+    ],
+    "distanceToFistCenterPx": 0.5929957338936024
+  },
+  "gripPointPx": {
+    "x": 159.57369599999998,
+    "y": 203.5878
+  },
+  "angleDeg": 0.0,
+  "angleDefinition": "blade axis from grip toward tip; 0°=screen-right, +Y down, clockwise-positive",
+  "layerOrder": "front",
+  "occlusionRef": {
+    "maskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-horizontal-v1/occlusion_masks/hero_walk_right_2_character_right_fist.png",
+    "maskSha256": "20f268a866555c2c45f0c40b77f980dca24b14136ab3ad9fd39785d753404395"
+  },
+  "sourceRevision": "frame02-walk-right-1-horizontal-angle-v2",
+  "translationPx": [
+    18,
+    -3
+  ],
+  "status": "candidate_only",
+  "runtimeRelease": false
+}
