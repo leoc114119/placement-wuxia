@@ -7,3 +7,4 @@ B5 归档顺序 ✓ T25/T26 卡+回执均在 tasks/done/（commit 13e8766/a03934
 B6 LOG/记忆 ✓ LOG 全程双写；记忆 wuxia-fx-trial-t25t26 已建
 C git ✓ rd worktree 干净；main@b036b78；分支领先 6 commit 全为本战役产物（2 docs 方案+2 feat+2 fix）
 2026-09-08 PRE-FLIGHT B1-B6 已过 checked by T25+T26 并 main（四门 375/0+主架构 seq=162/178 PASS+L 环 Leo 实测+归档+LOG）
+2026-09-09 PRE-FLIGHT B1-B6 已过 checked by T27 山贼六向并 main（四门 389/0+主架构验收 accepted seq=209/210/211+L 环 Leo 09-09 终验+归档 done+LOG/记忆）
