@@ -64,7 +64,7 @@ await page.screenshot({ path: path.join(outDir, 'shot_0_env_pieces.png') });
 
 // ⑤ 敌我名字色/双条 + F3 帧表键（初始画面即含）
 let st = await snapState();
-check('⑤/F3 敌方 spriteKey=configId', st.foes.every((f) => f.sprite === f.cfg && ['npc-shanzei'].includes(f.cfg)), JSON.stringify(st.foes)); // Leo 09-04 摘狼：演示阵容全山贼系
+check('⑤/F3 敌方 spriteKey=configId', st.foes.every((f) => f.sprite === f.cfg && ['npc-shanzei-a', 'npc-shanzei-b'].includes(f.cfg)), JSON.stringify(st.foes)); // Leo 09-04 摘狼：演示阵容全山贼系；【T27 §9.2.1】白名单=稳定变体键甲/乙（旧默认键 npc-shanzei 退出编成）
 
 // ④ 弧形四钮弹出 + 置灰（du=武器不匹配恒灰）
 await waitHeroTurn();

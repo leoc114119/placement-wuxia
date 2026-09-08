@@ -11,15 +11,144 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const phase = process.argv[2];
-if (phase !== 'before' && phase !== 'after') {
-  console.error('用法：node proto/battle_demo/shot_enemy_anchor.mjs <before|after>');
+if (phase !== 'before' && phase !== 'after' && phase !== 'sixdir') {
+  console.error('用法：node proto/battle_demo/shot_enemy_anchor.mjs <before|after|sixdir>');
   process.exit(1);
 }
+
+
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
 const here = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.join(here, 'shots');
 fs.mkdirSync(outDir, { recursive: true });
+
+// ─── 【T27 第二段 · 方案 §9.4】sixdir 模式：甲/乙 directional 稳定键 + 脚底基线诊断 ───
+// 产出：shots/enemy_anchor_sixdir_{a,b}.png + shots/enemy_anchor_diag_sixdir.json——
+// 记录 240×320 directional 帧 drawImage 实参（诊断锚点换算自证：dy+dh×300/320 应=格心+feetOffsetPx(6)）；
+// 输出 spriteKey/稳定键断言 + 武器锚点前置诊断面（只预留：本卡不实现锚点，另卡按稳定键分派）。
+if (phase === 'sixdir') {
+  const require2 = createRequire(import.meta.url);
+  const { chromium: chromium2 } = require2('playwright-core');
+  const browser2 = await chromium2.launch({
+    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    headless: true,
+  });
+  const errs = [];
+  const page2 = await browser2.newPage({ viewport: { width: 450, height: 800 } });
+  page2.on('pageerror', (e) => errs.push(e.message));
+  await page2.addInitScript(() => {
+    window.__draws320 = [];
+    const orig = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (...a) {
+      const ctx = orig.apply(this, a);
+      if (ctx && !ctx.__patched320) {
+        ctx.__patched320 = true;
+        const od = ctx.drawImage.bind(ctx);
+        ctx.drawImage = (img, ...args) => {
+          if (img && img.naturalWidth === 240 && img.naturalHeight === 320) window.__draws320.push(args);
+          return od(img, ...args);
+        };
+      }
+      return ctx;
+    };
+  });
+  await page2.goto('file://' + path.join(here, 'index.html'));
+  await page2.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
+  await page2.setViewportSize({ width: 560, height: 700 });
+  await page2.waitForTimeout(900);
+  const gate = await page2.evaluate(() => window.__demo.assetGate);
+  if (!gate.ok) errs.push(`assetGate FAIL ×${gate.failures.length}: ${gate.failures[0]}`);
+
+  const diag = [];
+  for (const [eid, tag] of [['e1', 'a'], ['e2', 'b']]) {
+    await page2.evaluate((id) => {
+      for (const u of window.__demo.session._debug.units) {
+        u.bar = 0;
+        u.barWasMax = false;
+      }
+      const foe = window.__demo.session._debug.units.find((x) => x.id === id);
+      Object.assign(foe, { animState: 'idle', animLeftMs: 0, isJump: false, hexFacing: { q: 1, r: 0 } });
+    }, eid);
+    await page2.waitForTimeout(120);
+    // 镜头白盒平移：该敌格居中（与 legacy before/after 流程同式）
+    await page2.evaluate((id) => {
+      const view = window.__demo.getView();
+      const foe = window.__demo.session.snapshot().actors.find((a) => a.id === id);
+      const cp = window.__demo.cellCss(foe.renderPos.q, foe.renderPos.r);
+      const rect = document.getElementById('cv').getBoundingClientRect();
+      const lx = ((cp.x - rect.left) / rect.width) * window.__demo.W;
+      const ly = ((cp.y - rect.top) / rect.height) * window.__demo.H;
+      view.camera.x += lx - window.__demo.W / 2;
+      view.camera.y += ly - window.__demo.H / 2;
+    }, eid);
+    await page2.waitForTimeout(200);
+    const info = await page2.evaluate(
+      (id) =>
+        new Promise((res) => {
+          window.__draws320.length = 0;
+          const foe = window.__demo.session.snapshot().actors.find((a) => a.id === id);
+          const cp = window.__demo.cellCss(foe.renderPos.q, foe.renderPos.r);
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              const rect = document.getElementById('cv').getBoundingClientRect();
+              const lx = ((cp.x - rect.left) / rect.width) * window.__demo.W;
+              let best = null;
+              let bestDist = 1e9;
+              for (const d of window.__draws320) {
+                const c = d[0] + d[2] / 2;
+                const dist = Math.abs(c - lx);
+                if (dist < bestDist) {
+                  bestDist = dist;
+                  best = d;
+                }
+              }
+              res({
+                verTag: document.querySelector('#verTag').textContent,
+                spriteKey: foe.spriteKey,
+                foeDraw: best,
+                allDraws: window.__draws320.length,
+                cellCss: { x: +cp.x.toFixed(1), y: +cp.y.toFixed(1) },
+                render: { q: foe.renderPos.q, r: foe.renderPos.r },
+                anim: foe.animState,
+                facingHex: foe.facingHex,
+              });
+            }),
+          );
+        }),
+      eid,
+    );
+    await page2.screenshot({
+      path: path.join(outDir, `enemy_anchor_sixdir_${tag}.png`),
+      clip: { x: info.cellCss.x - 95, y: info.cellCss.y - 130, width: 190, height: 260 },
+    });
+    const draw = info.foeDraw || [];
+    const feetY = draw.length >= 4 ? +(draw[1] + draw[3] * (300 / 320)).toFixed(1) : null; // directional 脚底基线 300/320
+    diag.push({
+      enemy: eid,
+      spriteKey: info.spriteKey,
+      facingHex: info.facingHex,
+      verTag: info.verTag,
+      cell: info.cellCss,
+      draw,
+      allDraws: info.allDraws,
+      feetY_by300: feetY,
+      feetMinusCell: feetY === null ? null : +(feetY - info.cellCss.y).toFixed(1),
+      weaponAnchor: 'reserved_not_implemented（朴刀锚点另卡，按稳定键分派——§9.4 禁本卡猜锚点）',
+    });
+  }
+  await browser2.close();
+  if (errs.length) {
+    console.error('[shot_enemy_anchor:sixdir] pageerror/gate:', errs);
+    process.exit(1);
+  }
+  fs.writeFileSync(path.join(outDir, 'enemy_anchor_diag_sixdir.json'), JSON.stringify(diag, null, 2));
+  for (const d of diag) {
+    console.log(`[shot_enemy_anchor:sixdir] ${d.enemy} spriteKey=${d.spriteKey} facingHex=${d.facingHex} draw=[${d.draw}] feetY=${d.feetY_by300} feet−cell=${d.feetMinusCell}`);
+  }
+  console.log(`[shot_enemy_anchor:sixdir] → shots/enemy_anchor_sixdir_a.png / _b.png + enemy_anchor_diag_sixdir.json`);
+  process.exit(0);
+}
 
 const browser = await chromium.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',

@@ -47,12 +47,41 @@ async function quiet(page) {
   });
 }
 
-/** 直写主角/指定单位演出态（快照出口 animState/facingHex 全真值） */
+/** 直写主角/指定单位演出态（快照出口 animState/facingHex 全真值）
+ * 【T27 修复】playwright page.evaluate 只转发单个 arg——旧写法 (uid, f) 双形参使 fields 永远
+ * 为 undefined、Object.assign 静默 no-op（六向/状态截图全部退化为同帧假证据，main 上第一段
+ * 亦如此）；改单数组参数解构，与 placeNearHero/behavior_e2e placeFoe 同式。 */
 async function setUnit(page, id, fields) {
-  await page.evaluate((uid, f) => {
+  await page.evaluate(([uid, f]) => {
     const u = window.__demo.session._debug.units.find((x) => x.id === uid);
     Object.assign(u, f);
-  }, id, fields);
+  }, [id, fields]);
+}
+
+/** 【T27 第二段】白盒布点：把敌棋摆到主角邻格（敌我同屏证据——镜头恒跟主角，敌出生在对角不在屏内）。
+ * 与 behavior_e2e.mjs placeFoe 同式（hex/renderQ/renderR/moveFrom/moveT 一并对齐，清动画/条态）；
+ * 候选格按 FIELD（col 4..11 / row 2..13，col=q+⌊r/2⌋）过滤并避开主角/其他单位所占格。 */
+async function placeNearHero(page, id, prefer) {
+  await page.evaluate(([fid, side]) => {
+    const units = window.__demo.session._debug.units;
+    const hero = units.find((x) => x.id === 'hero');
+    const u = units.find((x) => x.id === fid);
+    const inField = (q, r) => {
+      const col = q + Math.floor(r / 2);
+      return col >= 4 && col <= 11 && r >= 2 && r <= 13;
+    };
+    const taken = new Set(units.filter((x) => x.id !== fid).map((x) => `${x.hex.q},${x.hex.r}`));
+    const { q, r } = hero.hex;
+    const cands = side === 'right'
+      ? [[q + 1, r], [q + 2, r], [q, r + 1], [q - 1, r]]
+      : [[q - 1, r], [q - 2, r], [q, r - 1], [q + 1, r]];
+    const pick = cands.find(([cq, cr]) => inField(cq, cr) && !taken.has(`${cq},${cr}`)) ?? cands[0];
+    u.hex = { q: pick[0], r: pick[1] };
+    u.renderQ = pick[0]; u.renderR = pick[1]; u.moveFromQ = pick[0]; u.moveFromR = pick[1];
+    u.moveT = 1; u.isJump = false; u.animState = 'idle'; u.animLeftMs = 0; u.dead = false;
+    u.bar = 0; u.barWasMax = false;
+    if (u.hp <= 0) u.hp = 50;
+  }, [id, prefer]);
 }
 
 /** 拉满主角条至输入态（真实 BAR 链路） */
@@ -140,14 +169,87 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
   await page.waitForTimeout(90);
   await shot(page, `${tag}_hero_die`);
 
-  // ⑦ enemy legacy：idle（翻转整图 spr 帧）+ 死亡压扁（第一段零迁移证据）
+  // ⑦ enemy 甲（npc-shanzei-a directional）六向 idle（【T27 第二段】直写 hexFacing → 快照 facingHex →
+  //    battle_idle_{facing}.png；零翻转——左系=美术成品 PNG）。敌我同屏：主角复活为 idle，甲摆主角右邻、乙摆左邻
   await quiet(page);
-  await setUnit(page, 'e1', { animState: 'idle', animLeftMs: 0 });
+  await setUnit(page, 'hero', { animState: 'idle', animLeftMs: 0, isJump: false });
+  await placeNearHero(page, 'e1', 'right');
+  await placeNearHero(page, 'e2', 'left');
+  await page.waitForTimeout(120);
+  for (const [name, vec] of FACINGS) {
+    await quiet(page);
+    await setUnit(page, 'e1', { hexFacing: vec, animState: 'idle', animLeftMs: 0, isJump: false });
+    await page.waitForTimeout(90);
+    await shot(page, `${tag}_enemyA_idle_${name}`);
+  }
+
+  // ⑧ enemy 甲 walk 1↔2（快照 walk 态时钟循环，pos==renderPos 不触发移动演出——纯帧循环证据）
+  await quiet(page);
+  await setUnit(page, 'e1', { hexFacing: FACINGS[0][1], animState: 'walk', animLeftMs: 9000, isJump: false });
   await page.waitForTimeout(90);
-  await shot(page, `${tag}_enemy_legacy_idle`);
+  await shot(page, `${tag}_enemyA_walk_1`);
+  await page.waitForTimeout(140);
+  await shot(page, `${tag}_enemyA_walk_2`);
+
+  // ⑨ enemy 甲 basic atk_1→atk_2（§9.1.1：1→2 尾帧保持）
+  await quiet(page);
+  await setUnit(page, 'e1', { animState: 'basic', animLeftMs: 9000, isJump: false });
+  await page.waitForTimeout(90);
+  await shot(page, `${tag}_enemyA_basic_atk1`);
+  await page.waitForTimeout(220);
+  await shot(page, `${tag}_enemyA_basic_atk2`);
+
+  // ⑩ enemy 施法相降级（§9.2.1 profile 数据映射）：charge→atk_1 定格 / strike→atk_2 单播保持
+  await quiet(page);
+  await setUnit(page, 'e1', { animState: 'charge', animLeftMs: 9000, isJump: false });
+  await page.waitForTimeout(90);
+  await shot(page, `${tag}_enemyA_charge_atk1`);
+  await setUnit(page, 'e1', { animState: 'strike', animLeftMs: 9000, isJump: false });
+  await page.waitForTimeout(90);
+  await shot(page, `${tag}_enemyA_strike_atk2`);
+
+  // ⑪ 死亡白骨（§9.3）：甲 die_common 压扁淡出（不镜像不循环不挂武器锚）→ 乙（npc-shanzei-b）六向 idle + dead
+  await quiet(page);
+  await setUnit(page, 'e1', { animState: 'dead', animLeftMs: 0, isJump: false });
+  await page.waitForTimeout(90);
+  await shot(page, `${tag}_enemyA_dead`);
+  for (const [name, vec] of FACINGS) {
+    await quiet(page);
+    await setUnit(page, 'e2', { hexFacing: vec, animState: 'idle', animLeftMs: 0, isJump: false });
+    await page.waitForTimeout(90);
+    await shot(page, `${tag}_enemyB_idle_${name}`);
+  }
+  await quiet(page);
+  await setUnit(page, 'e2', { animState: 'dead', animLeftMs: 0, isJump: false });
+  await page.waitForTimeout(90);
+  await shot(page, `${tag}_enemyB_dead`);
+
+  // 完整性门红锁（§9.2.2①：预检失败=本脚本报红，不以「能显示」代替资源通过）——主页面（directional 编成）
+  const gate = await page.evaluate(() => ({
+    ok: window.__demo.assetGate.ok,
+    failures: window.__demo.assetGate.failures.length,
+    keys: window.__demo.session.snapshot().actors.map((a) => `${a.id}:${a.spriteKey}`),
+  }));
+  if (!gate.ok) errors.push(`[${tag}] assetGate FAIL ×${gate.failures}`);
+  written.push(`#gate:${gate.ok ? 'PASS' : 'FAIL'} keys=[${gate.keys.join(' ')}]`);
+
+  // ⑫ legacy 显式回退诊断页（§9.2.2③）：URL ?enemy=legacy 整编成切 npc-shanzei-legacy 旧 8 帧条
+  //   （独立页面整套目录，不与 directional 逐帧混用）——回退路径可用性证据
+  await page.goto('file://' + path.join(here, 'index.html') + '?enemy=legacy');
+  await page.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
+  await page.waitForTimeout(800);
+  await quiet(page);
+  await placeNearHero(page, 'e1', 'right');
+  await placeNearHero(page, 'e2', 'left');
+  await setUnit(page, 'e1', { animState: 'idle', animLeftMs: 0 });
+  await page.waitForTimeout(120);
+  await shot(page, `${tag}_enemy_legacy_diag_idle`);
   await setUnit(page, 'e1', { animState: 'dead', animLeftMs: 0 });
   await page.waitForTimeout(90);
-  await shot(page, `${tag}_enemy_legacy_dead`);
+  await shot(page, `${tag}_enemy_legacy_diag_dead`);
+  const legacyKeys = await page.evaluate(() => window.__demo.session.snapshot().actors.map((a) => `${a.id}:${a.spriteKey}`).join(' '));
+  if (!legacyKeys.includes('npc-shanzei-legacy')) errors.push(`[${tag}] legacy 诊断页敌键异常：${legacyKeys}`);
+  written.push(`#legacy-diag keys=[${legacyKeys}]`);
 
   await page.close();
 }

@@ -2221,3 +2221,278 @@ describe('PRM-1/GSG-1（TASK-AS-v04）：攻钮命中/选格派发/hover 翻译/
     expect(fills).not.toContain('rgba(228, 52, 32, 0.72)'); // cellHover 红不再响应 attackCells（收窄负向锁）
   });
 });
+
+// ═══ 【T27 第二段 · 方案 §9.2/§9.3/§9.5】enemy directional profile（npc-shanzei-a/b 山贼六向帧接线）═══
+// 口径真源：《战斗人物六向帧接线方案》§9（commit ebee5ec2）——稳定键/状态映射降级/死亡白骨/legacy 显式回退。
+// 本节全部为新增用例；上方既有 hero directional 与 npc-shanzei legacy 回归锁零改写。
+
+/** enemy directional 帧库（与 makeHeroStore 同式；tag=frameKeyOf 供 drawImage 身份断言） */
+function makeEnemyStore(spriteKey: string): DirectionalFrameStore {
+  const p = SPRITE_PROFILES[spriteKey];
+  if (!p || p.mode !== 'directional') throw new Error(`${spriteKey} 非 directional profile`);
+  const frames = new Map<string, ImgLike | null>();
+  for (const facing of FACINGS) {
+    for (const clip of Object.keys(p.clipCounts) as BattleClip[]) {
+      if (p.sharedSrc[clip] !== undefined) continue; // 共用帧走 clip 键（die_common 只解码一次）
+      for (let o = 1; o <= p.clipCounts[clip]; o++) {
+        const k = frameKeyOf(clip, facing, o);
+        frames.set(k, tagImg(k));
+      }
+    }
+  }
+  for (const clip of Object.keys(p.sharedSrc) as BattleClip[]) frames.set(clip, tagImg(clip));
+  return { mode: 'directional', frames };
+}
+
+/** 敌型 actor 工厂（在 dirActor 基础上覆写敌侧身份字段） */
+function enemyActor(over: Partial<SnapshotActor> = {}): SnapshotActor {
+  return dirActor({ id: 'e1', side: 'enemy', name: 'npc-shanzei-a', spriteKey: 'npc-shanzei-a', ...over });
+}
+
+describe('[六向接线 §9.2] enemy directional profile 结构与资源完整性（T27 第二段）', () => {
+  it('甲/乙 clipCounts 基线：idle1/walk2/jump0/atk2/cast0/die1（敌不声明 jump/cast——MVP 口径 session 不给敌 isJump，charge/strike 走 atk 降级，敌不读 cast 目录）', () => {
+    for (const key of ['npc-shanzei-a', 'npc-shanzei-b']) {
+      const p = SPRITE_PROFILES[key];
+      expect(p.mode).toBe('directional');
+      expect((p as DirectionalSpriteProfile).clipCounts).toEqual({ idle: 1, walk: 2, jump: 0, atk: 2, cast: 0, die: 1 });
+    }
+  });
+
+  it('甲/乙各 30 张独立声明路径存在且互异（idle6+walk12+atk12）+ die sharedSrc 存在；甲/乙路径族零交集（§9.2.1 禁复用甲变体）', () => {
+    const perVariant = new Map<string, Set<string>>();
+    for (const key of ['npc-shanzei-a', 'npc-shanzei-b']) {
+      const prof = SPRITE_PROFILES[key] as DirectionalSpriteProfile;
+      const paths = new Set<string>();
+      for (const facing of FACINGS) {
+        for (const clip of Object.keys(prof.clipCounts) as BattleClip[]) {
+          if (prof.clipCounts[clip] === 0) continue; // jump/cast 不声明：loader 零预载
+          if (clip === 'die') continue; // die 走 sharedSrc
+          for (let o = 1; o <= prof.clipCounts[clip]; o++) {
+            const src = prof.frameSrc(clip, facing, o);
+            expect(existsSync(path.join(ROOT, src))).toBe(true); // 声明即存在（缺图占位≠通过）
+            paths.add(src);
+          }
+        }
+      }
+      expect(paths.size).toBe(30); // 6+12+12
+      expect(existsSync(path.join(ROOT, prof.sharedSrc.die as string))).toBe(true);
+      perVariant.set(key, paths);
+    }
+    const [a, b] = [...perVariant.values()];
+    for (const p of a) expect(b.has(p)).toBe(false); // 目录零交集
+  });
+
+  it('敌 stateMap（§9.2.1 降级数据映射）：charge→atk_1 / strike→atk_2 / basic→atk_1..2 / hit→idle_1 / dead→die_1', () => {
+    for (const key of ['npc-shanzei-a', 'npc-shanzei-b']) {
+      const m = (SPRITE_PROFILES[key] as DirectionalSpriteProfile).stateMap;
+      expect(m.idle).toEqual({ clip: 'idle', from: 1, to: 1 });
+      expect(m.walk).toEqual({ clip: 'walk', from: 1, to: 2 });
+      expect(m.charge).toEqual({ clip: 'atk', from: 1, to: 1 }); // 敌无 cast 成品→atk_1 定格
+      expect(m.strike).toEqual({ clip: 'atk', from: 2, to: 2 }); // 敌无 cast 成品→atk_2 单播保持
+      expect(m.basic).toEqual({ clip: 'atk', from: 1, to: 2 });
+      expect(m.hit).toEqual({ clip: 'idle', from: 1, to: 1 }); // 敌无 hit clip（候选面禁接线）→idle
+      expect(m.dead).toEqual({ clip: 'die', from: 1, to: 1 }); // die_common 单帧静态
+    }
+  });
+
+  it('降级映射只落 profile 数据表：directionalFrameOf 函数体内无 actor.side 特判（§9.1.1 红线源码扫描）', () => {
+    const src = readFileSync(path.join(ROOT, 'ui/battle-hex-render.ts'), 'utf8');
+    const start = src.indexOf('export function directionalFrameOf');
+    const end = src.indexOf('function directionalImg');
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    const body = src.slice(start, end);
+    expect(body).not.toContain('.side'); // 选帧链零 side 分支（降级=纯 profile 数据）
+  });
+
+  it('demo 敌编成稳定键源码锁（§9.2.1）：main.ts 定义点写死 npc-shanzei-a/b + ?enemy=legacy 显式诊断开关；session 快照出口 spriteKey=configId（F3）', () => {
+    const demo = readFileSync(path.join(ROOT, 'proto/battle_demo/main.ts'), 'utf8');
+    expect(demo).toContain("enemyKey('a')");
+    expect(demo).toContain("enemyKey('b')");
+    expect(demo).toContain("'npc-shanzei-legacy'");
+    expect(demo).not.toMatch(/name:\s*'npc-shanzei'/); // 旧默认键不得再进敌编成定义
+    const session = readFileSync(path.join(ROOT, 'systems/battle-session.ts'), 'utf8');
+    expect(session).toMatch(/spriteKey:\s*c\.side === 'player' \? 'hero' : c\.name/); // F3 原样导出（快照零猜键）
+  });
+
+  it('显式 legacy 回退键（§9.2.1）：npc-shanzei-legacy=legacy 8 帧条与 npc-shanzei 同目录同帧表；默认键 npc-shanzei 保持 legacy（第一段零迁移锁延续）', () => {
+    for (const key of ['npc-shanzei', 'npc-shanzei-legacy']) {
+      const p = SPRITE_PROFILES[key];
+      expect(p.mode).toBe('legacy');
+      if (p.mode !== 'legacy') return;
+      expect(p.frameCount).toBe(8);
+      for (let i = 0; i < 8; i++) {
+        expect(p.frameSrc(i)).toBe(`assets/ui/frames/battle/spr_shanzei/spr_shanzei_0${i}_transparent.png`);
+      }
+    }
+  });
+
+  it('SHA256SUMS 落库：甲/乙各 31 行；die_common 三处（hero/甲/乙）逐字节一致（§9.3 完整性门）+ node 预检脚本在库', () => {
+    for (const dir of ['assets/characters/enemy/shanzei_a/battle45', 'assets/characters/enemy/shanzei_b/battle45']) {
+      const sums = readFileSync(path.join(ROOT, dir, 'SHA256SUMS'), 'utf8').trim().split('\n');
+      expect(sums.length).toBe(31);
+    }
+    // latin1=字节 1:1 映射（env.d.ts ambient readFileSync 仅声明带 encoding 形态），字符串相等⇔字节相等
+    const die = ['assets/characters/hero/battle45/die_common.png', 'assets/characters/enemy/shanzei_a/battle45/die_common.png', 'assets/characters/enemy/shanzei_b/battle45/die_common.png'].map((p) => readFileSync(path.join(ROOT, p), 'latin1'));
+    expect(die[0].length).toBeGreaterThan(1000);
+    expect(die[0] === die[1]).toBe(true);
+    expect(die[1] === die[2]).toBe(true);
+    expect(existsSync(path.join(ROOT, 'proto/battle_demo/tools/preflight_enemy_sixdir.mjs'))).toBe(true);
+  });
+});
+
+describe('[六向接线 §9.1.1/§9.2.1] enemy directional 选帧语义（directionalFrameOf 消费 profile 数据）', () => {
+  it('idle→idle_1；walk 时钟 1↔2 循环（pos==renderPos 纯帧循环路径）', () => {
+    const view = createView();
+    const foe = enemyActor({ animState: 'idle' });
+    const snap = makeSnapshot([foe]);
+    updateView(view, snap, 0.016, 375, 667);
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'idle', ordinal: 1 });
+    snap.actors[0].animState = 'walk';
+    updateView(view, snap, 0.016, 375, 667); // walk 上升沿：钟 t=0
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'walk', ordinal: 1 });
+    updateView(view, snap, 0.14, 375, 667); // ≥140ms
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'walk', ordinal: 2 });
+    updateView(view, snap, 0.14, 375, 667); // 280ms+
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'walk', ordinal: 1 }); // 循环
+  });
+
+  it('施法相降级（§9.2.1）：charge 经 280ms 循环恒 atk_1（单帧组循环幂等）/ strike→atk_2 单播保持', () => {
+    const view = createView();
+    const foe = enemyActor({ animState: 'charge' });
+    const snap = makeSnapshot([foe]);
+    updateView(view, snap, 0.001, 375, 667);
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 });
+    for (let i = 0; i < 30; i++) updateView(view, snap, 0.05, 375, 667); // 施法相 1.5s 全程跨多周期
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 }); // 恒 atk_1
+    snap.actors[0].animState = 'strike';
+    updateView(view, snap, 0.016, 375, 667);
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 2 });
+    updateView(view, snap, 0.2, 375, 667); // 远超单帧周期：仍 atk_2（单播保持）
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 2 });
+  });
+
+  it('basic atk_1→2 尾帧保持（§9.1.1：1→2，尾帧保持）', () => {
+    const view = createView();
+    const foe = enemyActor({ animState: 'basic' });
+    const snap = makeSnapshot([foe]);
+    updateView(view, snap, 0.001, 375, 667);
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 });
+    updateView(view, snap, 0.14, 375, 667);
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 2 });
+    updateView(view, snap, 0.5, 375, 667); // 播至尾帧保持
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 2 });
+  });
+
+  it('死亡优先全覆盖（§9.3）：dead 压过 walk/basic/charge 与移动演出中（moveAnim 进行中也返 die_1）；单帧静态不循环', () => {
+    const view = createView();
+    const foe = enemyActor({ animState: 'walk', pos: { q: 4, r: 6 }, renderPos: { q: 4, r: 8 } });
+    const snap = makeSnapshot([foe]);
+    updateView(view, snap, 0.016, 375, 667); // walkRise：移动演出启动
+    expect(view.moveAnims.has('e1')).toBe(true);
+    snap.actors[0].animState = 'dead';
+    updateView(view, snap, 0.05, 375, 667);
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'die', ordinal: 1 }); // 移动演出中死亡即全覆盖
+    for (let i = 0; i < 10; i++) updateView(view, snap, 0.2, 375, 667); // 多周期
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'die', ordinal: 1 }); // 不循环
+    // basic/charge 态直切 dead 同样优先
+    for (const st of ['basic', 'charge'] as const) {
+      const v2 = createView();
+      const f2 = enemyActor({ animState: st });
+      const s2 = makeSnapshot([f2]);
+      updateView(v2, s2, 0.016, 375, 667);
+      s2.actors[0].animState = 'dead';
+      updateView(v2, s2, 0.016, 375, 667);
+      expect(directionalFrameOf(v2, s2.actors[0])).toEqual({ clip: 'die', ordinal: 1 });
+    }
+  });
+});
+
+describe('[六向接线 §9.3/§9.4] enemy directional 绘制链（spriteKey→profile→facingHex→clip→ordinal，零镜像）', () => {
+  it('facingHex 六向取帧：facingHex=left 绘制取 `idle|left|1` 成品帧，且无 ctx.scale(-1,1) 运行时翻转（左系=美术 PNG）', () => {
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei-a', makeEnemyStore('npc-shanzei-a')]]) };
+    const view = createView();
+    const snap = makeSnapshot([enemyActor({ facingHex: 'left', animState: 'idle' })]);
+    updateView(view, snap, 0.016, 375, 667);
+    const { ctx, ops } = makeDrawRecordingCtx();
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    const draws = ops.filter((o) => o.op === 'drawImage');
+    expect(draws.map((o) => (o.args[0] as { tag?: string }).tag)).toContain('idle|left|1');
+    expect(ops.filter((o) => o.op === 'scale')).toHaveLength(0); // 零运行时镜像（legacy 分支才允许 scale 翻转）
+  });
+
+  it('死亡绘制走 die 共用帧 + 压扁淡出（deadAlpha）：drawImage tag=die 且 globalAlpha=PIECE.deadAlpha；不挂武器锚（本卡无武器层调用）', () => {
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei-b', makeEnemyStore('npc-shanzei-b')]]) };
+    const view = createView();
+    const foe = enemyActor({ spriteKey: 'npc-shanzei-b', name: 'npc-shanzei-b', animState: 'dead' });
+    const snap = makeSnapshot([foe]);
+    updateView(view, snap, 0.016, 375, 667);
+    const rec: { alphas: number[]; tags: string[] } = { alphas: [], tags: [] };
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const r = t as unknown as Record<string | symbol, unknown>;
+          if (prop in r) return r[prop];
+          const name = String(prop);
+          return (...args: unknown[]) => {
+            if (name === 'drawImage') rec.tags.push((args[0] as { tag?: string }).tag ?? '');
+          };
+        },
+        set(t, prop, v) {
+          if (prop === 'globalAlpha') rec.alphas.push(Number(v));
+          return true;
+        },
+      },
+    );
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(rec.tags).toContain('die'); // sharedSrc 共用帧键=clip 名（不按 facingHex 选图）
+    expect(rec.alphas).toContain(PIECE.deadAlpha); // 沿既有压扁淡出口径
+  });
+
+  it('缺帧安全占位（完整性门 FAIL 渲染不崩）：敌 directional 帧库全 null → 剪影椭圆、零 drawImage', () => {
+    const p = SPRITE_PROFILES['npc-shanzei-a'];
+    if (p.mode !== 'directional') throw new Error('expect directional');
+    const frames = new Map<string, ImgLike | null>();
+    for (const facing of FACINGS) {
+      for (const clip of Object.keys(p.clipCounts) as BattleClip[]) {
+        for (let o = 1; o <= p.clipCounts[clip]; o++) frames.set(frameKeyOf(clip, facing, o), null);
+      }
+    }
+    frames.set('die', null);
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei-a', { mode: 'directional', frames }]]) };
+    const view = createView();
+    const snap = makeSnapshot([enemyActor({ animState: 'idle' })]);
+    updateView(view, snap, 0.016, 375, 667);
+    let drawImageCalls = 0;
+    let fillCalls = 0;
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const r = t as unknown as Record<string | symbol, unknown>;
+          if (prop in r) return r[prop];
+          const name = String(prop);
+          return (..._args: unknown[]) => {
+            if (name === 'drawImage') drawImageCalls++;
+            if (name === 'fill') fillCalls++;
+          };
+        },
+        set() {
+          return true;
+        },
+      },
+    );
+    expect(() => drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view)).not.toThrow();
+    expect(drawImageCalls).toBe(0);
+    expect(fillCalls).toBeGreaterThan(0); // 剪影占位（永不空窗）
+  });
+});

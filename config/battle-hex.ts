@@ -437,7 +437,51 @@ export const FACINGS: readonly BattleFacingHex[] = [
 /** hero battle45 帧族目录（T45 交付：右系 31 + 左系镜像 30，240×320 RGBA，die_common 六向共用） */
 const HERO_BATTLE45 = 'assets/characters/hero/battle45';
 
-/** spriteKey → profile（hero=directional 第一段；npc-shanzei=legacy 保持零迁移直至第二段） */
+/** 敌型 battle45 帧族目录（【T27 第二段 · 方案 §9.2.1】：甲/乙各 31 张 runtime=独立目录，
+ * 稳定键分派禁混用；左系为美术管线确定性镜像成品 PNG——零运行时镜像） */
+const SHANZEI_A_BATTLE45 = 'assets/characters/enemy/shanzei_a/battle45';
+const SHANZEI_B_BATTLE45 = 'assets/characters/enemy/shanzei_b/battle45';
+
+/**
+ * 【T27 第二段 · 方案 §9.1.1/§9.2.1】敌型 directional profile 工厂（甲/乙同形，仅目录不同——
+ * 禁复用同一变体）。敌型没有独立 cast/jump 成品是 MVP 已定口径，全部落在本 profile 数据映射：
+ * - clipCounts：jump:0 / cast:0=不声明该 clip（loader 零预载，渲染永不解析到该 clip；
+ *   session 不给敌产生 isJump，敌 charge/strike 走 atk 降级）——敌不读 cast 目录，禁借帧。
+ * - stateMap 降级（§9.2.1）：charge→atk_1（循环组对单帧幂等=定格）；strike→atk_2（单播保持）；
+ *   basic→atk_1→2 尾帧保持；hit 无专用素材→idle（与 hero 同口径）；dead→die_common。
+ * 降级只写本数据表，禁在 frameOf/directionalFrameOf 里加 actor.side 特判（§9.1.1 红线）。
+ */
+function shanzeiDirectionalProfile(dir: string): DirectionalSpriteProfile {
+  return {
+    mode: 'directional',
+    clipCounts: { idle: 1, walk: 2, jump: 0, atk: 2, cast: 0, die: 1 },
+    // idle 帧文件名无序号（battle_idle_{facing}.png，与 hero 同族）；walk/atk={clip}_{facing}_{ordinal}
+    frameSrc: (clip, facing, ordinal) =>
+      clip === 'idle' ? `${dir}/battle_idle_${facing}.png` : `${dir}/${clip}_${facing}_${ordinal}.png`,
+    sharedSrc: { die: `${dir}/die_common.png` },
+    stateMap: {
+      idle: { clip: 'idle', from: 1, to: 1 },
+      walk: { clip: 'walk', from: 1, to: 2 },
+      charge: { clip: 'atk', from: 1, to: 1 }, // 降级：敌无 cast 成品→atk_1 定格（§9.2.1）
+      strike: { clip: 'atk', from: 2, to: 2 }, // 降级：敌无 cast 成品→atk_2 单播保持（§9.2.1）
+      basic: { clip: 'atk', from: 1, to: 2 },
+      hit: { clip: 'idle', from: 1, to: 1 }, // 敌无 hit clip（中间面候选不接线，§9.1.2）→idle
+      dead: { clip: 'die', from: 1, to: 1 }, // die_common 单帧静态：不镜像不循环（§9.3）
+    },
+  };
+}
+
+/** legacy 旧帧 profile（8 帧条；「npc-shanzei」=第一段默认键保持零迁移——全量回归通过后才移除
+ * 默认引用（§9.2.2④）；「npc-shanzei-legacy」=第二段显式回退诊断键，同一目录同一帧表，
+ * 仅旧存档/回滚预览可显式指定，不作为新敌人定义的默认键（§9.2.1）。 */
+const SHANZEI_LEGACY_PROFILE: LegacySpriteProfile = {
+  mode: 'legacy',
+  frameCount: 8, // 00~07（BATTLE_FRAME.idle=7 需全量 8 帧）
+  frameSrc: (i) => `assets/ui/frames/battle/spr_shanzei/spr_shanzei_0${i}_transparent.png`,
+};
+
+/** spriteKey → profile（hero=directional 第一段；npc-shanzei-a/b=enemy directional 第二段
+ *（T27，方案 §9.2）；npc-shanzei=legacy 默认键零迁移；npc-shanzei-legacy=显式回退） */
 export const SPRITE_PROFILES: Readonly<Record<string, BattleSpriteProfile>> = {
   hero: {
     mode: 'directional',
@@ -466,16 +510,18 @@ export const SPRITE_PROFILES: Readonly<Record<string, BattleSpriteProfile>> = {
       dead: { clip: 'die', from: 1, to: 1 },
     },
   },
-  'npc-shanzei': {
-    mode: 'legacy',
-    frameCount: 8, // 00~07（BATTLE_FRAME.idle=7 需全量 8 帧）
-    frameSrc: (i) => `assets/ui/frames/battle/spr_shanzei/spr_shanzei_0${i}_transparent.png`,
-  },
+  'npc-shanzei': SHANZEI_LEGACY_PROFILE,
+  // 【T27 第二段 · 方案 §9.2.1】稳定变体键：敌人定义/装配阶段直接写死（demo 编成与快照出口
+  // spriteKey=configId 同键），禁按数组序/显示名/actor.side 猜变体；甲/乙独立目录禁复用
+  'npc-shanzei-a': shanzeiDirectionalProfile(SHANZEI_A_BATTLE45),
+  'npc-shanzei-b': shanzeiDirectionalProfile(SHANZEI_B_BATTLE45),
+  // 显式回退诊断键（§9.2.1：仅旧存档/回滚预览显式指定；不作为新敌人定义默认键）
+  'npc-shanzei-legacy': SHANZEI_LEGACY_PROFILE,
 } as const;
 
 // ===== 素材路径表（资源外置铁律：路径唯一出处=本表；版本号防缓存，preview 换图 bump） =====
 export const BATTLE_HEX_RES = {
-  ver: 't45v1', // 六向帧接线第一段：hero 切 battle45 六向帧族（61 张）——换图 bump t24v1→t45v1
+  ver: 't45v2', // 【T27 第二段】enemy directional 接线：新增 npc-shanzei-a/b battle45 六向帧族（62 张）+ 显式 legacy 回退键——换图 bump t45v1→t45v2
   env: 'assets/ui/pixel/battle/raw/battle_env_pure.png', // L0 纯环境底图（无格无 UI，1088×1920）
   topbar: 'assets/ui/pixel/battle/components/topbar_base.png', // T23：无字底图（名字/百分比/条由代码绘制）
   plaque: 'assets/ui/pixel/battle/components/plaque_l_alpha.png',

@@ -66,6 +66,26 @@ function loadImg(url: string): Promise<HTMLImageElement | null> {
   return im.decode().then(() => im).catch(() => null);
 }
 
+/** 【T27 第二段 · 方案 §9.2.2】directional 资源完整性门状态（预载期一次性写入，整局固定；
+ * e2e/shot 经 __demo.assetGate 读取断言——不进 types.ts、零契约新增）。 */
+let assetGateState: { ok: boolean; failures: string[] } = { ok: true, failures: [] };
+/** 完整性门开发面报红：#assetGate 红条（index.html 静态占位，默认隐藏）+ console.error 逐条路径；
+ * 通过时保持隐藏。红条文案含显式回退指引（URL ?enemy=legacy），禁静默回退。 */
+function paintAssetGate(): void {
+  const el = document.getElementById('assetGate');
+  if (!assetGateState.ok) {
+    for (const f of assetGateState.failures) console.error(`[battle_demo][assetGate FAIL] ${f}`);
+    if (el) {
+      el.textContent =
+        `帧资源完整性门 FAIL ×${assetGateState.failures.length}（首条：${assetGateState.failures[0]}）` +
+        ' · 渲染走安全占位；回滚诊断请显式加 URL ?enemy=legacy（非正式通过）';
+      el.style.display = 'block';
+    }
+    return;
+  }
+  if (el) el.style.display = 'none';
+}
+
 async function loadAssets(): Promise<BattleHexAssets> {
   const q = (p: string): string => `${p}?v=${BATTLE_HEX_RES.ver}`;
   const frameJobs: Array<Promise<unknown>> = [];
@@ -133,6 +153,28 @@ async function loadAssets(): Promise<BattleHexAssets> {
     Array.isArray(v)
       ? `${v.filter(Boolean).length}/${v.length}`
       : `${[...v.frames.values()].filter(Boolean).length}/${v.frames.size}`;
+  // 【T27 第二段 · 方案 §9.2.2①/§9.5】directional 预载完整性门（预载期逐向逐 clip 校验：
+  // 帧在+解码尺寸 240×320）。FAIL=页面红条+console.error 逐键可定位，渲染仍走安全占位（剪影），
+  // 禁以「能显示」代替资源通过。CI 全量口径（manifest/文件名/RGBA/SHA/die_common 三处一致）
+  // 走 node 预检脚本 proto/battle_demo/tools/preflight_enemy_sixdir.mjs（62 张逐张，非零退出=报红）。
+  assetGateState = { ok: true, failures: [] };
+  for (const [kind, profile] of Object.entries(BATTLE_HEX_RES.profiles)) {
+    if (profile.mode !== 'directional') continue;
+    const store = frames.get(kind);
+    if (!store || Array.isArray(store)) continue;
+    for (const [key, img] of store.frames) {
+      if (!img) {
+        assetGateState.ok = false;
+        assetGateState.failures.push(`${kind} 帧缺失 key=${key}`);
+        continue;
+      }
+      if (img.width !== 240 || img.height !== 320) {
+        assetGateState.ok = false;
+        assetGateState.failures.push(`${kind} 尺寸不符 key=${key} 实际 ${img.width}x${img.height}≠240x320`);
+      }
+    }
+  }
+  paintAssetGate();
   console.log(
     `[battle_demo] 资源：env=${ok(env)} topbar=${ok(topbar)} plaque=${ok(plaque)} ` +
       `ctrlFaces=[${facePairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
@@ -180,6 +222,18 @@ function demoUnit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 's
   };
 }
 
+/** 【T27 第二段 · 方案 §9.2.2③】显式回退诊断开关：URL `?enemy=legacy` → 敌编成全部改指
+ * `npc-shanzei-legacy`（旧 8 帧条整套目录，不与 battle45 逐帧混用）。仅供回滚诊断，默认关；
+ * 开启时控制台明示「诊断回退，非正式通过」——禁静默回退、禁把回退宣称为通过。
+ * （声明须先于下方 `let session = makeSession()`：makeSession 为提升函数，本常量为 TDZ 绑定） */
+const ENEMY_LEGACY_DIAG = new URLSearchParams(location.search).get('enemy') === 'legacy';
+if (ENEMY_LEGACY_DIAG) console.warn('[battle_demo] 诊断回退：敌编成显式指 npc-shanzei-legacy（?enemy=legacy），非正式通过口径');
+/** 敌方稳定 spriteKey（§9.2.1：定义阶段写死甲/乙变体键，快照 spriteKey=configId 原样导出；
+ * 禁按数组序/显示名/side 猜）；诊断开关开启时整体切显式 legacy 键。 */
+function enemyKey(variant: 'a' | 'b'): string {
+  return ENEMY_LEGACY_DIAG ? 'npc-shanzei-legacy' : `npc-shanzei-${variant}`;
+}
+
 let session = makeSession();
 let speedOn = false;
 let evCursor = 0; // session.events 消费游标（累积数组）
@@ -187,11 +241,12 @@ function makeSession() {
   // 敌方 name=configId（F3 约定：spriteKey=configId → 帧表键；名字牌暂显模板名，美化留后续）
   // 【T26-R1 缺口】敌方编成挂自有特/绝技（DEMO_ENEMY_SKILLS）：真实驱动敌方 AI 施法
   // （planSkill 品阶降序），名条/光影敌方同规则——色按 tier 不按阵营。
+  // 【T27 第二段 · §9.2.1】e1=甲 npc-shanzei-a / e2=乙 npc-shanzei-b：稳定键在此定义点写死
   return createHexBattle({
     player: demoUnit({ id: 'hero', side: 'player', name: '小虾米', skills: DEMO_SKILLS }),
     enemies: [
-      demoUnit({ id: 'e1', side: 'enemy', name: 'npc-shanzei', hp: 70, maxHp: 70, atk: 8, jimin: 5, skills: DEMO_ENEMY_SKILLS }),
-      demoUnit({ id: 'e2', side: 'enemy', name: 'npc-shanzei', hp: 60, maxHp: 60, atk: 9, jimin: 6, skills: DEMO_ENEMY_SKILLS }),
+      demoUnit({ id: 'e1', side: 'enemy', name: enemyKey('a'), hp: 70, maxHp: 70, atk: 8, jimin: 5, skills: DEMO_ENEMY_SKILLS }),
+      demoUnit({ id: 'e2', side: 'enemy', name: enemyKey('b'), hp: 60, maxHp: 60, atk: 9, jimin: 6, skills: DEMO_ENEMY_SKILLS }),
     ],
     mode: 'manual',
     seed: 42,
@@ -368,6 +423,10 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
     return session;
   },
   getView: () => view,
+  /** 【T27 第二段】directional 资源完整性门只读状态（shot/e2e 断言用；调试挂载不进正式接入） */
+  get assetGate() {
+    return assetGateState;
+  },
   get W() {
     return W;
   },
