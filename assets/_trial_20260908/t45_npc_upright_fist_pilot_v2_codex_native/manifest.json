@@ -1,0 +1,39 @@
+{
+  "task": "T45",
+  "revision": "upright-fist-forward-inward-v2",
+  "generatedAt": "2026-09-08",
+  "trialOnly": true,
+  "scope": "shanzei_a|b × atk_right_2 (right)",
+  "decision": "A: all 24 NPC attack body frames eventually use upright closed punching fist; this is the 2-frame forward-inward bend pilot revision",
+  "generation": {
+    "provider": "Codex native ImageGen",
+    "model": null,
+    "credits": 0,
+    "rawImageGeneration": true
+  },
+  "processing": {
+    "cutout": "project flood_cut + feather",
+    "normalize": "240x320 RGBA, visualHeight=256, feetY=300, alpha32 centroid x≈120",
+    "poseAdjustment": "extended right fist slightly forward and inward toward character centerline; no weapon"
+  },
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "formalRuntimeTouched": false,
+  "supersedesCandidate": "assets/_trial_20260908/t45_npc_upright_fist_pilot_codex_native/",
+  "artifactPaths": [
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/contact/upright_fist_pilot_compare.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/contact/upright_fist_pilot_fist_closeups_4x.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/job.json",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/normalize_upright_fist_pilot.py",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/normalized/shanzei_a_atk_right_2_upright_fist_forward_inward.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/normalized/shanzei_b_atk_right_2_upright_fist_forward_inward.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/prompts/shanzei_a_atk_right_2_upright_fist_forward_inward.txt",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/prompts/shanzei_b_atk_right_2_upright_fist_forward_inward.txt",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/qa/upright_fist_pilot.json",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/raw/shanzei_a_atk_right_2_upright_fist_forward_inward_attempt1.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/raw/shanzei_b_atk_right_2_upright_fist_forward_inward_attempt1.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_v2_codex_native/request.md"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "task": "T45",
+  "scope": "shanzei_a|b × atk_right_2 (right)",
+  "status": "candidate_pending_leo_visual",
+  "revision": "upright-fist-forward-inward-v2",
+  "decision": "A: all 24 NPC attack body frames eventually use upright closed punching fist; this is the 2-frame pilot revision",
+  "allowedChange": "bend extended right fist slightly forward and inward toward character centerline",
+  "frozen": ["identity", "face", "hair", "clothing", "palette", "proportions", "feet", "canvas", "direction", "attack phase", "weapon-free body policy"],
+  "generation": {"provider": "Codex native ImageGen", "rawImageGeneration": true},
+  "runtimeRelease": false,
+  "formalRuntimeTouched": false,
+  "supersedesCandidate": "assets/_trial_20260908/t45_npc_upright_fist_pilot_codex_native/",
+  "nextGate": "Leo visual inspection of the two forward-inward bent fist candidates; only then expand to remaining 22 frames"
+}
