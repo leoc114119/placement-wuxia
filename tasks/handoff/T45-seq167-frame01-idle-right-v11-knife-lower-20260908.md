@@ -7,7 +7,7 @@
 - **像素事实**：源 B v9 武器 bbox `[103,73,182,184]`；v11 bbox `[106,76,182,182]`；`qa/knife_position_check.json` 显示像素映射精确通过；B 精确拳选区内武器 `84→0`。
 - **程序化门检**：26 项活动路径；身体 SHA 冻结 2/2、A 武器冻结、B 源自 v9、握点下移 3px、柄后段缩短 6px、刃段保持 95px、精确拳遮罩 310px、无 torso/sleeve bridge、native/2x/零生成门通过。
 - **状态**：`artifactStage=candidate`、`visualReview=pending_Leo`、`specGate=pending_pm_scan`、`integrationGate=not_handed_off`、`runtimeRelease=false`。正式 runtime 未写入，下一帧不启动。
-- **交付落库状态**：以下候选包将随本次提交入库；交付后补写 commit、路径 SHA 与 projbus seq。
+- **交付落库状态**：候选包已随 commit `f9b2239724f50c292d0ae3c27a0cec0360204894` 推送；26 项路径 SHA 见下表，`check_delivery` PASS。交接/日志补记 commit `246b824b`；projbus delivery=`seq=173`、messageId=`89ad43b1c31a44ad85c73ca0961da63f`。runtime 状态仍为 `candidate-only`，正式路径未写入。
 
 ## 关键证据
 
