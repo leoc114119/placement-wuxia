@@ -1,0 +1,26 @@
+{
+  "task": "T45",
+  "seq": 134,
+  "purpose": "D-route zero-generation calibration; refs are read-only body sources, not generation inputs",
+  "generation": {"provider": null, "model": null, "credits": 0, "method": "Pillow deterministic composition"},
+  "bodySources": {
+    "shanzei_a": {
+      "battle_idle_right": "assets/characters/enemy/shanzei_a/battle45/battle_idle_right.png",
+      "atk_right_2": "assets/characters/enemy/shanzei_a/battle45/atk_right_2.png",
+      "battle_idle_rightup": "assets/characters/enemy/shanzei_a/battle45/battle_idle_rightup.png",
+      "walk_rightdown_1": "assets/characters/enemy/shanzei_a/battle45/walk_rightdown_1.png"
+    },
+    "shanzei_b": {
+      "battle_idle_right": "assets/characters/enemy/shanzei_b/battle45/battle_idle_right.png",
+      "atk_right_2": "assets/characters/enemy/shanzei_b/battle45/atk_right_2.png",
+      "battle_idle_rightup": "assets/characters/enemy/shanzei_b/battle45/battle_idle_rightup.png",
+      "walk_rightdown_1": "assets/characters/enemy/shanzei_b/battle45/walk_rightdown_1.png"
+    }
+  },
+  "responsibilities": {
+    "bodyFrames": "identity, clothing, pose, feet, canvas and proportions; frozen byte-for-byte from current runtime",
+    "placeholderBlade": "technical geometry only; no final weapon identity, palette or aesthetic evidence",
+    "roiPolygons": "original fist occlusion boundary for D-route mask; recorded per frame in calibration/calibration.json",
+    "contactSheets": "review-only labels and triptych comparison; never used as generation or identity input"
+  }
+}

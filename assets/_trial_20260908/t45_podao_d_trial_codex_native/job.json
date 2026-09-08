@@ -1,0 +1,13 @@
+{
+  "task": "T45",
+  "seq": 134,
+  "batch": "podao-d-zero-generation-validation",
+  "status": "candidate_pending_leo_visual",
+  "scope": "shanzei_a|b × battle_idle_right, atk_right_2, battle_idle_rightup, walk_rightdown_1",
+  "method": "Pillow deterministic placeholder blade, original-fist ROI occlusion and layer-order triptychs",
+  "generation": {"provider": null, "model": null, "credits": 0, "rawImageGeneration": false},
+  "runtimeRelease": false,
+  "formalRuntimeTouched": false,
+  "specSource": "projbus seq=134; docs/design/01-基础功能/角色帧规范.md §4c v1.5",
+  "nextGate": "Leo visual inspection of native and 2x triptychs, then PM mechanical/spec scan; no six-direction rollout in this package"
+}

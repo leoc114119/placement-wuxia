@@ -1,0 +1,37 @@
+{
+  "task": "T45",
+  "seq": 134,
+  "package": "assets/_trial_20260908/t45_podao_d_trial_codex_native",
+  "generationCredits": 0,
+  "expected": {
+    "frames": 8,
+    "triptychPanelsPerFrame": 3,
+    "nativeTriptychs": 8,
+    "2xTriptychs": 8,
+    "identities": [
+      "shanzei_a",
+      "shanzei_b"
+    ]
+  },
+  "actual": {
+    "frames": 8,
+    "nativeTriptychs": 8,
+    "2xTriptychs": 8,
+    "occlusionMasks": 8,
+    "weaponLayers": 8
+  },
+  "checks": {
+    "allEightPass": true,
+    "bodyShaFrozen8of8": true,
+    "bodyGeometry8of8": true,
+    "dOcclusion8of8": true,
+    "handleBothSides8of8": true,
+    "nativeAnd2x8of8": true,
+    "noRuntimeWrites": true,
+    "noGeneration": true
+  },
+  "allHardGatesPass": true,
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "note": "Placeholder geometry only; no aesthetic or blade-face evidence. Leo must visually inspect the triptychs before any six-direction rollout."
+}
