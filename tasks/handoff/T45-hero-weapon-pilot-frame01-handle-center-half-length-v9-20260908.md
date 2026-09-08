@@ -65,5 +65,5 @@ Leo 要求保持当前剑角度，把剑“往右上拉半个剑柄的位置”�
 
 - artifact+docs commit：`5707f2b8d8ed94e0cdeda4eb7803b1853b1e60b1`，已推送 `origin/codex/t45-shanzei-2b-pilot`
 - `check_delivery.py`：52/52 activity paths PASS；该检查只证明 commit/path/bytes，不替代 PM 规格门
-- projbus 最终送检：`seq=201`，messageId=`e860994328e94a5e86b83b41749cd9d4`
+- projbus 最终送检：`seq=202`，messageId=`82221f32c0db4231a102c3d18a1f50e8`
 - 当前等待 PM2 第二道规格门 ACK；正式 runtime 仍未写入
