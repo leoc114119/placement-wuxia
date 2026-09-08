@@ -6,8 +6,8 @@
 - **武器标定**：甲握点 `(172,172)`、乙握点 `(178,172)`；统一 `angleDeg=-55°`（握点→刀尖，0°屏幕右、+Y向下、顺时针为正）；正面 `layerOrder=front`；柄轴段 `[-20,14]`=34px、刃轴段 `[15,110]`=95px、总长 129px，profile=`long_broad_single_edge_dao_placeholder_v5`。
 - **遮挡标定**：每帧紧拳轮廓内二值 body-alpha，完整拳头覆盖、袖口/躯干不进 mask；D 面板拳区残留刀像素 0/2，D 拳区与原身体差 0/2。
 - **生产方式**：Pillow 确定性绘制与合成，生成积分 0；占位刀仅用于锚点/叠层验证，不是最终朴刀美术。
-- **状态**：`artifactStage=candidate`、`visualReview=pending_Leo`、`specGate=pending_pm_scan`、`integrationGate=not_handed_off`、`runtimeRelease=false`。
-- **交付提交**：`63833c2f0df215c22e0fb53179ad43a5f7f6932f`（已推送 `origin/codex/t45-shanzei-2b-pilot`）。
+- **状态**：`artifactStage=candidate`、`visualReview=pending_Leo`、`specGate=pending_pm_scan`、`integrationGate=not_handed_off`、`runtimeRelease=false`；manifest 已补齐 `status`/`occlusionRule`/`checks`/`sourceRevision`/`knifeAdjustment` 元数据。
+- **交付提交**：`7d7e774ea4fc475843fb584720ae5c287bc0150f`（已推送 `origin/codex/t45-shanzei-2b-pilot`）；此前 seq=176 的 63833c2f 仅为旧元数据版本，已由本提交 supersede。
 - **运输核验**：skill `check_delivery.py` 对 26 项活动路径逐文件 SHA 核验 PASS；该工具仅证明 commit/path/bytes，不替代 Leo 审美门或 PM 第二道规格门。
 
 ## 关键证据
@@ -20,8 +20,8 @@
 
 ## 活动路径（manifest 26 项，SHA256）
 
-- `assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/build_frame02.py` · SHA256 `ada2bd93cad7f2a6bef3c5bc75c94756491059f9e1e7c367a250e43ba4121db5`
-- `assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/calibration/frame02_walk_rightdown_1.json` · SHA256 `4b7d2fa650a545089a7c76e54cb9ebc5c5eced5a1c136113615bcaa8706ff993`
+- `assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/build_frame02.py` · SHA256 `6dc09485c705b06f332635b07c8b10a50c7d4287de72962daa8a9bd8f3dfcbaa`
+- `assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/calibration/frame02_walk_rightdown_1.json` · SHA256 `87263f762dd47d80b8aaa9021b79c5c78902d3b78a4ad3a6f6e0c25a9e33d550`
 - `assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/composites_2x/a_walk_rightdown_1_triptych_2x.png` · SHA256 `f1f777625f9f2ffe13c1ec34fa4ce400a8866680c2b441560a8e4a2a9e5c29db`
 - `assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/composites_2x/b_walk_rightdown_1_triptych_2x.png` · SHA256 `a12b595046ddaf529f4c83f436210ac585c10d7cf23550ccba4364dc5ff0b07b`
 - `assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/composites_native/a_walk_rightdown_1_triptych.png` · SHA256 `6045b9a2bf8f7c0aaac03fa1a2fd8a2592d105035582b17c8c2a509f3312d402`
