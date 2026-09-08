@@ -640,3 +640,4 @@
 | 2026-09-08 | Leo → Codex（art） | ✅ T45 参考图目验通过，暂停扩展 | Leo 指定附件图 `assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_a_reference.png` 合格；原样留档，停止后续生成，未提交、未推送、正式 runtime 未改。 |
 | 2026-09-08 | Leo → Codex（art） | ✅ 通用握持友好拳型定稿 | Leo 通过当前右向角色图并要求主角色/NPC 所有动作优先复用该拳型：闭合拳竖立，拳端沿角色面向方向略向前屈、向躯干中线略向内收，适配刀剑/棍棒握持；张掌/摊掌/受击张臂/死亡放松保留动作语义。 |
 | 2026-09-08 | Codex（art） | 📚 通用拳型规范与提示词已落盘 | 规范写入 `docs/design/01-基础功能/角色帧规范.md` §2.1 与 `docs/design/01-基础功能/美术素材生成流程规范.md` 类别4；通用提示词=`assets/characters/prompts/fist_grip_friendly_v1.txt`；T45 通过图/原始提示词留档于 `assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/`，候选留档，runtime 未改。 |
+| 2026-09-08 | Codex（art） → rd | 📚 通用握持友好拳型规范与证据提交 | commit `39b05bf`；通用提示词、角色帧/SOP 规范、T45 通过图/原始提示词与 manifest 已入库。通过图为视觉参考，正式 runtime 未改。 |
