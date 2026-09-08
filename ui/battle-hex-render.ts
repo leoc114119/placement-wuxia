@@ -14,9 +14,12 @@ import {
   ANIM_FRAMES,
   ANIM_LOOP_GROUPS,
   ARC_BTNS,
+  ATK_BTN,
   BOARD,
   BOARD_SHAPE,
   CAMERA,
+  CAST_FRAME_PERIOD_MS,
+  CHOREO,
   COMPONENT_LAYOUT,
   CTRL_ACTIVE,
   CTRL_ART,
@@ -100,6 +103,8 @@ export interface HitLayout {
   skillBtns: Array<{ id: string; x: number; y: number; r: number; disabled: boolean }>;
   ctrlRect: { x: number; y: number; w: number; h: number } | null;
   plaqueRect: { x: number; y: number; w: number; h: number } | null;
+  /** 【PRM-1 · TASK-AS-v04】ctrl「攻」钮屏矩形（仅待命期产出=热区存在；非待命=null fall-through 棋盘） */
+  atkBtn: { x: number; y: number; w: number; h: number } | null;
 }
 
 interface AnimClock {
@@ -157,8 +162,18 @@ export interface BattleHexView {
   pendingHits: PendingHit[]; // 挂起冲刷队列（宿主白名单事件入队，updateView 四条件冲刷）
   shakes: Map<string, number>; // actorId → 震动已历时秒（衰减时钟 view 私有，session 无感知）
   dmgStagger: Map<string, { at: number; seq: number }>; // targetId → 同位错位序号（滑动窗口 at=上一条 spawn）
+  /** 【AS · TASK-AS-FE】普攻表现保持窗（【L 环 Leo 09-07 裁 700ms】原口径③/开放点③=1s）：actorId → {since, until}（view.time 系）。
+   * 快照 basic 上升沿开窗；session ANIM_MS.basic=300 冻结不动，快照回 idle 后由本窗把普攻帧
+   * 保持满 700ms（表现常量 CHOREO.basicSec=BASIC_DURATION_MS/1000 别名）。渲染层私有演出态
+   *（与 moveAnims 同级：演出计时主导，快照真值仍为唯一数据源——只延帧不改任何数值/事件）。 */
+  basicHolds: Map<string, { since: number; until: number }>;
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
+  /** 【GSG-1 · TASK-AS-v04 · L 环 Leo 09-07 裁收窄】悬停格（表现态；会话侧契约无此字段、不进快照——方案 v0.4 §9.4）。
+   * input.hover 翻译指针位写入；渲染按快照两类可选格（轻功金格/basicCells）成员判定画红色选中
+   * 效果——绝/特 attackCells 已移出 hover 红态（点格即施放，不加红；将来「可移动的范围攻击」再议），
+   * 普通移动绿格不纳入；触屏无 hover 恒 null=自然退化金色+点击即执行。 */
+  hoverCell: HexPos | null;
   /** UI 状态反馈（宿主填充；托管/加速钮高亮显示——快照无此字段，演出态） */
   uiState: { mode?: BattleMode; speed?: boolean };
   /** T23 顶栏/ctrl 观测面（§2.6：渲染私有 last-drawn 镜像，drawComponents 每帧覆写；
@@ -189,8 +204,10 @@ export function createView(): BattleHexView {
     pendingHits: [],
     shakes: new Map(),
     dmgStagger: new Map(),
+    basicHolds: new Map(),
     skillPop: 0,
     selectedCell: null,
+    hoverCell: null,
     uiState: {},
     topbarHud: {
       name: '',
@@ -201,7 +218,7 @@ export function createView(): BattleHexView {
       statusIcons: [],
       ctrlActive: { mode: false, speed: false },
     },
-    layout: { skillBtns: [], ctrlRect: null, plaqueRect: null },
+    layout: { skillBtns: [], ctrlRect: null, plaqueRect: null, atkBtn: null },
   };
 }
 
@@ -551,6 +568,10 @@ export function updateView(
 ): void {
   view.time += dt;
   const riseToAttack = new Set<string>(); // T21 冲刷条件 a：本帧切到 basic/strike 的攻击者（演出循环后统一冲刷）
+  // 【AS-8 · TASK-AS-FE】冲刷条件 e：本帧离开 basic/strike/charge 的攻击者——
+  // 【v0.3 · TASK-AS-v03】charge（施法相）收势沿并入：t1 段 2 结算同刻 session 先回 idle 再 drain
+  // 段 2 事件（循环末帧即收势，AS-4；300ms strike 收招相已废止），第二跳由 charge→idle 沿兜住。
+  const poseEndAttack = new Set<string>();
   for (const a of snapshot.actors) {
     const prev = view.anim.get(a.id);
     const prevAnim = view.moveAnims.get(a.id);
@@ -609,16 +630,33 @@ export function updateView(
       if (prev && (a.animState === 'strike' || a.animState === 'basic')) {
         view.fx.push({ kind: 'slash', x: w.x, y: w.y, t: 0, sec: FX.slashSec });
         riseToAttack.add(a.id); // T21：与 slash 同沿收集，pendingHits 在演出循环后按 §2.3 冲刷
+        if (a.animState === 'basic') {
+          // 【AS · TASK-AS-FE】普攻表现保持窗开窗（【L 环 Leo 09-07 裁 700ms】原口径③=1s）：上升沿起算 0.7s
+          //（CHOREO.basicSec=BASIC_DURATION_MS/1000 别名，session ANIM_MS.basic=300 冻结差额由此补足）；
+          // 保持期内再出手=新演出起点，覆盖旧窗。
+          view.basicHolds.set(a.id, { since: view.time, until: view.time + CHOREO.basicSec });
+        }
       } else if (prev && a.animState === 'hit') {
         // 【T21 受击反馈互指】受击反馈已改走事件驱动路径（main.ts 白名单入队 → pendingHits 冲刷 +
         // shakes 震动，见本文件 §T21 注释）；下面这个 animState==='hit' 分支是休眠钩子——session 从不
         // 产生 'hit' 态，属永不执行的既有验收代码，维持休眠不删不接。与 drawPieces 内同名休眠行互指。
         view.fx.push({ kind: 'hit', x: w.x, y: w.y, t: 0, sec: FX.hitSec });
+      } else if (prev && (prev.state === 'strike' || prev.state === 'basic' || prev.state === 'charge') && a.animState !== 'dead') {
+        // 【AS-8 · TASK-AS-FE】攻击态/施法相收尾沿（strike/basic/charge→他态）：「收势=段 2 终点」冒字锚——
+        // v0.2 固定步长下 t2 与 strike 收招窗同刻到期，session tick 动画机先翻 idle 再 drain 段 2 事件 →
+        // 条件 a/b 双缺，第二跳会挂至 1.5s 兜底，本沿同帧补冲刷；
+        // 【v0.3 · TASK-AS-v03】技能两段改 t0/t1 后收招相废止，段 2 锚=charge→idle 收势沿
+        //（t1 同刻：resolveSegment2 先发事件后 setAnim(idle)，快照已 idle——本沿=唯一命中臂）；
+        // strike/basic 两臂保留（普攻演出线与 mock 机制锁仍消费）。
+        poseEndAttack.add(a.id);
       }
       view.anim.set(a.id, { state: a.animState, t: 0 });
     } else {
       prev.t += dt;
     }
+    // 【AS · TASK-AS-FE】保持窗惰性清理（到期即除防 Map 无界；帧选随即回 idle 组）
+    const hold = view.basicHolds.get(a.id);
+    if (hold !== undefined && view.time >= hold.until) view.basicHolds.delete(a.id);
   }
   // 特效寿命推进（含 note 冒字）
   const aliveFx: FxItem[] = [];
@@ -640,10 +678,18 @@ export function updateView(
     for (const ph of view.pendingHits) {
       const attacker = snapshot.actors.find((a) => a.id === ph.attackerId);
       const inAttackState = attacker ? attacker.animState === 'basic' || attacker.animState === 'strike' : false;
-      // a 上升沿 / b 已在态兜底 / c 超时（攻击者挂死防御）/ d 攻击者已 dead（hp 减少是既成事实）
+      // 【v0.3 · TASK-AS-v03】施法相首跳（b 的 cast 臂）：段 1=t0 提交内联结算（需求 v1.4 AS-3），
+      // 事件入队帧攻击者恰在 charge（施法相循环至 t1）→ 当帧冲刷第一跳命中反馈（方案 v0.3 §4.4
+      // 「t0 事件触发命中反馈」）；charge 只由 scheduleSkillCast 进入，普攻线 basic/strike 不受扰。
+      const inCastState = attacker ? attacker.animState === 'charge' : false;
+      // a 上升沿 / b 已在态兜底 / b'【v0.3】施法相首跳 / c 超时（攻击者挂死防御）/ d 攻击者已 dead（hp 减少是既成事实）
+      // e【AS-8 · TASK-AS-FE】攻击态/施法相收尾沿（strike/basic/charge→他态同帧）——v0.2 下 t2 与收招窗
+      //   同刻到期时 a/b 双缺；v0.3 下段 2@t1 同刻 charge→idle 收势沿，两形状皆由本沿兜住「收势=段 2 终点」
       const flush =
         riseToAttack.has(ph.attackerId) ||
+        poseEndAttack.has(ph.attackerId) ||
         inAttackState ||
+        inCastState ||
         view.time - ph.t > DMG.flushDeadlineSec ||
         attacker?.animState === 'dead';
       if (!flush) {
@@ -883,7 +929,11 @@ function fillHex(
  * 【Leo 09-04 翻案 v8 缺角】旧「战区矩形裁剪：错位行半格出界部分裁平 → 边缘整齐长方形战区」已撤——
  * 原 rect clip 逻辑整段删除，改为 isBoardCell 逐格判定：最外两圈非可动 dirt 格坐标哈希剔除 ~20%，
  * 边缘=不规则六边形齿边咬进 env 地形（被剔格露 env），画布自然出屏即裁。
- * 落地阴影（T24 方案 §2.2）：边缘格（六邻有缺）在格体之前画下偏软阴影两层（SHADOW 组，底侧重）。 */
+ * 落地阴影（T24 方案 §2.2）：边缘格（六邻有缺）在格体之前画下偏软阴影两层（SHADOW 组，底侧重）。
+ * 【PRM-1/GSG-1 · TASK-AS-v04 · L 环 Leo 09-07 裁收窄】普攻 basicCells 金格 + 可选格悬停红态（两类）：
+ * hoverCell ∈ 轻功金格/basicCells → 红色选中效果（HIGHLIGHT.cellHover），离开恢复原色；绝/特
+ * attackCells 移出 hover 红态（点格即施放，不加红；将来「可移动的范围攻击」再议适用）；
+ * 普通移动绿格不纳入；格集合全部来自快照（渲染不重算邻格/射程——§9.3 架构红线）。 */
 function drawCells(
   ctx: CanvasRenderingContext2D,
   snapshot: BattleSnapshot,
@@ -891,6 +941,7 @@ function drawCells(
   width: number,
   height: number,
   selected: HexPos | null,
+  hoverCell: HexPos | null,
 ): void {
   const center = worldToHex(cam.x, cam.y);
   const span = CAMERA.viewportCells + 2;
@@ -900,7 +951,9 @@ function drawCells(
   const moveEdge = jump ? HIGHLIGHT.jumpEdge : HIGHLIGHT.moveEdge;
   const moveSet = new Set(snapshot.moveCells.map(keyOf));
   const attackSet = new Set(snapshot.attackCells.map(keyOf));
+  const basicSet = new Set(snapshot.basicCells.map(keyOf));
   const selKey = selected ? keyOf(selected) : null;
+  const hoverKey = hoverCell ? keyOf(hoverCell) : null;
   for (let r = center.r - span; r <= center.r + span; r++) {
     for (let q = center.q - span; q <= center.q + span; q++) {
       if (!isBoardCell(q, r)) continue;
@@ -915,7 +968,13 @@ function drawCells(
       const key = `${q},${r}`;
       if (moveSet.has(key)) fillHex(ctx, sx, sy, moveFill, moveEdge);
       else if (attackSet.has(key)) fillHex(ctx, sx, sy, HIGHLIGHT.attack, HIGHLIGHT.attackEdge);
+      else if (basicSet.has(key)) fillHex(ctx, sx, sy, HIGHLIGHT.jump, HIGHLIGHT.jumpEdge); // 普攻选格=金（PRM-1②）
       if (selKey === key) fillHex(ctx, sx, sy, HIGHLIGHT.selected, HIGHLIGHT.selectedEdge);
+      // GSG-1 悬停红态（【L 环 Leo 09-07 裁收窄】两类：轻功金格 jump&&move + 普攻 basicCells；
+      // 绝/特 attackCells 点格即施放不加红）；悬停即"选中"视觉、点击立即执行；绿格 fall-through 不画
+      else if (hoverKey === key && (basicSet.has(key) || (jump && moveSet.has(key)))) {
+        fillHex(ctx, sx, sy, HIGHLIGHT.cellHover, HIGHLIGHT.cellHoverEdge);
+      }
     }
   }
 }
@@ -934,9 +993,18 @@ function drawEdgeShadow(ctx: CanvasRenderingContext2D, sx: number, sy: number): 
 
 // ============ L3 棋子 / L4 HUD ============
 
+/** 【AS · TASK-AS-FE】普攻保持窗判定（view.time 系）：窗内快照 idle 帧组提升为 basic 续播 */
+function basicHoldActive(view: BattleHexView, actorId: string): boolean {
+  const h = view.basicHolds.get(actorId);
+  return h !== undefined && view.time < h.until;
+}
+
 /** 当前帧号（帧组播报：循环组取模循环；单播组夹到组尾保持，组切换由 updateView 重置）——legacy profile 专用 */
 function frameOf(view: BattleHexView, actor: SnapshotActor, stateOverride?: string): number {
-  const state = stateOverride ?? actor.animState;
+  let state = stateOverride ?? actor.animState;
+  // 【AS · TASK-AS-FE】普攻保持窗：快照已回 idle 但窗内 → 继续播 basic 帧（legacy 单帧组=帧 6 定格；
+  // 循环语义对单帧组幂等=敌型 charge 降级同理不坏）
+  if (state === 'idle' && basicHoldActive(view, actor.id)) state = 'basic';
   const clock = view.anim.get(actor.id);
   const group = ANIM_FRAMES[state] ?? ANIM_FRAMES.idle;
   if (!clock || clock.state !== state) return group[0];
@@ -954,8 +1022,10 @@ export interface DirectionalFrameSel {
 /** 【六向帧接线 §3.2】directional 选帧（frameOf 升级）：先解析语义 clip，再按对应时钟取 ordinal。
  * 优先级：dead（die 共用）> 移动演出期（jump 单帧=全程腾空帧——Leo 09-06 裁定去蓄势帧 _1，
  * ordinal 恒 1 经 profile.frameSrc 映射 jump_{facing}_2.png；旧两段切换/jumpFrameThreshold 已废；
- * 禁复用 animState clock 判跳，否则 jump 非 session 状态会永卡；walk 沿演出钟 1↔2 循环）> animState
- * 经 profile.stateMap（循环态区间循环 / 单播态 from→to 播至尾帧保持，组切换由 updateView 重置）。
+ * 禁复用 animState clock 判跳，否则 jump 非 session 状态会永卡；walk 沿演出钟 1↔2 循环）>
+ * 【AS · TASK-AS-FE】普攻保持窗（快照 idle 但 1s 窗内 → basic 计划续播，见分支注）> animState
+ * 经 profile.stateMap（循环态区间循环——charge=cast 1→3 整套循环至 t1 回 idle，v0.3 AS-2/AS-4；
+ * 单播态 from→to 播至尾帧保持，组切换由 updateView 重置）。
  * 纯导出供用例；调用方须保证 spriteKey 有 directional profile（drawPieces 已分支保证）。 */
 export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): DirectionalFrameSel {
   const profile = SPRITE_PROFILES[actor.spriteKey];
@@ -978,10 +1048,24 @@ export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): D
     return { clip: plan.clip, ordinal: plan.from + (idx % span) };
   }
   const state = actor.animState;
+  // 【AS · TASK-AS-FE】普攻保持窗：快照已回 idle（session ANIM_MS.basic=300 冻结）但窗内 → 沿
+  // basic 计划续播；elapsed 取钟连续值（basic 在态=钟 t；已翻 idle=窗起点差）——atk1→2 单播
+  // 播至尾帧保持，无 2→1 回跳。
+  const hold = view.basicHolds.get(actor.id);
+  if (state === 'idle' && hold !== undefined && view.time < hold.until) {
+    const plan = profile.stateMap.basic;
+    const clockB = view.anim.get(actor.id);
+    const elapsed = clockB && clockB.state === 'basic' ? clockB.t : view.time - hold.since;
+    const idxB = Math.floor((elapsed * 1000) / PIECE.walkFrameMs);
+    return { clip: plan.clip, ordinal: Math.min(plan.from + idxB, plan.to) };
+  }
   const plan = profile.stateMap[state] ?? profile.stateMap.idle;
   const clock = view.anim.get(actor.id);
   if (!clock || clock.state !== state) return { clip: plan.clip, ordinal: plan.from }; // 新组从 from 重放
-  const idx = Math.floor((clock.t * 1000) / PIECE.walkFrameMs);
+  // 【v0.3 · TASK-AS-v03】charge 循环步频走独立 CAST_FRAME_PERIOD_MS=280（方案 §4.4，与 walkFrameMs
+  // 解耦）；walk 循环（无 moveAnim 时钟臂）与其余态保持 walkFrameMs 不动。
+  const periodMs = state === 'charge' ? CAST_FRAME_PERIOD_MS : PIECE.walkFrameMs;
+  const idx = Math.floor((clock.t * 1000) / periodMs);
   if (ANIM_LOOP_GROUPS.includes(state)) {
     const span = plan.to - plan.from + 1;
     return { clip: plan.clip, ordinal: plan.from + (idx % span) };
@@ -1151,6 +1235,45 @@ function drawPieceHud(
   const showPop = snapshot.phase === 'fighting' && snapshot.pendingInput && hero && snapshot.turnActorId === hero.id;
   const pop = showPop ? easeOutCubic(view.skillPop) : 0;
   view.layout.skillBtns = [];
+  // 【PRM-1 · TASK-AS-v04 · L 环 Leo 09-07 裁猫爪布位】攻钮=猫爪肉垫位：与特/绝/轻/毒四钮同圆心
+  // 同半径（ARC_BTNS 弧参数），弧心角 90°（正下）、圆形、同直径——五钮猫爪形态（旧「ctrl 正上方
+  // 同宽矩形」废止）。色/描边/选中态同源消费 ARC_BTNS；可见性条件沿旧攻钮原样（fighting+待命+
+  // 手动+主角存活），不随四钮弹出缩放（最小改动）；非待命=layout.atkBtn 保持 null（无热区，
+  // 棋盘 fall-through——HIT-1 同规）。热区=圆外接正方形（pickAtkButton 矩形口径不变）。
+  view.layout.atkBtn = null;
+  const atkVisible =
+    snapshot.phase === 'fighting' &&
+    snapshot.pendingInput &&
+    view.uiState.mode !== 'auto' &&
+    hero !== undefined &&
+    hero.animState !== 'dead';
+  if (atkVisible && hero) {
+    const padP = placed.find((x) => x.actor.id === hero.id);
+    if (padP) {
+      const padHw = padP.w * ARC_BTNS.headWidthRatio;
+      const padD = padHw * ARC_BTNS.diameterPerHead; // 与四钮同直径（规格一致）
+      const padR = padHw * ARC_BTNS.arcRadiusPerHead; // 与四钮同弧半径（同圆）
+      const padAng = (ATK_BTN.angleDeg * Math.PI) / 180;
+      const padCx = padP.cx + Math.cos(padAng) * padR;
+      const padCy = padP.top + padHw * 0.6 + Math.sin(padAng) * padR;
+      const active = snapshot.basicCells.length > 0; // 选中态判定=快照 basicCells 非空（session 真值，沿旧攻钮）
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(padCx, padCy, padD / 2, 0, Math.PI * 2);
+      ctx.fillStyle = ARC_BTNS.colorBg;
+      ctx.fill();
+      ctx.lineWidth = active ? ARC_BTNS.rimWidthSelected : ARC_BTNS.rimWidth;
+      ctx.strokeStyle = active ? ARC_BTNS.rimColorSelected : ARC_BTNS.colorRim;
+      ctx.stroke();
+      ctx.fillStyle = ARC_BTNS.colorText;
+      ctx.font = `bold ${Math.round(padD * ATK_BTN.fontRatio)}px ${FONT_STACK}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ATK_BTN.label, Math.round(padCx), Math.round(padCy + 1));
+      ctx.restore();
+      view.layout.atkBtn = { x: padCx - padD / 2, y: padCy - padD / 2, w: padD, h: padD };
+    }
+  }
   if (!hero || pop <= 0.01) return;
   const p = placed.find((x) => x.actor.id === hero.id);
   if (!p) return;
@@ -1198,6 +1321,8 @@ function drawComponents(
 ): void {
   view.layout.plaqueRect = null;
   view.layout.ctrlRect = null;
+  // 【L 环 Leo 09-07 裁猫爪布位】atkBtn 复位/产出已随攻钮绘制迁 drawPieceHud（先于本函数执行，
+  // 此处不再复位——防抹掉本帧猫爪热区）。
   // 顶栏（T23 §2.1）：topbar_base 无字底图全宽贴屏顶 + 代码压暗层（现状保留）+ 代码条/名字/百分比叠绘；缺图时代码兜底
   const tb = assets.topbar;
   const topH = (width * (tb ? tb.height : TOPBAR.artH)) / (tb ? tb.width : TOPBAR.artW);
@@ -1377,6 +1502,8 @@ function drawComponents(
     }
   }
   view.layout.ctrlRect = { x: cx, y: cy, w: cw, h: ch };
+  // 【L 环 Leo 09-07 裁猫爪布位】攻钮绘制已迁 drawPieceHud（与特/绝/轻/毒四钮同圆猫爪形态）；
+  // 本处旧「ctrl 正上方同宽矩形」布位整段删除，layout.atkBtn 复位/产出随 drawPieceHud。
 }
 
 // ============ L6 特效 + 结算遮罩 ============
@@ -1471,7 +1598,7 @@ export function drawFrame(
   ctx.beginPath();
   ctx.rect(0, 0, width, height);
   ctx.clip();
-  drawCells(ctx, snapshot, cam, width, height, view.selectedCell);
+  drawCells(ctx, snapshot, cam, width, height, view.selectedCell, view.hoverCell);
   const placed = drawPieces(ctx, snapshot, assets, view, cam, width, height);
   drawPieceHud(ctx, placed, snapshot, view);
   drawFx(ctx, view, cam, width, height);

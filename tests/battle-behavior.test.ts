@@ -233,30 +233,35 @@ d('ATK-2 技能施放链（结算层绿锁 · N2 受理/结算层无病的证据
     const neuli0 = snap.actors.find((a) => a.id === 'hero')!.neili;
     expect(s.submit({ type: 'attack', targetId: 'e1', skillId: 'te' })).toBe(true);
     const after = s.snapshot();
-    // 命中/闪避走 core 骰子（F-04），行为锁只锁链路：出手事件（skill 或 miss）+资源+状态
-    const tail = evTypes(s).slice(-3);
-    expect(tail).toEqual(expect.arrayContaining([expect.stringMatching(/^(skill|miss)$/)]));
-    expect(after.actors.find((a) => a.id === 'e1')!.hp).toBeLessThanOrEqual(hp0);
     expect(after.actors.find((a) => a.id === 'hero')!.neili).toBe(neuli0 - 1); // Q2 内力 1（骰前扣，确定）
     expect(after.selectedSkill).toBe(null);
     expect(after.actors.find((a) => a.id === 'hero')!.actionBar).toBe(0);
+    // 【AS 采样时刻适配·v0.3 勘注 · TASK-AS-v03】段 1=t0 提交内联结算（v1.4 AS-3，提交同刻已有
+    // 首跳事件，下方等待条件即刻满足）+ 段 2=t1 收口——采样窗 320×0.01=3.2s 恒覆盖两段
+    //（断言体零改；v1.3「t0 hp 不变·无段事件」「越过 t1=3s 才见首事件」口径随 v0.3 废止）。
+    for (let i = 0; i < 320 && !s.events.some((e) => e.type === 'skill' || e.type === 'miss'); i++) s.tick(0.01);
+    // 命中/闪避走 core 骰子（F-04），行为锁只锁链路：出手事件（skill 或 miss）+资源+状态
+    const tail = evTypes(s).slice(-3);
+    expect(tail).toEqual(expect.arrayContaining([expect.stringMatching(/^(skill|miss)$/)]));
+    expect(s.snapshot().actors.find((a) => a.id === 'e1')!.hp).toBeLessThanOrEqual(hp0);
   });
 });
 
 d('ATK-3/ATK-4 移动附带普攻与轻功态点敌（绿锁）', () => {
-  it('移动落点与敌相邻 → move 事件后跟 basic 事件（不另耗回合）', () => {
+  it('移动落点与敌相邻 → move 事件后零 basic/miss 跟随（规格依据=v2.5 ATK-3 玩家侧废止 09-07 Leo 裁，随卡改写；AI 侧保留见 battle-session [ATK-3] AI 位移臂用例）', () => {
     const s = mkSession();
     place(s, 'hero', 5, 8);
     place(s, 'e1', 6, 8);
     place(s, 'e2', 11, 3);
     ready(s);
     const n0 = s.events.length;
-    expect(s.submit({ type: 'move', to: offsetToAxial(6, 9) })).toBe(true); // 落点与 e1 相邻
+    expect(s.submit({ type: 'move', to: offsetToAxial(6, 9) })).toBe(true); // 落点与 e1 相邻（旧 ATK-3 触发面）
     const tail = evTypes(s).slice(n0);
     const iMove = tail.indexOf('move');
     expect(iMove).toBeGreaterThanOrEqual(0);
-    expect(tail.slice(iMove)).toContain('basic'); // ATK-3
-    expect(heroOf(s).actionBar).toBe(0); // 只耗一次行动
+    expect(tail.slice(iMove)).not.toContain('basic'); // v2.5 废止：移动纯移动（普攻走 PRM-1 攻钮/点敌）
+    expect(tail.slice(iMove)).not.toContain('miss');
+    expect(heroOf(s).actionBar).toBe(0); // 移动本身耗一次行动（BAR-3 不变）
   });
 
   it('轻功态点敌=无操作：false、无事件、选中保持（ATK-4/Q4）', () => {
@@ -365,6 +370,10 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
     expect(after.heroSkills.find((b) => b.id === 'te')!.disabled).toBe(true); // R-08 冷却写入（neili 60−1=59 ≫ 内力阈值，置灰唯冷却因）
     expect(after.actors.find((a) => a.id === 'e1')!.hp).toBe(hp01); // 空放：格上无敌=无伤害结算
     expect(after.actors.find((a) => a.id === 'e2')!.hp).toBe(hp02);
+    // 【AS 采样时刻适配·v0.3 勘注 · TASK-AS-v03】空放事件=t0（v1.4 AS-6：t0 圈内无存活敌=提交
+    // 同刻一条无目标 skill，不建 pending）——事件已即时在，等待条件即刻满足；断言体零改
+    //（v1.3「空搜=t1 恰一条」口径随 v0.3 废止）。
+    for (let i = 0; i < 320 && !s.events.some((e) => e.type === 'skill'); i++) s.tick(0.01);
     const skillEv = s.events.filter((e) => e.type === 'skill').pop();
     expect(skillEv).toBeDefined(); // 事件尾=skill（可观测反馈本体，ATK-6 契约）
     expect((skillEv as { targetId?: unknown }).targetId).toBeUndefined(); // 空放事件无 targetId
@@ -406,7 +415,10 @@ d('N2🟢 技能施放交互（T20-FE 按规格 v2.0 重写转绿 · input 命�
     expect(dispatches).toEqual([{ type: 'cast', to: { q: 4, r: 9 }, skillId: 'te' }]); // 演出位∈射程=受理
     const afterA = s.snapshot();
     expect(afterA.selectedSkill).toBe(null); // 施放受理选中清
-    // v2.2 断言翻转（ATK-7 简化/五点④）：命中只看射程成员——e1 逻辑位 (9,8) ∈ 射程被 AOE 命中
+    // 【AS 采样时刻适配·v0.3 勘注 · TASK-AS-v03】段 1=t0 提交内联（v1.4 AS-3，提交同刻即有首跳
+    // 事件，恰 1 条断言在 t0 即锁定）——采样窗恒覆盖，t1 若至会补段 2 第 2 条但等待条件早停；
+    // v2.2 断言方向保持（ATK-7 简化/五点④：命中只看射程成员——e1 逻辑位 (9,8) ∈ 射程被 AOE 命中）。
+    for (let i = 0; i < 320 && s.events.slice(evA0).filter((e) => e.type === 'skill' || e.type === 'miss').length === 0; i++) s.tick(0.01);
     const settleA = s.events.slice(evA0).filter((e) => e.type === 'skill' || e.type === 'miss');
     expect(settleA).toHaveLength(1); // 恰 1 条结算事件（e1 唯一射程内敌）
     expect((settleA[0] as { targetId?: string }).targetId).toBe('e1');

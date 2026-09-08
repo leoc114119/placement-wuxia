@@ -2,7 +2,7 @@
 // 依据：战场布局规格-六边形战棋.md 96 号（s=31 / 7×7 视口 / 平顶公式）、战斗界面视觉骨架.md v8 定稿
 //（色彩/组件布局）、主架构《战斗界面接入技术方案》§2（渲染分层）。数值真值仍在 battle-core / 云端 settle。
 
-import { BATTLE_FRAME } from './battle';
+import { BASIC_DURATION_MS, BATTLE_FRAME, FINISH_WINDOW_MS } from './battle'; // 【AS】共享表现常量唯一真值在共享配置（方案 §4.4：BE/FE 不各自复制，本文件 CHOREO 只做别名引用，不 import battle-core——T15 验收红线；FINISH_WINDOW_MS=BE 落 / BASIC_DURATION_MS=FE 落）
 import type { BattleFacingHex } from '../types'; // 六向帧接线 §2.1 契约类型（type-only，零运行时耦合）
 
 // ===== 六边形几何（96 号定值：平顶 flat-top，s=31 → 格 62×54pt） =====
@@ -127,6 +127,12 @@ export const HIGHLIGHT = {
   attackEdge: 'rgba(255, 120, 100, 0.85)',
   selected: 'rgba(245, 205, 70, 0.5)', // 选中格（金）
   selectedEdge: 'rgba(255, 230, 130, 0.95)',
+  /** 【GSG-1 v2.5 · TASK-AS-v04 · L 环 Leo 09-07 裁收窄】可选格悬停红态（Leo 09-07：悬停红色，不点两下）——
+   * 适用范围收窄为两类：轻功金格（jump 可达格）/普攻 basicCells；绝/特 attackCells 移出 hover 红态
+   *（技能点格即施放，不加红——将来「可移动的范围攻击」再议适用）；普通移动绿格不纳入（GSG-1 明文）。
+   * 触屏无 hover 自然退化（不设置即不画）。 */
+  cellHover: 'rgba(228, 52, 32, 0.72)',
+  cellHoverEdge: 'rgba(255, 96, 72, 0.95)',
 } as const;
 
 // ===== 棋子（L3；占位帧=既有 battle/ 小表，T14 Q 版帧到位换 spriteKey+定尺系数即可） =====
@@ -170,14 +176,27 @@ export const ANIM_FRAMES: Record<string, readonly number[]> = {
   dead: [0],
 } as const;
 
-/** 循环型帧组（walk 循环重放；其余单播型：播到组尾帧保持，直到 session 切状态） */
-export const ANIM_LOOP_GROUPS: readonly string[] = ['walk'];
+/** 循环型帧组（walk 循环重放；其余单播型：播到组尾帧保持，直到 session 切状态）
+ * 【AS · 需求 v1.3 AS-2/开放点① · TASK-AS-FE】charge 入循环组：施放帧整套循环播放至出招时长
+ * 结束（循环多久由 session 施法相时长定，帧不单独锚定）；legacy 线 ANIM_FRAMES.charge=[4] 单帧
+ * 组循环自身=定格帧 4（敌型降级不坏，循环语义对单帧组幂等）。 */
+export const ANIM_LOOP_GROUPS: readonly string[] = ['walk', 'charge'];
 
-/** 出招演出时序（🟡 手感项，preview 目验可调；mock 按此驱动 animState 时间线） */
+/** 【AS · TASK-AS-v03】施法相 cast 循环帧周期（ms）——独立常量，与 PIECE.walkFrameMs(140) 解耦
+ *（需求 v1.4 AS-2 · 方案 v0.3 §4.4「cast 帧以独立 CAST_FRAME_PERIOD_MS=280 循环至 t1」）。
+ * 消费面仅 directional 选帧 charge 循环分支（ui/battle-hex-render directionalFrameOf）；
+ * walk/basic 保持窗仍走 walkFrameMs，禁回耦。 */
+export const CAST_FRAME_PERIOD_MS = 280;
+
+/** 出招演出时序（🟡 手感项，preview 目验可调；mock 按此驱动 animState 时间线）
+ * 【AS · TASK-AS-BE】strikeSec 改为 core FINISH_WINDOW_MS 别名引用（值不变 0.3）——
+ * 【v0.3 勘注 · TASK-AS-v03】300ms 已不是技能段 2 结算锚（段 2 唯一锚=t1=t0+castDurationMs，
+ * 方案 v0.3 §2.2/§4.4）；本别名仅为 legacy tick 动画机/mock 演出线表现兼容暂留，BE/FE 禁用它
+ * 推导任何段结算时点。 */
 export const CHOREO = {
-  chargeSec: 0.1, // 蓄力段（04）
-  strikeSec: 0.3, // 出招挥出（05）
-  basicSec: 0.32, // 普攻全程（06+前冲回位口径）
+  chargeSec: 0.1, // 蓄力段（04）——legacy tick 动画机旧线口径；AS 线施法相 charge 由 pendingCasts 保持（时长=出招时长，B5）
+  strikeSec: FINISH_WINDOW_MS / 1000, // 出招挥出（05）=收招窗别名（表现兼容暂留；非结算锚，见上勘注）
+  basicSec: BASIC_DURATION_MS / 1000, // 【AS · TASK-AS-FE】普攻表现时长别名（【L 环 Leo 09-07 裁 700ms】原口径③/开放点③=1s；渲染层 basic 保持窗消费——只改表现计时，不延迟普攻事件或血量）
   hitSec: 0.18, // 受击段
 } as const;
 
@@ -344,6 +363,20 @@ export const CTRL_ACTIVE = {
 } as const;
 
 /**
+ * 【PRM-1 v2.5 · TASK-AS-v04 · L 环 Leo 09-07 裁猫爪布位】ctrl「攻」按钮（普攻选格入口）：
+ * 旧「ctrl 组件正上方锚定、右对齐同宽矩形」废止——改锚定主角头圆与特/绝/轻/毒四钮同圆心同半径
+ *（ARC_BTNS 弧参数），位=弧心角 90°（屏幕系正下方）、圆形、与四钮同直径——五钮呈猫爪形态
+ *（四钮弧形在上排，攻钮如猫爪肉垫居中在下）。颜色/描边/选中态同源消费 ARC_BTNS（同圆同族不复制）。
+ * 仅手动+主角待命可进入（PRM-1①）；代码绘制占位钮（视觉降级模式沿用——无独立素材）。
+ * 热区=圆外接正方形（pickAtkButton 矩形口径不变）。ADR-004 只读展示参数。
+ */
+export const ATK_BTN = {
+  label: '攻', // 钮面字（PRM-1①「攻」按钮）
+  angleDeg: 90, // 猫爪肉垫位=弧圆心角（屏幕系 90=正下；四钮弧 195~345 居上排，攻钮居中在下）
+  fontRatio: 0.52, // 字号=钮径比例（与 ARC_BTNS 钮面字 0.52 同族）
+} as const;
+
+/**
  * plaque_l_alpha.png（=PLAQUE_ART 尺寸）两块木牌热区标定矩形（牌面占比；文字已烘焙在切图内）。
  * T20-FE D-13 复量核定（最长连续实体 run 口径，系绳孔收腰防全行计数高估）：落库 x/w 取方案 §4.2
  * 参考值 26/273（可点主体，左右透明边+侧穗不设热区）；y/hRatio 沿 2026-09-02 牌面标定不动
@@ -419,12 +452,14 @@ export const SPRITE_PROFILES: Readonly<Record<string, BattleSpriteProfile>> = {
           ? `${HERO_BATTLE45}/jump_${facing}_2.png`
           : `${HERO_BATTLE45}/${clip}_${facing}_${ordinal}.png`,
     sharedSrc: { die: `${HERO_BATTLE45}/die_common.png` },
-    // §3.2 帧序：idle1 保持 / walk 1↔2 循环 / basic atk1→2 / charge cast1 / strike cast2→3
+    // §3.2 帧序：idle1 保持 / walk 1↔2 循环 / basic atk1→2 / 【AS】charge cast1→3 整套循环
+    //（AS-2/开放点①：施放帧循环播放至出招时长结束=聚气→外放→收势整套，至 session 切 strike）
+    // / strike cast2→3 单播（外放=段1 落地 / 收势=段2 终点，AS-8 帧时刻锚定）
     // / hit 休眠态无专用素材→idle / dead die_common 1（沿既有压扁淡出）
     stateMap: {
       idle: { clip: 'idle', from: 1, to: 1 },
       walk: { clip: 'walk', from: 1, to: 2 },
-      charge: { clip: 'cast', from: 1, to: 1 },
+      charge: { clip: 'cast', from: 1, to: 3 },
       strike: { clip: 'cast', from: 2, to: 3 },
       basic: { clip: 'atk', from: 1, to: 2 },
       hit: { clip: 'idle', from: 1, to: 1 },

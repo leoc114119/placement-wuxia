@@ -73,6 +73,45 @@ export function fillRate(c: CombatantInput): number {
   return (100 + c.neigongLevel * 3 + c.jimin) / 10;
 }
 
+// ---------- AS 出招速度（需求 v1.3 AS-1/AS-4 · 技术方案 v0.2 §2.1/§2.2 · 数值唯一真值在此） ----------
+
+// 收招窗 300ms（AS-4 表现常量）落位共享配置 config/battle.ts FINISH_WINDOW_MS（TASK-AS-BE 施工期
+// 裁定：battle-hex CHOREO.strikeSec 别名引用不得 import battle-core——T15 验收红线
+// 「渲染/输入层 import battle-core = 0」；battle-session 同从共享配置引用 t2 锚）。
+
+/** 出招时长基准 ms（AS-1：技能出招基准 3s；普攻不消费本公式——独立表现常量 1s 归 FE/宿主） */
+const CAST_BASE_MS = 3000;
+/** 出招速度和封顶（AS-1：加法模型，封顶在加成侧 → 最快 500ms，时长侧零特判无第二道 clamp） */
+const CAST_SPEED_CAP = 6;
+/** MVP 默认：武功出招系数（schema v0.2；旧技能缺省值，方案 §2.1） */
+const CAST_SPEED_DEFAULT = 0.8;
+/** MVP 默认：内功加成速度（成长域快照缺省值，方案 §2.1） */
+const INTERNAL_SPEED_DEFAULT = 0.2;
+
+/** 出招速度和（加法合成 + 封顶）。显式非法值 fail-fast（方案 §2.1：两输入须有限数、
+ * skillSpeed>0、internalSpeed>=0；缺失走 MVP 默认）——装配入口即 scheduleSkillCast 首次消费点。
+ * 纯函数：同输入恒同输出，不消费 RNG（SP-2）。 */
+export function effectiveCastSpeed(
+  skillSpeed: number | undefined,
+  internalSpeed: number | undefined,
+): number {
+  const s = skillSpeed ?? CAST_SPEED_DEFAULT;
+  const i = internalSpeed ?? INTERNAL_SPEED_DEFAULT;
+  if (!Number.isFinite(s) || s <= 0) {
+    throw new Error(`effectiveCastSpeed: skillSpeed must be a finite positive number, got ${skillSpeed}`);
+  }
+  if (!Number.isFinite(i) || i < 0) {
+    throw new Error(`effectiveCastSpeed: internalSpeed must be a finite non-negative number, got ${internalSpeed}`);
+  }
+  return Math.min(CAST_SPEED_CAP, s + i);
+}
+
+/** 出招时长 ms = 3000 ÷ min(6, castSpeed + internalCastSpeed)（AS-1 加法模型定版；
+ * session 每次提交取当前快照计算 t1 锚点，禁读 level/neigongLevel 反推成长曲线）。 */
+export function castDurationMs(skill: SkillDef, actor: CombatantInput): number {
+  return CAST_BASE_MS / effectiveCastSpeed(skill.castSpeed, actor.internalCastSpeed);
+}
+
 // ---------- R-05 范围 ----------
 export function rangeTier(level: number): 0 | 1 | 2 {
   if (level < 20) return 0;
@@ -191,18 +230,32 @@ interface Runner extends CombatantInput {
 
 // ---------- 出手结算（F-01/F-03/F-04） ----------
 // 参数类型放宽到 CombatantInput（resolveAction 导出供演出层同源调用；Runner 结构兼容，零行为变更）
+
+/** 【AS 两段式伤害 · 方案 v0.2 §4.2】F-04 掷骰链唯一真值（命中 → 闪避 → 暴击，rng 消费顺序冻结）。
+ * 自 resolveDamage 零行为抽取（TASK-AS-BE）：普攻/单段路径与技能段路径共用同一判定序，
+ * 每 1~3 次 rng 的消费顺序与抽取前逐位一致（历史 14 用例背书 + AS-T5 段独立判定）。 */
+function rollF04(
+  actor: CombatantInput,
+  target: CombatantInput,
+  rng: Rng,
+): { missed: boolean; crit: boolean } {
+  const hitRate = Math.min(1, BASE_HIT + (actor.shizhan / 1_000_000) * 0.01);
+  if (rng() >= hitRate) return { missed: true, crit: false };
+  const dodgeRate = Math.min(DODGE_CAP, target.jimin * 0.002);
+  if (rng() < dodgeRate) return { missed: true, crit: false };
+  const crit = rng() < actor.danshi * 0.003;
+  return { missed: false, crit };
+}
+
 function resolveDamage(
   actor: CombatantInput,
   target: CombatantInput,
   gradeFactor: number,
   rng: Rng,
 ): { damage: number; crit: boolean; missed: boolean } {
-  // 判定顺序（F-04）：命中 → 闪避 → 暴击 → 破防保底
-  const hitRate = Math.min(1, BASE_HIT + (actor.shizhan / 1_000_000) * 0.01);
-  if (rng() >= hitRate) return { damage: 0, crit: false, missed: true };
-  const dodgeRate = Math.min(DODGE_CAP, target.jimin * 0.002);
-  if (rng() < dodgeRate) return { damage: 0, crit: false, missed: true };
-  const crit = rng() < actor.danshi * 0.003;
+  // 判定顺序（F-04）：命中 → 闪避 → 暴击 → 破防保底（掷骰链已抽取 rollF04，算式与顺序零变更）
+  const { missed, crit } = rollF04(actor, target, rng);
+  if (missed) return { damage: 0, crit: false, missed: true };
   const base = Math.max(actor.atk - target.def, 1); // 破防下限 1（✅）
   const damage = Math.floor(base * gradeFactor * (crit ? CRIT_MULT : 1));
   return { damage, crit, missed: false };
@@ -276,6 +329,32 @@ export function resolveAction(
     crit: r.crit,
     logs: [mkLog({ action: skill ? 'skill' : 'basic', skillId: skill?.id, damage: r.damage, crit: r.crit })],
   };
+}
+
+/** 【AS 两段式伤害 · 需求 v1.3 AS-3/AS-4/AS-5 · 方案 v0.2 §4.2】技能伤害段结算：
+ * 不扣资源、不写 actor/target 的纯函数——session 只负责排程、扣资源、写血量、转发既有事件，
+ * 命中/闪避/暴击/破防/取整唯一真值在此（禁 session 复制）。每段独立 F-04（1~3 次 rng，
+ * 消费顺序与 resolveDamage 同链）+ 独立 floor：floor(max(atk−def,1) × grade × damageRatio × (crit?1.5:1))，
+ * 两段之和不补差（§2.3）。resolveAction 既有签名与普攻路径零改动。 */
+export interface SkillSegmentOutcome {
+  kind: 'skill' | 'miss'; // 事件契约零新增（AS-5）：段结算只产既有 skill|miss 形状
+  damage: number; // miss=0
+  crit: boolean;
+  missed: boolean;
+}
+
+export function resolveSkillSegment(
+  actor: ActionActor,
+  target: CombatantInput,
+  skill: SkillDef,
+  damageRatio: 0.5,
+  rng: Rng,
+): SkillSegmentOutcome {
+  const { missed, crit } = rollF04(actor, target, rng);
+  if (missed) return { kind: 'miss', damage: 0, crit: false, missed: true };
+  const base = Math.max(actor.atk - target.def, 1); // 破防下限 1（F-04，同链）
+  const damage = Math.floor(base * skill.grade * damageRatio * (crit ? CRIT_MULT : 1));
+  return { kind: 'skill', damage, crit, missed: false };
 }
 
 // ---------- 主入口：runBattleHeadless ----------

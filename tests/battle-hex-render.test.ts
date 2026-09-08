@@ -12,6 +12,8 @@ import {
   ARC_BTNS,
   BOARD,
   BOARD_SHAPE,
+  CAST_FRAME_PERIOD_MS,
+  CHOREO,
   COMPONENT_LAYOUT,
   CTRL_ACTIVE,
   CTRL_ART,
@@ -33,6 +35,7 @@ import {
   type BattleClip,
   type DirectionalSpriteProfile,
 } from '../config/battle-hex';
+import { BASIC_DURATION_MS, FINISH_WINDOW_MS } from '../config/battle'; // 【AS · TASK-AS-FE】共享表现常量别名锁用
 import {
   axialToOffset,
   boardBounds,
@@ -58,7 +61,7 @@ import {
   type ImgLike,
   type LegacyFrameStrip,
 } from '../ui/battle-hex-render';
-import { createBattleInput, createPointerTracker, pickCtrlButton, pickPlaqueButton, pickSkillButton } from '../ui/battle-input';
+import { createBattleInput, createPointerTracker, pickAtkButton, pickCtrlButton, pickPlaqueButton, pickSkillButton } from '../ui/battle-input';
 import { createMockSession } from '../proto/battle_demo/mock_session';
 import type { BattleFacingHex, BattleSnapshot, CombatantInput, HexPos, SnapshotActor } from '../types';
 
@@ -274,6 +277,7 @@ function makeViewForInput(): ReturnType<typeof createView> {
     ],
     ctrlRect: { x: 300, y: 500, w: 70, h: 140 }, // 375×667 内
     plaqueRect: { x: 6, y: 50, w: 64, h: 156 },
+    atkBtn: null, // 【TASK-AS-v04 契约字段】输入翻译夹具默认无攻钮热区（待命期才产出）
   };
   return view;
 }
@@ -603,6 +607,7 @@ function makeSnapshot(parts: Array<Partial<SnapshotActor>>): BattleSnapshot {
     moveCells: [],
     moveKind: 'walk',
     attackCells: [],
+    basicCells: [], // 【TASK-AS-v04 契约字段】渲染夹具默认无普攻选格
     selectedSkill: null,
     heroSkills: [],
     actors: parts.map((p) => ({ ...base, ...p })),
@@ -1604,12 +1609,12 @@ describe('[六向接线 §3.1] hero directional profile 资源完整性（缺任
     }
   });
 
-  it('hero stateMap（§3.2 帧序表）：basic→atk1→2 / charge→cast1 / strike→cast2→3 / hit 休眠→idle1 / dead→die1', () => {
+  it('hero stateMap（§3.2 帧序表）：basic→atk1→2 / charge→cast1→3 整套循环 / strike→cast2→3 / hit 休眠→idle1 / dead→die1', () => {
     const m = (SPRITE_PROFILES.hero as DirectionalSpriteProfile).stateMap;
     expect(m.idle).toEqual({ clip: 'idle', from: 1, to: 1 });
     expect(m.walk).toEqual({ clip: 'walk', from: 1, to: 2 });
     expect(m.basic).toEqual({ clip: 'atk', from: 1, to: 2 });
-    expect(m.charge).toEqual({ clip: 'cast', from: 1, to: 1 });
+    expect(m.charge).toEqual({ clip: 'cast', from: 1, to: 3 }); // 【AS · TASK-AS-FE 随卡回调】AS-2/开放点①：施放帧定格 cast1→cast1→3 整套循环
     expect(m.strike).toEqual({ clip: 'cast', from: 2, to: 3 });
     expect(m.hit).toEqual({ clip: 'idle', from: 1, to: 1 }); // 休眠态无专用素材（§3.2）
     expect(m.dead).toEqual({ clip: 'die', from: 1, to: 1 });
@@ -1627,13 +1632,18 @@ describe('[六向接线 §3.1] hero directional profile 资源完整性（缺任
 });
 
 describe('[六向接线 §3.2] directional 选帧语义（frameOf 升级：语义 clip 解析 + 时钟取 ordinal）', () => {
-  it('charge 恒 cast1；strike cast2→cast3；basic atk1→atk2 播至尾帧保持（anim 钟驱动）', () => {
+  it('charge cast1→2→3 整套循环（v0.3 步频=CAST_FRAME_PERIOD_MS 280 独立常量）；strike cast2→cast3；basic atk1→atk2 播至尾帧保持（anim 钟驱动）', () => {
     const view = createView();
     const charge = dirActor({ animState: 'charge' });
     let snap = makeSnapshot([charge]);
-    updateView(view, snap, 0.05, 375, 667);
-    updateView(view, snap, 0.2, 375, 667); // 钟累计 0.25s——charge 恒第 1 帧
+    updateView(view, snap, 0.016, 375, 667); // 上升沿：钟 t=0
     expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 1 });
+    updateView(view, snap, 0.3, 375, 667); // 钟累计 0.316s=316ms ∈ [280,560)ms → 第 2 帧（280ms 步频）
+    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 2 });
+    updateView(view, snap, 0.3, 375, 667); // 0.616s=616ms ∈ [560,840)ms → 第 3 帧
+    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 3 });
+    updateView(view, snap, 0.3, 375, 667); // 0.916s ≥ 840ms=周期(3×CAST_FRAME_PERIOD_MS) → 循环回第 1 帧
+    expect(directionalFrameOf(view, charge)).toEqual({ clip: 'cast', ordinal: 1 }); // 【AS · TASK-AS-v03 随卡改写】v0.2 walkFrameMs(140) 步频废止：v1.4 AS-2/方案 v0.3 §4.4 charge 循环解耦独立 280ms
 
     const strike = dirActor({ animState: 'strike' });
     snap = makeSnapshot([strike]);
@@ -1860,5 +1870,354 @@ describe('[L 环锚点修正] directional 脚底基线 y=300 / legacy 脚底基�
     expect(dy).toBe(Math.round(syGround - h * PIECE.legacyFeetBaselineRatio + PIECE.feetOffsetPx));
     // 脚底（绘制底边按基线比例换算）= 格心 + feetOffsetPx（dy/dh 独立取整容差 ≤1px）
     expect(Math.abs(dy + dh * PIECE.legacyFeetBaselineRatio - (syGround + PIECE.feetOffsetPx))).toBeLessThanOrEqual(1);
+  });
+});
+
+// ══════════ 【AS · TASK-AS-v03】出招速度+两段式伤害 表现接线（需求 v1.4 AS-2/AS-4 · 方案 v0.3 §4.4）══════════
+describe('[AS · TASK-AS-FE] 出招速度+两段式伤害 表现接线', () => {
+  it('配置面别名锁：ANIM_LOOP_GROUPS=[walk,charge]；BASIC_DURATION_MS=700（【L 环 Leo 09-07 裁 700ms】原 1000，「出拳后收得太慢」随卡改）且 CHOREO.basicSec/strikeSec 只做共享常量别名（BE/FE 禁各自复制，§4.4）；v0.3 charge 循环步频=CAST_FRAME_PERIOD_MS 280 独立常量', () => {
+    expect(ANIM_LOOP_GROUPS).toEqual(['walk', 'charge']);
+    expect(BASIC_DURATION_MS).toBe(700); // 【L 环 Leo 09-07 裁 700ms】原 1000
+    expect(CHOREO.basicSec).toBe(BASIC_DURATION_MS / 1000);
+    expect(CHOREO.strikeSec).toBe(FINISH_WINDOW_MS / 1000); // 【v0.3 勘注】表现兼容暂留别名，非段 2 结算锚
+    expect(CAST_FRAME_PERIOD_MS).toBe(280); // 【TASK-AS-v03】charge 循环解耦 walkFrameMs（方案 v0.3 §4.4）
+  });
+
+  it('charge 循环时长=出招时长（v1.4 AS-2：循环多久由施法相定、帧不单独锚定）：280ms 步长采样，帧序 [1,2,3,1]（周期 3×CAST_FRAME_PERIOD_MS=840ms，无定格）', () => {
+    const view = createView();
+    const hero = dirActor({ animState: 'charge' });
+    const snap = makeSnapshot([hero]);
+    updateView(view, snap, 0.001, 375, 667); // 上升沿：钟 t=0 起算
+    const ordinals = [directionalFrameOf(view, hero).ordinal];
+    for (let k = 1; k <= 3; k++) {
+      updateView(view, snap, 0.28, 375, 667); // 采样点 281/561/841ms（各跨一个 280ms 帧界）
+      ordinals.push(directionalFrameOf(view, hero).ordinal);
+    }
+    expect(ordinals).toEqual([1, 2, 3, 1]); // idx=floor(t/280) 取模循环回第 1 帧（【TASK-AS-v03 随卡改写】v0.2 70ms 步频/walkFrameMs 口径废止）
+  });
+
+  it('普攻保持窗（【L 环 Leo 09-07 裁 700ms】原口径③/开放点③=1s）：快照 basic→idle 翻转后 atk 帧续播无 2→1 回跳；窗到期回 idle1 且 Map 惰性清理', () => {
+    const view = createView();
+    const hero = dirActor({ animState: 'idle' });
+    const snap = makeSnapshot([hero]);
+    updateView(view, snap, 0.016, 375, 667); // 先登记 idle 组（上升沿判定的 prev，与生产形状一致）
+    snap.actors[0].animState = 'basic';
+    updateView(view, snap, 0.016, 375, 667); // idle→basic 上升沿：开窗（since=view.time）
+    expect(view.basicHolds.has('hero')).toBe(true);
+    updateView(view, snap, 0.2, 375, 667); // 钟 t=0.216 ≥140ms → atk2
+    expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 });
+    snap.actors[0].animState = 'idle'; // session ANIM_MS.basic=300 冻结：快照翻 idle（300ms 处形状）
+    updateView(view, snap, 0.084, 375, 667); // 演出 t=0.3s：窗内（<0.7s）
+    expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 }); // 续播保持，无回跳
+    updateView(view, snap, 0.3, 375, 667); // t=0.6s：窗内（<0.7s，【L 环 Leo 09-07 裁 700ms】原 1s 窗采样步 0.5/0.3 随窗收窄）
+    expect(directionalFrameOf(view, hero)).toEqual({ clip: 'atk', ordinal: 2 });
+    updateView(view, snap, 0.2, 375, 667); // t=0.8s ≥ 0.7s：窗到期
+    expect(directionalFrameOf(view, hero)).toEqual({ clip: 'idle', ordinal: 1 });
+    expect(view.basicHolds.has('hero')).toBe(false); // 惰性清理（updateView 逐帧除名）
+  });
+
+  it('普攻保持窗·legacy：快照 idle 但窗内恒绘帧 6（单帧组循环幂等，敌型普攻同享 0.7s 表现——【L 环 Leo 09-07 裁 700ms】原 1s）', () => {
+    const strip: Array<ImgLike | null> = Array.from({ length: 8 }, (_, i) => tagImg(`spr${i}`, 128, 256));
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei', strip]]) };
+    const foe = dirActor({ id: 'e1', side: 'enemy', name: '山贼甲', spriteKey: 'npc-shanzei' });
+    const view = createView();
+    const snap = makeSnapshot([foe]);
+    const drawTag = (): string => {
+      const { ctx, ops } = makeDrawRecordingCtx();
+      drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+      return ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag)[0] ?? '';
+    };
+    updateView(view, snap, 0.016, 375, 667); // 先登记 idle 组（上升沿判定的 prev，与生产形状一致）
+    snap.actors[0].animState = 'basic';
+    updateView(view, snap, 0.016, 375, 667); // idle→basic 上升沿开窗
+    expect(drawTag()).toBe('spr6');
+    snap.actors[0].animState = 'idle';
+    updateView(view, snap, 0.4, 375, 667); // 快照已 idle，窗内（0.42s < 0.7s）
+    expect(drawTag()).toBe('spr6');
+    updateView(view, snap, 0.7, 375, 667); // 1.12s ≥ 0.7s 窗到期（【L 环 Leo 09-07 裁 700ms】原 ≥1s 口径随窗收窄仍到期）
+    expect(drawTag()).toBe('spr7');
+  });
+
+  it('legacy 敌型 AS 降级不坏（循环语义）：charge 恒帧 4（单帧组循环幂等）/strike 帧 5 单播（收招窗内保持）', () => {
+    const strip: Array<ImgLike | null> = Array.from({ length: 8 }, (_, i) => tagImg(`spr${i}`, 128, 256));
+    const assets: BattleHexAssets = { ...EMPTY_ASSETS, frames: new Map([['npc-shanzei', strip]]) };
+    const foe = dirActor({ id: 'e1', side: 'enemy', name: '山贼甲', spriteKey: 'npc-shanzei' });
+    const view = createView();
+    const snap = makeSnapshot([foe]);
+    const drawTag = (): string => {
+      const { ctx, ops } = makeDrawRecordingCtx();
+      drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+      return ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string }).tag)[0] ?? '';
+    };
+    snap.actors[0].animState = 'charge';
+    updateView(view, snap, 0.016, 375, 667); // 上升沿
+    for (let i = 0; i < 30; i++) updateView(view, snap, 0.05, 375, 667); // 施法相 1.5s 全程（远超周期）
+    expect(drawTag()).toBe('spr4'); // ANIM_FRAMES.charge=[4] 单帧组：循环语义下恒帧 4（降级不坏）
+    snap.actors[0].animState = 'strike';
+    updateView(view, snap, 0.016, 375, 667);
+    updateView(view, snap, 0.2, 375, 667); // 收招窗内
+    expect(drawTag()).toBe('spr5');
+  });
+
+  it('宿主逻辑 dt 唯一真源（main.ts 源码锁 · 方案 §4.4「同一逻辑 dt 同时传给 session 与 view」）：session.tick 吃 realDt、view/drawFrame 吃同乘 SPEED_FACTOR 的逻辑 dt（x2 时 cast 帧/血条/行动条同倍率，禁只加速其一）', () => {
+    const MAIN = readFileSync(path.join(ROOT, 'proto/battle_demo/main.ts'), 'utf8');
+    expect(MAIN).toContain('const dt = realDt * (speedOn ? SPEED_FACTOR.fast : SPEED_FACTOR.normal)');
+    expect(MAIN).toContain('session.tick(realDt)'); // session 内部同 SPEED_FACTOR 缩放（battle-session speed 段）→ 两路逻辑 dt 恒同值
+    expect(MAIN).toContain('updateView(view, snap, dt, W, H)');
+    expect(MAIN).toContain('drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view)');
+    expect(MAIN).toContain("view.basicHolds.clear()"); // resetDemo 清保持窗（跨局不残留）
+  });
+});
+
+
+// ══════════ PRM-1 攻钮选格 + GSG-1 hover（TASK-AS-v04 · 规格 v2.5 · 方案 v0.4 §9.3） ══════════
+
+describe('PRM-1/GSG-1（TASK-AS-v04）：攻钮命中/选格派发/hover 翻译/渲染金红两态', () => {
+  const hero: SnapshotActor = {
+    id: 'hero', side: 'player', name: '小虾米', pos: { q: 1, r: 8 }, renderPos: { q: 1, r: 8 },
+    hp: 100, maxHp: 100, neili: 80, maxNeili: 100, actionBar: 100, facing: 'right', facingHex: 'right',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'hero', isJump: false,
+  };
+  const foe: SnapshotActor = {
+    id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 2, r: 8 }, renderPos: { q: 2, r: 8 },
+    hp: 60, maxHp: 60, neili: 40, maxNeili: 40, actionBar: 10, facing: 'left', facingHex: 'left',
+    animState: 'idle', statusIcons: [], isBoss: false, spriteKey: 'npc-shanzei', isJump: false,
+  };
+  const cellCenter = (c: HexPos) => {
+    const w = hexToWorld(c.q, c.r);
+    return { x: w.x + 375 / 2, y: w.y + 667 / 2 };
+  };
+
+  it('攻钮命中：layout.atkBtn 非空且命中 → 派 selectBasic；null（非待命）→ 恒不命中（fall-through）', () => {
+    const view = makeViewForInput();
+    const sent: Array<Record<string, unknown>> = [];
+    const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>) });
+    view.layout.atkBtn = { x: 300, y: 430, w: 70, h: 40 }; // 375×667 画布内（ctrl 上方锚定位）
+    input.down(view, makeSnapshot([hero, foe]), 335, 450, 375, 667);
+    input.up(view, makeSnapshot([hero, foe]), 335, 450, 375, 667);
+    expect(sent).toEqual([{ type: 'selectBasic' }]);
+    // 非待命：atkBtn=null → 同坐标落棋盘（不派 selectBasic）
+    view.layout.atkBtn = null;
+    const sent2: Array<Record<string, unknown>> = [];
+    const input2 = createBattleInput({ dispatch: (r) => sent2.push(r as Record<string, unknown>) });
+    input2.down(view, makeSnapshot([hero, foe]), 335, 450, 375, 667);
+    input2.up(view, makeSnapshot([hero, foe]), 335, 450, 375, 667);
+    expect(sent2).not.toContainEqual({ type: 'selectBasic' });
+  });
+
+  it('basicCells 点选：金格 → basicAtCell；集合外格 → cancelSkill（SEL-5② 同构）；提交清 hoverCell', () => {
+    const view = makeViewForInput();
+    view.skillPop = 0;
+    view.layout.skillBtns = [];
+    const sent: Array<Record<string, unknown>> = [];
+    const input = createBattleInput({ dispatch: (r) => sent.push(r as Record<string, unknown>) });
+    const snap = makeSnapshot([hero, foe]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    snap.basicCells = [{ q: 1, r: 9 }, { q: 2, r: 8 }]; // 含敌格 (2,8) 的普攻金格
+    view.hoverCell = { q: 1, r: 9 };
+    // ① 点金格（空）→ basicAtCell + hover 清
+    let p = cellCenter({ q: 1, r: 9 });
+    input.down(view, snap, p.x, p.y, 375, 667);
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent[0]).toMatchObject({ type: 'basicAtCell', to: { q: 1, r: 9 } });
+    expect(view.hoverCell).toBeNull();
+    // ② 点金格上的敌格 → 同样派 basicAtCell（格上有敌=对敌结算，session 校验）
+    p = cellCenter({ q: 2, r: 8 });
+    input.down(view, snap, p.x, p.y, 375, 667);
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent[1]).toMatchObject({ type: 'basicAtCell', to: { q: 2, r: 8 } });
+    // ③ 点集合外格 → cancelSkill（取消，非 basicAtCell）
+    p = cellCenter({ q: 6, r: 12 });
+    input.down(view, snap, p.x, p.y, 375, 667);
+    input.up(view, snap, p.x, p.y, 375, 667);
+    expect(sent[2]).toEqual({ type: 'cancelSkill' });
+  });
+
+  it('hover 事件：画布内格写 view.hoverCell；棋盘外=null（渲染按快照集合判定，input 只译格）', () => {
+    const view = makeViewForInput();
+    const input = createBattleInput({ dispatch: () => {} });
+    const snap = makeSnapshot([hero, foe]);
+    const p = cellCenter({ q: 1, r: 9 });
+    input.hover(view, snap, p.x, p.y, 375, 667);
+    expect(view.hoverCell).toEqual({ q: 1, r: 9 });
+    input.hover(view, snap, -500, -500, 375, 667); // 远出棋盘
+    expect(view.hoverCell).toBeNull();
+  });
+
+  it('渲染两态：basicCells 金格入画；hoverCell ∈ 金/红可选格 → cellHover 红覆盖；绿格 hover 不画红；攻钮待命期产出热区', () => {
+    const calls: Record<string, number> = {};
+    const fills: string[] = [];
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const rec = t as unknown as Record<string | symbol, unknown>;
+          if (prop in rec) return rec[prop];
+          calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
+          return () => {};
+        },
+        set(t, prop, v) {
+          if (prop === 'fillStyle') fills.push(String(v));
+          return true;
+        },
+      },
+    );
+    const img = { width: 128, height: 256 };
+    const assets: BattleHexAssets = {
+      env: img,
+      topbar: { width: 1440, height: 300 },
+      plaque: { width: 310, height: 757 },
+      ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
+      statusIcons: new Map(),
+      frames: new Map<string, LegacyFrameStrip | DirectionalFrameStore>([
+        ['hero', makeHeroStore()],
+        ['npc-shanzei', [img, img, img, img, img, img, img, img]],
+      ]),
+    };
+    const snap = makeSnapshot([
+      { id: 'hero', name: '小虾米', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } },
+      { id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 6, r: 7 }, renderPos: { q: 6, r: 7 }, spriteKey: 'npc-shanzei' },
+    ]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    snap.basicCells = [{ q: 4, r: 9 }];
+    snap.moveCells = [{ q: 5, r: 9 }]; // 普通绿格（hover 负向对照）
+    snap.heroSkills = [];
+    const view = createView();
+    updateView(view, snap, 0.016, 375, 667);
+    // ① 金格入画 + hover 红态
+    view.hoverCell = { q: 4, r: 9 };
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).toContain('rgba(245, 205, 70, 0.45)'); // basicCells 金（PRM-1②）
+    expect(fills).toContain('rgba(228, 52, 32, 0.72)'); // GSG-1 hover 红
+    expect(view.layout.atkBtn).not.toBeNull(); // 待命期攻钮热区产出（PRM-1①）
+    // ② hover 移出 → 恢复原色（无红）
+    fills.length = 0;
+    view.hoverCell = null;
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).toContain('rgba(245, 205, 70, 0.45)');
+    expect(fills).not.toContain('rgba(228, 52, 32, 0.72)');
+    // ③ hover 普通移动绿格 → 不画红（GSG-1：绿格不纳入）
+    fills.length = 0;
+    view.hoverCell = { q: 5, r: 9 };
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).not.toContain('rgba(228, 52, 32, 0.72)');
+    // ④ 非待命（pendingInput=false）→ 攻钮热区收回（fall-through 棋盘）
+    snap.pendingInput = false;
+    view.layout.atkBtn = null;
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(view.layout.atkBtn).toBeNull();
+  });
+
+  it('攻钮猫爪布位（【L 环 Leo 09-07 裁】）：攻钮=特/绝/轻/毒四钮同圆心同半径 90°正下方圆形肉垫，外接方热区与四钮同直径', () => {
+    const calls: Record<string, number> = {};
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const rec = t as unknown as Record<string | symbol, unknown>;
+          if (prop in rec) return rec[prop];
+          calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
+          return () => {};
+        },
+        set() {
+          return true;
+        },
+      },
+    );
+    const img = { width: 128, height: 256 };
+    const assets: BattleHexAssets = {
+      env: img,
+      topbar: { width: 1440, height: 300 },
+      plaque: { width: 310, height: 757 },
+      ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
+      statusIcons: new Map(),
+      frames: new Map<string, LegacyFrameStrip | DirectionalFrameStore>([
+        ['hero', makeHeroStore()],
+        ['npc-shanzei', [img, img, img, img, img, img, img, img]],
+      ]),
+    };
+    const snap = makeSnapshot([
+      { id: 'hero', name: '小虾米', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } },
+      { id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 6, r: 7 }, renderPos: { q: 6, r: 7 }, spriteKey: 'npc-shanzei' },
+    ]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    const view = createView();
+    for (let i = 0; i < 40; i++) updateView(view, snap, 0.016, 375, 667); // skillPop 收敛到 1（弹出完成态，四钮满半径）
+    expect(view.skillPop).toBe(1);
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    const btns = view.layout.skillBtns;
+    expect(btns).toHaveLength(4);
+    const ab = view.layout.atkBtn;
+    expect(ab).not.toBeNull();
+    // pop=1 时四钮位=头圆心 + 极角(195/245/295/345)×R——对称关系反解头圆（hcx/hcy/R），再验攻钮=同圆 90° 正下
+    const d = btns[0].r * 2;
+    const hcx = (btns[0].x + btns[3].x) / 2; // 195°/345° 左右对称 → 中点=头圆心 x
+    const R = (btns[3].x - btns[0].x) / 2 / Math.cos((15 * Math.PI) / 180);
+    const hcy = (btns[1].y + btns[2].y) / 2 + Math.abs(Math.sin((245 * Math.PI) / 180)) * R;
+    expect(ab!.w).toBeCloseTo(d, 9); // 与四钮同直径（规格一致）
+    expect(ab!.h).toBeCloseTo(d, 9);
+    expect(ab!.x + ab!.w / 2).toBeCloseTo(hcx, 6); // 居中=头圆心正下
+    expect(ab!.y + ab!.h / 2).toBeCloseTo(hcy + R, 6); // 同圆心同半径（弧心角 90°=猫爪肉垫位）
+    expect(ab!.y).toBeGreaterThan(Math.max(...btns.map((b) => b.y))); // 在四钮下方
+  });
+
+  it('hover 红态收窄（【L 环 Leo 09-07 裁】）：绝/特 attackCells 悬停不画 cellHover 红（点格即施放不加红），攻击范围红本体不夺', () => {
+    const calls: Record<string, number> = {};
+    const fills: string[] = [];
+    const ctx = new Proxy(
+      {
+        canvas: { width: 375, height: 667 },
+        measureText: () => ({ width: 10 }),
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+      } as unknown as CanvasRenderingContext2D,
+      {
+        get(t, prop) {
+          const rec = t as unknown as Record<string | symbol, unknown>;
+          if (prop in rec) return rec[prop];
+          calls[String(prop)] = (calls[String(prop)] ?? 0) + 1;
+          return () => {};
+        },
+        set(t, prop, v) {
+          if (prop === 'fillStyle') fills.push(String(v));
+          return true;
+        },
+      },
+    );
+    const img = { width: 128, height: 256 };
+    const assets: BattleHexAssets = {
+      env: img,
+      topbar: { width: 1440, height: 300 },
+      plaque: { width: 310, height: 757 },
+      ctrlFaces: { tuoguan: { width: 216, height: 128 }, jiasu: { width: 213, height: 126 }, flee: { width: 213, height: 127 } },
+      statusIcons: new Map(),
+      frames: new Map<string, LegacyFrameStrip | DirectionalFrameStore>([
+        ['hero', makeHeroStore()],
+        ['npc-shanzei', [img, img, img, img, img, img, img, img]],
+      ]),
+    };
+    const snap = makeSnapshot([
+      { id: 'hero', name: '小虾米', animState: 'idle', pos: { q: 4, r: 8 }, renderPos: { q: 4, r: 8 } },
+      { id: 'e1', side: 'enemy', name: '山贼甲', pos: { q: 6, r: 7 }, renderPos: { q: 6, r: 7 }, spriteKey: 'npc-shanzei' },
+    ]);
+    snap.pendingInput = true;
+    snap.turnActorId = 'hero';
+    snap.attackCells = [{ q: 4, r: 9 }]; // 绝/特攻击范围格（快照真值）
+    const view = createView();
+    updateView(view, snap, 0.016, 375, 667);
+    view.hoverCell = { q: 4, r: 9 }; // 悬停攻击范围格
+    drawFrame({ ctx, width: 375, height: 667, dt: 0.016 }, snap, assets, view);
+    expect(fills).toContain('rgba(225, 70, 55, 0.42)'); // 攻击范围红本体照画（HIGHLIGHT.attack）
+    expect(fills).not.toContain('rgba(228, 52, 32, 0.72)'); // cellHover 红不再响应 attackCells（收窄负向锁）
   });
 });

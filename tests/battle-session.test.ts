@@ -14,7 +14,7 @@ import {
   type HexBattleSession,
 } from '../systems/battle-session';
 import { makeRng } from '../systems/battle-core';
-import { axialToOffset, cubeDistance, HEX_DIRS, hexNeighbors, jumpReachable, movePower, offsetToAxial, reachable } from '../systems/hex';
+import { axialToOffset, cubeDistance, HEX_DIRS, hexEq, hexNeighbors, jumpReachable, movePower, offsetToAxial, reachable } from '../systems/hex';
 import type { CombatantInput, SkillDef } from '../types';
 
 const DT = 0.1;
@@ -478,6 +478,7 @@ describe('[ATK-2] 技能施放：四查拒绝 + 合法结算（Q1 定版：无�
     waitAdjacent(s);
     const neiliBefore = pu(s).neili;
     expect(s.submit({ type: 'attack', targetId: 'e0', skillId: 'te' })).toBe(true);
+    settleBoth(s); // 【AS 采样时刻改写·PM Q1 授权】t1/t2 后再采样结算事件（v1.3 AS-2/3/4）
     expect(s.events.some((ev) => ev.type === 'skill' && ev.skillId === 'te')).toBe(true);
     expect(pu(s).neili).toBe(neiliBefore - NEILI_COST_PER_CAST);
     // 冷却窗口（cd=2）：再点 → rejected:invalid（Q1 定版：取消降级普攻，无消耗）
@@ -540,6 +541,43 @@ function ready(s: HexBattleSession): void {
   s.tick(0.001);
 }
 
+/** 【AS 采样时刻随卡改写 · PM Q1 授权（TASK-AS-BE）】技能改「提交即排程、t1/t2 两时刻结算」后，
+ * 结算类断言须推进逻辑时钟越过 t1（castDurationMs=3000 默认）/ t2（+FINISH_WINDOW_MS=300）再采样。
+ * 断言方向与形状零改——仅采样时刻平移；规格依据：需求 v1.3 AS-2/AS-3/AS-4 + 方案 v0.2 §3.1/§7.1
+ * AS-T3（提交后 hp 不变·无段事件）/AS-T4（边界各结算一次）。
+ * tick 至 clock ≥ 起点+sec 为止；输入态（pendingInput）出现即停（BAR-4 冻结时钟，继续 tick 只会
+ * 污染事件流）；0.05 步长 + DUE_EPS 容差与 session drain 边界一致。 */
+function settleFor(s: HexBattleSession, sec: number): void {
+  const target = s._debug.clock() + sec;
+  for (let i = 0; i < Math.ceil(sec / 0.05) + 4 && s._debug.clock() < target; i++) {
+    if (s.snapshot().pendingInput) break;
+    s.tick(0.05);
+  }
+}
+
+/** settleFor 的两段全收口口径：越过 t1+0.3（段 2 落地）再采样
+ * 【v0.3 勘注 · TASK-AS-v03】段 2 唯一锚=t1=t0+3.0（300ms 收招节点废止），3.35s 恒越过 t1
+ * 收口两段——时长不动（0.35s 尾差无行为面），仅语义勘注。 */
+function settleBoth(s: HexBattleSession): void {
+  settleFor(s, 3.0 + 0.3 + 0.05);
+}
+
+/** 【AS 采样时刻改写·PM Q1 授权】细步长（0.01）收口：供「严格事件尾」断言用——t2=3.301 与
+ * 施法者 bar 回满（fillRate 30/s→3.33s 出 bar-max）仅隔 0.03s，0.05 步长必跨过 bar-max 污染
+ * 事件尾；0.01 步长落在 (3.301, 3.33) 窗内，尾事件仍为段 2 结算（断言形状零改的前提）。 */
+function settleFine(s: HexBattleSession, sec: number): void {
+  const target = s._debug.clock() + sec;
+  for (let i = 0; i < Math.ceil(sec / 0.01) + 4 && s._debug.clock() < target; i++) {
+    if (s.snapshot().pendingInput) break;
+    s.tick(0.01);
+  }
+}
+
+/** 空放收口口径：越 t1 即停（空放无 t2 段；t1≈3.0 < bar 回满 3.33s，无 bar-max 混入） */
+function settleEmpty(s: HexBattleSession): void {
+  settleFor(s, 3.1);
+}
+
 /** cast 用例标准局：p 带 te（level20→tier1 射程2 circle）+ 敌 e0，白盒布点后进输入态（未激活）。
  * 【T22 · 易错点1】布点 diff 落工厂签名：e0Col=9（默认，敌 ∈ 射程正东 2 格）/ e0Col=11
  * （敌出射程 cube 4，与射程外用例同格）——布点变更收敛在签名上，零改 describe 不感知。 */
@@ -578,13 +616,15 @@ describe('[ATK-2 对格] cast 有敌格：doAttack 既有路径（skill/miss 事
     expect(snap.attackCells.some((c) => c.q === e0cell.q && c.r === e0cell.r)).toBe(true); // 敌格 ∈ 高亮（显示=校验同源）
     const hp0 = eu(s).hp;
     expect(s.submit({ type: 'cast', to: e0cell, skillId: 'te' })).toBe(true);
+    const finalFour = castFinalFour(s); // 【AS 采样时刻改写·PM Q1 授权】资源终态=t0 语义，提交即采样（v1.3 AS-2）
+    settleBoth(s); // t1/t2 后再采样结算事件（AS-3/4）
     // 命中/闪避走 core 骰子（F-04），行为锁只锁链路（沿 behavior ATK-2 绿锁口径）
     expect(s.events.slice(-3).map((e) => e.type)).toEqual(
       expect.arrayContaining([expect.stringMatching(/^(skill|miss)$/)]),
     );
     expect(eu(s).hp).toBeLessThanOrEqual(hp0);
-    // 资源终态四项（R-09/R-08 副作用经 doAttack→resolveAction，与空放镜像对照）
-    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+    // 资源终态四项（R-09/R-08 副作用经 scheduleSkillCast，与空放镜像对照）
+    expect(finalFour).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
   });
 });
 
@@ -612,6 +652,13 @@ describe('[ATK-6] 空放：射程内空格=合法施放资源全扣（T20-BE · 
 
   it('cast 射程内空格：事件尾 skill 无 targetId 无 damage+敌 hp 不变+charge 演出+faceToward 目标格', () => {
     const { air, hp0 } = castPair();
+    // 【AS 采样时刻改写·PM Q1 授权】t0 后先锁 charge 保持与朝向（施法中，v1.3 AS-2），
+    // 再越过 t1 采样空放事件（AS-3/AS-6：空搜=t1 恰一条无目标 skill、无 t2）——断言体零改。
+    expect(pu(air).animState).toBe('charge'); // Q3：施放演出照播（施法中 charge 保持，B5）
+    expect(pu(air).hexFacing).toEqual({ q: -1, r: 0 }); // faceToward 正西目标格（六向量化；FACE-1④ 空放保持点击格朝向）
+    expect(pu(air).faceLeft).toBe(true); // 水平分量翻左（dx<0）
+    const finalFourAir = castFinalFour(air); // 【AS 采样时刻改写·PM Q1 授权】资源终态=t0 语义（v1.3 AS-2）
+    settleEmpty(air);
     const tail = air.events[air.events.length - 1];
     expect(tail.type).toBe('skill'); // 空放事件=skill（事件类型零新增）
     expect(tail.actorId).toBe('p');
@@ -619,10 +666,7 @@ describe('[ATK-6] 空放：射程内空格=合法施放资源全扣（T20-BE · 
     expect('targetId' in tail).toBe(false); // 键不存在断言（in 严于 ===undefined，防空放/对敌混淆假绿）
     expect('damage' in tail).toBe(false);
     expect(eu(air).hp).toBe(hp0); // 无伤害结算（resolveAction 不调的行为证据）
-    expect(pu(air).animState).toBe('charge'); // Q3：施放演出照播（charge→strike 既有链）
-    expect(pu(air).hexFacing).toEqual({ q: -1, r: 0 }); // faceToward 正西目标格（六向量化）
-    expect(pu(air).faceLeft).toBe(true); // 水平分量翻左（dx<0）
-    expect(castFinalFour(air)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+    expect(finalFourAir).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
   });
 
   it('AOE 对敌与空放资源终态四项全等（neili/冷却/bar/选中）——镜像不漂移（v2.2：AOE 多目标仍恰扣一次的终态锁）', () => {
@@ -661,12 +705,14 @@ describe('[ATK-6/Q2] cast 自己格=空放语义（特判并联不入高亮 · v
     const facing0 = { ...pu(s).hexFacing };
     const e0hp0 = eu(s).hp;
     expect(s.submit({ type: 'cast', to: heroCell, skillId: 'te' })).toBe(true); // 特判受理
+    const finalFour = castFinalFour(s); // 【AS 采样时刻改写·PM Q1 授权】资源终态=t0 语义（v1.3 AS-2）
+    settleEmpty(s); // 越过 t1 采样空放事件（AS-3/AS-6；空放无 t2）
     const tail = s.events[s.events.length - 1];
     expect(tail.type).toBe('skill');
     expect('targetId' in tail).toBe(false);
     expect('damage' in tail).toBe(false);
     expect(eu(s).hp).toBe(e0hp0); // 敌 hp 不变
-    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
+    expect(finalFour).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null });
     expect(pu(s).hexFacing).toEqual(facing0); // faceToward 同格 v{0,0} 早退（朝向保持）
   });
 });
@@ -681,6 +727,8 @@ describe('[ATK-7] 演出位∈射程=施放全范围生效（v2.2 简化：命�
     e0u.renderR = ghostCell.r;
     const hp0 = e0u.hp;
     expect(s.submit({ type: 'cast', to: ghostCell, skillId: 'te' })).toBe(true);
+    const finalFour = castFinalFour(s); // 【AS 采样时刻改写·PM Q1 授权】资源终态=t0 语义（v1.3 AS-2）
+    settleFine(s, 3.31 + 0.005); // 越过 t2=3.301、未及 bar 回满 3.333（严格事件尾保持）
     // v2.2 断言翻转（ATK-7 简化/五点④）：点击演出位格=施放全范围——e0 逻辑位 (9,8) ∈ 射程被命中，
     // 「命中按逻辑位」条款废止（v2.0 断言「敌 hp 不变/空事件」随之翻转）
     const tail = s.events[s.events.length - 1];
@@ -689,7 +737,7 @@ describe('[ATK-7] 演出位∈射程=施放全范围生效（v2.2 简化：命�
     expect(e0u.dead).toBe(false);
     expect(e0u.hp).toBeLessThanOrEqual(hp0); // 施放全范围生效（miss 偶发容错：≤ 而非 <）
     expect(e0u.hex).toEqual(offsetToAxial(9, 8)); // 逻辑位不动（命中不依赖点击格与逻辑位——保留证据）
-    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null }); // resolveAction 真值路径
+    expect(finalFour).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null }); // scheduleSkillCast 真值路径
   });
 });
 
@@ -803,15 +851,17 @@ describe('[ATK-2 AOE] 多敌分野：射程内全体受击+资源恰扣一次（
     const n0 = s.events.length;
     const e0cell = s.snapshot().actors.find((a) => a.id === 'e0')!.pos;
     expect(s.submit({ type: 'cast', to: e0cell, skillId: 'te' })).toBe(true);
+    const finalFour = castFinalFour(s); // 【AS 采样时刻改写·PM Q1 授权】资源终态=t0 语义（v1.3 AS-2）
+    settleBoth(s); // 越过 t1 采样两段结算（AS-3/4）
     const added = s.events.slice(n0);
     const settled = added.filter((e) => e.type === 'skill' || e.type === 'miss');
-    expect(settled).toHaveLength(2); // 恰 2 条结算事件（射程内全体）
-    // targetId 连续序 = all 声明序（「禁 sort」的行为锁——只数条数防不住按距离排序的错误实现）
-    expect(settled.map((e) => (e as { targetId?: string }).targetId)).toEqual(['e0', 'e1']);
+    expect(settled).toHaveLength(4); // 恰 2 目标 × 2 段（v1.3 AS-3/AS-4 两段式；原单段 2 条随卡改写）
+    // targetId 序 = 段内 all 声明序 × 段序（「禁 sort」的行为锁——只数条数防不住按距离排序的错误实现）
+    expect(settled.map((e) => (e as { targetId?: string }).targetId)).toEqual(['e0', 'e1', 'e0', 'e1']);
     expect(hpOf(s, 'e0')).toBeLessThanOrEqual(hp0.e0); // 各自独立掷骰全额伤害（miss 偶发容错 ≤）
     expect(hpOf(s, 'e1')).toBeLessThanOrEqual(hp0.e1);
     expect(hpOf(s, 'e2')).toBe(hp0.e2); // 射程外敌不受击（分野另一半）
-    expect(castFinalFour(s)).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null }); // 双目标仍恰扣一次
+    expect(finalFour).toEqual({ neili: 50 - NEILI_COST_PER_CAST, cd: 2, bar: 0, selected: null }); // 双目标仍恰扣一次
     expect(added.some((e) => e.type === 'rejected' || e.type === 'move' || e.type === 'basic')).toBe(false); // cast 臂纯净
   });
 });
@@ -828,9 +878,11 @@ describe('[五点②] 点击格无关：同 seed 同布点双场，点射程内�
     const e0cell = b.snapshot().actors.find((x) => x.id === 'e0')!.pos;
     expect(a.submit({ type: 'cast', to: offsetToAxial(6, 8), skillId: 'te' })).toBe(true); // 射程内空格
     expect(b.submit({ type: 'cast', to: e0cell, skillId: 'te' })).toBe(true); // 敌格
+    settleBoth(a); // 【AS 采样时刻改写·PM Q1 授权】两场同步越过 t1/t2 再比对（v1.3 AS-2/3/4）
+    settleBoth(b);
     expect(a.events.slice(nA)).toEqual(b.events.slice(nB)); // 点击格不影响结算结果（直接锁）
     const settled = a.events.slice(nA).filter((e) => e.type === 'skill' || e.type === 'miss');
-    expect(settled).toHaveLength(2); // 恰 2 条结算事件（无 rejected 混入）
+    expect(settled).toHaveLength(4); // 2 目标 × 2 段（AS-3/4；无 rejected 混入）
   });
 });
 
@@ -909,14 +961,16 @@ describe('[FACE-1 ①] AOE 朝最近敌（faceTarget 定版 · 点击格废止�
     const spots: Array<[number, number]> = [[8, 8], [5, 8]]; // e0 正东 cube1 / e1 正西 cube2（非平局）
     const a = faceBoard(spots);
     castTe(a, offsetToAxial(6, 8)); // 射程内空格（p 正西 1）
+    settleBoth(a); // 【AS 采样时刻改写·PM Q1 授权】t1 faceTarget 定版后采样（v1.3 AS-2/3）
     const settledA = a.events.filter((e) => (e.type === 'skill' || e.type === 'miss') && e.actorId === 'p');
-    expect(settledA).toHaveLength(2); // AOE 双目标均结算
-    expect(settledA.map((e) => (e as { targetId?: string }).targetId)).toEqual(['e0', 'e1']); // all 序保序
+    expect(settledA).toHaveLength(4); // AOE 双目标 × 两段（v1.3 AS-3/AS-4）
+    expect(settledA.map((e) => (e as { targetId?: string }).targetId)).toEqual(['e0', 'e1', 'e0', 'e1']); // all 序保序（段内×段序）
     expect(facingOf(a, 'p')).toEqual({ q: 1, r: 0 }); // 朝最近敌 e0（东），与点击格 (6,8) 无关
     // 负断言（点击格废止的直接锁）：换场 cast 远敌格（西向 e1 格）——仍朝最近敌 e0
     const b = faceBoard(spots);
     const e1cell = b.snapshot().actors.find((x) => x.id === 'e1')!.pos;
     castTe(b, e1cell);
+    settleBoth(b); // 【AS 采样时刻改写·PM Q1 授权】同上
     expect(facingOf(b, 'p')).toEqual({ q: 1, r: 0 }); // 若实现朝点击格/末目标则 ={-1,0} 必红
   });
 });
@@ -940,6 +994,7 @@ describe('[FACE-1 ②] 同距平局 rng（规格③ · SP-2 确定性范围）',
     const mk = (seed: number) => {
       const s = faceBoard([[9, 8], [5, 8]], seed); // e0 东距2（吸附 E）/ e1 西距2（吸附 W）
       castTe(s, offsetToAxial(6, 8));
+      settleBoth(s); // 【AS 采样时刻改写·PM Q1 授权】t1 tie 掷点后采样（v1.3 AS-2/3）；实证锚 5/7 若漂移单独报 PM
       return s;
     };
     const s1 = mk(5);
@@ -1009,13 +1064,13 @@ describe('[FACE-1 ⑤] 托管 AI 出技 AOE 朝最近敌（案 A 五点⑤ 敌�
   });
 });
 
-describe('[ATK-3] 移动附带普攻特例', () => {
-  it('移动落点相邻敌 → basic 事件紧随 move 事件（不另耗回合）', () => {
+describe('[ATK-3] 移动附带普攻特例（v2.5 玩家侧废止 · AI 侧保留 · 方案 v0.4 §9.2.3）', () => {
+  it('玩家移动纯移动：move 后零 basic/miss 事件、敌 hp 不变、bar 消耗（规格依据=v2.5 ATK-3 玩家侧废止 09-07 Leo 裁，随卡改写）', () => {
     const s = makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500 }), [
       unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1 }),
     ]);
     waitAdjacent(s);
-    // 拉开两格再贴回：制造「移动到位相邻」场景
+    // 拉开两格再贴回：制造「移动到位相邻」场景（旧特例触发面；v2.5 起不再触发）
     const target = eu(s);
     const away = s.snapshot().moveCells.find((c) => cubeDistance(c, target.hex) === 2);
     if (away) {
@@ -1025,16 +1080,43 @@ describe('[ATK-3] 移动附带普攻特例', () => {
         .slice()
         .sort((a, b) => cubeDistance(a, target.hex) - cubeDistance(b, target.hex))[0];
       const nMoves = s.events.filter((ev) => ev.type === 'move' && ev.actorId === 'p').length;
+      const hpBefore = eu(s).hp;
       expect(s.submit({ type: 'move', to: back })).toBe(true);
       const off = axialToOffset(back);
       const idx = s.events.findIndex(
         (ev) => ev.type === 'move' && ev.actorId === 'p' && ev.toX === off.col && ev.toY === off.row,
       );
       expect(idx).toBeGreaterThanOrEqual(0);
-      const follow = s.events.slice(idx + 1).find((ev) => ev.actorId === 'p' && ['basic', 'miss'].includes(ev.type));
-      expect(follow).toBeDefined(); // 特例普攻紧随移动（不另耗回合）
+      // v2.5：移动后不再附带普攻——贴敌落点后零 basic/miss/fallback、敌 hp 不变（普攻走 PRM-1/点敌手动）
+      const follow = s.events
+        .slice(idx + 1)
+        .find((ev) => ev.actorId === 'p' && ['basic', 'miss', 'fallback'].includes(ev.type));
+      expect(follow).toBeUndefined();
+      expect(eu(s).hp).toBe(hpBefore);
       expect(s.events.filter((ev) => ev.type === 'move' && ev.actorId === 'p').length).toBe(nMoves + 1);
+      expect(pu(s).bar).toBe(0); // 移动本身消耗回合（BAR-3），无额外出手
     }
+  });
+
+  it('AI 侧贴身自动普攻保留：AI 位移进射程后 basic/miss 紧随其 move 事件（C 案 B2 位移臂收尾）', () => {
+    const s = makeSession(13, 'auto', unit({ id: 'p', side: 'player', hp: 500, maxHp: 500, atk: 200, def: 99999 }), [
+      unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1, jimin: 0 }),
+    ]);
+    pin(s, 'p', 5, 8);
+    pin(s, 'e0', 7, 8); // 同排 cube 2：AI 首动=第 4 级位移进射程（dist 2 > basicRange(fist) 1）→ basicIfAdjacent
+    for (let i = 0; i < 600; i++) {
+      s.tick(DT);
+      const evs = s.events;
+      const iMove = evs.findIndex((ev) => ev.type === 'move' && ev.actorId === 'p');
+      if (iMove >= 0) {
+        const follow = evs.slice(iMove + 1).find((ev) => ev.actorId === 'p' && ['basic', 'miss'].includes(ev.type));
+        expect(follow).toBeDefined(); // AI（含托管代行）位移臂附带普攻保留——移动事件后紧跟出手
+        break;
+      }
+    }
+    // pendingAnim 补播机制在 AI quiet 臂仍存活：walk 演出结束后补播 basic（原 B-1③ 正面覆盖移交本例）
+    for (let i = 0; i < 25; i++) s.tick(0.016); // 0.4s：跨过 walk 300ms、停在 basic 窗内（ANIM_MS.basic=300）
+    expect(pu(s).animState).toBe('basic');
   });
 });
 
@@ -1354,21 +1436,20 @@ function bScene(): { s: HexBattleSession; hero: ReturnType<HexBattleSession['_de
 }
 
 describe('[T19/N1] 演出延后（方案 §3.2）与回退轨插值（§3.3）', () => {
-  it('B-1 §3.2：ATK-3 路径 submit 后零 tick 快照 animState 保持 walk；事件仍同步紧跟；walk 结束后补播 basic', () => {
+  it('B-1 §3.2（v2.5 改写）：玩家移动 submit 后零 tick 快照 animState 保持 walk；无附带普攻事件；walk 结束回 idle（规格依据=v2.5 ATK-3 玩家侧废止，pendingAnim 正面覆盖移交 AI 位移臂用例）', () => {
     const { s, hero, dest } = bScene();
     expect(s.snapshot().pendingInput).toBe(true);
     const n0 = s.events.length;
     expect(s.submit({ type: 'move', to: dest })).toBe(true);
-    // ① 零 tick：walk 演出未被 basicIfAdjacent 覆写（修复前此处 = 'basic'）
+    // ① 零 tick：walk 演出保持（v2.5 起 submit 移动不再触发 basicIfAdjacent/pendingAnim）
     expect(hero.animState).toBe('walk');
-    // ② 结算/事件 emit 仍同步：move 事件后紧跟出手事件（绿锁不变式在本例复证）
+    expect(hero.pendingAnim).toBeNull();
+    // ② 移动纯移动：move 是唯一新事件（贴敌落点不再附带出手事件——v2.5 玩家侧废止）
     const tail = s.events.slice(n0).map((e) => e.type);
-    const iMove = tail.indexOf('move');
-    expect(iMove).toBeGreaterThanOrEqual(0);
-    expect(tail.slice(iMove)).toContain('basic');
-    // ③ pendingAnim 消费：walk（ANIM_MS.walk=300ms）结束后补播攻击演出
-    for (let i = 0; i < 25; i++) s.tick(0.016); // 0.4s：跨过 walk 窗、停在 basic 窗内（敌 bar 未满不干扰）
-    expect(hero.animState).toBe('basic');
+    expect(tail).toEqual(['move']);
+    // ③ walk 结束回 idle（无 pendingAnim 可消费，不再补播 basic）
+    for (let i = 0; i < 25; i++) s.tick(0.016); // 0.4s：跨过 walk 窗（敌 bar 未满不干扰）
+    expect(hero.animState).toBe('idle');
   });
 
   it('B-2 §3.3：同排隔敌移动逐帧采样 renderPos 不进入敌占格；moveT=1 精确等于落点；逻辑 pos 即时到位', () => {
@@ -1441,6 +1522,7 @@ describe('[A01] 快照出口防御性复制：篡改返回快照不得影响后�
     tampered1.attackCells.length = 0; // 篡改快照
     const hp0 = eu(hit).hp;
     expect(hit.submit({ type: 'cast', to: e0cell, skillId: 'te' })).toBe(true);
+    settleBoth(hit); // 【AS 采样时刻改写·同类盘点遗漏项，交付回执单列待 PM 追认】（v1.3 AS-2/3/4）
     expect(hit.events.slice(-3).map((e) => e.type)).toEqual(
       expect.arrayContaining([expect.stringMatching(/^(skill|miss)$/)]),
     );
@@ -1517,6 +1599,7 @@ describe('[A02] faceTargetOf 非空守卫：空集 fail-fast、非空零扰动�
     expect(air.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
     const tail0 = air.events.length;
     expect(air.submit({ type: 'cast', to: offsetToAxial(6, 8), skillId: 'te' })).toBe(true); // 不抛
+    settleEmpty(air); // 【AS 采样时刻改写·同类盘点遗漏项，交付回执单列待 PM 追认】（v1.3 AS-3/AS-6）
     const tail = air.events[air.events.length - 1];
     expect(tail.type).toBe('skill');
     expect('targetId' in tail).toBe(false); // 空放事件形状不变
@@ -1692,6 +1775,7 @@ describe('[AI-1] AI 出技射形同规则(规格 v2.4 · 体检 Q01:禁仅距离
     expect(cellHas('e2')).toBe(true);
     expect(cellHas('e1')).toBe(false); // 反例格不在玩家高亮(两场全等的基准面)
     expect(m.submit({ type: 'cast', to: offsetToAxial(4, 8), skillId: 'te' })).toBe(true);
+    settleBoth(m); // 【AS 采样时刻改写·同类盘点遗漏项，交付回执单列待 PM 追认】t1 重搜后两场同口径比对
     // 托管臂:同 seed 同布点,tick 至 p 首出技
     const a = aiRayBoard(spots, 'auto');
     let i0 = -1;
@@ -1700,7 +1784,12 @@ describe('[AI-1] AI 出技射形同规则(规格 v2.4 · 体检 Q01:禁仅距离
       i0 = a.events.findIndex((e) => e.actorId === 'p' && (e.type === 'skill' || e.type === 'miss'));
     }
     expect(i0).toBeGreaterThanOrEqual(0);
-    expect(targetIds(a, 'p')).toEqual(targetIds(m, 'p')); // 出技受击目标序逐位全等(SP-2)
+    // 【AS 采样时刻适配·v1.4 依据 · TASK-AS-v03】段 1=t0 提交内联（首事件在出技当刻即得，i0 采样点=t0），
+    // 段 2 唯一 due=t1=t0+出招时长 3.0s → 采样窗须再推进 ≥3.0s 跨 t1（32×DT=3.2s，余量 0.2s）；
+    // 旧 v0.2「8 tick 越过 t2=3.3」废止。窗内仅含 p 出技后 bar 回满的首次再行动（te 冷却中=位移/普攻臂，
+    // 不产 skill|miss），采样面与手动臂同口径。
+    for (let i = 0; i < 32; i++) a.tick(DT);
+    expect(targetIds(a, 'p')).toEqual(targetIds(m, 'p')); // 出技受击目标序逐位全等(SP-2；两段口径)
     expect(targetIds(a, 'p')).toContain('e0');
     expect(targetIds(a, 'p')).toContain('e2');
     expect(targetIds(a, 'p')).not.toContain('e1'); // 反例格敌不受击(修正前距离松判必含 → 此断言修正前红)
@@ -1778,5 +1867,217 @@ describe('[六向接线 §2.2] 快照 facingHex 单点导出（session 语义零
     for (const a of s.snapshot().actors) {
       expect(a.facingHex).toBe(hexFacingName(facingOf(s, a.id)));
     }
+  });
+});
+
+
+// ══════════ 普攻交互三项 + PRM-1/GSG-1（TASK-AS-v04 · 规格 v2.5 · 方案 v0.4 §9） ══════════
+// ATK-1 纯距离六向（§9.2.1）/ FACE-1 目标朝向（§9.2.2）/ ATK-3 玩家侧废止+AI 保留（§9.2.3，
+// 改写见上方 [ATK-3] describe）/ PRM-1 攻钮选格+空挥（§9.3）/ GSG-1 会话面清理单点（§9.3）。
+
+describe('[ATK-1 v2.5] 普攻纯距离：六向皆可（锥形扇区过滤作废 · 方案 v0.4 §9.2.1）', () => {
+  it('锥面反例回归：whip 玩家朝东、敌在正北邻格（旧 inCone 扇区外必拒）→ 现受理结算', () => {
+    const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500, weapon: 'whip' });
+    const e = unit({ id: 'e0', side: 'enemy', hp: 500, maxHp: 500, atk: 30, def: 10, jimin: 0 });
+    const s = makeSession(13, 'manual', p, [e]);
+    pin(s, 'p', 5, 8);
+    pin(s, 'e0', 5, 7); // 正北邻格（Δ={0,-1}）
+    pu(s).hexFacing = { q: 1, r: 0 }; // 朝正东：dirRingDist(北,东)=2 > 1 → 旧锥形规则必 rejected
+    expect(runToPending(s)).toBe(true);
+    const hpBefore = eu(s).hp;
+    const n = s.events.length;
+    expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
+    const fresh = s.events
+      .slice(n)
+      .filter((ev) => ev.actorId === 'p' && ['basic', 'miss', 'fallback'].includes(ev.type));
+    expect(fresh.length).toBeGreaterThanOrEqual(1); // 结算提交（basic 命中或 miss 均为受理）
+    expect(pu(s).bar).toBe(0); // BAR-3
+    expect(hpOf(s, 'e0')).toBeLessThanOrEqual(hpBefore);
+  });
+
+  it('六向皆可：六个邻向逐一布敌 → 全部受理（ HEX_DIRS 全序遍历；旧锥形规则下背后向必拒）', () => {
+    for (const d of HEX_DIRS) {
+      const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500, weapon: 'whip' });
+      const e = unit({ id: 'e0', side: 'enemy', hp: 500, maxHp: 500, atk: 1, def: 10, jimin: 0 });
+      const s = makeSession(13, 'manual', p, [e]);
+      pin(s, 'p', 5, 8);
+      const hex = { q: pu(s).hex.q + d.q, r: pu(s).hex.r + d.r };
+      const off = axialToOffset(hex);
+      pin(s, 'e0', off.col, off.row);
+      pu(s).hexFacing = { q: 1, r: 0 }; // 恒朝东：d=西/西北/西南三向在旧锥形规则下必拒
+      expect(runToPending(s)).toBe(true);
+      const n = s.events.length;
+      expect(s.submit({ type: 'attack', targetId: 'e0', skillId: null })).toBe(true);
+      const fresh = s.events
+        .slice(n)
+        .filter((ev) => ev.actorId === 'p' && ['basic', 'miss', 'fallback'].includes(ev.type));
+      expect(fresh.length).toBeGreaterThanOrEqual(1);
+    }
+  });
+});
+
+describe('[PRM-1 v2.5] 攻钮普攻选格：selectBasic 门/互斥/toggle + basicAtCell 有敌/空挥/集合外 + 清理单点', () => {
+  it('GATE-1 同门：条未满 → rejected:bar；auto 模式 → rejected:mode（仅手动+主角待命可进入）', () => {
+    const p = unit({ id: 'p', side: 'player', jimin: 200 });
+    const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy' })]);
+    waitAdjacent(s);
+    expect(s.snapshot().pendingInput).toBe(true);
+    const green = s.snapshot().moveCells[0];
+    expect(s.submit({ type: 'move', to: green })).toBe(true); // 消耗回合 → 条回落
+    const n = s.events.length;
+    expect(s.submit({ type: 'selectBasic' })).toBe(false);
+    expect(s.events.slice(n)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'bar' }));
+    // auto 模式：无输入态资格 → reason=mode
+    const a = makeSession(13, 'auto', unit({ id: 'p', side: 'player', jimin: 200 }), [unit({ id: 'e0', side: 'enemy' })]);
+    const na = a.events.length;
+    expect(a.submit({ type: 'selectBasic' })).toBe(false);
+    expect(a.events.slice(na)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'mode' }));
+  });
+
+  it('进入/toggle/互斥：basicCells=六邻格∩可动区（HEX_DIRS 序）；再点=退出；与技能选中两向互斥', () => {
+    const p = unit({ id: 'p', side: 'player', jimin: 200, weapon: 'sword', skills: [teSkill()], neili: 50, maxNeili: 50 });
+    const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy' })]);
+    waitAdjacent(s);
+    expect(s.submit({ type: 'selectBasic' })).toBe(true);
+    const cells = s.snapshot().basicCells;
+    const expected = hexNeighbors(pu(s).hex).filter((c) => {
+      const off = axialToOffset(c);
+      return off.col >= FIELD_COL_MIN && off.col <= FIELD_COL_MAX && off.row >= FIELD_ROW_MIN && off.row <= FIELD_ROW_MAX;
+    });
+    expect(cells.map((c) => `${c.q},${c.r}`)).toEqual(expected.map((c) => `${c.q},${c.r}`)); // 同序全等（SP-2）
+    expect(s.snapshot().moveCells.length).toBe(0); // 普攻选中态无绿格（金格=basicCells）
+    expect(s.submit({ type: 'selectBasic' })).toBe(true); // SEL-2 toggle：再点攻钮=取消
+    expect(s.snapshot().basicCells.length).toBe(0);
+    // 两向互斥（BASE-5）：技能选中清普攻态；攻钮清技能选中
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.snapshot().selectedSkill).toBe('te');
+    expect(s.submit({ type: 'selectBasic' })).toBe(true);
+    expect(s.snapshot().selectedSkill).toBeNull();
+    expect(s.snapshot().basicCells.length).toBeGreaterThan(0);
+    expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+    expect(s.snapshot().basicCells.length).toBe(0);
+    expect(s.snapshot().selectedSkill).toBe('te');
+  });
+
+  it('basicAtCell 有敌格=既有 basic F-04：事件带 targetId、hp 降、neili/冷却零耗、bar0、选中与输入态清', () => {
+    const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500, neili: 50, maxNeili: 50, skills: [teSkill()] });
+    const e = unit({ id: 'e0', side: 'enemy', hp: 500, maxHp: 500, atk: 30, def: 10, jimin: 0 });
+    const s = makeSession(13, 'manual', p, [e]);
+    waitAdjacent(s);
+    expect(s.submit({ type: 'selectBasic' })).toBe(true);
+    const neili0 = pu(s).neili;
+    const cd0 = pu(s).cooldowns.get('te') ?? 0;
+    const hp0 = eu(s).hp;
+    const n = s.events.length;
+    expect(s.submit({ type: 'basicAtCell', to: { ...eu(s).hex } })).toBe(true);
+    const fresh = s.events.slice(n);
+    const settle = fresh.find((ev) => ['basic', 'miss'].includes(ev.type));
+    expect(settle).toBeDefined();
+    expect(settle!.targetId).toBe('e0'); // 有敌格=对敌结算（doAttack 既有路径零改动）
+    expect(hpOf(s, 'e0')).toBeLessThanOrEqual(hp0);
+    expect(pu(s).neili).toBe(neili0); // 普攻零内力
+    expect(pu(s).cooldowns.get('te') ?? 0).toBe(cd0); // 零冷却写入
+    expect(pu(s).bar).toBe(0); // 耗回合（BAR-3）
+    expect(s.snapshot().basicCells.length).toBe(0); // 提交后清 basicCells
+    expect(s.snapshot().pendingInput).toBe(false);
+  });
+
+  it('basicAtCell 空挥：恰 1 条 basic（无 targetId 无 damage）+ 零 RNG + 资源零耗 + 朝向=点击格 + basic 演出', () => {
+    const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500, neili: 50, maxNeili: 50, skills: [teSkill()] });
+    const e = unit({ id: 'e0', side: 'enemy', hp: 500, maxHp: 500, atk: 30, def: 10, jimin: 0 });
+    const s = makeSession(13, 'manual', p, [e]);
+    waitAdjacent(s);
+    pin(s, 'p', 5, 8);
+    pin(s, 'e0', 6, 8); // 东邻：六邻格含 5 个空格（确定性布点）
+    for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+    expect(s.snapshot().pendingInput).toBe(true);
+    expect(s.submit({ type: 'selectBasic' })).toBe(true);
+    const empty = s.snapshot().basicCells.find((c) => !hexEq(c, eu(s).hex))!;
+    const rng0 = s._debug.rngCalls();
+    const neili0 = pu(s).neili;
+    const cd0 = pu(s).cooldowns.get('te') ?? 0;
+    const hp0 = eu(s).hp;
+    const n = s.events.length;
+    expect(s.submit({ type: 'basicAtCell', to: empty })).toBe(true);
+    const fresh = s.events.slice(n);
+    expect(fresh.length).toBe(1); // 恰 1 条（事件契约零新增：basic 形状，镜像 t0 空放 skill）
+    expect(fresh[0].type).toBe('basic');
+    expect(fresh[0].actorId).toBe('p');
+    expect(fresh[0].targetId).toBeUndefined();
+    expect(fresh[0].damage).toBeUndefined();
+    expect(s._debug.rngCalls()).toBe(rng0); // 空挥零 F-04 掷骰（SP-2：拒绝/空挥不消费 RNG）
+    expect(hpOf(s, 'e0')).toBe(hp0); // 零伤害
+    expect(pu(s).neili).toBe(neili0); // 零内力
+    expect(pu(s).cooldowns.get('te') ?? 0).toBe(cd0); // 零冷却写入
+    expect(pu(s).bar).toBe(0); // 耗回合
+    expect(pu(s).animState).toBe('basic'); // basic 演出（零 tick 即可观测）
+    expect(pu(s).hexFacing).toEqual({ q: empty.q - pu(s).hex.q, r: empty.r - pu(s).hex.r }); // FACE-1 fallback=点击格六向
+    expect(s.snapshot().basicCells.length).toBe(0);
+    expect(s.snapshot().pendingInput).toBe(false);
+  });
+
+  it('basicAtCell 集合外/未选中态 → rejected:invalid：选中保持、bar 不动（取消归 input 层 SEL-5② 同构）', () => {
+    const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500 });
+    const s = makeSession(13, 'manual', p, [unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1 })]);
+    waitAdjacent(s);
+    // 未进选中态直接提交 → rejected(invalid)
+    const farCell = offsetToAxial(FIELD_COL_MAX, 8);
+    let n = s.events.length;
+    expect(s.submit({ type: 'basicAtCell', to: farCell })).toBe(false);
+    expect(s.events.slice(n)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+    // 选中态下点集合外格 → rejected(invalid)、选中保持零消耗
+    expect(s.submit({ type: 'selectBasic' })).toBe(true);
+    n = s.events.length;
+    expect(s.submit({ type: 'basicAtCell', to: farCell })).toBe(false);
+    expect(s.events.slice(n)).toContainEqual(expect.objectContaining({ type: 'rejected', reason: 'invalid' }));
+    expect(s.snapshot().basicCells.length).toBeGreaterThan(0); // 选中保持
+    expect(pu(s).bar).toBe(100); // 零消耗（clamp 口径条满恒 100）
+  });
+
+  it('清理单点：cancelSkill / setMode(auto) / flee 均清 basicCells（commit 路径见上两例）', () => {
+    const mk = () => makeSession(13, 'manual', unit({ id: 'p', side: 'player', jimin: 200 }), [unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1 })]);
+    // cancelSkill
+    const c1 = mk();
+    waitAdjacent(c1);
+    expect(c1.submit({ type: 'selectBasic' })).toBe(true);
+    expect(c1.snapshot().basicCells.length).toBeGreaterThan(0);
+    expect(c1.submit({ type: 'cancelSkill' })).toBe(true);
+    expect(c1.snapshot().basicCells.length).toBe(0);
+    expect(c1.snapshot().pendingInput).toBe(true); // 取消不耗回合
+    // setMode(auto)
+    const c2 = mk();
+    waitAdjacent(c2);
+    expect(c2.submit({ type: 'selectBasic' })).toBe(true);
+    expect(c2.submit({ type: 'setMode', mode: 'auto' })).toBe(true);
+    expect(c2.snapshot().basicCells.length).toBe(0);
+    expect(c2.snapshot().pendingInput).toBe(false);
+    // flee
+    const c3 = mk();
+    waitAdjacent(c3);
+    expect(c3.submit({ type: 'selectBasic' })).toBe(true);
+    expect(c3.submit({ type: 'flee' })).toBe(true);
+    expect(c3.snapshot().basicCells.length).toBe(0);
+    expect(c3.snapshot().phase).toBe('fled');
+  });
+
+  it('[SP-2] 同 seed 同操作（selectBasic/空挥/rejected/有敌结算）双场事件流全等', () => {
+    const run = () => {
+      const p = unit({ id: 'p', side: 'player', jimin: 200, atk: 200, def: 30, hp: 500, maxHp: 500, neili: 50, maxNeili: 50, skills: [teSkill()] });
+      const s = makeSession(20260907, 'manual', p, [unit({ id: 'e0', side: 'enemy', hp: 999999, maxHp: 999999, atk: 1, jimin: 0 })]);
+      pin(s, 'p', 5, 8);
+      pin(s, 'e0', 6, 8);
+      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+      expect(s.submit({ type: 'selectBasic' })).toBe(true);
+      const empty = s.snapshot().basicCells.find((c) => !hexEq(c, eu(s).hex))!;
+      expect(s.submit({ type: 'basicAtCell', to: empty })).toBe(true); // 空挥
+      for (let i = 0; i < 600 && !s.snapshot().pendingInput; i++) s.tick(DT);
+      expect(s.submit({ type: 'selectBasic' })).toBe(true);
+      expect(s.submit({ type: 'basicAtCell', to: offsetToAxial(FIELD_COL_MAX, 8) })).toBe(false); // rejected
+      expect(s.submit({ type: 'basicAtCell', to: { ...eu(s).hex } })).toBe(true); // 有敌格结算
+      return s.events;
+    };
+    const a = run();
+    const b = run();
+    expect(JSON.stringify(b)).toBe(JSON.stringify(a)); // 含 rejected 序列全等（SP-2/SP-3）
   });
 });

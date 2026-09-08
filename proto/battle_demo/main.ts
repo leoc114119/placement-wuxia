@@ -3,6 +3,7 @@
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
 import type { CombatantInput } from '../../types';
+import { SPEED_FACTOR } from '../../config/battle';
 import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, hexToWorld, type BattleClip } from '../../config/battle-hex';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
@@ -209,7 +210,9 @@ function resetDemo(): void {
   view.pendingHits.length = 0; // T21/E4：重开残留清理（旧对局挂起/震动/错位序号不跨局冒出）
   view.shakes.clear();
   view.dmgStagger.clear();
+  view.basicHolds.clear(); // 【AS · TASK-AS-FE】普攻保持窗跨局清理（旧局 1s 窗不拖进新局）
   view.selectedCell = null;
+  view.hoverCell = null; // 【GSG-1 · TASK-AS-v04】悬停红态跨局清理
   view.skillPop = 0;
   view.camDrag.x = 0;
   view.camDrag.y = 0;
@@ -233,6 +236,13 @@ canvas.addEventListener('pointermove', (e) => {
   if (!ptr.owns(e.pointerId) || !input.pointer.down) return; // 配对：非活动指的 move 忽略
   const p = toLogical(e);
   input.move(view, p.x, p.y);
+});
+canvas.addEventListener('pointermove', (e) => {
+  // 【GSG-1 · TASK-AS-v04】自由悬停（无按压）：译格写 view.hoverCell 表现态（触屏无自由
+  // hover=不触发即自然退化）；活动指（拖镜/按压中）不产 hover，保持拖镜语义纯净。
+  if (ptr.activeId !== null) return;
+  const p = toLogical(e);
+  input.hover(view, session.snapshot(), p.x, p.y, W, H);
 });
 canvas.addEventListener('pointerup', (e) => {
   if (!ptr.release(e.pointerId)) return; // 配对：id 不匹配/无活动指的 up 忽略（非配对释放不产生点击）
@@ -323,11 +333,16 @@ let last = performance.now();
 let frameLog: Array<{ t: number; q: number; r: number; hop: number }> = [];
 let frameLogOn = false;
 function loop(t: number): void {
-  const dt = Math.min(0.05, (t - last) / 1000 || 0);
+  const realDt = Math.min(0.05, (t - last) / 1000 || 0);
   last = t;
+  // 【AS · TASK-AS-FE · 方案 §4.4】宿主逻辑 dt 唯一真源：session.tick 内部按 SPEED_FACTOR 缩放
+  //（battle-session speed 段），view 演出钟必须吃同一逻辑 dt——x2 时 cast 帧循环、血条、行动条、
+  // 移动演出同倍率推进，禁止只加速其一（speedOn=宿主镜像，与 session speedFast 经 toggleSpeed
+  // 受理同步翻转；SPEED_FACTOR 同源常量，两路恒同值）。
+  const dt = realDt * (speedOn ? SPEED_FACTOR.fast : SPEED_FACTOR.normal);
   resize(); // 每帧检测窗口尺寸变化（resize 事件不可靠场景兜底）
   if (frameLogOn) frameLog.push({ t: Math.round(performance.now()), ...sampleHeroDrawPos() });
-  session.tick(dt);
+  session.tick(realDt);
   const snap = session.snapshot();
   view.uiState = { mode: session._debug.mode(), speed: speedOn };
   // 事件消费（rejected 冒字 T15 R3 + T21 受击反馈白名单入队，方案 §2.2——其余一切不入队）

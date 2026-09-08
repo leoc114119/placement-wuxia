@@ -33,6 +33,9 @@ export interface BattleInput {
   move(view: BattleHexView, x: number, y: number): void;
   /** 抬起（逻辑坐标；拖动结束不触发点选；无有效 down 的 up=忽略——A07 非配对释放不产生点击） */
   up(view: BattleHexView, snapshot: BattleSnapshot, x: number, y: number, width: number, height: number): void;
+  /** 【GSG-1 · TASK-AS-v04】悬停（逻辑坐标；PC/预览自由移动，无按压态）：只译格写 view.hoverCell
+   * 表现态，画不画红由渲染按快照可选格集合判定；触屏无 hover=宿主不调用即自然退化（PRM-1 平台注记） */
+  hover(view: BattleHexView, snapshot: BattleSnapshot, x: number, y: number, width: number, height: number): void;
   /** 异常终止重置（pointercancel/失焦/重开；A07）：清内部拖动态，不派发任何请求/点击 */
   reset(): void;
 }
@@ -117,6 +120,17 @@ export function pickCtrlButton(view: BattleHexView, x: number, y: number): 'mode
 }
 
 /**
+ * 命中 ctrl「攻」钮（PRM-1 · TASK-AS-v04 纯函数，导出供用例）：命中返回 true。
+ * 热区=layout.atkBtn 标定矩形本体（HIT_TOL.ctrl=0 同口径：满宽实体钮无容差外扩）；
+ * 非待命期 layout.atkBtn=null → 恒 false（棋盘 fall-through，HIT-1 同规）。
+ */
+export function pickAtkButton(view: BattleHexView, x: number, y: number): boolean {
+  const r = view.layout.atkBtn;
+  if (!r) return false;
+  return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+}
+
+/**
  * 命中 plaque 木牌标定矩形（T20-FE D-13 / HIT-1 纯函数，导出供用例）：返回 label 或 null。
  * 热区=两牌可点主体标定矩形（xRatio/wRatio）+容差——装饰件（横杆/挂绳/流苏）不设热区，
  * 左右透明边 fall-through 棋盘格（HIT-1）。
@@ -191,6 +205,12 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
       else hooks.dispatch({ type: 'flee' });
       return;
     }
+    // ②' ctrl「攻」钮（PRM-1 · TASK-AS-v04）：普攻选格 toggle。热区仅待命期存在（layout.atkBtn
+    // 非空），非待命恒 false 落到棋盘——控件命中优先于棋盘 fall-through（§9.3 红线）。
+    if (pickAtkButton(view, x, y)) {
+      hooks.dispatch({ type: 'selectBasic' });
+      return;
+    }
     // ③ 左侧木牌（装备/武功——占位反馈）——D-13/HIT-1：两牌标定矩形+容差，装饰件不设热区
     const plaque = pickPlaqueButton(view, x, y);
     if (plaque) {
@@ -202,7 +222,22 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
     const cam = view.camera;
     const cell = worldToHex(x - width / 2 + cam.x, y - height / 2 + cam.y);
     if (!axialToOffset(cell)) {
-      if (snapshot.selectedSkill) hooks.dispatch({ type: 'cancelSkill' }); // 点棋盘外=取消施放
+      if (snapshot.selectedSkill || snapshot.basicCells.length > 0) {
+        hooks.dispatch({ type: 'cancelSkill' }); // 点棋盘外=取消施放/普攻选格（SEL-5②）
+      }
+      return;
+    }
+    // 【PRM-1 · TASK-AS-v04】普攻选中态（快照 basicCells 非空=session 真值）：点金色六邻格=提交
+    // basicAtCell（格上有敌=对敌结算/无敌=空挥，session 校验）；集合外任何格=取消（SEL-5② 同构）。
+    // 悬停红态只是视觉（不点两下，GSG-1），点击立即执行无两段确认。分支先于敌格/绿格/技能派发
+    // （普攻选中态下二选一预算已归普攻）。
+    if (snapshot.basicCells.length > 0) {
+      view.hoverCell = null;
+      if (snapshot.basicCells.some((c) => sameCell(c, cell))) {
+        hooks.dispatch({ type: 'basicAtCell', to: cell });
+      } else {
+        hooks.dispatch({ type: 'cancelSkill' });
+      }
       return;
     }
     // 敌棋子命中按逻辑 hex（快照 pos，结算真值）——与 renderPos 动画位解耦（L 环终验根因 A：
@@ -275,11 +310,21 @@ export function createBattleInput(hooks: BattleInputHooks): BattleInput {
     }
   }
 
+  /** 【GSG-1 · TASK-AS-v04】悬停翻译（PC/预览；无按压语义、零派发零反馈）：格换算与 up 同式
+   * （worldToHex + 相机），只写 view.hoverCell 表现态；棋盘外=null。渲染按快照三类可选格
+   * （轻功金格/attackCells/basicCells）成员画红（普通移动绿格不纳入）；触屏宿主不调用=退化。 */
+  function hover(view: BattleHexView, snapshot: BattleSnapshot, x: number, y: number, width: number, height: number): void {
+    void snapshot; // 格集合判定归渲染（只画不算）；本层只译格
+    const cam = view.camera;
+    const cell = worldToHex(x - width / 2 + cam.x, y - height / 2 + cam.y);
+    view.hoverCell = axialToOffset(cell) ? cell : null;
+  }
+
   /** A07：异常终止重置（pointercancel/失焦/重开）——只清拖动态，不派发任何请求/点击 */
   function reset(): void {
     pointer.down = false;
     pointer.dragging = false;
   }
 
-  return { pointer, down, move, up, reset };
+  return { pointer, down, move, up, hover, reset };
 }

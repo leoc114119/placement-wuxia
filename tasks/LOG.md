@@ -4,6 +4,7 @@
 
 | 时间 | 方向 | 事件 | 详情 |
 |------|------|------|------|
+| 2026-09-07 | frontend-battle | 📦 交付 TASK-AS-FE 出招速度+两段式伤害表现卡（分支 `task/attack-speed-fe`，基点 d571eb7，未 push 停等主架构技术验收） | ①charge 施放帧定格 cast1→cast1→3 整套循环（ANIM_LOOP_GROUPS+charge）②普攻表现 1s：BASIC_DURATION_MS=1000 落共享 config/battle.ts+battle-hex CHOREO.basicSec 别名+渲染层 basic 保持窗（session ANIM_MS.basic=300 冻结差额由 view 补足）③宿主逻辑 dt 唯一真源（main.ts realDt×SPEED_FACTOR 同传 session/view，x2 cast 帧/血条/行动条同倍率）④读码发现并修：固定步长下 t2 与收招窗同刻翻转致 T21 段2 冒字挂 1.5s 兜底——按 AS-8「收势=段2 终点」补冲刷条件 e 攻击态收尾沿（既有 T21 用例零破坏）⑤legacy 敌型循环语义降级核实不坏。证据链 shot_as_cast.mjs 30 影/18 校验全 PASS（x1/x2×375/560/900：循环两帧互异→段1 冒字→strike→段2 冒字 dx 0/6、hp 70→65→60）；随卡回调 2 处旧 charge 锁+新增 9 用例；门禁原文：typecheck/lint/build 三零、test:battle **303 passed+14 skipped（基线 294+14+新 9）**、behavior 14/14、shot 16 PASS/0 FAIL、sixdir 48 张零 pageerror、e2e **11 MATCH 不符合 0**、DBG=0、bundle rebuild verTag `v1788755695162`；FX.slashSec=0.28 未动与终局「播完」口径两处单列待复核；threads/ARCH-AS.md |
 | 2026-09-07 | rd → 主架构 | 📥 方案锚义勘误（seq=91） | PM 终裁 R1：`提交格` 统一为“施法者提交时所在格”；点击格只作受理/演出朝向，三入口统一自身格锚。 |
 | 2026-09-07 | rd → 主架构 | 📥 TASK-AS-BE 技术验收请求（seq=92） | 请求复核 `task/attack-speed-be`（`fcd7067`/`670bce9`/`d571eb7`）；预裁 R1、3 处采样改写追认、`FINISH_WINDOW_MS` 落 `config/battle.ts`，重点 B4 时钟死锁修复。 |
 | 2026-09-07 | 主架构（Codex） → 研发线 | ✅ TASK-AS-BE 技术验收 PASS | 独立副本复验远端 tip `d571eb7`：typecheck/lint/build 通过；battle 294 passed + 14 skipped、behavior 14/14、shot 16/16 PASS、e2e 11/11 MATCH（不符 0、exit 0）、bundle `DBG[` 0；R1 自身格锚、动态 t1、B4 施法门、死亡消散、终局表现分离复核通过。 |
@@ -532,3 +533,5 @@
 | 09-07 | Codex（art） | 🎨 T45 2b 乙右下行走1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_walk_rightdown_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈119.7、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
 | 09-07 | Codex（art） | 🎨 T45 2b 乙右下攻击1单帧候选已生成，停 Leo 目验 | 原生 ImageGen 单帧 `shanzei_b_atk_rightdown_1`；raw/normalized/QA 与暗底透明检查已落生产包，机械门 PASS（240×320 RGBA、视觉高256、脚底 y=300、质心 x≈119.8、单主体、四边透明）；等待 Leo 视觉确认，不启动下一帧。 |
 | 09-07 | Leo | 🏗️ PM 窗口拆分批准 | 研发 PM（本窗口）+美术 PM（新窗口）双窗制：美术 PM 接管 art 通道门检/口径/排产，研发 PM 专注 arch 通道+研发卡；护栏=事务域切死/git worktree 纪律/额度分账；入职快照 tasks/handoff/PM2-art-onboard-2026-09-07.md |
+| 09-07 | ZCode（backend-battle） | 📦 TASK-AS-BE 交付（task/attack-speed-be @ fcd7067，未 push） | 出招速度+两段式伤害 BE 卡：scheduler 提交即排程/t1 动态重搜（R1 锚=施法者格，二读裁定待复核）/两段独立 F-04/死亡消散/终局截断；四门+proto 门全绿（battle 294+14、behavior 14/14、shot 16、e2e 全 MATCH、DBG=0、verTag bump）；详见 tasks/threads/ARCH-AS.md 交付行 |
+| 09-07 | ZCode（backend-battle·复验） | ✅ TASK-AS-BE 独立复验收口 | 四门+proto 门全数复跑吻合（battle 294+14 / behavior 14/14 / shot 16 PASS / e2e 11 MATCH 0 不符 / DBG=0 / bundle 逐字节=重建产物）；FACE-1 ②b seed 5/7 实跑未漂移，结论已补 ARCH-AS 交付行（Q1 条件闭合）；前任被 kill 残留（半截 shots/verTag）按处置令重跑覆盖，未 commit 残留 |

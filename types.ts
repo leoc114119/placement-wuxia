@@ -41,6 +41,10 @@ export interface SkillDef {
   level: number; // 当前等级（决定范围档位：Lv 20/40/60 三档，R-05）
   cooldownTurns: number; // 冷却回合数（R-08）
   neiliCost: number; // 内力消耗（R-09）
+  /** 【AS 出招速度 · 需求 v1.3 AS-1/schema v0.2】武功出招系数（个体差异快照）：初始 0.8，
+   * 轻招可 <1、绝学可 2，随武功等级↑（成长曲线归 C 案）。缺省 = 0.8（MVP 默认，向后兼容）；
+   * 与 CombatantInput.internalCastSpeed 加法合成、和封顶 ≤6（castDurationMs=3000÷min(6,和)）。 */
+  castSpeed?: number;
 }
 
 /** 棋盘坐标（MVP 固定站位 P2-5：我方 y=10 / 敌方 y=1，棋盘 8×12） */
@@ -67,6 +71,10 @@ export interface CombatantInput {
   pos: GridPos;
   weapon: WeaponType | null; // 装备武器（R-05 匹配判定）
   skills: SkillDef[]; // 出招优先级按数组顺序
+  /** 【AS 出招速度 · 需求 v1.3 AS-1】内功加成速度：成长域提供的快照值（初始 0.2，随内功等级↑，
+   * 归内功系统 schema）。session 只读本快照，禁读 neigongLevel 反推；缺省 = 0.2（MVP 默认，
+   * 向后兼容）；与 SkillDef.castSpeed 加法合成（唯一消费点 battle-core castDurationMs）。 */
+  internalCastSpeed?: number;
 }
 
 /** 单条战斗日志（需求表 #7：回合/行动者/动作/伤害/结果） */
@@ -333,6 +341,9 @@ export interface BattleSnapshot {
   moveCells: HexPos[]; // 可移动高亮：普通态=普通可达（绿，不可穿越单位，C 案 A3）/轻功激活态=跳跃可达（金，moveKind='jump'）
   moveKind: 'walk' | 'jump'; // 当前 moveCells 形态（渲染换色：绿=普通 / 金=轻功跳跃）
   attackCells: HexPos[]; // 攻击范围高亮（红，激活攻击型技能后；O2 三形态，锥形按六向 facing 轴）
+  /** 【PRM-1 v2.5 · TASK-AS-v04】普攻选格金色高亮：攻钮选中态下主角外圈六邻格（∩可动区；
+   * session 唯一产出，渲染只画不算——方案 v0.4 §9.3 架构红线）。非选中态/非输入态=空数组。 */
+  basicCells: HexPos[];
   selectedSkill: string | null; // 已激活待施放的技能 id
   heroSkills: SkillButtonInfo[]; // 主角弧形技能钮（验收 F2：置灰数据源=会话真值，Ext 过渡段降级删除）
   actors: SnapshotActor[];
@@ -349,6 +360,11 @@ export type ActionRequest =
   | { type: 'cast'; to: HexPos; skillId: string }   // 对格施放（ATK-2/6/7 v2.0）：to=目标格（axial），skillId=选中攻击技
   | { type: 'selectSkill'; skillId: string }
   | { type: 'cancelSkill' }
+  /** 【PRM-1 v2.5 · TASK-AS-v04 普攻选格请求族】selectBasic=攻钮 toggle（进入/退出普攻选中态，
+   * 再点攻钮=取消）；basicAtCell=点金色六邻格提交普攻选格（to ∈ 快照 basicCells，显示=校验同源；
+   * 格上有敌=既有 basic F-04，无敌=空挥：耗回合零伤害零内力零冷却写入——方案 v0.4 §9.3）。 */
+  | { type: 'selectBasic' }
+  | { type: 'basicAtCell'; to: HexPos }
   | { type: 'setMode'; mode: BattleMode }
   | { type: 'toggleSpeed' }
   | { type: 'flee' };
