@@ -1,0 +1,11 @@
+{
+  "seq": 160,
+  "frame": "idle_right",
+  "revision": "handle-short-occlusion-v4",
+  "credits": 0,
+  "provider": null,
+  "model": null,
+  "rawGeneration": false,
+  "deterministicTool": "Pillow",
+  "formalRuntimeTouched": false
+}

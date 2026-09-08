@@ -1,0 +1,273 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "batch": "podao-d-frame01-idle-right",
+  "revision": "hand-right-correction-v2",
+  "trialOnly": true,
+  "frameOrder": [
+    "idle_right",
+    "walk_rightdown_1",
+    "atk_right_2",
+    "idle_rightup"
+  ],
+  "currentFrame": "idle_right",
+  "scope": "shanzei_a|b × battle_idle_right",
+  "handRule": "character right hand; screen-left fist for this right-facing/back-side pose",
+  "generation": {
+    "provider": null,
+    "model": null,
+    "credits": 0,
+    "method": "Pillow deterministic placeholder blade + body ROI mask",
+    "rawImageGeneration": false
+  },
+  "specSource": "seq=160; Q1-T45 hand mapping; docs/design/01-基础功能/角色帧规范.md §4c v1.5/v1.6",
+  "status": "stop_after_frame_for_PM_and_Leo_review",
+  "frames": [
+    {
+      "id": "a_idle_right",
+      "identity": "shanzei_a",
+      "bodyFrame": "battle_idle_right.png",
+      "bodyPath": "assets/characters/enemy/shanzei_a/battle45/battle_idle_right.png",
+      "bodySha256": "f65fae17b33b05b8c47dd9157e0251169da352b66c1441c0c0354cc860955afb",
+      "rawBodyCopy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/raw/a_idle_right_body.png",
+      "bodyMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxT32": [
+          78,
+          44,
+          174,
+          300
+        ],
+        "visualWidth": 96,
+        "visualHeight": 256,
+        "alpha32CentroidX": 120.16781101095394,
+        "alpha32CentroidY": 170.60983343264337,
+        "feetYExclusive": 300,
+        "borderNonzero": 0
+      },
+      "handSemantic": "character_right_hand",
+      "screenProjection": "screen_left_fist_in_this_right-facing_pose",
+      "gripPoint": {
+        "x": 119,
+        "y": 181
+      },
+      "angleDeg": -55.0,
+      "angleDefinition": "blade axis from grip toward tip; 0° screen-right, +Y down, clockwise-positive",
+      "layerOrder": "front",
+      "occlusionRef": {
+        "roiPolygon": [
+          [
+            104,
+            170
+          ],
+          [
+            114,
+            168
+          ],
+          [
+            125,
+            171
+          ],
+          [
+            132,
+            178
+          ],
+          [
+            130,
+            186
+          ],
+          [
+            121,
+            191
+          ],
+          [
+            110,
+            189
+          ],
+          [
+            103,
+            183
+          ],
+          [
+            101,
+            176
+          ]
+        ],
+        "maskPath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/occlusion_masks/a_idle_right_fist_roi.png",
+        "maskSha256": "051ea82045366f34cba104788902429fa841e4b612e5d36aa048b0f144d89c1c",
+        "semantics": "character right-hand fist alpha inside ROI remains topmost in D composite"
+      },
+      "weaponPlaceholder": {
+        "path": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/weapon_layers/a_idle_right_placeholder_blade.png",
+        "sha256": "36ff8efd87e6cb0747ba1494b6e60071bbe4ec7a986aa81d60c0e5d32bcc4db6",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
+        "handleSpanAlongAxis": [
+          -16,
+          20
+        ],
+        "bladeSpanAlongAxis": [
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
+      },
+      "composites": {
+        "native": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/composites_native/a_idle_right_triptych.png",
+        "nativeSha256": "1bbb95883fb035a4ce30855450517d53c298f92d52acbc445f191b2c17a9add5",
+        "2x": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/composites_2x/a_idle_right_triptych_2x.png",
+        "2xSha256": "6eb12b49fe710cf22025b3fe83289352b90ddbc983e06b801fe77440aedc9717"
+      },
+      "checks": {
+        "bodyShaFrozen": true,
+        "bodyCanvasPass": true,
+        "bodyFeetPass": true,
+        "bodyVisualHeightPass": true,
+        "bodyBorderTransparent": true,
+        "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
+        "dOcclusionReducesWeapon": true,
+        "handleVisibleBeforeRoi": true,
+        "handleVisibleAfterRoi": true,
+        "layerOrderRecorded": true,
+        "nativeSizePass": true,
+        "2xSizePass": true,
+        "allPass": true
+      }
+    },
+    {
+      "id": "b_idle_right",
+      "identity": "shanzei_b",
+      "bodyFrame": "battle_idle_right.png",
+      "bodyPath": "assets/characters/enemy/shanzei_b/battle45/battle_idle_right.png",
+      "bodySha256": "7c9eb5773454e0a2cfceeac7eab7337179b5f2179881cb099471b63586b1fd90",
+      "rawBodyCopy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/raw/b_idle_right_body.png",
+      "bodyMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxT32": [
+          47,
+          44,
+          179,
+          300
+        ],
+        "visualWidth": 132,
+        "visualHeight": 256,
+        "alpha32CentroidX": 120.33443821604274,
+        "alpha32CentroidY": 157.0642387190191,
+        "feetYExclusive": 300,
+        "borderNonzero": 0
+      },
+      "handSemantic": "character_right_hand",
+      "screenProjection": "screen_left_fist_in_this_right-facing_pose",
+      "gripPoint": {
+        "x": 110,
+        "y": 171
+      },
+      "angleDeg": -55.0,
+      "angleDefinition": "blade axis from grip toward tip; 0° screen-right, +Y down, clockwise-positive",
+      "layerOrder": "front",
+      "occlusionRef": {
+        "roiPolygon": [
+          [
+            98,
+            157
+          ],
+          [
+            109,
+            155
+          ],
+          [
+            120,
+            159
+          ],
+          [
+            126,
+            166
+          ],
+          [
+            124,
+            176
+          ],
+          [
+            117,
+            183
+          ],
+          [
+            106,
+            183
+          ],
+          [
+            98,
+            178
+          ],
+          [
+            94,
+            169
+          ]
+        ],
+        "maskPath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/occlusion_masks/b_idle_right_fist_roi.png",
+        "maskSha256": "77783e2535389a14db3b09cb8703758b862c4262466763d3a2095c47ed1ebf00",
+        "semantics": "character right-hand fist alpha inside ROI remains topmost in D composite"
+      },
+      "weaponPlaceholder": {
+        "path": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/weapon_layers/b_idle_right_placeholder_blade.png",
+        "sha256": "f716bf4b0bff9cfc9372643894b17b13032332d642d40b9944a72caae11e3b78",
+        "profile": "long_broad_single_edge_dao_placeholder_v2",
+        "handleSpanAlongAxis": [
+          -16,
+          20
+        ],
+        "bladeSpanAlongAxis": [
+          15,
+          92
+        ],
+        "bladeLengthAlongAxis": 77
+      },
+      "composites": {
+        "native": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/composites_native/b_idle_right_triptych.png",
+        "nativeSha256": "abf7907e5368abed4549c4ec5a3cc6ed8f703d68b6f5c0d63bd3dabe1cf268bc",
+        "2x": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/right-hand-correction-v2/composites_2x/b_idle_right_triptych_2x.png",
+        "2xSha256": "c2dd5d0f375b509ed1f7c116106f18367acbd6eace9273872fceeca60354d488"
+      },
+      "checks": {
+        "bodyShaFrozen": true,
+        "bodyCanvasPass": true,
+        "bodyFeetPass": true,
+        "bodyVisualHeightPass": true,
+        "bodyBorderTransparent": true,
+        "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
+        "dOcclusionReducesWeapon": true,
+        "handleVisibleBeforeRoi": true,
+        "handleVisibleAfterRoi": true,
+        "layerOrderRecorded": true,
+        "nativeSizePass": true,
+        "2xSizePass": true,
+        "allPass": true
+      }
+    }
+  ],
+  "checks": {
+    "expectedFrames": 2,
+    "actualFrames": 2,
+    "allFramesPass": true,
+    "rightHandScreenLeft2of2": true,
+    "noGeneration": true,
+    "formalRuntimeTouched": false
+  }
+}

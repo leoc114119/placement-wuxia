@@ -1,0 +1,11 @@
+{
+  "seq": 160,
+  "frame": "idle_right",
+  "revision": "position-right-up-length-v3",
+  "credits": 0,
+  "provider": null,
+  "model": null,
+  "rawGeneration": false,
+  "deterministicTool": "Pillow",
+  "formalRuntimeTouched": false
+}
