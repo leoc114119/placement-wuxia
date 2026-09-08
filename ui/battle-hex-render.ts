@@ -1072,10 +1072,15 @@ export function directionalFrameOf(view: BattleHexView, actor: SnapshotActor): D
   const clock = view.anim.get(actor.id);
   if (!clock || clock.state !== state) return { clip: plan.clip, ordinal: plan.from }; // 新组从 from 重放
   // 【v0.3 · TASK-AS-v03】charge 循环步频走独立 CAST_FRAME_PERIOD_MS=280（方案 §4.4，与 walkFrameMs
-  // 解耦）；walk 循环（无 moveAnim 时钟臂）与其余态保持 walkFrameMs 不动。
+  // 解耦）；walk 循环（无 moveAnim 时钟臂）与其余单播态保持 walkFrameMs 不动。
   // 【L 环 T27 2026-09-08】循环态判定追加 profile.loopStates 数据声明（敌 strike 循环 atk_1↔atk_2
   // 用；纯 profile 数据消费，无 side/技能特判；不声明=行为不变，hero 未用）。
-  const periodMs = state === 'charge' ? CAST_FRAME_PERIOD_MS : PIECE.walkFrameMs;
+  // 【L 环 R1 复验 2026-09-08】Leo「要循环，不是要加速」：profile 声明的循环态（施法性质）步频
+  // 统一 CAST_FRAME_PERIOD_MS=280——敌 charge/strike 同节拍平稳循环；walk 仍 140 不动。
+  const periodMs =
+    state === 'charge' || profile.loopStates?.includes(state) === true
+      ? CAST_FRAME_PERIOD_MS
+      : PIECE.walkFrameMs;
   const idx = Math.floor((clock.t * 1000) / periodMs);
   const looping = ANIM_LOOP_GROUPS.includes(state) || profile.loopStates?.includes(state) === true;
   if (looping) {

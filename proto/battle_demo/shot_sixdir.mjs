@@ -200,9 +200,10 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
   await shot(page, `${tag}_enemyA_basic_atk2`);
 
   // ⑩ enemy 施法循环证据（§9.2.1 降级 + L 环 2026-09-08 裁定「charge/strike 全阶段循环
-  //   atk_1↔atk_2，不卡静帧」）：charge 步频=CAST_FRAME_PERIOD_MS=280 / strike 步频=walkFrameMs=140
-  //  （strike 循环经 profile.loopStates 数据声明——hero cast 三帧循环不受影响）。
-  //   两相截图白盒确定性：直写 view.anim 时钟至相位中点（裕度≥70ms，RAF 步进 ±1 帧不翻相）；
+  //   atk_1↔atk_2，不卡静帧」+ R1 复验「要循环，不是要加速」步频统一 CAST_FRAME_PERIOD_MS=280）：
+  //   charge/strike 同节拍 280ms 两相循环（strike 循环经 profile.loopStates 数据声明——
+  //   hero cast 三帧循环不受影响）。
+  //   两相截图白盒确定性：直写 view.anim 时钟至相位中点（裕度≥140ms，RAF 步进 ±1 帧不翻相）；
   //   帧交替逻辑断言在单测（battle-hex-render.test.ts 施法循环用例）。
   const setPhase = (id, t) => page.evaluate(([uid, tt]) => {
     const c = window.__demo.getView().anim.get(uid);
@@ -219,9 +220,9 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
   await quiet(page);
   await setUnit(page, 'e1', { animState: 'strike', animLeftMs: 9000, isJump: false });
   await page.waitForTimeout(120);
-  await setPhase('e1', 0.07); // 相位 0 中点（140ms 步频）
+  await setPhase('e1', 0.14); // 相位 0 中点（R1：280ms 步频，与 charge 同节拍）
   await shot(page, `${tag}_enemyA_strike_loop_a`);
-  await setPhase('e1', 0.21); // 相位 1 中点
+  await setPhase('e1', 0.42); // 相位 1 中点
   await shot(page, `${tag}_enemyA_strike_loop_b`);
 
   // ⑪ 死亡白骨（§9.3）：甲 die_common 压扁淡出（不镜像不循环不挂武器锚）→ 乙（npc-shanzei-b）六向 idle + dead

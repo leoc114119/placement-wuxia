@@ -456,8 +456,9 @@ const SHANZEI_B_BATTLE45 = 'assets/characters/enemy/shanzei_b/battle45';
  * - stateMap 降级（§9.2.1 + L 环补记 2026-09-08 · Leo 裁定「施法循环复用普攻帧，不卡静帧」）：
  *   charge→atk_1↔atk_2 循环（charge 在共享 ANIM_LOOP_GROUPS，步频=CAST_FRAME_PERIOD_MS=280，
  *   与 hero cast 循环同源节拍）；strike→atk_1↔atk_2 循环（经 loopStates 声明进同一循环公式，
- *   步频=walkFrameMs=140，与普攻同节拍——施法释放相更快翻帧读作发力）；basic→atk_1→2 尾帧
- *   保持；hit 无专用素材→idle（与 hero 同口径）；dead→die_common。
+ *   步频同 CAST_FRAME_PERIOD_MS=280——【R1 复验裁定】原 walkFrameMs=140 读作加速闪，「要循环，
+ *   不是要加速」，敌施法两相统一 280 平稳节拍）；basic→atk_1→2 尾帧保持；hit 无专用素材→idle
+ *  （与 hero 同口径）；dead→die_common。
  * 降级/循环只写本数据表（loopStates 数据字段），禁在 frameOf/directionalFrameOf 里加
  * actor.side 特判（§9.1.1 红线）。施法结束回 idle 时序=session 既有链路，本表不触。
  */
@@ -473,7 +474,7 @@ function shanzeiDirectionalProfile(dir: string): DirectionalSpriteProfile {
       idle: { clip: 'idle', from: 1, to: 1 },
       walk: { clip: 'walk', from: 1, to: 2 },
       charge: { clip: 'atk', from: 1, to: 2 }, // 降级循环（L 环 09-08）：280ms 步频 atk_1↔atk_2
-      strike: { clip: 'atk', from: 1, to: 2 }, // 降级循环（L 环 09-08）：140ms 步频 atk_1↔atk_2
+      strike: { clip: 'atk', from: 1, to: 2 }, // 降级循环（L 环 09-08 + R1 复验）：280ms 步频 atk_1↔atk_2
       basic: { clip: 'atk', from: 1, to: 2 },
       hit: { clip: 'idle', from: 1, to: 1 }, // 敌无 hit clip（中间面候选不接线，§9.1.2）→idle
       dead: { clip: 'die', from: 1, to: 1 }, // die_common 单帧静态：不镜像不循环（§9.3）

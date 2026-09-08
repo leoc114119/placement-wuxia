@@ -2362,7 +2362,7 @@ describe('[六向接线 §9.1.1/§9.2.1] enemy directional 选帧语义（direct
     expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'walk', ordinal: 1 }); // 循环
   });
 
-  it('施法循环（§9.2.1 + L 环 2026-09-08 裁定）：charge 280ms 步频 atk_1↔atk_2 交替 / strike 140ms 步频 atk_1↔atk_2 交替——施法全阶段帧存在交替而非定格', () => {
+  it('施法循环（§9.2.1 + L 环 2026-09-08 裁定 + R1 复验步频统一）：charge 280ms 步频 atk_1↔atk_2 交替 / strike 280ms 步频（R1：原 140 读作加速闪，统一施法节拍）atk_1↔atk_2 交替——施法全阶段帧存在交替而非定格', () => {
     const view = createView();
     const foe = enemyActor({ animState: 'charge' });
     const snap = makeSnapshot([foe]);
@@ -2375,13 +2375,16 @@ describe('[六向接线 §9.1.1/§9.2.1] enemy directional 选帧语义（direct
     for (let i = 0; i < 30; i++) updateView(view, snap, 0.05, 375, 667); // 施法相 1.5s 全程跨多周期
     const chargeSel = directionalFrameOf(view, snap.actors[0]);
     expect([1, 2]).toContain(chargeSel.ordinal); // 任意时刻恒在两帧之一（循环交替，无第三态/定格语义）
-    // strike：经 profile.loopStates 进同一循环公式，步频=walkFrameMs=140（组切换时钟重置）
+    // strike：经 profile.loopStates 进同一循环公式，步频=CAST_FRAME_PERIOD_MS=280（R1 统一施法节拍；
+    // 组切换时钟重置）
     snap.actors[0].animState = 'strike';
     updateView(view, snap, 0.001, 375, 667);
     expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 }); // 相位 0
-    updateView(view, snap, 0.14, 375, 667); // ≥140ms：翻相
+    updateView(view, snap, 0.14, 375, 667); // <280ms：未翻相（R1 步频统一回归锁——140 不再翻相）
+    expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 });
+    updateView(view, snap, 0.14, 375, 667); // 累计 ≥280ms：翻相
     expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 2 });
-    updateView(view, snap, 0.14, 375, 667); // 累计 280ms+：回相
+    updateView(view, snap, 0.28, 375, 667); // 累计 ≥560ms：回相
     expect(directionalFrameOf(view, snap.actors[0])).toEqual({ clip: 'atk', ordinal: 1 });
     updateView(view, snap, 0.5, 375, 667); // 长施法相尾：仍循环（不尾帧保持）
     expect([1, 2]).toContain(directionalFrameOf(view, snap.actors[0]).ordinal);
