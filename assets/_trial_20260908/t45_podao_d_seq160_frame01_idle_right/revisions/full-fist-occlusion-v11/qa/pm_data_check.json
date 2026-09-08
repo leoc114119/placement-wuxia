@@ -22,7 +22,9 @@
     "noGeneration": true
   },
   "allHardGatesPass": true,
-  "visualReview": "pending_Leo",
+  "visualReview": "selected_by_Leo",
   "specGate": "pending_pm_scan",
-  "runtimeRelease": false
+  "runtimeRelease": false,
+  "visualReviewEvidence": "Leo 2026-09-08 目验通过：拳头定位的很漂亮。",
+  "reviewState": "visual_selected_by_Leo_pending_pm_scan"
 }

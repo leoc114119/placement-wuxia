@@ -24,7 +24,7 @@
     "rawImageGeneration": false
   },
   "specSource": "seq=160; Q1-T45 hand mapping; docs/design/01-基础功能/角色帧规范.md §4c v1.5/v1.6",
-  "status": "stop_after_frame_for_PM_and_Leo_review",
+  "status": "visual_selected_by_Leo_pending_pm_scan",
   "frames": [
     {
       "id": "a_idle_right",
@@ -124,7 +124,9 @@
         "dx": 6,
         "dy": -6
       },
-      "roiRevision": "full-fist-silhouette-v8-a-frozen"
+      "roiRevision": "full-fist-silhouette-v8-a-frozen",
+      "visualReview": "selected_by_Leo",
+      "visualReviewEvidence": "Leo 2026-09-08 目验通过：拳头定位的很漂亮。"
     },
     {
       "id": "b_idle_right",
@@ -250,7 +252,9 @@
       "positionAdjustmentFromV9": {
         "dx": 0,
         "dy": 3
-      }
+      },
+      "visualReview": "selected_by_Leo",
+      "visualReviewEvidence": "Leo 2026-09-08 目验通过：拳头定位的很漂亮。"
     }
   ],
   "checks": {
@@ -270,7 +274,7 @@
   "occlusionRevision": "full-fist-skin-component-v9",
   "occlusionRule": "B mask = exact connected orange fist pixels in the reviewed pixel ROI; A frozen",
   "artifactStage": "candidate",
-  "visualReview": "pending_Leo",
+  "visualReview": "selected_by_Leo",
   "specGate": "pending_pm_scan",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
@@ -330,5 +334,6 @@
       110
     ],
     "resampling": "none"
-  }
+  },
+  "visualReviewEvidence": "Leo 2026-09-08 目验通过：拳头定位的很漂亮。"
 }
