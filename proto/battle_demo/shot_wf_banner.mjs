@@ -38,6 +38,17 @@ const shot = async (name) => {
   await page.screenshot({ path: path.join(outDir, `wf_${name}.png`) });
 };
 
+/** 白盒压制敌方施法（采样纯净页专用）：neili 归 0 → planSkill 门槛（neili≥NEILI_COST_PER_CAST=1）
+ * 不满足 → 敌全程普攻。敌方真实施法实证归第 5 段专页（不压内力）。 */
+async function suppressEnemyCast() {
+  await page.evaluate(() => {
+    for (const id of ['e1', 'e2']) {
+      const u = window.__demo.session._debug.units.find((x) => x.id === id);
+      if (u) u.neili = 0;
+    }
+  });
+}
+
 /** 摆 e1 于 te 射程内画布内安全格（shot_as_cast 同款：避组件/边距，cube 2 优先） */
 async function stageTeTarget() {
   const plan = await page.evaluate(() => {
@@ -155,6 +166,7 @@ for (const [vw, vh, tag] of [[375, 667, '375x667'], [560, 700, '560x700'], [900,
     await page.goto('file://' + path.join(here, 'index.html'));
     await page.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
     await page.waitForTimeout(800);
+    await suppressEnemyCast(); // 白盒压敌内力：采样窗无敌名条并发（敌方施法实证归第 5 段专页）
     if (speedOn) {
       const p = await page.evaluate(() => {
         const r = window.__demo.getView().layout.ctrlRect;
@@ -190,6 +202,7 @@ for (const speedTag of ['x1', 'x2']) {
   await page.goto('file://' + path.join(here, 'index.html'));
   await page.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
   await page.waitForTimeout(800);
+  await suppressEnemyCast();
   if (speedTag === 'x2') {
     const p = await page.evaluate(() => {
       const r = window.__demo.getView().layout.ctrlRect;
@@ -221,6 +234,7 @@ for (const [tTag, internalSpeed] of [['fast_T500ms', 5.2], ['slow_T3000ms', unde
   await page.goto('file://' + path.join(here, 'index.html'));
   await page.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
   await page.waitForTimeout(800);
+  await suppressEnemyCast();
   await waitHeroTurn();
   if (internalSpeed !== undefined) {
     await page.evaluate((v) => {
@@ -247,6 +261,7 @@ console.log('[shot_wf_banner] negatives + allmiss + flee');
 await page.goto('file://' + path.join(here, 'index.html'));
 await page.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
 await page.waitForTimeout(800);
+await suppressEnemyCast(); // 负证/全闪避/逃跑页同步压敌施法，保 activeCount 断言纯净
 
 // 4a 普攻：点敌（无技能态）→ 名条恒 0
 await waitHeroTurn();
@@ -357,6 +372,107 @@ await waitHeroTurn();
 }
 
 await page.close();
+
+// ---------- 5) 敌方 E2E：敌方自有 SkillDef 真实施法（T26-R1 缺口）----------
+// auto 模式驱动（BAR-4：manual hero 满条待输入会冻结 session 钟，敌 cast t1 永不到达——auto
+// 钟常走）。白盒清 hero 技能（AI 只普攻=无 hero 名条，观测窗仍敌方专属）+ 双侧大血防终局；
+// e1 白盒摆到 hero 东 cube 2（ete/ejue lv20 射程内）→ 条满即出技（planSkill 品阶降序 ejue
+// 优先，冷却轮换后 ete 可观测）。名条/光影断言 + 截图（颜色按 tier 待 PM 复验）。
+page = await browser.newPage({ viewport: { width: 375, height: 667 } });
+page.on('pageerror', (e) => errors.push(`[enemy] ${e.message}`));
+console.log('[shot_wf_banner] enemy real-cast E2E');
+await page.goto('file://' + path.join(here, 'index.html'));
+await page.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
+await page.waitForTimeout(800);
+await page.evaluate(() => {
+  const s = window.__demo.session;
+  s.submit({ type: 'setMode', mode: 'auto' }); // 钟常走（敌 cast t1 可达）
+  const hero = s._debug.units.find((x) => x.id === 'hero');
+  hero.skills = []; // hero AI 只普攻：无 hero 特/绝名条，观测窗=敌方专属
+  hero.hp = 99999; hero.maxHp = 99999; // 防终局（观测窗常开）
+  const e1 = s._debug.units.find((x) => x.id === 'e1');
+  e1.hp = 99999; e1.maxHp = 99999; // hero 普攻不致死
+  const tgt = { q: hero.hex.q + 2, r: hero.hex.r }; // cube 2 东=射程内
+  e1.hex = { ...tgt };
+  e1.renderQ = tgt.q; e1.renderR = tgt.r; e1.moveFromQ = tgt.q; e1.moveFromR = tgt.r;
+  e1.moveT = 1; e1.movePath = []; e1.animState = 'idle'; e1.animLeftMs = 0; e1.dead = false;
+});
+/** 等敌方指定技能的施法事件（轮换等待） */
+const waitEnemyCast = (skillId, timeout) => {
+  const ev0 = Date.now();
+  return page.waitForFunction(
+    (sid) => window.__demo.session.events.some((e) => (e.type === 'skill' || e.type === 'miss') && (e.actorId === 'e1' || e.actorId === 'e2') && e.skillId === sid),
+    skillId,
+    { timeout },
+  ).then(() => page.evaluate((sid) => {
+    const e = window.__demo.session.events.find((x) => (x.type === 'skill' || x.type === 'miss') && (x.actorId === 'e1' || x.actorId === 'e2') && x.skillId === sid);
+    return { actorId: e.actorId, skillId: e.skillId, type: e.type, t: e.t };
+  }, skillId));
+};
+{
+  // 5a 敌方首个特/绝（planSkill 品阶降序→ejue 优先；冷却轮换后 ete）
+  const seen = [];
+  const first = await Promise.race([
+    waitEnemyCast('ejue', 60000).catch(() => null),
+    waitEnemyCast('ete', 60000).catch(() => null),
+  ]);
+  if (!first) throw new Error('敌方 60s 内未施法（ete/ejue 均无事件）');
+  seen.push(first);
+  await page.waitForTimeout(400); // 宿主消费帧 + 快门落保持段
+  const st = await page.evaluate(() => ({ wf: window.__demo.wfBanner.activeCount, fx: window.__demo.getView().fxWorld.activeCount }));
+  check(`敌方施法名条出现（${first.actorId}/${first.skillId}，${first.type} 事件）`, st.wf >= 1, `wfBanner=${st.wf}`);
+  if (first.skillId === 'ete') check('敌方特技光影同启（special→fx tier 分流）', st.fx >= 1, `fxActive=${st.fx}`);
+  await shot('enemy_first_cast');
+  // 5b 另一档敌方技（ejue/ete 互换）→ 名条再现 + 截图
+  const other = first.skillId === 'ejue' ? 'ete' : 'ejue';
+  const second = await waitEnemyCast(other, 90000).catch(() => null);
+  if (second) {
+    seen.push(second);
+    await page.waitForTimeout(400);
+    const st2 = await page.evaluate(() => ({ wf: window.__demo.wfBanner.activeCount }));
+    check(`敌方第二档施法名条（${second.skillId}）`, st2.wf >= 1, `wfBanner=${st2.wf}`);
+    await shot('enemy_second_cast');
+  } else {
+    check(`敌方第二档施法（${other}）`, false, '90s 未观测到（冷却轮换未达）');
+  }
+  check('敌方两档施法观测齐（special+ultimate）', seen.length === 2, `seen=[${seen.map((x) => x.skillId).join(',')}]`);
+}
+await page.close();
+
+// ---------- 6) auto 持续出字实证（P1 表象回归锁：同刻重入后名条不再哑火）----------
+page = await browser.newPage({ viewport: { width: 375, height: 667 } });
+page.on('pageerror', (e) => errors.push(`[auto] ${e.message}`));
+console.log('[shot_wf_banner] auto-mode persistent banners');
+await page.goto('file://' + path.join(here, 'index.html'));
+await page.waitForFunction(() => window.__demo !== undefined, null, { timeout: 8000 });
+await page.waitForTimeout(800);
+{
+  await page.evaluate(() => {
+    const s = window.__demo.session;
+    for (const u of s._debug.units) { u.hp = 99999; u.maxHp = 99999; } // 双侧防终局（持续观测窗）
+  });
+  const p1 = await page.evaluate(() => {
+    const r = window.__demo.getView().layout.ctrlRect;
+    return window.__demo.cssOf(r.x + r.w / 2, r.y + (66 / 448) * r.h);
+  });
+  await page.mouse.click(p1.x, p1.y); // 托管 → auto（hero AI+敌 AI 全自动出技）
+  await page.waitForFunction(() => window.__demo.session._debug.mode() === 'auto', null, { timeout: 4000 });
+  const jumps = await page.evaluate((ms) => new Promise((resolve) => {
+    let last = window.__demo.wfBanner.activeCount;
+    let j = 0;
+    const iv = setInterval(() => {
+      const cur = window.__demo.wfBanner.activeCount;
+      if (cur > 0 && last === 0) j += 1; // 0→正 跳变=一次名条启动
+      last = cur;
+    }, 30);
+    setTimeout(() => { clearInterval(iv); resolve(j); }, ms);
+  }), 35000);
+  const castN = await page.evaluate(() => window.__demo.session.events.filter((e) => (e.type === 'skill' || e.type === 'miss') && (e.skillId === 'te' || e.skillId === 'jue' || e.skillId === 'ete' || e.skillId === 'ejue')).length);
+  check('auto 持续出字不哑火（35s 内名条启动 ≥3 次）', jumps >= 3, `jumps=${jumps} 特/绝结算事件=${castN}（同刻重入确定性证据=fx-player 同刻重入矩阵真 session 用例）`);
+  await shot('auto_persistent');
+}
+await page.close();
+
 await browser.close();
 console.log(checks.join('\n'));
 if (errors.length) {

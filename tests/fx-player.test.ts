@@ -313,6 +313,26 @@ describe('T25 · 素材目录与配方一致（40 张口径）', () => {
 // 闪避发 miss / 空放发 skill / 致死终局 cast 挪 presentationCasts，四路径 gate 均恰启动一次，
 // 且 findCastSnapshot 合并队列（pending+presentation）必可达（T=快照差值，禁重算）。
 
+/**
+ * 宿主事件循环同构（T26-R1 身份制，触发矩阵/同刻重入矩阵共用）：先 findCastSnapshot 配 cast
+ * 身份（core 快照唯一真值），再过 gate；放行则 commitStart 登记身份。cast=null 仅段 1 致胜
+ * 终局（AS-9 cast 未及入队）——gate 无快照分支放行，durMs 走表现域兜底（与 main.ts 同谓词）。
+ */
+function driveGate(s: ReturnType<typeof createHexBattle>, gate: FxCastGate): Array<{ evT: number; durMs: number | null }> {
+  const starts: Array<{ evT: number; durMs: number | null }> = [];
+  const casts = [...s._debug.pendingCasts(), ...s._debug.presentationCasts()];
+  for (const e of s.events) {
+    if ((e.type === 'skill' || e.type === 'miss') && e.actorId && e.skillId) {
+      const cast = findCastSnapshot(casts, e.actorId, e.skillId, e.t);
+      if (!gate.shouldStart(e, cast)) continue;
+      const durMs = cast ? Math.round((cast.finishAtSec - cast.startedAtSec) * 1000) : TRIAL_FX_FALLBACK_DURATION_MS;
+      gate.commitStart(e.actorId, cast ? cast.startedAtSec : e.t, durMs, e.skillId); // 登记身份
+      starts.push({ evT: e.t, durMs });
+    }
+  }
+  return starts;
+}
+
 describe('T25-R2 · 触发矩阵：命中/全 miss/空放/段 1 致死终局 四路径 FX 均启动一次', () => {
   const teSkill = (over: Partial<SkillDef> = {}): SkillDef => ({
     id: 'te', name: '特技', kind: 'special', weapon: 'sword',
@@ -353,20 +373,6 @@ describe('T25-R2 · 触发矩阵：命中/全 miss/空放/段 1 致死终局 四
     const hero = s._debug.units.find((x) => x.id === 'p')!;
     hero.bar = 100;
     s.tick(0.001);
-  }
-  /** 宿主事件循环同构：全部事件喂 gate，应启动则经 findCastSnapshot 取 T（main.ts 同谓词） */
-  function driveGate(s: ReturnType<typeof createHexBattle>, gate: FxCastGate): Array<{ evT: number; durMs: number | null }> {
-    const starts: Array<{ evT: number; durMs: number | null }> = [];
-    for (const e of s.events) {
-      if ((e.type === 'skill' || e.type === 'miss') && gate.shouldStart(e)) {
-        const cast = findCastSnapshot([...s._debug.pendingCasts(), ...s._debug.presentationCasts()], e.actorId!, e.skillId!, e.t);
-        // 与宿主 tryStartCastFx 同构：快照存在读差值；无快照（段 1 致胜 AS-9 未建 cast）走表现域兜底
-        const durMs = cast ? Math.round((cast.finishAtSec - cast.startedAtSec) * 1000) : TRIAL_FX_FALLBACK_DURATION_MS;
-        gate.commitStart(e.actorId!, e.t, durMs); // 登记时窗（段 2 事件判别，宿主同款）
-        starts.push({ evT: e.t, durMs });
-      }
-    }
-    return starts;
   }
 
   it('路径 1 命中：skill 事件 → 启动 1 次，T=快照差值（恒命中 harness：shizhan=15_000_000）', () => {
@@ -439,19 +445,161 @@ describe('T25-R2 · 触发矩阵：命中/全 miss/空放/段 1 致死终局 四
     expect(starts[0].durMs).toBe(3000);
   });
 
-  it('gate 去重：段 1 双源/多目标只首条 true；段 2 事件（t=t0+T）判别拦截；reset 清键', () => {
+  it('gate 去重（T26-R1 身份制）：段 1 双源/多目标只首条 true；段 2/身份不符拦截；同刻重入新 cast 凭身份放行；reset 清键', () => {
+    // 【T26-R1 改写声明】本用例由 T25-R2 时间窗启发式调用形态改写为身份配对形态——断言语义
+    // 一一对应不变（首条放行/双源去重/段 2 拦截/新 cast 放行/reset 清键）；根因=seq=169 证伪：
+    // 同刻重入下「旧 t1==新 t0」无法从事件四元组区分，启发式时间窗误拦新 cast。
     const gate = new FxCastGate(new Set(['te']));
-    const seg1 = { type: 'skill', actorId: 'p', skillId: 'te', t: 5.0 }; // 段 1 首条（t0）
-    expect(gate.shouldStart(seg1)).toBe(true);
-    gate.commitStart('p', 5.0, 3000);
-    expect(gate.shouldStart({ ...seg1, type: 'miss' })).toBe(false); // 同 cast 段 1 的 miss 事件（多源/多目标）
-    expect(gate.shouldStart({ ...seg1 })).toBe(false); // 段 1 重复 feed
-    expect(gate.shouldStart({ ...seg1, t: 8.0 })).toBe(false); // 段 2 结算事件（t=t0+T=8.0）——非新 cast（T25-R2 回归锁）
-    expect(gate.shouldStart({ ...seg1, t: 8.0, type: 'miss' })).toBe(false); // 段 2 的 miss 形态同拦
-    expect(gate.shouldStart({ ...seg1, type: 'basic' })).toBe(false); // 非双源事件
-    expect(gate.shouldStart({ ...seg1, skillId: 'jue' })).toBe(false); // 非特功
-    expect(gate.shouldStart({ ...seg1, t: 9.99 })).toBe(true); // 新 cast（t0 窗外）放行
+    const cast1 = { actorId: 'p', skillId: 'te', startedAtSec: 5.0, finishAtSec: 8.0 };
+    const seg1 = { type: 'skill', actorId: 'p', skillId: 'te', t: 5.0 };
+    expect(gate.shouldStart(seg1, cast1)).toBe(true); // 段 1 首条（身份未登记）
+    gate.commitStart('p', 5.0, 3000, 'te');
+    expect(gate.shouldStart({ ...seg1, type: 'miss' }, cast1)).toBe(false); // 同 cast 段 1 的 miss 事件（双源/多目标）
+    expect(gate.shouldStart({ ...seg1 }, cast1)).toBe(false); // 段 1 重复 feed
+    expect(gate.shouldStart({ ...seg1, t: 8.0 }, null)).toBe(false); // 段 2 结算事件（快照已收口，配不到=非段 1 必拦）
+    expect(gate.shouldStart({ ...seg1, t: 8.0, type: 'miss' }, null)).toBe(false); // 段 2 的 miss 形态同拦
+    expect(gate.shouldStart({ ...seg1, type: 'basic' }, cast1)).toBe(false); // 非双源事件
+    expect(gate.shouldStart({ ...seg1, skillId: 'jue' }, null)).toBe(false); // 非特功
+    // 【T26-R1 · seq=169 P1 修复本体】同刻重入：新 cast t0 == 旧 cast t1=8.0——凭自身快照身份
+    // 放行（旧时间窗启发式此处把新 cast 段 1 误判为旧 cast 段 2 而误拦）
+    const cast2 = { actorId: 'p', skillId: 'te', startedAtSec: 8.0, finishAtSec: 11.0 };
+    expect(gate.shouldStart({ ...seg1, t: 8.0 }, cast2)).toBe(true);
+    gate.commitStart('p', 8.0, 3000, 'te');
+    expect(gate.shouldStart({ ...seg1, t: 8.0 }, cast2)).toBe(false); // cast2 段 1 双源/重放去重
+    expect(gate.shouldStart({ ...seg1, t: 11.0 }, { ...cast2, startedAtSec: 11.0, finishAtSec: 14.0 })).toBe(true); // 串接第二跳（t0==cast2 t1）
+    gate.commitStart('p', 11.0, 3000, 'te');
+    expect(gate.shouldStart({ ...seg1, t: 9.99 }, { ...cast2, startedAtSec: 9.99, finishAtSec: 12.99 })).toBe(true); // 窗外新 cast（t0 未登记）放行（旧用例同语义）
     gate.reset();
-    expect(gate.shouldStart(seg1)).toBe(true); // 跨局清键后重新放行
+    expect(gate.shouldStart(seg1, cast1)).toBe(true); // 跨局清键后重新放行
+  });
+
+  it('gate 无快照分支：段 1 致胜终局（AS-9 无快照）放行；段 2 同技拦/换技放行', () => {
+    const gate = new FxCastGate(new Set(['te', 'jue']));
+    // (a) 无任何登记：段 1 致胜终局首条事件（cast 未及入队）→ 放行（T25 路径 4 语义保持）
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 5.0 }, null)).toBe(true);
+    gate.commitStart('p', 5.0, 3000, 'jue');
+    // (b) 已登记后：同技事件撞已启动 cast 的 t1 → 段 2（保守拦，不可区分角落回执声明）
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 8.0 }, null)).toBe(false);
+    // (a') 同刻撞前 cast t1 但换技（te 冷却轮换的 AI 连放形态）→ 无快照新 cast 段 1 → 放行
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'te', t: 8.0 }, null)).toBe(true);
+    gate.commitStart('p', 8.0, 3000, 'te');
+    expect(gate.shouldStart({ type: 'miss', actorId: 'p', skillId: 'te', t: 8.0 }, null)).toBe(false); // 新 cast 段 1 双源
+  });
+});
+
+// ---------- T26-R1 · 同刻重入矩阵（seq=169 P1 回归锁） ----------
+// 口径：自动模式下 drainDueCasts 收口旧 cast（释放施法锁）后，同一 tick BAR-2 ready 轮转即可
+// 受理新 cast（bar 施法期回满 clamp 100）→ 新 t0 == 旧 t1 同刻。本矩阵锁三个语义：
+// ① 纯事件流串接 N cast（含全 miss 旧 cast/换技组合）每次恰启动一次；
+// ② 真 session auto 模式 AI 连放（含同刻重入形态）不哑火；
+// ③ 全 miss 连放不污染后续 cast。
+
+describe('T26-R1 · 同刻重入矩阵', () => {
+  /** 纯事件流串接驱动：N cast 同刻串接（新 t0==旧 t1），宿主同构 find-first→gate→commitStart */
+  function driveChained(seq: Array<{ skillId: string; missOnly: boolean }>): number {
+    const gate = new FxCastGate(new Set(['te', 'jue']));
+    const casts: Array<{ actorId: string; skillId: string; startedAtSec: number; finishAtSec: number }> = [];
+    const events: Array<{ type: string; actorId: string; skillId: string; t: number }> = [];
+    let t0 = 5.0;
+    for (const s of seq) {
+      const T = 3.0;
+      casts.push({ actorId: 'p', skillId: s.skillId, startedAtSec: t0, finishAtSec: t0 + T });
+      const t1 = t0 + T;
+      const seg1 = s.missOnly ? 'miss' : 'skill'; // 全 miss=段 1 只有 miss 事件；命中=skill（双源另一形态一并喂）
+      events.push({ type: seg1, actorId: 'p', skillId: s.skillId, t: t0 });
+      events.push({ type: seg1 === 'skill' ? 'miss' : 'skill', actorId: 'p', skillId: s.skillId, t: t0 }); // 双源/多目标第二发
+      events.push({ type: 'skill', actorId: 'p', skillId: s.skillId, t: t1 }); // 段 2（t1==串接时即下一 cast t0）
+      events.push({ type: 'miss', actorId: 'p', skillId: s.skillId, t: t1 }); // 段 2 另一目标形态
+      t0 = t1; // 同刻串接
+    }
+    let starts = 0;
+    const keys = new Set<string>();
+    for (const e of events) {
+      const cast = findCastSnapshot(casts, 'p', e.skillId, e.t);
+      if (!gate.shouldStart(e, cast)) continue;
+      gate.commitStart('p', cast ? cast.startedAtSec : e.t, 3000, e.skillId);
+      keys.add(`p|${cast ? cast.startedAtSec : e.t}`);
+      starts += 1;
+    }
+    expect(keys.size).toBe(starts); // 每次启动身份互异（一次 accepted cast 恰一次）
+    return starts;
+  }
+
+  it('纯事件流：同技连放 N=6（全 miss 交替）每次恰启动一次', () => {
+    const seq = Array.from({ length: 6 }, (_, i) => ({ skillId: 'te', missOnly: i % 2 === 1 }));
+    expect(driveChained(seq)).toBe(6);
+  });
+
+  it('纯事件流：换技连放（te/jue 冷却轮换形态）+ 全 miss 旧 cast + 紧接新 cast 组合，N=6 恰启动一次', () => {
+    const seq = [
+      { skillId: 'jue', missOnly: false },
+      { skillId: 'te', missOnly: true }, // 全 miss 旧 cast
+      { skillId: 'jue', missOnly: false }, // 紧接新 cast（同刻）
+      { skillId: 'te', missOnly: true },
+      { skillId: 'jue', missOnly: false },
+      { skillId: 'te', missOnly: false },
+    ];
+    expect(driveChained(seq)).toBe(6);
+  });
+
+  /** auto 真 session 连放 harness：主角 te+jue、大血敌（不终局），tick 驱动 N 秒后全事件流过门 */
+  function autoChainSession(): ReturnType<typeof createHexBattle> {
+    const skills: SkillDef[] = [
+      { id: 'te', name: '特技', kind: 'special', weapon: 'sword', grade: 1.3, growth: 3, level: 20, cooldownTurns: 2, neiliCost: 10 },
+      { id: 'jue', name: '绝学', kind: 'ultimate', weapon: 'sword', grade: 1.7, growth: 3, level: 20, cooldownTurns: 5, neiliCost: 20 },
+    ];
+    const mk = (over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 'side'>): CombatantInput => ({
+      name: over.id,
+      hp: 999999, maxHp: 999999,
+      neili: 60, maxNeili: 100,
+      atk: 12, def: 3,
+      neigongLevel: 0, jimin: 0, danshi: 0, shizhan: 15_000_000,
+      pos: { x: 0, y: 0 }, weapon: 'sword', skills: [],
+      ...over,
+    });
+    // 同刻重入机制（seq=169 实证路径）：hero jimin=300 → fillRate=40/s（F-05），3s 施法期内
+    // 行动条回满 clamp 100 → t1 收口（drainDueCasts 释放施法锁）后同一 tick BAR-2 ready 轮转
+    // 即受理新 cast——新 t0 == 旧 t1 同刻串接，正是旧时间窗启发式误拦的形态。
+    const s = createHexBattle({
+      player: mk({ id: 'p', side: 'player', skills, jimin: 300 }),
+      enemies: [mk({ id: 'e1', side: 'enemy' })],
+      mode: 'auto', // 双侧 AI：hero 自动出技（planSkill 品阶降序 jue>te，冷却轮换）
+      seed: 42,
+    });
+    // 摆位（offset col/row → axial）：hero(4,13) / e1(6,13) cube 2=射程内，敌大血不终局
+    const hex = offsetToAxial(4, 13);
+    const p = s._debug.units.find((x) => x.id === 'p')!;
+    p.hex = { ...hex };
+    p.renderQ = hex.q; p.renderR = hex.r; p.moveFromQ = hex.q; p.moveFromR = hex.r; p.moveT = 1; p.movePath = [];
+    p.jimin = 300; // fillRate=40/s：施法期内 bar 回满 → t1 同刻重入（见上机制注）
+    const foe = offsetToAxial(6, 13);
+    const e1 = s._debug.units.find((x) => x.id === 'e1')!;
+    e1.hex = { ...foe };
+    e1.renderQ = foe.q; e1.renderR = foe.r; e1.moveFromQ = foe.q; e1.moveFromR = foe.r; e1.moveT = 1; e1.movePath = [];
+    return s;
+  }
+
+  it('真 session auto 连放：AI 持续出技不哑火（≥6 次），含同刻重入（相邻启动间隔==T）', () => {
+    const s = autoChainSession();
+    for (let i = 0; i < 1200 && s.phase === 'fighting'; i++) s.tick(0.05); // 60s 模拟
+    const gate = new FxCastGate(new Set(['te', 'jue']));
+    const starts = driveGate(s, gate).filter((st) => st.durMs !== null);
+    expect(starts.length).toBeGreaterThanOrEqual(6); // 持续出技不哑火（旧缺陷=同刻重入后永不再启动）
+    expect(starts.every((st) => st.durMs === 3000)).toBe(true); // T=快照差值（缺省出招合成 0.8 → 3000ms）
+    // 同刻重入证据：存在相邻两次启动间隔==T（±60ms，emitAt 2 位取整容差）——旧 t1 同刻受理新 cast 且未丢
+    //（AI 品阶轮换 jue→te 相邻两动作皆出招：前一 cast t1 收口同 tick 受理 te，事件 t 相同）
+    const gaps: number[] = [];
+    for (let i = 1; i < starts.length; i++) gaps.push(+(starts[i].evT - starts[i - 1].evT).toFixed(3));
+    expect(gaps.some((g) => Math.abs(g - 3.0) <= 0.06)).toBe(true);
+  });
+
+  it('真 session auto 全 miss 连放：shizhan 负值恒 miss，连放不因全 miss 污染（≥3 次恰启动）', () => {
+    const s = autoChainSession();
+    const hero = s._debug.units.find((x) => x.id === 'p')!;
+    hero.shizhan = -85_000_001; // hitRate<0 恒 miss（F-04 首掷恒 miss harness）
+    for (let i = 0; i < 1200 && s.phase === 'fighting'; i++) s.tick(0.05); // 60s 模拟
+    const gate = new FxCastGate(new Set(['te', 'jue']));
+    const starts = driveGate(s, gate).filter((st) => st.durMs !== null);
+    expect(starts.length).toBeGreaterThanOrEqual(3); // 全 miss 不哑火（miss 双源兜住 + 同刻重入不误拦）
   });
 });

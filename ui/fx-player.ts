@@ -166,34 +166,66 @@ export interface FxTriggerEventLike {
 }
 
 /**
- * 特功 accepted cast 触发门（方案 §5.1「t0 必启动一次，非伤害事件监听」）：
+ * 特功 accepted cast 触发门（方案 §5.1「t0 必启动一次，非伤害事件监听」+ T26-R1 身份配对）：
  * 事件双源=skill 与 miss——非空 cast 段 1 逐目标发 skill（命中）/miss（闪避），全闪避时
- * 只有 miss 事件；空放只发 skill。两源共用 (actorId, evT) 去重：首条到达返回 true（启动）。
- * 段 2 结算事件（AS-4：t=finishAtSec 逐目标再发 skill/miss）不是新 cast——宿主 start 后
- * 须 commitStart(actorId, t0, durMs)，本门对 evT≈t0+T 的事件判别为段 2 拦截
- * （一次 accepted cast 只启动一次：段 1 多目标、双源、段 2 全部收敛到同一次）。
- * 施法中无输入态+行动者串行 → 不同 cast 的 t0/t1 不可能撞刻，键无歧义。
+ * 只有 miss 事件；空放只发 skill。
+ *
+ * 【T26-R1 · 身份制（seq=169 P1 修复）】自动模式下同一施法者新 cast 的 t0 可与旧 cast 的
+ * t1 同刻（drainDueCasts 收口释放施法锁后，同 tick BAR-2 ready 轮转即受理新 cast）——旧
+ * 时间窗启发式（|evT−(t0+T)|≤0.011）无法从事件四元组区分「旧 cast 段 2」与「新 cast 段 1」，
+ * 曾把新 cast 段 1 误拦。修复=宿主先经 findCastSnapshot 从 session 快照队列（core 唯一真值）
+ * 配出该事件的 cast 身份再过门：
+ * - 身份分支（cast 非空）：事件 t 必须落在该 cast 自身 startedAtSec（段 1 特征），身份键
+ *   `(actorId|startedAtSec)` 已启动则去重拦截（同 cast 段 1 双源/多目标），否则放行——
+ *   新 cast 在旧 t1 同刻凭自身身份正常启动（恰一次）。
+ * - 无快照分支（cast=null）：仅两类真实来源——(a) 段 1 致胜终局（AS-9：scheduleSkillCast
+ *   段 1 循环中途 return，cast 未及入队，事件 t=t0，须放行否则 T25 路径 4 演出丢失）；
+ *   (b) 段 2 结算事件（其 cast 早已启动收口，须拦=T25-R2 语义）。两类按已启动登记时窗+
+ *   skillId 比对区分。已知极限（回执声明）：同 actor「前 cast 段 2 同刻 + 新 cast 亦段 1
+ *   致胜无快照且同技」四元组全同不可区分，保守拦（段 2 优先）；AI 冷却机制使同技同刻连放
+ *   实际不发生（cooldownTurns≥2 时必换技）。
+ * 段 2 拦截较旧启发式只强不弱：凡身份不符（含全部段 2 形态）一律不放行。
+ * 施法中无输入态+行动者串行 → 同 actor 的 cast startedAtSec 全局唯一，身份键无歧义。
  */
 export class FxCastGate {
-  private started = new Map<string, { t0: number; durMs: number }>();
+  private started = new Map<string, { t0: number; durMs: number; skillId: string }>(); // 键 `${actorId}|${t0Sec}`
 
   constructor(private readonly specialSkillIds: ReadonlySet<string>) {}
 
-  /** 该事件是否应启动 FX（true=候选放行，宿主 start 后必须 commitStart 登记时窗） */
-  shouldStart(e: FxTriggerEventLike): boolean {
+  /** 该事件是否应启动演出（true=候选放行，宿主 start 后必须 commitStart 登记身份）。
+   * cast=宿主经 findCastSnapshot 配出的 cast 身份（查不到=null，非任意省略）。 */
+  shouldStart(e: FxTriggerEventLike, cast: FxCastSnapshotLike | null): boolean {
     if (e.type !== 'skill' && e.type !== 'miss') return false;
     if (!e.actorId || !e.skillId || !this.specialSkillIds.has(e.skillId)) return false;
-    const rec = this.started.get(e.actorId);
-    if (rec) {
-      if (Math.abs(e.t - rec.t0) < 0.005) return false; // 同 cast 段 1：多目标/双源事件（t 同刻）
-      if (Math.abs(e.t - (rec.t0 + rec.durMs / 1000)) <= 0.011) return false; // 段 2 结算事件（t=finishAtSec）
+    if (cast) {
+      // 身份分支：事件必须是该 cast 自身的段 1（t≈startedAtSec）；段 2 结算（t=finishAtSec≠t0，
+      // T>0.5s≫容差）/陈旧事件身份不符即拦——段 2 拦截的强化形态
+      if (Math.abs(e.t - cast.startedAtSec) > 0.011) return false;
+      return !this.started.has(`${e.actorId}|${cast.startedAtSec}`); // 同 cast 段 1 双源/多目标去重
     }
-    return true;
+    // 无快照分支（来源与区分见类注）
+    const rec = this.lastRecFor(e.actorId);
+    if (!rec) return true; // (a) 无任何登记 → 段 1 致胜终局首条（或首个 cast）——放行
+    if (Math.abs(e.t - rec.t0) < 0.005) return false; // 已启动 cast 的段 1 重放（双源/多目标）
+    if (e.skillId === rec.skillId && Math.abs(e.t - (rec.t0 + rec.durMs / 1000)) <= 0.011) return false; // (b) 段 2（同技才可能混淆）
+    return true; // (a) 同刻撞前 cast t1 但换技（或窗外）→ 无快照新 cast 段 1——放行
   }
 
-  /** 宿主启动 FX 后登记该次 cast 时窗（t0=事件 t、durMs=启动时长），供段 2 事件判别 */
-  commitStart(actorId: string, t0Sec: number, durMs: number): void {
-    this.started.set(actorId, { t0: t0Sec, durMs });
+  /** 宿主启动演出后登记该次 cast 身份（t0=cast.startedAtSec、durMs=启动时长）。
+   * 同 actor 串行：登记前清该 actor 旧键（旧 cast 段 1 批次已消费完，防记忆膨胀）。 */
+  commitStart(actorId: string, t0Sec: number, durMs: number, skillId = ''): void {
+    for (const k of this.started.keys()) {
+      if (k.startsWith(`${actorId}|`)) this.started.delete(k);
+    }
+    this.started.set(`${actorId}|${t0Sec}`, { t0: t0Sec, durMs, skillId });
+  }
+
+  private lastRecFor(actorId: string): { t0: number; durMs: number; skillId: string } | null {
+    let rec: { t0: number; durMs: number; skillId: string } | null = null;
+    for (const [k, v] of this.started) {
+      if (k.startsWith(`${actorId}|`)) rec = v;
+    }
+    return rec;
   }
 
   /** 跨局清空（session 重建时与 fxPlayer.clearAll 同调） */

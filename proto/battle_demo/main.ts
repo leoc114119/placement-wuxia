@@ -152,6 +152,14 @@ const DEMO_SKILLS = [
   { id: 'qing', name: '轻', kind: 'qingGong' as const, weapon: null, grade: 1.0 as const, growth: 1, level: 20, cooldownTurns: 3, neiliCost: 15 },
   { id: 'du', name: '毒', kind: 'hiddenWeapon' as const, weapon: 'hidden' as const, grade: 1.0 as const, growth: 1, level: 20, cooldownTurns: 1, neiliCost: 10 },
 ];
+/** 【T26-R1 缺口】敌方自有技能（真实敌方 AI 施法 E2E）：planSkill 品阶降序——ejue(1.3) 优先，
+ * 冷却轮换后 ete 可观测；weapon=fist 与 npc-shanzei 装备匹配。名条/光影色按 tier 不按阵营。 */
+const DEMO_ENEMY_SKILLS = [
+  { id: 'ete', name: '贼特', kind: 'special' as const, weapon: 'fist' as const, grade: 1.0 as const, growth: 1, level: 20, cooldownTurns: 2, neiliCost: 10 },
+  { id: 'ejue', name: '贼绝', kind: 'ultimate' as const, weapon: 'fist' as const, grade: 1.3 as const, growth: 1, level: 20, cooldownTurns: 3, neiliCost: 20 },
+];
+/** 敌技白名单快查（fan-out/门共用；渲染层不查配置，方案 §3.1） */
+const DEMO_SKILL_BY_ID = new Map([...DEMO_SKILLS, ...DEMO_ENEMY_SKILLS].map((s) => [s.id, s]));
 
 function demoUnit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 'side' | 'name'>): CombatantInput {
   return {
@@ -177,11 +185,13 @@ let speedOn = false;
 let evCursor = 0; // session.events 消费游标（累积数组）
 function makeSession() {
   // 敌方 name=configId（F3 约定：spriteKey=configId → 帧表键；名字牌暂显模板名，美化留后续）
+  // 【T26-R1 缺口】敌方编成挂自有特/绝技（DEMO_ENEMY_SKILLS）：真实驱动敌方 AI 施法
+  // （planSkill 品阶降序），名条/光影敌方同规则——色按 tier 不按阵营。
   return createHexBattle({
     player: demoUnit({ id: 'hero', side: 'player', name: '小虾米', skills: DEMO_SKILLS }),
     enemies: [
-      demoUnit({ id: 'e1', side: 'enemy', name: 'npc-shanzei', hp: 70, maxHp: 70, atk: 8, jimin: 5 }),
-      demoUnit({ id: 'e2', side: 'enemy', name: 'npc-shanzei', hp: 60, maxHp: 60, atk: 9, jimin: 6 }),
+      demoUnit({ id: 'e1', side: 'enemy', name: 'npc-shanzei', hp: 70, maxHp: 70, atk: 8, jimin: 5, skills: DEMO_ENEMY_SKILLS }),
+      demoUnit({ id: 'e2', side: 'enemy', name: 'npc-shanzei', hp: 60, maxHp: 60, atk: 9, jimin: 6, skills: DEMO_ENEMY_SKILLS }),
     ],
     mode: 'manual',
     seed: 42,
@@ -199,14 +209,13 @@ view.fxWorld = fxPlayer; // 渲染 hook：drawFrame 在棋子后/血条前调用
 // drawComponents 前调用（《武功名条方案-v0.1》§3.3）；启动/清空语义见 ui/wf-banner（§4.2）。
 const wfBanner = new WfBannerPlayer();
 view.wfBanner = wfBanner;
-/** 演出技能 id 集（DEMO_SKILLS kind ∈ {special, ultimate}）：accepted cast t0 统一走演出
- * fan-out（T25 光影挂特技、T26 名条挂特/绝——一次施放一次 fan-out，共用门去重） */
-const CAST_SKILL_IDS = new Set(DEMO_SKILLS.filter((s) => s.kind === 'special' || s.kind === 'ultimate').map((s) => s.id));
-/** 技能注册表快查（宿主侧 SkillDef 表：解析 name/kind 供名条；渲染层不查配置，方案 §3.1） */
-const DEMO_SKILL_BY_ID = new Map(DEMO_SKILLS.map((s) => [s.id, s]));
-/** accepted cast 触发门（T25-R2 门语义原样）：skill/miss 事件双源 + (actorId,t) 去重——全闪避
- * 只有 miss 事件也必触发；一次 accepted cast 只 fan-out 一次（方案 §3.2）。白名单扩为特/绝
- * 两类（调用点参数；FxCastGate 三拦截语义与去重键零改动），绝学在 fan-out 内只走名条分支。 */
+/** 演出技能 id 集（主角+敌方 SkillDef kind ∈ {special, ultimate}）：accepted cast t0 统一走
+ * 演出 fan-out（T25 光影挂特技、T26 名条挂特/绝——一次施放一次 fan-out，共用门去重）；
+ * 敌方技（ete/ejue）同集——敌方 AI 施法走同一 fan-out（色按 tier 不按阵营）。 */
+const CAST_SKILL_IDS = new Set([...DEMO_SKILLS, ...DEMO_ENEMY_SKILLS].filter((s) => s.kind === 'special' || s.kind === 'ultimate').map((s) => s.id));
+/** accepted cast 触发门（T26-R1 身份制）：宿主先经 findCastSnapshot 配出 cast 身份再过门——
+ * 事件双源 skill/miss + (actorId|startedAtSec) 身份去重；段 2 结算事件身份不符必拦（T25-R2
+ * 语义强化）；新 cast 在旧 t1 同刻凭自身快照身份正常启动（seq=169 P1 修复）。 */
 const castGate = new FxCastGate(CAST_SKILL_IDS);
 let assets: BattleHexAssets = {
   env: null,
@@ -227,28 +236,27 @@ const input = createBattleInput({
   mode: () => session._debug.mode(),
 });
 
-/** 【T26 · WF-2 方案 §3.2】accepted cast t0 演出 fan-out（T25 光影 + T26 名条同刻一层调度）：
+/** 【T26 · WF-2 方案 §3.2 / T26-R1 身份制】accepted cast t0 演出 fan-out（T25 光影 + T26 名条
+ * 同刻一层调度）：
  * - 只挂 accepted：rejected 走 rejected 事件（不进本函数）；事件双源 skill+miss——段 1
- *   命中发 skill、闪避发 miss、空放发 skill，任一源首条即 fan-out（去重已由 castGate 完成），
- *   命中/闪避/空放/致死终局均不影响时间轴（非伤害事件监听）。
- * - T=该次 castDurationMs：findCastSnapshot 从 session 快照队列（pending+presentation）读
- *   startedAtSec/finishAtSec（core 唯一真值 session 已算好——宿主只读快照，不重算公式、
- *   不经手 battle-core，R10 红线）；段 1 致死终局的 cast 已被挪入 presentationCasts 同查。
- *   该 T 只喂 T25 光影与门登记（段 2 拦截判别）；名条时长恒 WF_BANNER.durationSec=1.000s
- *   演出钟，禁随 T 缩放（名条方案 §4.2）。
+ *   命中发 skill、闪避发 miss、空放发 skill，任一源首条即 fan-out（去重已由 castGate 身份键
+ *   完成），命中/闪避/空放/致死终局均不影响时间轴（非伤害事件监听）。
+ * - T=该次 castDurationMs：cast 快照由事件循环 find-first 配出并透传（core 唯一真值 session
+ *   已算好——宿主只读快照，不重算公式、不经手 battle-core，R10 红线）；cast=null 仅段 1 致胜
+ *   终局（AS-9 cast 未及入队，gate 已放行）——演出走表现域兜底常量并告警留痕，禁当结算真值。
+ *   该 T 只喂 T25 光影与门登记；名条时长恒 WF_BANNER.durationSec=1.000s 演出钟，禁随 T 缩放
+ *  （名条方案 §4.2）。
  * - 锚=施法者中心格（WF-8）：hexToWorld(renderPos) 世界坐标 t0 定格，光影与名条共用同一
  *   锚快照；施法期间不可移动（session R1），死亡消散不移动锚——两层演出照常播完。
  * - 白名单：kind=special → 光影+名条（金色）；kind=ultimate → 仅名条（金红渐变）；
  *   qingGong/暗器/外功不进 CAST_SKILL_IDS 天然不触达；敌方 AI 施放走同一 fan-out
- *  （色按 tier 不按阵营）。 */
-function startCastPresentation(actorId: string, skillId: string, evT: number): void {
-  const casts = [...session._debug.pendingCasts(), ...session._debug.presentationCasts()];
-  const cast = findCastSnapshot(casts, actorId, skillId, evT);
+ *  （色按 tier 不按阵营，ete/ejue 同规则）。 */
+function startCastPresentation(actorId: string, skillId: string, evT: number, cast: ReturnType<typeof findCastSnapshot>): void {
   let durMs: number;
   if (cast) {
     durMs = Math.round((cast.finishAtSec - cast.startedAtSec) * 1000);
   } else {
-    // 段 1 致胜终局（AS-9）：session 直接 return 未建 cast 快照，T 无快照可读——
+    // 段 1 致胜终局（AS-9）：scheduleSkillCast 段 1 循环中途 return，cast 未及入队——
     // 演出走表现域兜底常量（TRIAL_FX_FALLBACK_DURATION_MS）并告警留痕，禁当结算真值。
     durMs = TRIAL_FX_FALLBACK_DURATION_MS;
     console.warn(`[battle_demo] 演出无 cast 快照（段 1 致胜终局口径），光影时长走兜底 ${durMs}ms：actor=${actorId} skill=${skillId} t=${evT}`);
@@ -264,7 +272,7 @@ function startCastPresentation(actorId: string, skillId: string, evT: number): v
   if (tier === 'special') {
     fxPlayer.start(TRIAL_FX_01, anchor, view.time, durMs); // T25：三层光影只挂特技（时长 T=castDurationMs）
   }
-  castGate.commitStart(actorId, evT, durMs); // 登记时窗：段 2 结算事件（t=finishAtSec）据此判别拦截
+  castGate.commitStart(actorId, cast ? cast.startedAtSec : evT, durMs, skillId); // 登记身份（段 2/去重判别）
 }
 
 function resetDemo(): void {
@@ -434,12 +442,17 @@ function loop(t: number): void {
       spawnNoteFx(view, w.x, w.y, REJECT_HINTS[e.reason ?? 'invalid'] ?? '无法执行');
       continue;
     }
-    // 【T26 · WF-2 方案 §3.2】accepted cast t0 演出 fan-out：事件双源 skill+miss——
-    // 命中发 skill / 闪避发 miss / 空放发 skill，任一源首条 fan-out（gate 去重保证一次一次）；
-    // 与出招 04→05（charge 入相）同帧；rejected 不进此路（上分支 continue）。
+    // 【T26 · WF-2 方案 §3.2 / T26-R1 身份制】accepted cast t0 演出 fan-out：事件双源 skill+miss
+    // ——命中发 skill / 闪避发 miss / 空放发 skill。先 findCastSnapshot 配身份（core 快照唯一
+    // 真值），再过 gate：段 2/异物身份不符必拦，新 cast 在旧 t1 同刻凭自身身份启动（seq=169
+    // P1 修复）。与出招 04→05（charge 入相）同帧；rejected 不进此路（上分支 continue）。
     // fan-out 内分流：特技=光影+名条、绝学=仅名条（qingGong/暗器不进白名单天然不触达）。
-    if ((e.type === 'skill' || e.type === 'miss') && e.actorId && e.skillId && CAST_SKILL_IDS.has(e.skillId) && castGate.shouldStart(e)) {
-      startCastPresentation(e.actorId, e.skillId, e.t);
+    if ((e.type === 'skill' || e.type === 'miss') && e.actorId && e.skillId && CAST_SKILL_IDS.has(e.skillId)) {
+      const casts = [...session._debug.pendingCasts(), ...session._debug.presentationCasts()];
+      const cast = findCastSnapshot(casts, e.actorId, e.skillId, e.t);
+      if (castGate.shouldStart(e, cast)) {
+        startCastPresentation(e.actorId, e.skillId, e.t, cast);
+      }
     }
     // T21 白名单（§2.2）：basic/skill 且有 targetId 且 damage>0 → 冒数字+震动；
     // miss 且有 targetId → 冒「闪避」不震（闪避=未受击）。fallback/blocked damage=0、

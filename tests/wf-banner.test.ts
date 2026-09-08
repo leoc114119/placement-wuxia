@@ -367,7 +367,8 @@ describe('T26-R · 触发矩阵：命中/全 miss/空放/段 1 致死终局/绝�
     hero.bar = 100;
     s.tick(0.001);
   }
-  /** 宿主 fan-out 同构：事件喂 gate → 名条 start（tier 按 kind）→ commitStart 登记时窗 */
+  /** 宿主 fan-out 同构（T26-R1 身份制）：先 findCastSnapshot 配身份 → gate → 名条 start（tier 按
+   * kind）→ commitStart 登记身份。cast=null 仅段 1 致胜终局（gate 无快照分支放行）。 */
   function driveFanOut(
     s: ReturnType<typeof createHexBattle>,
     gate: FxCastGate,
@@ -375,9 +376,11 @@ describe('T26-R · 触发矩阵：命中/全 miss/空放/段 1 致死终局/绝�
     startedAtSec = 7.77, // 演出钟（view.time 同源任意值——名条时长与事件 t 无关）
   ): Array<{ tier: 'special' | 'ultimate'; text: string }> {
     const starts: Array<{ tier: 'special' | 'ultimate'; text: string }> = [];
+    const casts = [...s._debug.pendingCasts(), ...s._debug.presentationCasts()];
     for (const e of s.events) {
-      if ((e.type === 'skill' || e.type === 'miss') && gate.shouldStart(e)) {
-        const cast = findCastSnapshot([...s._debug.pendingCasts(), ...s._debug.presentationCasts()], e.actorId!, e.skillId!, e.t);
+      if ((e.type === 'skill' || e.type === 'miss') && e.actorId && e.skillId) {
+        const cast = findCastSnapshot(casts, e.actorId, e.skillId, e.t);
+        if (!gate.shouldStart(e, cast)) continue;
         const tier = bannerTierOf(KIND_BY_ID.get(e.skillId!));
         if (tier) {
           const text = SKILLS.find((x) => x.id === e.skillId)!.name; // 宿主注册表解析 name 原样传入
@@ -385,7 +388,7 @@ describe('T26-R · 触发矩阵：命中/全 miss/空放/段 1 致死终局/绝�
           starts.push({ tier, text });
         }
         const durMs = cast ? Math.round((cast.finishAtSec - cast.startedAtSec) * 1000) : 3000;
-        gate.commitStart(e.actorId!, e.t, durMs);
+        gate.commitStart(e.actorId!, cast ? cast.startedAtSec : e.t, durMs, e.skillId!);
       }
     }
     return starts;
@@ -471,16 +474,22 @@ describe('T26-R · 触发矩阵：命中/全 miss/空放/段 1 致死终局/绝�
     expect(state.fillStyle).toBe(WF_BANNER.specialColor); // 敌方 special 同金（不按阵营变色）
   });
 
-  it('门去重（特/绝白名单参数）：同 cast 双源只首条放行；段 2 拦截；reset 清键', () => {
+  it('门去重（T26-R1 身份制·特/绝白名单参数）：同 cast 双源只首条放行；段 2/身份不符拦截；同刻重入凭身份放行；reset 清键', () => {
+    // 调用形态随 gate 签名升级（find-first 身份传参）；断言语义一一对应不变（T26-R1 改写声明）
     const gate = new FxCastGate(CAST_IDS);
-    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 5.0 })).toBe(true);
-    gate.commitStart('p', 5.0, 3000);
-    expect(gate.shouldStart({ type: 'miss', actorId: 'p', skillId: 'jue', t: 5.0 })).toBe(false); // 同 cast 双源
-    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 8.0 })).toBe(false); // 段 2 结算事件
-    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'qing', t: 9.9 })).toBe(false); // 非白名单（轻功）
-    expect(gate.shouldStart({ type: 'basic', actorId: 'p', skillId: 'jue', t: 5.0 })).toBe(false); // 非双源（普攻）
-    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'te', t: 9.99 })).toBe(true); // 新 cast 放行
+    const castJue1 = { actorId: 'p', skillId: 'jue', startedAtSec: 5.0, finishAtSec: 8.0 };
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 5.0 }, castJue1)).toBe(true);
+    gate.commitStart('p', 5.0, 3000, 'jue');
+    expect(gate.shouldStart({ type: 'miss', actorId: 'p', skillId: 'jue', t: 5.0 }, castJue1)).toBe(false); // 同 cast 双源
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 8.0 }, null)).toBe(false); // 段 2 结算事件（快照收口配不到）
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'qing', t: 9.9 }, null)).toBe(false); // 非白名单（轻功）
+    expect(gate.shouldStart({ type: 'basic', actorId: 'p', skillId: 'jue', t: 5.0 }, castJue1)).toBe(false); // 非双源（普攻）
+    // 同刻重入：新 cast t0==旧 t1=8.0，凭自身快照身份放行（seq=169 P1 修复本体）
+    const castJue2 = { actorId: 'p', skillId: 'jue', startedAtSec: 8.0, finishAtSec: 11.0 };
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 8.0 }, castJue2)).toBe(true);
+    gate.commitStart('p', 8.0, 3000, 'jue');
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'te', t: 9.99 }, { actorId: 'p', skillId: 'te', startedAtSec: 9.99, finishAtSec: 12.99 })).toBe(true); // 窗外新 cast 放行
     gate.reset();
-    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 5.0 })).toBe(true); // 跨局清键
+    expect(gate.shouldStart({ type: 'skill', actorId: 'p', skillId: 'jue', t: 5.0 }, castJue1)).toBe(true); // 跨局清键
   });
 });
