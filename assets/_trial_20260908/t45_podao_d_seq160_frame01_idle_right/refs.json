@@ -1,0 +1,21 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "frame": "idle_right",
+  "references": [
+    {
+      "path": "assets/characters/enemy/shanzei_a/battle45/battle_idle_right.png",
+      "role": "runtime body source",
+      "sha256": "f65fae17b33b05b8c47dd9157e0251169da352b66c1441c0c0354cc860955afb",
+      "allowed": "body geometry and fist ROI only",
+      "forbidden": "weapon art or aesthetic redesign"
+    },
+    {
+      "path": "assets/characters/enemy/shanzei_b/battle45/battle_idle_right.png",
+      "role": "runtime body source",
+      "sha256": "7c9eb5773454e0a2cfceeac7eab7337179b5f2179881cb099471b63586b1fd90",
+      "allowed": "body geometry and fist ROI only",
+      "forbidden": "weapon art or aesthetic redesign"
+    }
+  ]
+}

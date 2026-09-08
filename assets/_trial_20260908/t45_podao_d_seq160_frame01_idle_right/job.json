@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "seq": 160,
+  "jobId": "frame01-idle-right",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "generationCredits": 0,
+  "currentFrameOnly": true
+}
