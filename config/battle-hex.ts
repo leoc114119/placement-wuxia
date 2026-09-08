@@ -3,7 +3,7 @@
 //（色彩/组件布局）、主架构《战斗界面接入技术方案》§2（渲染分层）。数值真值仍在 battle-core / 云端 settle。
 
 import { BASIC_DURATION_MS, BATTLE_FRAME, FINISH_WINDOW_MS } from './battle'; // 【AS】共享表现常量唯一真值在共享配置（方案 §4.4：BE/FE 不各自复制，本文件 CHOREO 只做别名引用，不 import battle-core——T15 验收红线；FINISH_WINDOW_MS=BE 落 / BASIC_DURATION_MS=FE 落）
-import type { BattleFacingHex } from '../types'; // 六向帧接线 §2.1 契约类型（type-only，零运行时耦合）
+import type { BattleFacingHex, FxRecipe } from '../types'; // 六向帧接线 §2.1 契约类型 + T25 光影配方类型（type-only，零运行时耦合）
 
 // ===== 六边形几何（96 号定值：平顶 flat-top，s=31 → 格 62×54pt） =====
 // ===== 瓦片投影规格（L 环投影改造·Leo 看稿修正：尖角朝上/朝下的压扁六边形——上下尖角、左右竖直边，
@@ -496,3 +496,45 @@ export const BATTLE_HEX_RES = {
    * Leo 09-04 裁定摘狼：设计无狼 NPC，演示阵容全山贼系——spr_lang/ 素材归档保留不删） */
   profiles: SPRITE_PROFILES,
 } as const;
+
+// ===== T25 光影组合试点 trial_fx_01（配方常量唯一出处 · 《光影序列素材库》§6.1 + 方案 §2） =====
+// 素材接线口径（素材落地纪律）：路径进 config 资源常量+帧名落显式数组（禁运行时读 json）；
+// 40 张实际 PNG（12+22+6，Q-FX-01 裁决 B：L3 七逻辑帧剔除 1 空帧不恢复，播放器按实际帧等分）。
+// 时窗/缩放=素材库 §6.1 层配置表；anchorOffsetPx 素材库未裁偏移 → 默认 {x:0, y:0}（方案 §2）。
+export const TRIAL_FX_01: FxRecipe = {
+  id: 'trial_fx_01',
+  durationSource: 'cast', // T = 该次 castDurationMs（WF-9 / AS-1 快照，session 唯一真值）
+  anchor: 'casterCellCenter', // WF-8：锚=施法者中心格
+  layers: [
+    {
+      id: 'L1', // 聚气：kf7/15-1 紫红大环收缩+绿粒子（12f×350）
+      frameDir: 'assets/ui/fx/trial_fx_01/L1',
+      frames: Array.from({ length: 12 }, (_, i) => `15-1_f${String(i + 1).padStart(2, '0')}.png`),
+      windowStart: 0,
+      windowEnd: 0.45,
+      scale: 0.5,
+      anchorOffsetPx: { x: 0, y: 0 },
+      blendMode: 'lighter',
+    },
+    {
+      id: 'L2', // 主体爆：kf1/14-1 橙红刺环爆→金爆团（22f×150）
+      frameDir: 'assets/ui/fx/trial_fx_01/L2',
+      frames: Array.from({ length: 22 }, (_, i) => `14-1_f${String(i + 1).padStart(2, '0')}.png`),
+      windowStart: 0.35,
+      windowEnd: 0.9,
+      scale: 1.4,
+      anchorOffsetPx: { x: 0, y: 0 },
+      blendMode: 'lighter',
+    },
+    {
+      id: 'L3', // 余韵：kf1/125-1 橙月牙弧收尾（6 张实际 PNG=7 逻辑帧剔 1 空帧）
+      frameDir: 'assets/ui/fx/trial_fx_01/L3',
+      frames: Array.from({ length: 6 }, (_, i) => `125-1_f${String(i + 1).padStart(2, '0')}.png`),
+      windowStart: 0.78,
+      windowEnd: 1, // 末段层右端闭：夹取末帧播到 T（方案 §5.1 L3 [.78T, T]）
+      scale: 1.2,
+      anchorOffsetPx: { x: 0, y: 0 },
+      blendMode: 'lighter',
+    },
+  ],
+};

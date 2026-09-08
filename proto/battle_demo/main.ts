@@ -4,7 +4,8 @@
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
 import type { CombatantInput } from '../../types';
 import { SPEED_FACTOR } from '../../config/battle';
-import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, hexToWorld, type BattleClip } from '../../config/battle-hex';
+import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, TRIAL_FX_01, hexToWorld, type BattleClip } from '../../config/battle-hex';
+import { FxPlayer, loadFxFramePack, type FxFramePack } from '../../ui/fx-player';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
   createView,
@@ -107,14 +108,20 @@ async function loadAssets(): Promise<BattleHexAssets> {
   const faceJobs = faceEntries.map(async ([key, path]) => [key, await loadImg(q(path))] as const);
   const iconEntries = Object.entries(BATTLE_HEX_RES.statusIcons) as Array<[string, string]>;
   const iconJobs = iconEntries.map(async ([key, path]) => [key, await loadImg(q(path))] as const);
-  const [env, topbar, plaque, facePairs, iconPairs] = await Promise.all([
+  // 【T25 · trial_fx_01】三层光影帧进场并行预载（方案 §4.2）：loadFxFramePack 永不 reject
+  //（缺帧 warn 记路径+null 槽，draw 跳帧）；join 进同一 Promise.all——全部 settle 后主循环才启动，
+  // 首个特功演出必然晚于预载完成。missing 非空仅告警（DoD 口径：素材 40/40 必须全在，缺=FAIL）。
+  const fxJobs = loadFxFramePack(TRIAL_FX_01, (url) => loadImg(q(url)));
+  const [env, topbar, plaque, facePairs, iconPairs, fxResult] = await Promise.all([
     loadImg(q(BATTLE_HEX_RES.env)),
     loadImg(q(BATTLE_HEX_RES.topbar)),
     loadImg(q(BATTLE_HEX_RES.plaque)),
     Promise.all(faceJobs),
     Promise.all(iconJobs),
+    fxJobs,
     ...frameJobs,
   ]);
+  fxPack = fxResult.pack; // 【T25】预载完成的帧包带出（.then 里重建播放器实例）
   const ctrlFaces: BattleHexAssets['ctrlFaces'] = { tuoguan: null, jiasu: null, flee: null };
   for (const [key, img] of facePairs) {
     if (key === 'tuoguan' || key === 'jiasu' || key === 'flee') ctrlFaces[key] = img;
@@ -129,7 +136,9 @@ async function loadAssets(): Promise<BattleHexAssets> {
     `[battle_demo] 资源：env=${ok(env)} topbar=${ok(topbar)} plaque=${ok(plaque)} ` +
       `ctrlFaces=[${facePairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
       `statusIcons=[${iconPairs.map(([k2, v]) => `${k2}:${ok(v)}`).join(' ')}] ` +
-      `帧=[${[...frames.entries()].map(([k2, v]) => `${k2}:${frameStat(v)}`).join(' ')}]`,
+      `帧=[${[...frames.entries()].map(([k2, v]) => `${k2}:${frameStat(v)}`).join(' ')}] ` +
+      `FX=${TRIAL_FX_01.id}:${fxResult.pack.size - fxResult.missing.length}/${fxResult.pack.size}` +
+      (fxResult.missing.length > 0 ? `（缺失！${fxResult.missing.join(',')}）` : ''),
   );
   return { env, topbar, plaque, ctrlFaces, statusIcons, frames };
 }
@@ -179,6 +188,18 @@ function makeSession() {
 }
 
 const view = createView();
+// 【T25 · trial_fx_01】光影播放器（世界层）：稳定实例——进场预载全部 settle 后经 setPack
+// 注入帧包（首个特功演出必然晚于预载完成，方案 §4.2），view.fxWorld 绑定一次。
+// 启动/清空语义见 ui/fx-player（死亡/终局不回滚不截断，§5.2）。
+let fxPack: FxFramePack = new Map();
+const fxPlayer = new FxPlayer(fxPack);
+view.fxWorld = fxPlayer; // 渲染 hook：drawFrame 在棋子后/血条前调用（方案 §3.2）
+/** 已启动 FX 的 accepted cast（actorId → 事件 t）：同一 t0 的多目标事件流只启动一次
+ *（scheduleSkillCast 空放发 1 条 skill、非空按目标各发 1 条 skill/miss——同一 cast 的
+ * 事件 t 相同，据 (actorId, t) 去重；施法中无输入态+行动者串行 → 不同 cast 不可能同刻）。 */
+const fxCastStarted = new Map<string, number>();
+/** 特功技能 id 集（DEMO_SKILLS kind='special'）：FX 只挂特功施放 t0（任务卡需求表 #5） */
+const SPECIAL_SKILL_IDS = new Set(DEMO_SKILLS.filter((s) => s.kind === 'special').map((s) => s.id));
 let assets: BattleHexAssets = {
   env: null,
   topbar: null,
@@ -198,11 +219,41 @@ const input = createBattleInput({
   mode: () => session._debug.mode(),
 });
 
+/** 【T25 · 方案 §5.1】特功 accepted cast t0 触发一次三层光影：
+ * - 只挂 accepted：rejected 走 rejected 事件（不进本函数）；伤害/命中/空放不改变时间轴
+ *   （非伤害事件监听——段 1 是否命中、目标是否为空、暴击与否均不影响）。
+ * - T=该次 castDurationMs：从 session 快照队列读 startedAtSec/finishAtSec（core 唯一真值
+ *   session 已算好——宿主只读快照，不重算公式、不经手 battle-core，R10 红线）。
+ * - 锚=施法者中心格（WF-8）：hexToWorld(renderPos) 世界坐标 start 时定格；施法期间不可移动
+ *   （session R1），死亡消散不移动锚——视觉实例照常播完 t0+T。
+ * - 时钟=start 于演出钟 view.time（与 session 钟 x1/x2 同速缩放），速度只改播放速率。 */
+function tryStartCastFx(actorId: string, skillId: string, evT: number): void {
+  if (fxCastStarted.get(actorId) !== undefined && Math.abs(evT - fxCastStarted.get(actorId)!) < 0.005) {
+    return; // 同一 cast 的第 2..N 条目标事件：去重（一次 accepted cast 只启动一次）
+  }
+  const casts = [...session._debug.pendingCasts(), ...session._debug.presentationCasts()];
+  const cast = casts.find(
+    (c) => c.actorId === actorId && c.skillId === skillId && Math.abs(c.startedAtSec - evT) <= 0.011,
+  );
+  if (!cast) {
+    console.warn(`[battle_demo] FX 触发未找到 cast 快照（不启动）：actor=${actorId} skill=${skillId} t=${evT}`);
+    return;
+  }
+  const actor = session.snapshot().actors.find((a) => a.id === actorId);
+  if (!actor) return;
+  const durMs = Math.round((cast.finishAtSec - cast.startedAtSec) * 1000);
+  const anchor = hexToWorld(actor.renderPos.q, actor.renderPos.r);
+  fxCastStarted.set(actorId, evT);
+  fxPlayer.start(TRIAL_FX_01, anchor, view.time, durMs);
+}
+
 function resetDemo(): void {
   input.reset(); // A07：重开清输入拖动态（结算瞬间按住/拖镜不跨局残留）
   session = makeSession();
   evCursor = 0;
   speedOn = false;
+  fxPlayer.clearAll(); // 【T25】session 重建按实例清空未完成 FX（方案 §5.2：不跨局残留）
+  fxCastStarted.clear();
   view.anim.clear();
   view.moveAnims.clear();
   view.camInit = false; // 重开重新定位镜头
@@ -357,6 +408,11 @@ function loop(t: number): void {
       spawnNoteFx(view, w.x, w.y, REJECT_HINTS[e.reason ?? 'invalid'] ?? '无法执行');
       continue;
     }
+    // 【T25 · 方案 §5.1】特功 accepted cast t0：与出招 04→05（charge 入相）同帧启动三层光影；
+    // rejected 不进此路（上分支 continue），伤害/命中形态不改时间轴（非伤害事件监听）。
+    if (e.type === 'skill' && e.actorId && e.skillId && SPECIAL_SKILL_IDS.has(e.skillId)) {
+      tryStartCastFx(e.actorId, e.skillId, e.t);
+    }
     // T21 白名单（§2.2）：basic/skill 且有 targetId 且 damage>0 → 冒数字+震动；
     // miss 且有 targetId → 冒「闪避」不震（闪避=未受击）。fallback/blocked damage=0、
     // 空放 skill（无 targetId 无 damage，session:768）、death/move/win/lose 等天然不入队。
@@ -368,12 +424,15 @@ function loop(t: number): void {
     }
   }
   updateView(view, snap, dt, W, H);
+  // 【T25】光影播放器与演出钟同源推进（x1/x2 只改逻辑 dt 速率=只改播放速度，配方时长不变）
+  fxPlayer.update(view.time);
   drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view);
   requestAnimationFrame(loop);
 }
 
 void loadAssets().then((a) => {
   assets = a;
+  fxPlayer.setPack(fxPack); // 【T25】预载完成的帧包注入（稳定实例；主循环此刻才启动）
   requestAnimationFrame((t) => {
     last = t;
     loop(t);

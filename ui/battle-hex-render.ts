@@ -187,6 +187,10 @@ export interface BattleHexView {
     statusIcons: string[];
     ctrlActive: { mode: boolean; speed: boolean };
   };
+  /** 【T25 · trial_fx_01】世界光影层引用（方案 §3.2 L1 世界特效层）：结构类型零 import——
+   * ui/fx-player.ts 的 FxPlayer 结构满足；宿主绑定一次（播放器为稳定实例）。渲染器只负责在
+   * 棋子后/血条前调 draw（lighter 合成由播放器每层 save/restore 自包围）；不设=零影响。 */
+  fxWorld?: FxWorldLayer;
   layout: HitLayout;
 }
 
@@ -1574,6 +1578,14 @@ function drawPhaseOverlay(ctx: CanvasRenderingContext2D, snapshot: BattleSnapsho
 
 // ============ 主入口 ============
 
+/** 【T25 · trial_fx_01】世界光影层 hook（方案 §3.2 L1 世界特效层）：结构类型零 import——
+ * ui/fx-player.ts 的 FxPlayer 结构满足（播放器自持实例/时钟/缺图降级；渲染器只给绘制位）。
+ * 经 BattleHexView.fxWorld 绑定（渲染层私有演出态，drawFrame 签名与既有调用零改动）；
+ * 层级=棋子之后、血条/名字牌之前（盖住角色不污染 HUD）。 */
+export interface FxWorldLayer {
+  draw: (ctx: CanvasRenderingContext2D, cam: { x: number; y: number }, width: number, height: number) => void;
+}
+
 /** 每帧绘制（L0→L6 顺序）。快照与资源只读；演出状态由 view 承载。 */
 export function drawFrame(
   fc: FrameContext,
@@ -1600,6 +1612,7 @@ export function drawFrame(
   ctx.clip();
   drawCells(ctx, snapshot, cam, width, height, view.selectedCell, view.hoverCell);
   const placed = drawPieces(ctx, snapshot, assets, view, cam, width, height);
+  view.fxWorld?.draw(ctx, cam, width, height); // 【T25】世界光影层：棋子后/血条前（方案 §3.2）
   drawPieceHud(ctx, placed, snapshot, view);
   drawFx(ctx, view, cam, width, height);
   ctx.restore();

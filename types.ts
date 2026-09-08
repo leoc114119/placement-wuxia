@@ -368,3 +368,33 @@ export type ActionRequest =
   | { type: 'setMode'; mode: BattleMode }
   | { type: 'toggleSpeed' }
   | { type: 'flee' };
+
+// ============ T25 光影组合试点（trial_fx_01 · 《光影组合试点方案-trial_fx_01-v0.1》§2 契约） ============
+// 结构约定：后台导出 JSON 可直接消费——层顺序由数组决定，帧顺序由显式文件数组决定，
+// 窗口使用归一化比例（相对本次出招时长 T），不把运行时毫秒写入素材配置。
+
+/** 锚点偏移（Canvas 世界像素；默认 {x:0, y:0}） */
+export interface FxAnchorOffsetPx {
+  x: number;
+  y: number;
+}
+
+/** 单层配方（时窗左闭右开：[windowStart·T, windowEnd·T)；windowEnd=1 时右端闭、夹取末帧至 T） */
+export interface FxLayerRecipe {
+  id: string; // 稳定层 ID，例如 L1
+  frameDir: string; // 运行时资源目录
+  frames: string[]; // 播放顺序，文件名相对 frameDir
+  windowStart: number; // [0, 1]，相对本次 T
+  windowEnd: number; // (windowStart, 1]
+  scale: number; // 等比缩放
+  anchorOffsetPx: FxAnchorOffsetPx;
+  blendMode: 'lighter'; // 试点固定加色；后台可扩展但不得改本卡口径
+}
+
+/** 光影组合配方（唯一配方真源=《光影序列素材库》§6.1 trial_fx_01） */
+export interface FxRecipe {
+  id: string; // trial_fx_01
+  durationSource: 'cast'; // T = 本次 castDurationMs
+  anchor: 'casterCellCenter';
+  layers: FxLayerRecipe[];
+}

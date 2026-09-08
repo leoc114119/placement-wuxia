@@ -62,6 +62,7 @@ declare const wx: {
 declare module 'node:fs' {
   export function readFileSync(path: string, encoding: string): string;
   export function existsSync(path: string): boolean; // 六向帧接线：资源完整性用例（声明随任务补全）
+  export function readdirSync(path: string): string[]; // T25 fx 素材目录一致性用例
 }
 declare module 'node:path' {
   export function join(...parts: string[]): string;
