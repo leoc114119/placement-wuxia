@@ -2,7 +2,7 @@
 name: "backend-battle"
 description: "placement-wuxia 战斗后端代理：战斗逻辑域（battle-session/battle-core/hex）——战斗状态机/技能结算/AI/朝向/确定性。当任务涉及战斗逻辑、session 语义、规格条目实现（ATK-*/SEL-*/BAR-*/SP-*/FACE-*/AI-1/GATE-1）时使用。禁碰渲染层与云函数。"
 color: red
-model: "custom:builtin%3Abigmodel-coding-plan:GLM-5.3"
+model: "custom:builtin%3Abigmodel-coding-plan:GLM-5.3-Flash"
 injectAgentsMd: true
 ---
 

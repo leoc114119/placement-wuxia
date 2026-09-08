@@ -2,7 +2,7 @@
 name: "frontend-battle"
 description: "placement-wuxia 战斗前端代理：战斗表现域（hex-render/input/demo 宿主）——渲染/演出/特效/战斗 UI 接线/素材接入。当任务涉及 battle-hex-render、battle-input、proto/battle_demo、战斗素材接线（帧表/tileset/组件图）时使用。禁碰战斗结算逻辑。"
 color: blue
-model: "custom:builtin%3Abigmodel-coding-plan:GLM-5.3"
+model: "custom:builtin%3Abigmodel-coding-plan:GLM-5.3-Flash"
 injectAgentsMd: true
 ---
 

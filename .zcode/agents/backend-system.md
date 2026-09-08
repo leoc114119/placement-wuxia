@@ -2,7 +2,8 @@
 name: "backend-system"
 description: "placement-wuxia 系统后端代理：成长/经济/存档域（云函数/结算/schema）——武功物品系统、掉落概率、离线收益、存档。当任务涉及 cloudfunctions、settle/core.js 结算、武功/物品 schema 落地、数值服务端实现时使用。禁碰战斗逻辑与客户端渲染。"
 color: orange
-model: "custom:builtin%3Abigmodel-coding-plan:GLM-5.3"
+model: "custom:builtin%3Abigmodel-coding-plan:GLM-5.3-Flash"
+thoughtLevel: high
 injectAgentsMd: true
 ---
 

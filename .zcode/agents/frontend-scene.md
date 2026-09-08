@@ -2,7 +2,7 @@
 name: "frontend-scene"
 description: "placement-wuxia 场景前端代理：场景与主界面域（家场景/场景切换/主界面 UI 接线）——game.ts 主循环、场景系统、家场景交互、主界面五区布局、preview harness。当任务涉及场景切换、家场景、主界面 UI、PlayerState 数据流、preview 页时使用。禁碰战斗表现与后端结算。"
 color: green
-model: "custom:builtin%3Abigmodel-coding-plan:GLM-5.3"
+model: "custom:builtin%3Abigmodel-coding-plan:GLM-5.3-Flash"
 injectAgentsMd: true
 ---
 
