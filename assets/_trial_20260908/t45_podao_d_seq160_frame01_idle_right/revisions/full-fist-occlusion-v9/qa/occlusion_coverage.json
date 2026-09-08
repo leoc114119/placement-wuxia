@@ -1,0 +1,44 @@
+{
+  "task": "T45",
+  "seq": 167,
+  "frame": "idle_right",
+  "revision": "full-fist-occlusion-v9",
+  "method": "B exact 4-connected orange-skin component; no polygon/bridge",
+  "records": [
+    {
+      "id": "a_idle_right",
+      "maskPixels": 441,
+      "bodyShaFrozen": true,
+      "source": "v8 frozen"
+    },
+    {
+      "id": "b_idle_right",
+      "maskPixels": 310,
+      "skinRule": "alpha>32 and R>=180 and G>=80 and B<=140 and R>=1.25*G",
+      "pixelRoi": [
+        98,
+        159,
+        123,
+        188
+      ],
+      "seed": [
+        110,
+        175
+      ],
+      "selectedSkinBBox": [
+        98,
+        166,
+        121,
+        186
+      ],
+      "weaponPixelsInSelectedFistBefore": 110,
+      "weaponPixelsInSelectedFistAfter": 0,
+      "bodyShaFrozen": true,
+      "weaponShaFrozen": true,
+      "noTorsoBridge": true,
+      "maskPixelsMatchSkinRule": true,
+      "maskConnected4": true
+    }
+  ],
+  "allHardGatesPass": true
+}

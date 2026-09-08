@@ -4,7 +4,7 @@
   "jobId": "frame01-idle-right",
   "revision": "full-fist-occlusion-v8",
   "artifactStage": "candidate",
-  "visualReview": "pending_Leo",
+  "visualReview": "rejected_by_Leo",
   "specGate": "pending_pm_scan",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
@@ -15,5 +15,6 @@
   "reviewedAt": "2026-09-08",
   "note": "v8 only extends B's narrow handle bridge; formal runtime remains untouched pending Leo and PM gates.",
   "visualReviewReason": "Leo 2026-09-08: A is acceptable, but B still exposes a small handle segment between the fist and blade; v8 adds only a narrow B handle bridge.",
-  "reviewReason": "v5 rejected by Leo for incomplete hand occlusion; v6 rejected by Leo because its arm region was oversized; v7 rejected by Leo after a small B handle segment remained; v8 keeps A frozen and adds only the narrow B handle bridge."
+  "reviewReason": "Leo 2026-09-08 rejected v8 B bridge as completely wrong; v9 selects only the actual orange fist pixels.",
+  "supersededBy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v9/manifest.json"
 }

@@ -363,7 +363,7 @@
   "occlusionRevision": "full-fist-silhouette-v8-b-handle-bridge",
   "occlusionRule": "full character-right fist; B narrow handle-bridge collar; D marked silhouette has zero residual weapon pixels",
   "artifactStage": "candidate",
-  "visualReview": "pending_Leo",
+  "visualReview": "rejected_by_Leo",
   "specGate": "pending_pm_scan",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
@@ -394,5 +394,7 @@
     "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/request.md",
     "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/weapon_layers/a_idle_right_placeholder_blade.png",
     "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/weapon_layers/b_idle_right_placeholder_blade.png"
-  ]
+  ],
+  "supersededBy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v9/manifest.json",
+  "reviewReason": "Leo 2026-09-08 rejected v8 B bridge as completely wrong; v9 selects only the actual orange fist pixels."
 }
