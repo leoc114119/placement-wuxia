@@ -50,3 +50,9 @@
 ## 研发消费边界
 
 研发接线消费 manifest/calibration 中每帧 `gripPoint`、`angleDeg`、`layerOrder` 与 `occlusionRef`；D 三联图和覆盖图仅作诊断证据。v2 待 Leo 视觉目验与 PM 第二道规格门，保持 candidate-only，不写正式 runtime。
+
+## 提交与运输
+
+- artifact commit：`c2d99b6f8ed0d093428f056177c883b367bbbe13`（分支 `codex/t45-shanzei-2b-pilot`，已推送）。
+- `check_delivery.py`：26/26 activity paths PASS，核验同一 artifact commit；该检查只证明路径与字节，不替代 Leo 视觉门或 PM 规格门。
+- projbus delivery：seq=180，messageId=`fbddaa2c91714715ae373942ec1d9f96`；后续 docs commit 会补发更正交接。
