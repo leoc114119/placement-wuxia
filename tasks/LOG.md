@@ -650,3 +650,4 @@
 | 2026-09-08 | Leo → Codex（art） | 🔧 T45 seq160 frame01 刀柄/遮挡修正版 v5 | 刀刃 95px 保留；刀柄 36→34px；B ROI 收紧为拳心/指节核心，D 图保留拳后柄段；候选 `assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/handle-shorter-fist-core-v5/`，credits=0，runtime 未改，待 Leo 目验。 |
 | 2026-09-08 | Leo → Codex（art） | ✅ T45 seq160 遮挡职责确认 | 刀长/刀位基本可用；手部盖柄效果归研发 in-engine 合成验证，美术停止继续改遮挡图，保留 v5 标定数据作为接线输入；v5 runtimeRelease=false。 |
 | 2026-09-08 | Codex（art） | 📦 T45 seq160 frame01 v5 交付包整理 | Leo 已确认刀长/刀位可用；v5 元数据更新为 `visualReview=selected_by_Leo`（仅刀长/刀位范围），遮挡明确转研发 in-engine；逐帧标定、武器层、ROI、QA 与交接文件待提交后发 delivery，`runtimeRelease=false`。 |
+| 2026-09-08 | Codex（art） → rd | 📤 T45 seq160 frame01 idle_right v5 候选交付（seq=163，83b6180） | 19 个活动路径（逐帧标定/武器层/ROI/QA/交接）`check_delivery` 19/19 PASS；Leo 仅刀长/刀位范围确认，遮挡转研发 in-engine，`specGate=pending_pm_scan`、`runtimeRelease=false`，不启动下一帧。 |

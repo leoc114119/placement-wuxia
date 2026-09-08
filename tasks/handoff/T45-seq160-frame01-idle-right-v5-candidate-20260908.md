@@ -13,4 +13,4 @@
 
 活动 v5 目录下的 `manifest.json` `job.json` `calibration/frame01_idle_right.json`、两张占位武器层、两张 `occlusion_masks/*`、两张 native/2x 三联对照、两张 contact、两份 QA、两份 raw 身体副本、`refs.json`、`request.md`，以及本交接文件。
 
-**交付 commit**：待本次提交完成后回填；总线 delivery 必须携带最终 commit SHA 与上述活动路径的逐文件清单。候选不进入正式 runtime。
+**交付基线 commit**：`83b6180716875aa118d3a98f847a90266674aef7`；总线 delivery `seq=163` 已携带该 commit SHA 与上述活动路径的逐文件清单。候选不进入正式 runtime。
