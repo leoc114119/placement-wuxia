@@ -1,0 +1,69 @@
+{
+  "task": "T45",
+  "revision": "handle-center-half-length-v9",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_right.png",
+      "role": "frozen hero battle body and hand geometry",
+      "allowed": "screen-left fist/right-hand grip and body placement",
+      "forbidden": "redraw body/identity/pose",
+      "sha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-grip-v8/normalized/hero_sword_held_rightup_v8.png",
+      "role": "v8 normalized transparent sword geometry",
+      "allowed": "deterministic integer translation along -40° axis; move handle center onto fist center (102,206)",
+      "forbidden": "redraw/rotation/shape change/new generation",
+      "sha256": "b413978ccaff1e22cd0bd02188203d3cb6b27be5d215e2a37702c899c8f2b72c"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/refs/user_fist_center_sword_reference.png",
+      "role": "Leo supplied red-arrow direction and fist-center placement reference",
+      "allowed": "direction/placement interpretation only",
+      "forbidden": "pixel tracing or body redraw",
+      "sha256": "b5b744597d730236e7eeb1b2aca503e64f242a5461345f81e4d6b89dba4aae3c"
+    }
+  ],
+  "correction": {
+    "hand": "character_right_hand_screen_left_fist",
+    "sourceGrip": [
+      102.0,
+      206.0
+    ],
+    "targetGrip": [
+      113.0,
+      196.0
+    ],
+    "fistHeightPx": 26,
+    "handleAxisMinPx": -29.83198677578074,
+    "handleHalfSpanPx": 14.91599338789037,
+    "handleCenterSourcePx": [
+      90.57368615160716,
+      215.58781573590227
+    ],
+    "handleCenterTargetPx": [
+      101.57368615160716,
+      205.58781573590227
+    ],
+    "translationPx": [
+      11,
+      -10
+    ],
+    "angleDeg": -40.0,
+    "rotationDeltaDeg": 0.0,
+    "fistCenterPx": [
+      102.0,
+      206.0
+    ],
+    "handleContactSourcePx": [
+      102.0,
+      206.0
+    ],
+    "handleContactTargetPx": [
+      113.0,
+      196.0
+    ],
+    "directionReference": "Leo requested half-handle up-right shift so fist center faces handle center"
+  }
+}

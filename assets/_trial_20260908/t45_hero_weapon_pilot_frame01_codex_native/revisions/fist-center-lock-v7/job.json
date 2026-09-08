@@ -1,0 +1,19 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame01",
+  "revision": "fist-center-lock-v7",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "reviewReason": "Leo follow-up correction: put the sword handle into the fist center; keep body and angle unchanged",
+  "correction": {
+    "from": "v6 grip (110,185) / handle contact (91,206)",
+    "to": "grip (121,185); screen-right shift=11px; handle contact locked to fist center (102,206); angle unchanged"
+  },
+  "method": "deterministic reuse of v6 transparent sword layer; integer screen-right shift only; no new generation; body frozen",
+  "runtimeWrite": false,
+  "status": "superseded",
+  "supersededBy": "hero-weapon-pilot-frame01-fist-center-grip-v8"
+}

@@ -1,0 +1,60 @@
+{
+  "task": "T45",
+  "revision": "fist-center-grip-v8",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_right.png",
+      "role": "frozen hero battle body and hand geometry",
+      "allowed": "screen-left fist/right-hand grip and body placement",
+      "forbidden": "redraw body/identity/pose",
+      "sha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-up-v4/normalized/hero_sword_held_rightup_v4.png",
+      "role": "v4 normalized transparent sword geometry",
+      "allowed": "deterministic integer screen-right translation only; lock handle contact to fist center (102,206)",
+      "forbidden": "redraw/rotation/shape change/new generation",
+      "sha256": "83206e70bc3b474b5b49a40ff7e2cf5648e5a7ddbdbad99aafd9921b2685e368"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-grip-v8/refs/user_fist_center_sword_reference.png",
+      "role": "Leo supplied red-arrow direction and fist-center placement reference",
+      "allowed": "direction/placement interpretation only",
+      "forbidden": "pixel tracing or body redraw",
+      "sha256": "b5b744597d730236e7eeb1b2aca503e64f242a5461345f81e4d6b89dba4aae3c"
+    }
+  ],
+  "correction": {
+    "hand": "character_right_hand_screen_left_fist",
+    "sourceGrip": [
+      100.0,
+      205.0
+    ],
+    "targetGrip": [
+      102.0,
+      206.0
+    ],
+    "fistHeightPx": 26,
+    "upwardFraction": 0.0,
+    "translationPx": [
+      2,
+      1
+    ],
+    "angleDeg": -40.0,
+    "rotationDeltaDeg": 0.0,
+    "fistCenterPx": [
+      102.0,
+      206.0
+    ],
+    "handleContactSourcePx": [
+      100.0,
+      205.0
+    ],
+    "handleContactTargetPx": [
+      102.0,
+      206.0
+    ],
+    "directionReference": "Leo requested handle contact pixel locked to fist center"
+  }
+}

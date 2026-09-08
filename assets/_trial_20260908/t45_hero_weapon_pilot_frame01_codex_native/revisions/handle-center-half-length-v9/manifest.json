@@ -1,0 +1,31 @@
+{
+  "task": "T45",
+  "revision": "hero-weapon-pilot-frame01-handle-center-half-length-v9",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "scope": "hero battle_idle_right first-frame only; deterministic up-right half-handle placement correction; no runtime integration",
+  "supersedes": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-grip-v8/manifest.json",
+  "sourceBody": "assets/characters/hero/battle45/battle_idle_right.png",
+  "sourceBodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/fist-center-grip-v8/normalized/hero_sword_held_rightup_v8.png",
+  "sourceWeaponLayerSha256": "b413978ccaff1e22cd0bd02188203d3cb6b27be5d215e2a37702c899c8f2b72c",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+  "weaponSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+  "handSemantic": "character_right_hand_screen_left_fist",
+  "gripPoint": {
+    "x": 113.0,
+    "y": 196.0
+  },
+  "angleDeg": -40.0,
+  "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/calibration/frame01_idle_right_v9.json",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/qa/pilot_v9.json",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/contact/hero_idle_right_sword_pilot_v9.png",
+  "fistCenterZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/contact/fist_center_zoom_v9.png",
+  "visualReviewNote": "v9 keeps the v8 character-right screen-left-fist body and -40° up-right axis, then translates the whole sword by (+11,-10)px (half the measured 29.832px handle span) so handle center faces fist center (102,206)",
+  "formalRuntimeTouched": false,
+  "status": "selected_by_Leo_pending_pm",
+  "visualReviewEvidence": "Leo 目测通过：当前剑角度正确；右上半个剑柄位移后，拳头中心正对剑柄中心。"
+}

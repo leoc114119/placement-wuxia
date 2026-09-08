@@ -1,0 +1,19 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame01",
+  "revision": "handle-center-half-length-v9",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "selected_by_Leo_pending_pm",
+  "visualReviewEvidence": "Leo 目测通过：当前剑角度正确；右上半个剑柄位移后，拳头中心正对剑柄中心。",
+  "reviewReason": "Leo follow-up correction: pull the sword up-right by half a handle so fist center faces handle center; keep body and angle unchanged",
+  "correction": {
+    "from": "v8 grip (102,206); handle center is down-left by half handle span",
+    "to": "integer shift=(+11,-10) along -40° axis; handle center faces fist center (102,206); angle unchanged"
+  },
+  "method": "deterministic reuse of v8 transparent sword layer; integer translation along -40° axis only; no new generation; body frozen",
+  "runtimeWrite": false
+}
