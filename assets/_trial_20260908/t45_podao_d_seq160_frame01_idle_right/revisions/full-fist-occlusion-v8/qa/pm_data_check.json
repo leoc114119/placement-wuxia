@@ -1,0 +1,523 @@
+{
+  "task": "T45",
+  "seq": 167,
+  "frame": "idle_right",
+  "revision": "full-fist-occlusion-v8",
+  "records": [
+    {
+      "id": "a_idle_right",
+      "identity": "shanzei_a",
+      "bodyFrame": "battle_idle_right.png",
+      "bodyPath": "assets/characters/enemy/shanzei_a/battle45/battle_idle_right.png",
+      "bodySha256": "f65fae17b33b05b8c47dd9157e0251169da352b66c1441c0c0354cc860955afb",
+      "rawBodyCopy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/raw/a_idle_right_body.png",
+      "bodyMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxT32": [
+          78,
+          44,
+          174,
+          300
+        ],
+        "visualWidth": 96,
+        "visualHeight": 256,
+        "alpha32CentroidX": 120.16781101095394,
+        "alpha32CentroidY": 170.60983343264337,
+        "feetYExclusive": 300,
+        "borderNonzero": 0
+      },
+      "handSemantic": "character_right_hand",
+      "screenProjection": "screen_left_fist_in_this_right-facing_pose",
+      "gripPoint": {
+        "x": 125,
+        "y": 175
+      },
+      "angleDeg": -55.0,
+      "angleDefinition": "blade axis from grip toward tip; 0° screen-right, +Y down, clockwise-positive",
+      "layerOrder": "front",
+      "occlusionRef": {
+        "roiPolygon": [
+          [
+            108,
+            173
+          ],
+          [
+            115,
+            170
+          ],
+          [
+            124,
+            172
+          ],
+          [
+            131,
+            178
+          ],
+          [
+            131,
+            185
+          ],
+          [
+            126,
+            191
+          ],
+          [
+            117,
+            192
+          ],
+          [
+            110,
+            188
+          ],
+          [
+            106,
+            183
+          ],
+          [
+            106,
+            177
+          ]
+        ],
+        "maskPath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/occlusion_masks/a_idle_right_fist_roi.png",
+        "maskSha256": "71cd7cc81b67015456575afcb66c65471c3129bfb27a9e3effa58ad5d8bfb191",
+        "semantics": "full character-right fist remains topmost; B adds a narrow handle-bridge collar and D subtracts weapon alpha across the marked silhouette",
+        "silhouettePath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/hand_silhouettes/a_idle_right_fist_silhouette.png",
+        "silhouetteSha256": "71cd7cc81b67015456575afcb66c65471c3129bfb27a9e3effa58ad5d8bfb191",
+        "bridgePolygon": null
+      },
+      "weaponPlaceholder": {
+        "path": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/weapon_layers/a_idle_right_placeholder_blade.png",
+        "sha256": "b3d17ad4387e6a8711903faaf44e836723b7bddda165d78bf35c151ab6b9b8e5",
+        "profile": "long_broad_single_edge_dao_placeholder_v5",
+        "handleSpanAlongAxis": [
+          -20,
+          14
+        ],
+        "bladeSpanAlongAxis": [
+          15,
+          110
+        ],
+        "bladeLengthAlongAxis": 95
+      },
+      "composites": {
+        "native": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/composites_native/a_idle_right_triptych.png",
+        "nativeSha256": "16860dde242c8010b496a9806e1a2db384c892404f00d6ff50a676a22c34fb59",
+        "2x": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/composites_2x/a_idle_right_triptych_2x.png",
+        "2xSha256": "5780124733070ee2bc783bd440f03d597038d7b990623f23639943bfae41d80b"
+      },
+      "checks": {
+        "bodyShaFrozen": true,
+        "bodyCanvasPass": true,
+        "bodyFeetPass": true,
+        "bodyVisualHeightPass": true,
+        "bodyBorderTransparent": true,
+        "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
+        "dOcclusionReducesWeapon": true,
+        "handleVisibleBeforeRoi": true,
+        "layerOrderRecorded": true,
+        "nativeSizePass": true,
+        "2xSizePass": true,
+        "allPass": true,
+        "fullFistSilhouetteRecorded": true,
+        "silhouetteMaskCoveragePass": true,
+        "weaponResidualInSilhouetteZero": true,
+        "handleResidualInSilhouetteZero": true,
+        "dHandSilhouetteMatchesBody": true,
+        "handleVisibleBeforeOcclusion": true,
+        "noGeneration": true,
+        "bridgeHandleResidualZero": true,
+        "bridgePreservesNonHandleWeapon": true
+      },
+      "positionAdjustmentFromV2": {
+        "dx": 6,
+        "dy": -6
+      },
+      "roiRevision": "full-fist-silhouette-v8-b-handle-bridge"
+    },
+    {
+      "id": "b_idle_right",
+      "identity": "shanzei_b",
+      "bodyFrame": "battle_idle_right.png",
+      "bodyPath": "assets/characters/enemy/shanzei_b/battle45/battle_idle_right.png",
+      "bodySha256": "7c9eb5773454e0a2cfceeac7eab7337179b5f2179881cb099471b63586b1fd90",
+      "rawBodyCopy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/raw/b_idle_right_body.png",
+      "bodyMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxT32": [
+          47,
+          44,
+          179,
+          300
+        ],
+        "visualWidth": 132,
+        "visualHeight": 256,
+        "alpha32CentroidX": 120.33443821604274,
+        "alpha32CentroidY": 157.0642387190191,
+        "feetYExclusive": 300,
+        "borderNonzero": 0
+      },
+      "handSemantic": "character_right_hand",
+      "screenProjection": "screen_left_fist_in_this_right-facing_pose",
+      "gripPoint": {
+        "x": 116,
+        "y": 165
+      },
+      "angleDeg": -55.0,
+      "angleDefinition": "blade axis from grip toward tip; 0° screen-right, +Y down, clockwise-positive",
+      "layerOrder": "front",
+      "occlusionRef": {
+        "roiPolygon": [
+          [
+            103,
+            160
+          ],
+          [
+            112,
+            158
+          ],
+          [
+            121,
+            161
+          ],
+          [
+            127,
+            167
+          ],
+          [
+            126,
+            176
+          ],
+          [
+            121,
+            183
+          ],
+          [
+            114,
+            186
+          ],
+          [
+            106,
+            182
+          ],
+          [
+            101,
+            177
+          ],
+          [
+            100,
+            168
+          ]
+        ],
+        "maskPath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/occlusion_masks/b_idle_right_fist_roi.png",
+        "maskSha256": "e81f658b3286a3e0c46289be50143820a75c1abb698356f1d72c4dc7d998a94a",
+        "semantics": "full character-right fist remains topmost; B adds a narrow handle-bridge collar and D subtracts weapon alpha across the marked silhouette",
+        "silhouettePath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/hand_silhouettes/b_idle_right_fist_silhouette.png",
+        "silhouetteSha256": "e81f658b3286a3e0c46289be50143820a75c1abb698356f1d72c4dc7d998a94a",
+        "bridgePolygon": [
+          [
+            111,
+            152
+          ],
+          [
+            121,
+            151
+          ],
+          [
+            126,
+            154
+          ],
+          [
+            128,
+            159
+          ],
+          [
+            128,
+            164
+          ],
+          [
+            125,
+            166
+          ],
+          [
+            121,
+            162
+          ],
+          [
+            116,
+            160
+          ],
+          [
+            110,
+            159
+          ],
+          [
+            110,
+            155
+          ]
+        ]
+      },
+      "weaponPlaceholder": {
+        "path": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/weapon_layers/b_idle_right_placeholder_blade.png",
+        "sha256": "b6d9e6d1ffcb4eba22e0e3f0d1a4614ec214f26b9c5fbd5fdd8a3ecc234793e7",
+        "profile": "long_broad_single_edge_dao_placeholder_v5",
+        "handleSpanAlongAxis": [
+          -20,
+          14
+        ],
+        "bladeSpanAlongAxis": [
+          15,
+          110
+        ],
+        "bladeLengthAlongAxis": 95
+      },
+      "composites": {
+        "native": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/composites_native/b_idle_right_triptych.png",
+        "nativeSha256": "92034d82d9d097c05f02ba7b2d67a901c24860bbd57ff11d889a4bb2cba2cd89",
+        "2x": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/composites_2x/b_idle_right_triptych_2x.png",
+        "2xSha256": "08f79bc48ab622ab41448f687a7511dab59fc4b54f24904bff9013cf798f649d"
+      },
+      "checks": {
+        "bodyShaFrozen": true,
+        "bodyCanvasPass": true,
+        "bodyFeetPass": true,
+        "bodyVisualHeightPass": true,
+        "bodyBorderTransparent": true,
+        "weaponHasAlpha": true,
+        "longDaoPlaceholderPass": true,
+        "dOcclusionReducesWeapon": true,
+        "handleVisibleBeforeRoi": true,
+        "layerOrderRecorded": true,
+        "nativeSizePass": true,
+        "2xSizePass": true,
+        "allPass": true,
+        "fullFistSilhouetteRecorded": true,
+        "silhouetteMaskCoveragePass": true,
+        "weaponResidualInSilhouetteZero": true,
+        "handleResidualInSilhouetteZero": true,
+        "dHandSilhouetteMatchesBody": true,
+        "handleVisibleBeforeOcclusion": true,
+        "noGeneration": true,
+        "bridgeHandleResidualZero": true,
+        "bridgePreservesNonHandleWeapon": true
+      },
+      "positionAdjustmentFromV2": {
+        "dx": 6,
+        "dy": -6
+      },
+      "roiRevision": "full-fist-silhouette-v8-b-handle-bridge"
+    }
+  ],
+  "silhouetteCoverage": [
+    {
+      "id": "a_idle_right",
+      "identity": "shanzei_a",
+      "polygon": [
+        [
+          108,
+          173
+        ],
+        [
+          115,
+          170
+        ],
+        [
+          124,
+          172
+        ],
+        [
+          131,
+          178
+        ],
+        [
+          131,
+          185
+        ],
+        [
+          126,
+          191
+        ],
+        [
+          117,
+          192
+        ],
+        [
+          110,
+          188
+        ],
+        [
+          106,
+          183
+        ],
+        [
+          106,
+          177
+        ]
+      ],
+      "bridgePolygon": null,
+      "silhouettePath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/hand_silhouettes/a_idle_right_fist_silhouette.png",
+      "silhouetteSha256": "71cd7cc81b67015456575afcb66c65471c3129bfb27a9e3effa58ad5d8bfb191",
+      "occlusionMaskPath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/occlusion_masks/a_idle_right_fist_roi.png",
+      "occlusionMaskSha256": "71cd7cc81b67015456575afcb66c65471c3129bfb27a9e3effa58ad5d8bfb191",
+      "silhouettePixels": 441,
+      "occlusionMaskPixels": 441,
+      "coveredPixels": 441,
+      "coverageRatio": 1.0,
+      "maskEqualsSilhouette": true,
+      "weaponPixelsInSilhouetteBefore": 133,
+      "weaponPixelsInSilhouetteAfter": 0,
+      "handlePixelsInSilhouetteBefore": 133,
+      "handlePixelsInSilhouetteAfter": 0,
+      "weaponPixelsInBridgeBefore": 0,
+      "weaponPixelsInBridgeAfter": 0,
+      "handlePixelsInBridgeBefore": 0,
+      "handlePixelsInBridgeAfter": 0,
+      "nonHandleWeaponPixelsRemovedInBridge": 0,
+      "dBodyDiffPixelsInSilhouette": 0,
+      "allPass": true
+    },
+    {
+      "id": "b_idle_right",
+      "identity": "shanzei_b",
+      "polygon": [
+        [
+          103,
+          160
+        ],
+        [
+          112,
+          158
+        ],
+        [
+          121,
+          161
+        ],
+        [
+          127,
+          167
+        ],
+        [
+          126,
+          176
+        ],
+        [
+          121,
+          183
+        ],
+        [
+          114,
+          186
+        ],
+        [
+          106,
+          182
+        ],
+        [
+          101,
+          177
+        ],
+        [
+          100,
+          168
+        ]
+      ],
+      "bridgePolygon": [
+        [
+          111,
+          152
+        ],
+        [
+          121,
+          151
+        ],
+        [
+          126,
+          154
+        ],
+        [
+          128,
+          159
+        ],
+        [
+          128,
+          164
+        ],
+        [
+          125,
+          166
+        ],
+        [
+          121,
+          162
+        ],
+        [
+          116,
+          160
+        ],
+        [
+          110,
+          159
+        ],
+        [
+          110,
+          155
+        ]
+      ],
+      "silhouettePath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/hand_silhouettes/b_idle_right_fist_silhouette.png",
+      "silhouetteSha256": "e81f658b3286a3e0c46289be50143820a75c1abb698356f1d72c4dc7d998a94a",
+      "occlusionMaskPath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/occlusion_masks/b_idle_right_fist_roi.png",
+      "occlusionMaskSha256": "e81f658b3286a3e0c46289be50143820a75c1abb698356f1d72c4dc7d998a94a",
+      "silhouettePixels": 750,
+      "occlusionMaskPixels": 750,
+      "coveredPixels": 750,
+      "coverageRatio": 1.0,
+      "maskEqualsSilhouette": true,
+      "weaponPixelsInSilhouetteBefore": 252,
+      "weaponPixelsInSilhouetteAfter": 0,
+      "handlePixelsInSilhouetteBefore": 252,
+      "handlePixelsInSilhouetteAfter": 0,
+      "weaponPixelsInBridgeBefore": 97,
+      "weaponPixelsInBridgeAfter": 0,
+      "handlePixelsInBridgeBefore": 97,
+      "handlePixelsInBridgeAfter": 0,
+      "nonHandleWeaponPixelsRemovedInBridge": 0,
+      "dBodyDiffPixelsInSilhouette": 0,
+      "allPass": true
+    }
+  ],
+  "checks": {
+    "framePair2of2": true,
+    "bodyShaFrozen2of2": true,
+    "fullFistSilhouette2of2": true,
+    "silhouetteMaskCoverage2of2": true,
+    "weaponResidualZero2of2": true,
+    "handleResidualZero2of2": true,
+    "bridgeHandleResidualZero2of2": true,
+    "bridgePreservesNonHandleWeapon2of2": true,
+    "dHandMatchesBody2of2": true,
+    "nativeAnd2x2of2": true,
+    "noRuntimeWrites": true,
+    "noGeneration": true
+  },
+  "allHardGatesPass": true,
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "runtimeRelease": false,
+  "note": "v5 was rejected for incomplete occlusion; v6 was rejected for oversized arm coverage; v7 was rejected after Leo found a small B handle segment still exposed; v8 keeps A frozen and adds only the narrow B handle bridge; silhouette×mask coverage evidence is retained."
+}

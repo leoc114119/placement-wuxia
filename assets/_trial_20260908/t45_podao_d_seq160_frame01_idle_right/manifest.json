@@ -356,6 +356,6 @@
     "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/weapon_layers/a_idle_right_placeholder_blade.png",
     "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/weapon_layers/b_idle_right_placeholder_blade.png"
   ],
-  "visualReviewReason": "Leo 2026-09-08: v6 occlusion region was too large; only the complete fist should cover the handle, without masking a large arm area. Superseded by tight full-fist v7.",
-  "supersededBy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v7/manifest.json"
+  "visualReviewReason": "Leo 2026-09-08: v6 occlusion region was too large; v7 tightened it, but B still exposed a small handle segment. Superseded by B handle-bridge v8.",
+  "supersededBy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v8/manifest.json"
 }
