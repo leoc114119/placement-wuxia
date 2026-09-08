@@ -1,0 +1,30 @@
+{
+  "task": "T45",
+  "seq": 167,
+  "frame": "idle_right",
+  "sourceRevision": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/handle-shorter-fist-core-v5/manifest.json",
+  "bodyBytesFrozen": true,
+  "weaponBytesFrozen": true,
+  "generation": {
+    "provider": null,
+    "model": null,
+    "credits": 0,
+    "method": "Pillow deterministic mask/composite only"
+  },
+  "references": [
+    {
+      "path": "assets/characters/enemy/shanzei_a/battle45/battle_idle_right.png",
+      "role": "runtime body source; bytes frozen",
+      "sha256": "f65fae17b33b05b8c47dd9157e0251169da352b66c1441c0c0354cc860955afb",
+      "allowed": "hand/forearm silhouette mask geometry only",
+      "forbidden": "body redraw, weapon redesign, runtime write"
+    },
+    {
+      "path": "assets/characters/enemy/shanzei_b/battle45/battle_idle_right.png",
+      "role": "runtime body source; bytes frozen",
+      "sha256": "7c9eb5773454e0a2cfceeac7eab7337179b5f2179881cb099471b63586b1fd90",
+      "allowed": "hand/forearm silhouette mask geometry only",
+      "forbidden": "body redraw, weapon redesign, runtime write"
+    }
+  ]
+}

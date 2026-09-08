@@ -1,0 +1,133 @@
+{
+  "task": "T45",
+  "seq": 167,
+  "frame": "idle_right",
+  "revision": "full-fist-occlusion-v7",
+  "method": "body alpha > 0 restricted to explicit fist-only polygon; binary 255 occlusion",
+  "records": [
+    {
+      "id": "a_idle_right",
+      "identity": "shanzei_a",
+      "polygon": [
+        [
+          108,
+          173
+        ],
+        [
+          115,
+          170
+        ],
+        [
+          124,
+          172
+        ],
+        [
+          131,
+          178
+        ],
+        [
+          131,
+          185
+        ],
+        [
+          126,
+          191
+        ],
+        [
+          117,
+          192
+        ],
+        [
+          110,
+          188
+        ],
+        [
+          106,
+          183
+        ],
+        [
+          106,
+          177
+        ]
+      ],
+      "silhouettePath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v7/hand_silhouettes/a_idle_right_fist_silhouette.png",
+      "silhouetteSha256": "71cd7cc81b67015456575afcb66c65471c3129bfb27a9e3effa58ad5d8bfb191",
+      "occlusionMaskPath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v7/occlusion_masks/a_idle_right_fist_roi.png",
+      "occlusionMaskSha256": "71cd7cc81b67015456575afcb66c65471c3129bfb27a9e3effa58ad5d8bfb191",
+      "silhouettePixels": 441,
+      "occlusionMaskPixels": 441,
+      "coveredPixels": 441,
+      "coverageRatio": 1.0,
+      "maskEqualsSilhouette": true,
+      "weaponPixelsInSilhouetteBefore": 133,
+      "weaponPixelsInSilhouetteAfter": 0,
+      "handlePixelsInSilhouetteBefore": 133,
+      "handlePixelsInSilhouetteAfter": 0,
+      "dBodyDiffPixelsInSilhouette": 0,
+      "allPass": true
+    },
+    {
+      "id": "b_idle_right",
+      "identity": "shanzei_b",
+      "polygon": [
+        [
+          103,
+          160
+        ],
+        [
+          112,
+          158
+        ],
+        [
+          121,
+          161
+        ],
+        [
+          127,
+          167
+        ],
+        [
+          126,
+          176
+        ],
+        [
+          121,
+          183
+        ],
+        [
+          114,
+          186
+        ],
+        [
+          106,
+          182
+        ],
+        [
+          101,
+          177
+        ],
+        [
+          100,
+          168
+        ]
+      ],
+      "silhouettePath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v7/hand_silhouettes/b_idle_right_fist_silhouette.png",
+      "silhouetteSha256": "620d03248084662ce5364de74cf2482c0efcb0db95b1462c1615fd7881388e91",
+      "occlusionMaskPath": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-fist-occlusion-v7/occlusion_masks/b_idle_right_fist_roi.png",
+      "occlusionMaskSha256": "620d03248084662ce5364de74cf2482c0efcb0db95b1462c1615fd7881388e91",
+      "silhouettePixels": 588,
+      "occlusionMaskPixels": 588,
+      "coveredPixels": 588,
+      "coverageRatio": 1.0,
+      "maskEqualsSilhouette": true,
+      "weaponPixelsInSilhouetteBefore": 165,
+      "weaponPixelsInSilhouetteAfter": 0,
+      "handlePixelsInSilhouetteBefore": 165,
+      "handlePixelsInSilhouetteAfter": 0,
+      "dBodyDiffPixelsInSilhouette": 0,
+      "allPass": true
+    }
+  ],
+  "allHardGatesPass": true,
+  "note": "D fist silhouette must contain zero weapon/handle pixels; comparison sheet is diagnostic evidence."
+}

@@ -286,8 +286,8 @@
     "formalRuntimeTouched": false
   },
   "artifactStage": "candidate",
-  "visualReview": "selected_by_Leo",
-  "specGate": "pending",
+  "visualReview": "rejected_by_user",
+  "specGate": "pending_pm_scan",
   "integrationGate": "not_handed_off",
   "runtimeRelease": false,
   "artifactPaths": [
@@ -313,5 +313,7 @@
   "visualReviewScope": "blade length and grip position selected by Leo; fist-over-handle occlusion is deferred to研发 in-engine compositing/validation",
   "visualReviewEvidence": "Leo 2026-09-08: knife length/position basically usable; art stops occlusion edits; v5 calibration is the engineering handoff input",
   "reviewedAt": "2026-09-08",
-  "integrationNote": "D triptych is calibration diagnostic only; final hand-over-handle appearance belongs to研发 in-engine validation"
+  "integrationNote": "D triptych is calibration diagnostic only; final hand-over-handle appearance belongs to研发 in-engine validation",
+  "visualReviewReason": "Leo 2026-09-08 seq=167: A/B hand-region occlusion was incomplete; v6 re-marks full hand/forearm silhouette and adds zero-residual gate.",
+  "supersededBy": "assets/_trial_20260908/t45_podao_d_seq160_frame01_idle_right/revisions/full-hand-occlusion-v6/manifest.json"
 }
