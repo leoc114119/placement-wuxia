@@ -1,0 +1,23 @@
+{
+  "task": "T45",
+  "purpose": "upright-fist pilot; each reference has one responsibility",
+  "frames": {
+    "shanzei_a_atk_right_2": {
+      "targetPose": "assets/characters/enemy/shanzei_a/battle45/atk_right_2.png",
+      "identityAnchor": "assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/normalized/shanzei_a_right.png",
+      "directionReference": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_right.png",
+      "targetSha256": "72389c7651305cb19061d5337a38fa8bc472e29b61c2a2a8b27dfecfd31c218a",
+      "responsibilities": {"targetPose": "right-facing attack phase 2, body framing and right-hand punching arm", "identityAnchor": "face, hair, clothing, palette, proportions", "directionReference": "right-facing view only"},
+      "forbidden": "weapon, text, watermark, extra limbs, left-hand swap, horizontal fist, redesign"
+    },
+    "shanzei_b_atk_right_2": {
+      "targetPose": "assets/characters/enemy/shanzei_b/battle45/atk_right_2.png",
+      "identityAnchor": "assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/normalized/shanzei_b_right.png",
+      "directionReference": "assets/_trial_20260904/t45_batch0sixdir/refs/ref_right.png",
+      "targetSha256": "9729be6f684f31077c5f4347c03f178869593679576c8d1320f5587cd68fa31f",
+      "responsibilities": {"targetPose": "right-facing attack phase 2, body framing and right-hand punching arm", "identityAnchor": "face, hair, clothing, palette, proportions", "directionReference": "right-facing view only"},
+      "forbidden": "weapon, text, watermark, extra limbs, left-hand swap, horizontal fist, redesign"
+    }
+  },
+  "contactSheets": "review only; never used as generation input"
+}

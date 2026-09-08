@@ -1,0 +1,194 @@
+{
+  "task": "T45",
+  "scope": "upright closed right punching fist pilot",
+  "status": "candidate_pending_leo_visual",
+  "frames": {
+    "shanzei_a": {
+      "sourcePath": "assets/characters/enemy/shanzei_a/battle45/atk_right_2.png",
+      "sourceSha256": "72389c7651305cb19061d5337a38fa8bc472e29b61c2a2a8b27dfecfd31c218a",
+      "sourceShaExpected": "72389c7651305cb19061d5337a38fa8bc472e29b61c2a2a8b27dfecfd31c218a",
+      "rawPath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_codex_native/raw/shanzei_a_atk_right_2_upright_fist_attempt1.png",
+      "rawSha256": "ab2529ea729a7a2fd366c5226d400cc95af9c23a7fbc9051624028a6f04e9436",
+      "normalizedPath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_codex_native/normalized/shanzei_a_atk_right_2_upright_fist.png",
+      "normalizedSha256": "c7234655668b53cb29903e18a249ea94fca02e77c4c281cd6eebcfe1abee3016",
+      "sourceMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          53,
+          44,
+          207,
+          300
+        ],
+        "visualWidth": 154,
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 119.58475359291236,
+        "alpha32CentroidY": 168.15285398697807,
+        "borderNonzero": 0,
+        "alpha32Components": 1
+      },
+      "processing": {
+        "rawSize": [
+          1086,
+          1448
+        ],
+        "backgroundPixelsRemoved": 1244278,
+        "cutBBox": [
+          250,
+          220,
+          930,
+          1361
+        ],
+        "scale": 0.22436459246275198,
+        "scaledWidth": 153,
+        "alphaCentroidXLocal": 68.42290185904882,
+        "paste": [
+          52,
+          44
+        ]
+      },
+      "normalizedMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          52,
+          44,
+          205,
+          300
+        ],
+        "visualWidth": 153,
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 120.37343343677593,
+        "alpha32CentroidY": 167.98242333292242,
+        "borderNonzero": 0,
+        "alpha32Components": 1
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "visualHeight256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleComponent": true,
+        "bodySourceShaMatchesExpected": true,
+        "noRuntimeWrite": true
+      },
+      "allHardGatesPass": true
+    },
+    "shanzei_b": {
+      "sourcePath": "assets/characters/enemy/shanzei_b/battle45/atk_right_2.png",
+      "sourceSha256": "9729be6f684f31077c5f4347c03f178869593679576c8d1320f5587cd68fa31f",
+      "sourceShaExpected": "9729be6f684f31077c5f4347c03f178869593679576c8d1320f5587cd68fa31f",
+      "rawPath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_codex_native/raw/shanzei_b_atk_right_2_upright_fist_attempt1.png",
+      "rawSha256": "97dd26255b8ce52e019cdeebe1e60fe95efdee7a8f79385150d7c25159001e54",
+      "normalizedPath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_codex_native/normalized/shanzei_b_atk_right_2_upright_fist.png",
+      "normalizedSha256": "0ec4cd719239ecbbc200cc0aaa3de5d72a2dfd72a51704a94f8ae74526556de9",
+      "sourceMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          46,
+          44,
+          217,
+          300
+        ],
+        "visualWidth": 171,
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 120.21968161133765,
+        "alpha32CentroidY": 162.13136780764816,
+        "borderNonzero": 0,
+        "alpha32Components": 1
+      },
+      "processing": {
+        "rawSize": [
+          1086,
+          1448
+        ],
+        "backgroundPixelsRemoved": 1222213,
+        "cutBBox": [
+          233,
+          237,
+          942,
+          1300
+        ],
+        "scale": 0.24082784571966134,
+        "scaledWidth": 171,
+        "alphaCentroidXLocal": 73.64368274306068,
+        "paste": [
+          46,
+          44
+        ]
+      },
+      "normalizedMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          46,
+          44,
+          217,
+          300
+        ],
+        "visualWidth": 171,
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 119.62719487438359,
+        "alpha32CentroidY": 161.98827630142728,
+        "borderNonzero": 0,
+        "alpha32Components": 1
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "visualHeight256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleComponent": true,
+        "bodySourceShaMatchesExpected": true,
+        "noRuntimeWrite": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "checks": {
+    "frames2of2": true,
+    "noRuntimeWrites": true,
+    "generationCredits": 0,
+    "visualReview": "pending_Leo",
+    "specGate": "pending_pm_scan"
+  }
+}

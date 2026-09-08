@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "scope": "shanzei_a|b × atk_right_2 (right)",
+  "status": "candidate_pending_leo_visual",
+  "decision": "A: all 24 NPC attack body frames will eventually use upright closed punching fist; pilot only 2 frames",
+  "allowedChange": "character-own right punching fist orientation only",
+  "frozen": ["identity", "face", "hair", "clothing", "palette", "proportions", "feet", "canvas", "direction", "attack phase", "weapon-free body policy"],
+  "generation": {"provider": "Codex native ImageGen", "credits": "not applicable", "rawImageGeneration": true},
+  "runtimeRelease": false,
+  "formalRuntimeTouched": false,
+  "nextGate": "Leo visual inspection of the two right atk_right_2 candidates; only then expand to remaining 22 frames"
+}
