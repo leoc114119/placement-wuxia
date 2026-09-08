@@ -18,6 +18,9 @@
   "currentFrame": "walk_rightdown_1",
   "scope": "shanzei_a|b × battle_walk_rightdown_1",
   "handRule": "character right hand; screen-right fist in this rightdown pose",
+  "positionChange": "frame02 grips preserve seq=134 D trial calibration: A (172,172), B (178,172); uniform right-up axis",
+  "lengthChange": "dao placeholder uses handle [-20,14]=34px and blade [15,110]=95px; total 129px",
+  "occlusionChange": "tight complete-fist binary body-alpha masks; sleeve/torso excluded; D fist residual zero",
   "generation": {
     "provider": null,
     "model": null,
@@ -26,6 +29,24 @@
     "rawImageGeneration": false
   },
   "specSource": "seq=160; docs/design/01-基础功能/角色帧规范.md §4c v1.7; frame01 v11 fixed delivery format",
+  "status": "candidate_pending_Leo_visual_and_pm_scan",
+  "occlusionRevision": "full-fist-silhouette-v1",
+  "occlusionRule": "binary body alpha within tight complete-fist polygon; no sleeve/torso bridge",
+  "sourceRevision": "assets/_trial_20260908/t45_podao_d_trial_codex_native/manifest.json",
+  "supersedes": "assets/_trial_20260908/t45_podao_d_trial_codex_native/manifest.json",
+  "knifeAdjustment": {
+    "profile": "long_broad_single_edge_dao_placeholder_v5",
+    "angleDeg": -55.0,
+    "handleSpanAlongAxis": [
+      -20,
+      14
+    ],
+    "bladeSpanAlongAxis": [
+      15,
+      110
+    ],
+    "resampling": "none"
+  },
   "frames": [
     {
       "id": "a_walk_rightdown_1",
@@ -116,6 +137,7 @@
           ]
         ]
       },
+      "roiRevision": "full-fist-silhouette-v1",
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/weapon_layers/a_walk_rightdown_1_placeholder_blade.png",
         "sha256": "81c98f265752bd95a0264f178ae12b3fb3ea403978e547b2f828742229959bbb",
@@ -250,6 +272,7 @@
           ]
         ]
       },
+      "roiRevision": "full-fist-silhouette-v1",
       "weaponPlaceholder": {
         "path": "assets/_trial_20260908/t45_podao_d_seq160_frame02_walk_rightdown_1/revisions/full-fist-occlusion-v1/weapon_layers/b_walk_rightdown_1_placeholder_blade.png",
         "sha256": "bac1d85cda0a1deea5a01db09ec5bbeb3cc54409386a3739f565a859c85fa90b",
@@ -296,9 +319,6 @@
       }
     }
   ],
-  "calibrationStatus": "frame02 pair calibrated; grip/angle/layer/occlusion are trial data; angle and placeholder geometry are not final dao art",
-  "calibrationMethod": "Pillow deterministic native geometry and binary body-alpha fist silhouettes",
-  "occlusionRule": "binary body alpha within tight complete-fist polygon; no sleeve/torso bridge",
   "checks": {
     "expectedFrames": 2,
     "actualFrames": 2,
@@ -310,5 +330,7 @@
     "nativeAnd2x2of2": true,
     "formalRuntimeTouched": false,
     "generationCredits": 0
-  }
+  },
+  "calibrationStatus": "frame02 pair calibrated; grip/angle/layer/occlusion are trial data; angle and placeholder geometry are not final dao art",
+  "calibrationMethod": "Pillow deterministic native geometry and binary body-alpha fist silhouettes"
 }
