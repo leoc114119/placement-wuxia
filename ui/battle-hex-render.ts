@@ -191,6 +191,10 @@ export interface BattleHexView {
    * ui/fx-player.ts 的 FxPlayer 结构满足；宿主绑定一次（播放器为稳定实例）。渲染器只负责在
    * 棋子后/血条前调 draw（lighter 合成由播放器每层 save/restore 自包围）；不设=零影响。 */
   fxWorld?: FxWorldLayer;
+  /** 【T26 · WF-2】屏幕空间名条层引用（《武功名条方案-v0.1》§3.3）：结构类型零 import——
+   * ui/wf-banner.ts 的 WfBannerPlayer 结构满足；宿主绑定一次（稳定实例）。drawFrame 在世界
+   * clip restore 后/drawComponents 前调用（名条压棋盘与 HUD、组件与结算遮罩之下）；不设=零影响。 */
+  wfBanner?: WfBannerLayer;
   layout: HitLayout;
 }
 
@@ -1586,6 +1590,14 @@ export interface FxWorldLayer {
   draw: (ctx: CanvasRenderingContext2D, cam: { x: number; y: number }, width: number, height: number) => void;
 }
 
+/** 【T26 · WF-2】屏幕空间名条层 hook（《武功名条方案-v0.1》§3.3）：结构类型零 import——
+ * ui/wf-banner.ts 的 WfBannerPlayer 结构满足（播放器自持实例/1s 演出钟/曲线降级）。经
+ * BattleHexView.wfBanner 绑定（渲染层私有演出态，drawFrame 签名与既有调用零改动）；层级=
+ * 世界 clip restore 后、drawComponents 前（屏幕层禁 lighter——防 T25 加色态泄漏到组件层）。 */
+export interface WfBannerLayer {
+  draw: (ctx: CanvasRenderingContext2D, width: number, height: number, cam: { x: number; y: number }) => void;
+}
+
 /** 每帧绘制（L0→L6 顺序）。快照与资源只读；演出状态由 view 承载。 */
 export function drawFrame(
   fc: FrameContext,
@@ -1616,6 +1628,7 @@ export function drawFrame(
   drawPieceHud(ctx, placed, snapshot, view);
   drawFx(ctx, view, cam, width, height);
   ctx.restore();
+  view.wfBanner?.draw(ctx, width, height, cam); // 【T26 · WF-2】名条屏幕层：restore 后/drawComponents 前（方案 §3.3）
   drawComponents(ctx, snapshot, assets, width, height, view);
   drawPhaseOverlay(ctx, snapshot, width, height);
 }

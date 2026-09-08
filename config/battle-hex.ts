@@ -543,3 +543,30 @@ export const TRIAL_FX_01: FxRecipe = {
  * presentationCasts 均无该次记录，演出 T 无快照可读。此兜底=演示缺省出招合成口径 3000ms，
  * 属表现参数非结算真值；快照存在路径一律读快照，禁把本值当 castDurationMs）。 */
 export const TRIAL_FX_FALLBACK_DURATION_MS = 3000;
+
+// ===== T26 · WF-2 武功名条参数组（《武功名条方案-v0.1》§4；ADR-004 只读展示参数，无结算公式） =====
+// 名条=屏幕空间层代码字：字号=伤害数字屏高定尺×1.5（同屏恒 1.5 倍，§4.1）、特金/绝学金红渐变、
+// 墨描边+投影三道绘制（投影→描边→填充，顺序锁死在 ui/wf-banner）；寿命=固定 1.000s 演出钟，
+// 禁读/乘/除 castDurationMs（§4.2——快招慢招不二次缩放，x2 只经演出钟同速）。渲染器禁散落硬编码。
+export const WF_BANNER = {
+  durationSec: 1.0, // 固定演出钟寿命（s）——名条时长唯一真值，不随 castDurationMs 缩放
+  fontMul: 1.5, // 字号倍率：fontPx = round(round(H×DMG.fontPerH) × 本值)（同屏伤害数字 1.5 倍）
+  specialColor: '#D4AF37', // 特技填充金（方案 §4.1 PALETTE.gold 口径）
+  ultimateGradTop: '#FFD66B', // 绝学金红纵向渐变（字顶→字底）
+  ultimateGradBottom: '#E2574C', // 绝学渐变尾（PALETTE.cinnabar 口径）
+  strokeColor: '#2B2B2B', // 墨描边（两 tier 同色；投影第一道垫底同色）
+  strokeWidthRatio: 0.12, // 描边线宽 = max(strokeMinPx, round(fontPx×本值))
+  strokeMinPx: 2,
+  shadowColor: 'rgba(43, 43, 43, 0.45)', // 投影色（仅第一道绘制携带，§4.1 顺序：投影→描边→填充）
+  shadowOffsetY: 2, // 投影偏移 (0, 2)
+  shadowBlurPx: 4,
+  risePx: 24, // 上浮量（easeOutCubic 全程位移）
+  fadeInEnd: 0.1, // 淡入窗 [0, 0.10) smoothstep 0→1
+  fadeOutStart: 0.65, // 淡出窗 [0.65, 1] smoothstep 1→0（中段保持不透明）
+  maxWidthRatio: 0.82, // maxWidth = min(本值×W, W−2×safePx)；超宽仅 scaleX≤1 压缩居中，禁截字/省略号
+  safePx: 8, // 屏边安全距（maxWidth 第二约束；最窄支持屏 W=280 时 0.18W=50>16 恒不绑定，窄屏护栏）
+  /** 格心 → 名条锚世界偏移（px，向上）：= 棋子渲染高(TILE_H×heightPerTile)×feetBaselineRatio−feetOffsetPx
+   *（≈109.5，directional 头顶）+ HUD 三件套带（aboveHead+名字牌 ≈11）+ 名条空隙 18——派生自棋子定尺
+   * 常量（PIECE 调尺时本值同步）；Boss(×1.25) 微压尾差属 L 环目验可调项。 */
+  headOffsetPx: Math.round(TILE_H * PIECE.heightPerTile * PIECE.feetBaselineRatio - PIECE.feetOffsetPx) + 29,
+} as const;

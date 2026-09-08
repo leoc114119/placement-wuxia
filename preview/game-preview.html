@@ -81,10 +81,10 @@
 
   // ---- CommonJS 微加载器：依赖序预取 dist 产物后同步 require ----
   var FILES = [
-    'dist/types.js', 'dist/config/numbers.js', 'dist/config/npcs.js', 'dist/config/scenes.js', 'dist/config/battle.js', 'dist/net/cloud.js',
+    'dist/types.js', 'dist/config/numbers.js', 'dist/config/npcs.js', 'dist/config/scenes.js', 'dist/config/battle.js', 'dist/config/battle-hex.js', 'dist/net/cloud.js',
     'dist/systems/battle.js', 'dist/systems/battle-core.js', 'dist/systems/growth.js', 'dist/systems/map.js',
     'dist/systems/scene.js', 'dist/systems/npc.js', 'dist/systems/battle-ui.js',
-    'dist/ui/assets.js', 'dist/ui/fx-player.js', 'dist/ui/render.js', 'dist/ui/battle-render.js', 'dist/game.js',
+    'dist/ui/assets.js', 'dist/ui/fx-player.js', 'dist/ui/wf-banner.js', 'dist/ui/render.js', 'dist/ui/battle-render.js', 'dist/game.js',
   ];
   var registry = {};
   function resolvePath(from, p) {

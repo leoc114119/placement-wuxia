@@ -6,6 +6,7 @@ import type { CombatantInput } from '../../types';
 import { SPEED_FACTOR } from '../../config/battle';
 import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, TRIAL_FX_01, TRIAL_FX_FALLBACK_DURATION_MS, hexToWorld, type BattleClip } from '../../config/battle-hex';
 import { FxCastGate, FxPlayer, findCastSnapshot, loadFxFramePack, type FxFramePack } from '../../ui/fx-player';
+import { WfBannerPlayer, bannerTierOf } from '../../ui/wf-banner';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
   createView,
@@ -194,11 +195,19 @@ const view = createView();
 let fxPack: FxFramePack = new Map();
 const fxPlayer = new FxPlayer(fxPack);
 view.fxWorld = fxPlayer; // 渲染 hook：drawFrame 在棋子后/血条前调用（方案 §3.2）
-/** 特功技能 id 集（DEMO_SKILLS kind='special'）：FX 只挂特功施放 t0（任务卡需求表 #5） */
-const SPECIAL_SKILL_IDS = new Set(DEMO_SKILLS.filter((s) => s.kind === 'special').map((s) => s.id));
-/** 特功 accepted cast 触发门（T25-R2）：skill/miss 事件双源 + (actorId,t) 去重——全闪避
- * 只有 miss 事件也必启动；一次 accepted cast 只启动一次（方案 §5.1）。 */
-const fxCastGate = new FxCastGate(SPECIAL_SKILL_IDS);
+// 【T26 · WF-2】武功名条播放器（屏幕空间层）：稳定实例——drawFrame 在世界 restore 后/
+// drawComponents 前调用（《武功名条方案-v0.1》§3.3）；启动/清空语义见 ui/wf-banner（§4.2）。
+const wfBanner = new WfBannerPlayer();
+view.wfBanner = wfBanner;
+/** 演出技能 id 集（DEMO_SKILLS kind ∈ {special, ultimate}）：accepted cast t0 统一走演出
+ * fan-out（T25 光影挂特技、T26 名条挂特/绝——一次施放一次 fan-out，共用门去重） */
+const CAST_SKILL_IDS = new Set(DEMO_SKILLS.filter((s) => s.kind === 'special' || s.kind === 'ultimate').map((s) => s.id));
+/** 技能注册表快查（宿主侧 SkillDef 表：解析 name/kind 供名条；渲染层不查配置，方案 §3.1） */
+const DEMO_SKILL_BY_ID = new Map(DEMO_SKILLS.map((s) => [s.id, s]));
+/** accepted cast 触发门（T25-R2 门语义原样）：skill/miss 事件双源 + (actorId,t) 去重——全闪避
+ * 只有 miss 事件也必触发；一次 accepted cast 只 fan-out 一次（方案 §3.2）。白名单扩为特/绝
+ * 两类（调用点参数；FxCastGate 三拦截语义与去重键零改动），绝学在 fan-out 内只走名条分支。 */
+const castGate = new FxCastGate(CAST_SKILL_IDS);
 let assets: BattleHexAssets = {
   env: null,
   topbar: null,
@@ -218,17 +227,21 @@ const input = createBattleInput({
   mode: () => session._debug.mode(),
 });
 
-/** 【T25 · 方案 §5.1 / T25-R2 缺陷 1】特功 accepted cast t0 触发一次三层光影：
+/** 【T26 · WF-2 方案 §3.2】accepted cast t0 演出 fan-out（T25 光影 + T26 名条同刻一层调度）：
  * - 只挂 accepted：rejected 走 rejected 事件（不进本函数）；事件双源 skill+miss——段 1
- *   命中发 skill、闪避发 miss、空放发 skill，任一源首条即启动（去重已由 fxCastGate 完成），
+ *   命中发 skill、闪避发 miss、空放发 skill，任一源首条即 fan-out（去重已由 castGate 完成），
  *   命中/闪避/空放/致死终局均不影响时间轴（非伤害事件监听）。
  * - T=该次 castDurationMs：findCastSnapshot 从 session 快照队列（pending+presentation）读
  *   startedAtSec/finishAtSec（core 唯一真值 session 已算好——宿主只读快照，不重算公式、
  *   不经手 battle-core，R10 红线）；段 1 致死终局的 cast 已被挪入 presentationCasts 同查。
- * - 锚=施法者中心格（WF-8）：hexToWorld(renderPos) 世界坐标 start 时定格；施法期间不可移动
- *   （session R1），死亡消散不移动锚——视觉实例照常播完 t0+T。
- * - 时钟=start 于演出钟 view.time（与 session 钟 x1/x2 同速缩放），速度只改播放速率。 */
-function tryStartCastFx(actorId: string, skillId: string, evT: number): void {
+ *   该 T 只喂 T25 光影与门登记（段 2 拦截判别）；名条时长恒 WF_BANNER.durationSec=1.000s
+ *   演出钟，禁随 T 缩放（名条方案 §4.2）。
+ * - 锚=施法者中心格（WF-8）：hexToWorld(renderPos) 世界坐标 t0 定格，光影与名条共用同一
+ *   锚快照；施法期间不可移动（session R1），死亡消散不移动锚——两层演出照常播完。
+ * - 白名单：kind=special → 光影+名条（金色）；kind=ultimate → 仅名条（金红渐变）；
+ *   qingGong/暗器/外功不进 CAST_SKILL_IDS 天然不触达；敌方 AI 施放走同一 fan-out
+ *  （色按 tier 不按阵营）。 */
+function startCastPresentation(actorId: string, skillId: string, evT: number): void {
   const casts = [...session._debug.pendingCasts(), ...session._debug.presentationCasts()];
   const cast = findCastSnapshot(casts, actorId, skillId, evT);
   let durMs: number;
@@ -238,13 +251,20 @@ function tryStartCastFx(actorId: string, skillId: string, evT: number): void {
     // 段 1 致胜终局（AS-9）：session 直接 return 未建 cast 快照，T 无快照可读——
     // 演出走表现域兜底常量（TRIAL_FX_FALLBACK_DURATION_MS）并告警留痕，禁当结算真值。
     durMs = TRIAL_FX_FALLBACK_DURATION_MS;
-    console.warn(`[battle_demo] FX 无 cast 快照（段 1 致胜终局口径），演出时长走兜底 ${durMs}ms：actor=${actorId} skill=${skillId} t=${evT}`);
+    console.warn(`[battle_demo] 演出无 cast 快照（段 1 致胜终局口径），光影时长走兜底 ${durMs}ms：actor=${actorId} skill=${skillId} t=${evT}`);
   }
   const actor = session.snapshot().actors.find((a) => a.id === actorId);
   if (!actor) return;
   const anchor = hexToWorld(actor.renderPos.q, actor.renderPos.r);
-  fxPlayer.start(TRIAL_FX_01, anchor, view.time, durMs);
-  fxCastGate.commitStart(actorId, evT, durMs); // 登记时窗：段 2 结算事件（t=finishAtSec）据此判别拦截
+  const def = DEMO_SKILL_BY_ID.get(skillId);
+  const tier = bannerTierOf(def?.kind);
+  if (def && tier) {
+    wfBanner.start({ text: def.name, tier, anchorWorld: anchor, startedAtSec: view.time }); // WF-2：固定 1.000s
+  }
+  if (tier === 'special') {
+    fxPlayer.start(TRIAL_FX_01, anchor, view.time, durMs); // T25：三层光影只挂特技（时长 T=castDurationMs）
+  }
+  castGate.commitStart(actorId, evT, durMs); // 登记时窗：段 2 结算事件（t=finishAtSec）据此判别拦截
 }
 
 function resetDemo(): void {
@@ -253,7 +273,8 @@ function resetDemo(): void {
   evCursor = 0;
   speedOn = false;
   fxPlayer.clearAll(); // 【T25】session 重建按实例清空未完成 FX（方案 §5.2：不跨局残留）
-  fxCastGate.reset(); // 触发门跨局清空（去重键不跨局残留）
+  wfBanner.clearAll(); // 【T26 · WF-2】名条跨局清空（reset/逃跑/session 重建，名条方案 §4.2）
+  castGate.reset(); // 触发门跨局清空（去重键不跨局残留）
   view.anim.clear();
   view.moveAnims.clear();
   view.camInit = false; // 重开重新定位镜头
@@ -377,6 +398,11 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
   get PIECE() {
     return PIECE;
   },
+  /** 【T26 · WF-2】名条播放器只读引用（截图驱动/目验断言：activeCount 生命周期时序采样；
+   * 惯例同 getView/PIECE——调试挂载不进正式接入） */
+  get wfBanner() {
+    return wfBanner;
+  },
 };
 
 // ===== 主循环 =====
@@ -408,11 +434,12 @@ function loop(t: number): void {
       spawnNoteFx(view, w.x, w.y, REJECT_HINTS[e.reason ?? 'invalid'] ?? '无法执行');
       continue;
     }
-    // 【T25 · 方案 §5.1 / T25-R2 缺陷 1】特功 accepted cast t0：事件双源 skill+miss——
-    // 命中发 skill / 闪避发 miss / 空放发 skill，任一源首条启动（gate 去重保证一次一次）；
+    // 【T26 · WF-2 方案 §3.2】accepted cast t0 演出 fan-out：事件双源 skill+miss——
+    // 命中发 skill / 闪避发 miss / 空放发 skill，任一源首条 fan-out（gate 去重保证一次一次）；
     // 与出招 04→05（charge 入相）同帧；rejected 不进此路（上分支 continue）。
-    if ((e.type === 'skill' || e.type === 'miss') && e.actorId && e.skillId && SPECIAL_SKILL_IDS.has(e.skillId) && fxCastGate.shouldStart(e)) {
-      tryStartCastFx(e.actorId, e.skillId, e.t);
+    // fan-out 内分流：特技=光影+名条、绝学=仅名条（qingGong/暗器不进白名单天然不触达）。
+    if ((e.type === 'skill' || e.type === 'miss') && e.actorId && e.skillId && CAST_SKILL_IDS.has(e.skillId) && castGate.shouldStart(e)) {
+      startCastPresentation(e.actorId, e.skillId, e.t);
     }
     // T21 白名单（§2.2）：basic/skill 且有 targetId 且 damage>0 → 冒数字+震动；
     // miss 且有 targetId → 冒「闪避」不震（闪避=未受击）。fallback/blocked damage=0、
@@ -427,6 +454,7 @@ function loop(t: number): void {
   updateView(view, snap, dt, W, H);
   // 【T25】光影播放器与演出钟同源推进（x1/x2 只改逻辑 dt 速率=只改播放速度，配方时长不变）
   fxPlayer.update(view.time);
+  wfBanner.update(view.time); // 【T26 · WF-2】名条相位推进（固定 1.000s 演出钟，到点即收）
   drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view);
   requestAnimationFrame(loop);
 }
