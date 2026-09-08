@@ -1,0 +1,110 @@
+{
+  "task": "T45",
+  "revision": "fist-only-inward-tilt-local",
+  "generatedAt": "2026-09-08",
+  "trialOnly": true,
+  "scope": "shanzei_a|b × atk_right_2 (right)",
+  "decision": "Local visual candidate: only distal fist adjusted with slight inward tilt; arm remains frozen",
+  "generation": {
+    "provider": "Codex native ImageGen",
+    "model": null,
+    "credits": 0,
+    "rawImageGeneration": true
+  },
+  "processing": {
+    "cutout": "project flood_cut + feather",
+    "normalize": "240x320 RGBA, visualHeight=256, feetY=300, alpha32 centroid x≈120",
+    "poseAdjustment": "fist only; slight inward tilt; forearm/elbow/upper arm frozen"
+  },
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "formalRuntimeTouched": false,
+  "localOnly": true,
+  "artifactPaths": [
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/upright_fist_pilot_compare.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/upright_fist_pilot_fist_closeups_4x.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/job.json",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/normalize_fist_only_inward_local.py",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/normalized/shanzei_a_atk_right_2_fist_only_inward.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/normalized/shanzei_b_atk_right_2_fist_only_inward.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/prompts/shanzei_a_atk_right_2_fist_only_inward.txt",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/prompts/shanzei_b_atk_right_2_fist_only_inward.txt",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/qa/upright_fist_pilot.json",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/raw/shanzei_a_atk_right_2_fist_only_inward_attempt1.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/raw/shanzei_b_atk_right_2_fist_only_inward_attempt1.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/refs.json",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/request.md",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_a_reference.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_current_fist_reference.png",
+    "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/prompts/leo_approved_current_edit_20260908.txt"
+  ],
+  "reviewNote": "Leo 2026-09-08: shanzei_a inward-tilt fist correct; shanzei_b forward-bent fist correct.",
+  "approvedReference": {
+    "path": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_a_reference.png",
+    "source": "user-attached file /var/folders/h1/pmxfd0v96jg39v02p6fzvly80000gn/T/codex-clipboard-d8d5f92b-e22e-4b0c-9c33-b55a519fdcd6.png",
+    "sha256": "b6e165932eac07221898dd39d976fd7d2b4826635bffbb01fc24259f3bbd775b",
+    "dimensions": [
+      1085,
+      1450
+    ],
+    "mode": "RGB",
+    "visualReview": "selected_by_Leo",
+    "runtimeRelease": false,
+    "note": "Leo: 这张可以了，合格了; stop further expansion"
+  },
+  "status": "visual_selected_by_Leo_reusable_baseline_hold",
+  "expansion": "held_by_Leo_after_approved_reference",
+  "approvedReferenceLatest": {
+    "path": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_current_fist_reference.png",
+    "source": "Codex native ImageGen output /Users/leochen/.codex/generated_images/01a06f37-6f31-77a3-a9e0-cd919de56beb/exec-ecaf3a40-a224-468e-a905-ce0519806014.png",
+    "sha256": "6cdb81ce3a3a5665168bf9ad1d26caa33573a8b16bdbc2e0669c6711600504f8",
+    "dimensions": [
+      1086,
+      1448
+    ],
+    "mode": "RGB",
+    "visualReview": "selected_by_Leo",
+    "runtimeRelease": false,
+    "note": "Leo 2026-09-08: this fist visual is approved as the reusable grip-friendly baseline."
+  },
+  "approvedReferences": [
+    {
+      "path": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_a_reference.png",
+      "source": "user-attached file /var/folders/h1/pmxfd0v96jg39v02p6fzvly80000gn/T/codex-clipboard-d8d5f92b-e22e-4b0c-9c33-b55a519fdcd6.png",
+      "sha256": "b6e165932eac07221898dd39d976fd7d2b4826635bffbb01fc24259f3bbd775b",
+      "dimensions": [
+        1085,
+        1450
+      ],
+      "mode": "RGB",
+      "visualReview": "selected_by_Leo",
+      "runtimeRelease": false,
+      "note": "Leo: 这张可以了，合格了; stop further expansion"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_current_fist_reference.png",
+      "source": "Codex native ImageGen output /Users/leochen/.codex/generated_images/01a06f37-6f31-77a3-a9e0-cd919de56beb/exec-ecaf3a40-a224-468e-a905-ce0519806014.png",
+      "sha256": "6cdb81ce3a3a5665168bf9ad1d26caa33573a8b16bdbc2e0669c6711600504f8",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "visualReview": "selected_by_Leo",
+      "runtimeRelease": false,
+      "note": "Leo 2026-09-08: this fist visual is approved as the reusable grip-friendly baseline."
+    }
+  ],
+  "reusableVisualBaseline": {
+    "name": "fist_grip_friendly_v1",
+    "scope": "hero and NPC; all action frames where hand semantics are a closed fist",
+    "promptFile": "assets/characters/prompts/fist_grip_friendly_v1.txt",
+    "referencePath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_current_fist_reference.png",
+    "visualRule": "upright compact closed fist; slight forward bend along facing direction; slight inward turn toward torso centerline; wrist and arm remain natural",
+    "exceptions": "open-palm, palm-thrust, hit-spread and relaxed-death semantics preserve their required hand shape",
+    "approvedBy": "Leo",
+    "approvedDate": "2026-09-08"
+  }
+}

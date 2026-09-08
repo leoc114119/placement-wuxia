@@ -628,3 +628,15 @@
 | 09-07 | ZCode | 📦 光影素材接收盘点完成 | 574 帧 BMP→Leo 裁个位数目录跳过，主力五目录 548 帧安顿 assets/_trial_20260907/wangjin_fx_raw/（gitignore 不入库原始 BMP）；核心发现=非等分连续动画长条+黑底加色系，需切帧重建；KF1 试点派卡 |
 | 09-08 | ZCode | 📦 光影切帧管线落地+KF1 试点（主会话亲做零代理消耗） | 胶带制确认（Leo：6-13 帧纵向播放，1-1.bmp=150x1650=11帧x150 验证成立）；fx_slice.py=边界亮度法自动判帧高+黑底转alpha+空帧剔除+ambiguous 标记；KF1：154 源→1510 判定帧→1458 存出（15MB）；contact sheet 待 Leo 目验后跑全量 KF3/4/6/7 |
 | 09-08 | Leo→ZCode | 🔧 代理模型口径修正 | Flash 档非下架而是**不支持图片输入**（看图报错）——子代理 Flash 做代码活 OK，看图环节（素材目验/contact 审图）禁派 Flash 归主会话/美术线 Codex；另立规：禁用 general-purpose 内置代理（不吃项目 Flash 锁，烧大档额度，两次切帧卡被 Leo 截停） |
+| 2026-09-08 | Codex（art） | ✅ T45 A范围竖拳右向两张样张候选完成 | 甲/乙 `atk_right_2` 右向竖立闭合拳 pilot 已生成并规格化；`frames2of2`、`allHardGatesPass`、`check_delivery` 全 PASS，commit `5c52db3` 已推送；候选仅供 Leo 目验与 PM 第二道门，正式 runtime 未改，余下 22 张暂不启动。 |
+| 2026-09-08 | Codex（art） → rd | 📤 T45 竖拳 pilot 候选交付（seq=148，5c52db3） | candidate-only；14 路径含 manifest，QA 2/2 PASS、credits=0、runtimeRelease=false、visualReview=pending_Leo、specGate=pending_pm_scan；projbus correlation=`t45-upright-fist-pilot-20260908`。 |
+| 2026-09-08 | Leo → Codex（art） | 🔧 T45 竖拳 pilot 姿势再修正 | 拳头向人物前方再屈一点，并向人物内侧弯一点，以适配后续握刀直刺/直砍；保持甲乙身份、右向、攻击相位、脚位与比例，不画刀。 |
+| 2026-09-08 | Codex（art） | ✅ T45 竖拳 pilot v2 前屈+内收候选完成 | 甲/乙右向 `atk_right_2` 生成 v2；机械门 2/2 PASS，保留 v1 证据，正式 runtime 未改。v2 commit `8954a47` 已推送，待 Leo 视觉确认后再扩展其余 22 张。 |
+| 2026-09-08 | Codex（art） → rd | 📤 T45 竖拳 pilot v2 候选交付（seq=150，8954a47） | candidate-only；13 路径含 manifest，QA 2/2 PASS、credits=0、runtimeRelease=false、visualReview=pending_Leo、specGate=pending_pm_scan；v2 supersedes v1 视觉候选。 |
+| 2026-09-08 | Leo → Codex（art） | 🔧 T45 竖拳修订范围再收窄 | 上版前屈+内收改动过大；本次只改拳头末端，拳头略向前弯、略向人物内侧转，前臂/肘部/上臂不变。Leo 目测通过前不提交、不推送。 |
+| 2026-09-08 | Codex（art） | 🖼️ T45 仅拳头局部候选已生成（本地） | 基于 v1 身体帧生成甲乙右向 `atk_right_2` 仅拳头候选；确定性归一与对照机械门 2/2 PASS。候选留在 `assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_local/`，未提交、未推送、未改 runtime，等待 Leo 目测。 |
+| 2026-09-08 | Codex（art） | 🖼️ T45 仅拳头向内倾斜局部候选已生成（本地未提交） | 甲/乙右向 `atk_right_2` 仅拳头末端再向人物内侧轻倾，前臂/肘部/上臂冻结；包 `assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/`，机械门 2/2 PASS，未提交、未推送、正式 runtime 未改，等待 Leo 目测。 |
+| 2026-09-08 | Leo → Codex（art） | ✅ T45 竖拳 pilot 样张目验通过 | 甲 A 拳头向内、乙 B 拳头向前均确认正确；按 Q2-T45 A 范围放行其余 22 张候选扩展；正式 runtime 仍等 PM 第二道规格门。 |
+| 2026-09-08 | Leo → Codex（art） | ✅ T45 参考图目验通过，暂停扩展 | Leo 指定附件图 `assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_a_reference.png` 合格；原样留档，停止后续生成，未提交、未推送、正式 runtime 未改。 |
+| 2026-09-08 | Leo → Codex（art） | ✅ 通用握持友好拳型定稿 | Leo 通过当前右向角色图并要求主角色/NPC 所有动作优先复用该拳型：闭合拳竖立，拳端沿角色面向方向略向前屈、向躯干中线略向内收，适配刀剑/棍棒握持；张掌/摊掌/受击张臂/死亡放松保留动作语义。 |
+| 2026-09-08 | Codex（art） | 📚 通用拳型规范与提示词已落盘 | 规范写入 `docs/design/01-基础功能/角色帧规范.md` §2.1 与 `docs/design/01-基础功能/美术素材生成流程规范.md` 类别4；通用提示词=`assets/characters/prompts/fist_grip_friendly_v1.txt`；T45 通过图/原始提示词留档于 `assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/`，候选留档，runtime 未改。 |

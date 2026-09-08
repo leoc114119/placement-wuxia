@@ -1,0 +1,27 @@
+{
+  "task": "T45",
+  "scope": "shanzei_a|b × atk_right_2 (right)",
+  "status": "visual_selected_by_Leo_reusable_baseline_hold",
+  "allowedChange": "distal fist only: slight additional inward tilt toward character centerline, closed grip readable as sword/saber hold",
+  "frozen": "forearm, wrist connection, elbow, upper arm, shoulder, torso, identity, clothing, feet, phase, scale, direction",
+  "sourceCandidate": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_local/normalized/*.png",
+  "commit": false,
+  "push": false,
+  "runtimeRelease": false,
+  "visualReview": "selected_by_Leo",
+  "holdReason": "Leo approved attached reference and requested stopping further generation after later outputs became strange",
+  "reusableVisualBaseline": "assets/characters/prompts/fist_grip_friendly_v1.txt",
+  "approvedReferenceLatest": {
+    "path": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/contact/leo_approved_current_fist_reference.png",
+    "source": "Codex native ImageGen output /Users/leochen/.codex/generated_images/01a06f37-6f31-77a3-a9e0-cd919de56beb/exec-ecaf3a40-a224-468e-a905-ce0519806014.png",
+    "sha256": "6cdb81ce3a3a5665168bf9ad1d26caa33573a8b16bdbc2e0669c6711600504f8",
+    "dimensions": [
+      1086,
+      1448
+    ],
+    "mode": "RGB",
+    "visualReview": "selected_by_Leo",
+    "runtimeRelease": false,
+    "note": "Leo 2026-09-08: this fist visual is approved as the reusable grip-friendly baseline."
+  }
+}

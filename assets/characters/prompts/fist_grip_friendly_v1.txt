@@ -1,0 +1,17 @@
+# 通用握持友好拳型 v1 · 2026-09-08 Leo 目验通过
+# 用法：追加到主角或 NPC 的动作帧提示词；身体层仍然不画武器。
+
+【默认拳型】
+所有动作中只要手部语义是闭合拳/握拳，默认采用握持友好拳型：拳头竖立，不做横平拳；拳头末端沿角色面向方向略向前屈，并向角色躯干中线略向内收。拇指与指节朝向形成可接刀柄、剑柄、棍柄的预备握持关系；拳体紧凑、闭合清楚、大小与角色原手一致，腕线自然连续。
+
+【动作与方向】
+角色的“前方”和“内侧”按角色自身朝向与躯干中线理解，不用画面固定左右替代。换向或镜像时保持这两个角色相对关系；动作幅度由目标动作帧决定，拳型只提供握持友好的基础形态。
+
+【锁定项】
+保持角色身份、脸、发型、服装、色板、比例、脚位、身体动作、攻击相位、画布和尺度不变。身体层无武器、无刀柄、无文字、无水印、无额外手指或肢体。
+
+【局部修正模板】
+Edit only the distal closed fist. Keep the wrist connection, forearm, elbow, upper arm, shoulder and the whole body fixed. Rotate or bend the fist slightly forward along the character's facing direction and slightly inward toward the character centerline. Keep one compact closed fist, the same size, outline and skin rendering. Do not add a weapon or handle.
+
+【动作语义例外】
+需要张掌、摊掌、双掌推出、受击张臂或死亡放松的帧，按动作语义保持张掌/放松；不得为了套用拳型把这些动作强行改成闭拳。其余可见闭合拳按本基准执行。

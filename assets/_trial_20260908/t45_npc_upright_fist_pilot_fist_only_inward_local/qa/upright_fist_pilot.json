@@ -1,0 +1,194 @@
+{
+  "task": "T45",
+  "scope": "fist-only inward-tilt local visual candidate",
+  "status": "visual_selected_by_Leo_pending_pm_scan",
+  "frames": {
+    "shanzei_a": {
+      "sourcePath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_local/normalized/shanzei_a_atk_right_2_fist_only_forward_inward.png",
+      "sourceSha256": "569e83fcaad926a775f73c865c4b00217dcb3e753b9b2e1b3e7cf24152cb2404",
+      "sourceShaExpected": "569e83fcaad926a775f73c865c4b00217dcb3e753b9b2e1b3e7cf24152cb2404",
+      "rawPath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/raw/shanzei_a_atk_right_2_fist_only_inward_attempt1.png",
+      "rawSha256": "9c0d3e50e9cc797d2744e9e48c16de715e251a257434c689f061e5c3371f6609",
+      "normalizedPath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/normalized/shanzei_a_atk_right_2_fist_only_inward.png",
+      "normalizedSha256": "4d1b49b55974e8c0d54bd2628fe40090072f4c696997dfa3fb59f079fb723a1f",
+      "sourceMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          53,
+          44,
+          203,
+          300
+        ],
+        "visualWidth": 150,
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 120.22810664745444,
+        "alpha32CentroidY": 167.8759846961275,
+        "borderNonzero": 0,
+        "alpha32Components": 1
+      },
+      "processing": {
+        "rawSize": [
+          1086,
+          1448
+        ],
+        "backgroundPixelsRemoved": 1221267,
+        "cutBBox": [
+          256,
+          206,
+          936,
+          1378
+        ],
+        "scale": 0.21843003412969283,
+        "scaledWidth": 149,
+        "alphaCentroidXLocal": 67.60247588262129,
+        "paste": [
+          52,
+          44
+        ]
+      },
+      "normalizedMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          52,
+          44,
+          201,
+          300
+        ],
+        "visualWidth": 149,
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 119.59652882885214,
+        "alpha32CentroidY": 167.59892840189596,
+        "borderNonzero": 0,
+        "alpha32Components": 1
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "visualHeight256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleComponent": true,
+        "bodySourceShaMatchesExpected": true,
+        "noRuntimeWrite": true
+      },
+      "allHardGatesPass": true
+    },
+    "shanzei_b": {
+      "sourcePath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_local/normalized/shanzei_b_atk_right_2_fist_only_forward_inward.png",
+      "sourceSha256": "436f7579ca664a9d4612494e1e514be506df8d2c839e7f4ba5400224e841ed3e",
+      "sourceShaExpected": "436f7579ca664a9d4612494e1e514be506df8d2c839e7f4ba5400224e841ed3e",
+      "rawPath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/raw/shanzei_b_atk_right_2_fist_only_inward_attempt1.png",
+      "rawSha256": "618fa0c59b19f012a563d5224d55254825ae0369af6f103f9cd9e1a877297415",
+      "normalizedPath": "assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_inward_local/normalized/shanzei_b_atk_right_2_fist_only_inward.png",
+      "normalizedSha256": "a9d934b90ecf74ea137c7c83f48cf0327d8cc178ea293f09bd7240ee7da3347b",
+      "sourceMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          47,
+          44,
+          215,
+          300
+        ],
+        "visualWidth": 168,
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 120.42671018194139,
+        "alpha32CentroidY": 163.0880989428366,
+        "borderNonzero": 0,
+        "alpha32Components": 1
+      },
+      "processing": {
+        "rawSize": [
+          1086,
+          1448
+        ],
+        "backgroundPixelsRemoved": 1128504,
+        "cutBBox": [
+          210,
+          198,
+          969,
+          1387
+        ],
+        "scale": 0.21530698065601345,
+        "scaledWidth": 163,
+        "alphaCentroidXLocal": 72.93935976971981,
+        "paste": [
+          47,
+          44
+        ]
+      },
+      "normalizedMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          47,
+          44,
+          210,
+          300
+        ],
+        "visualWidth": 163,
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 119.94330879372517,
+        "alpha32CentroidY": 163.33971795350024,
+        "borderNonzero": 0,
+        "alpha32Components": 1
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "visualHeight256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleComponent": true,
+        "bodySourceShaMatchesExpected": true,
+        "noRuntimeWrite": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "checks": {
+    "frames2of2": true,
+    "noRuntimeWrites": true,
+    "generationCredits": 0,
+    "visualReview": "selected_by_Leo",
+    "specGate": "pending_pm_scan"
+  }
+}

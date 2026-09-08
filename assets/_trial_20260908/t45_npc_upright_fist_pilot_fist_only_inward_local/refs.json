@@ -1,0 +1,20 @@
+{
+  "task":"T45",
+  "purpose":"local inward-tilt fist-only revision; each reference has one responsibility",
+  "frames": {
+    "shanzei_a_atk_right_2": {
+      "previousCandidate":"assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_local/normalized/shanzei_a_atk_right_2_fist_only_forward_inward.png",
+      "identityAnchor":"assets/_trial_20260906/t45_batch2a_a_right_singleframe_v1_codex_native/normalized/shanzei_a_right.png",
+      "responsibilities":{"previousCandidate":"freeze all pixels except distal right fist; source pose and prior fist treatment","identityAnchor":"identity, face, hair, clothing, palette, proportions"},
+      "forbidden":"forearm/elbow/upper-arm changes, weapon, text, watermark, extra limbs, redesign"
+    },
+    "shanzei_b_atk_right_2": {
+      "previousCandidate":"assets/_trial_20260908/t45_npc_upright_fist_pilot_fist_only_local/normalized/shanzei_b_atk_right_2_fist_only_forward_inward.png",
+      "identityAnchor":"assets/_trial_20260906/t45_batch2a_bright_v8_two_ref_hero_height_codex_native/normalized/shanzei_b_right.png",
+      "responsibilities":{"previousCandidate":"freeze all pixels except distal right fist; source pose and prior fist treatment","identityAnchor":"identity, face, hair, red bandana, clothing, palette, proportions"},
+      "forbidden":"forearm/elbow/upper-arm changes, weapon, text, watermark, extra limbs, redesign"
+    }
+  },
+  "contactSheets":"review only; never used as generation input",
+  "generationInputs":{"shanzei_a":"/Users/leochen/.codex/generated_images/01a06f37-6f31-77a3-a9e0-cd919de56beb/exec-7b81f0c0-cb47-409b-92b8-c6d0e5e679f5.png","shanzei_b":"/Users/leochen/.codex/generated_images/01a06f37-6f31-77a3-a9e0-cd919de56beb/exec-56c8a1ee-585c-49dc-bd19-2310eef0deb9.png"}
+}
