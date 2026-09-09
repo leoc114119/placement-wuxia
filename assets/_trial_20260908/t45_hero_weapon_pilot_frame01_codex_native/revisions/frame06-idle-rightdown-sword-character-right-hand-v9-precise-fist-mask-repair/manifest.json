@@ -1,0 +1,66 @@
+{
+  "task": "T45",
+  "revision": "frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "scope": "hero battle_idle_rightdown precise fist mask repair from enlarged Leo annotation: remove blue over-mask and fill red missed central block",
+  "sourceBody": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/body/battle_idle_rightdown_fist_out_v9.png",
+  "sourceBodySha256": "105141f05a18ec3bbd4b70fad2f2dd1ff480baec174d15359ee50197863661de",
+  "sourceBodyRuntimeFrame": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+  "sourceBodyRuntimeFrameSha256": "2c0984b6a0064bc487e08786c8bfbd167a621a2315b621592f5ec1e1a5b13655",
+  "bodyCorrection": "candidate body only: rotate screen-left projected fist (character right hand) +15° outward; rest frozen",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+  "sourceWeaponLayerSha256": "3e4524c1a0bac0d1abe56f8d7c7e53c35b191d110427da9d0377b47175e50208",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/normalized/hero_sword_held_idle_rightdown_character_right_hand_v9.png",
+  "weaponSha256": "f8653f8d4cf0529eb7850dd956964c40344711d884007283d9e2f4a5f72661dd",
+  "runtimeConsumption": "preview_only_until_FE_anchor_integration",
+  "runtimeWeaponSource": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+  "runtimeWeaponSourceSha256": "3e4524c1a0bac0d1abe56f8d7c7e53c35b191d110427da9d0377b47175e50208",
+  "handSemantic": "character_right_hand_screen_left_fist",
+  "fistCenterPx": {
+    "x": 102.15625,
+    "y": 195.359375
+  },
+  "fistCenterLockPixelPx": {
+    "x": 102,
+    "y": 195
+  },
+  "gripPointSourceAfterMirrorPx": {
+    "x": 74.0,
+    "y": 185.0
+  },
+  "rotationPivotAfterMirrorPx": {
+    "x": 64.0,
+    "y": 195.0
+  },
+  "translationPx": [
+    43,
+    -13
+  ],
+  "gripPointTargetPx": {
+    "x": 102.0,
+    "y": 195.0
+  },
+  "angleDeg": -75.0,
+  "layerOrder": "weapon_front",
+  "maskPolicy": "complete_fist_cutout_top_with_annotated_blue_removed_red_filled_repair",
+  "gripWindowRadiusPx": 0,
+  "mask": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/occlusion_masks/hero_idle_rightdown_screen_left_fist_v9.png",
+  "maskSha256": "edaadc786bb0d806879ecf888d5f01930d3538f12f51e1be83518ed9097d8e43",
+  "calibration": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/calibration/frame06_idle_rightdown_character_right_hand_v9.json",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/qa/pilot_idle_rightdown_character_right_hand_v9.json",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/contact/hero_idle_rightdown_sword_character_right_hand_v9_2x.png",
+  "fistZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/contact/idle_rightdown_character_right_fist_center_zoom_v9.png",
+  "compositeNative": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/composites_native/hero_idle_rightdown_sword_character_right_hand_triptych_v9.png",
+  "compositeTwoX": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/composites_2x/hero_idle_rightdown_sword_character_right_hand_triptych_v9_2x.png",
+  "formalRuntimeTouched": false,
+  "status": "candidate_only",
+  "supersedes": [
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v7-complete-fist-top/manifest.json",
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v6-grip-point-lock/manifest.json"
+  ],
+  "note": "Leo enlarged-mask correction: blue boxed area was over-masked and is removed; red boxed central area was missed and is filled. Central handle leak is fully occluded; upper-right annotated sword-handle area remains visible. Runtime untouched."
+}

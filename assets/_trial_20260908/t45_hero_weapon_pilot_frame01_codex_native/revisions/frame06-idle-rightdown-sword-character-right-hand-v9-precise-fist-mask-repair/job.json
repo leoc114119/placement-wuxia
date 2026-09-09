@@ -1,0 +1,22 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame06-idle-rightdown-precise-fist-mask-repair",
+  "revision": "frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "sourceRevision": "frame06-idle-rightdown-sword-character-right-hand-v8-precise-fist-grip-window",
+  "method": "deterministic enlarged-mask repair from Leo annotation: remove native blue over-mask x101..112,y181..186; fill native red missed block x97..103,y189..197; body, grip point (+43,-13), and -75° sword angle unchanged; no generation or runtime write",
+  "layerOrder": "weapon_front",
+  "maskPolicy": "complete_fist_cutout_top_with_annotated_blue_removed_red_filled_repair",
+  "gripWindowRadiusPx": 0,
+  "checks": "allMachineChecksPass=true; weaponInFistBefore=112; weaponInFistAfter=0; blueRemovedPixels=40; redFilledPixels=63; runtime untouched; generation credits 0",
+  "nextGate": "Leo visual review of enlarged repaired mask, then PM spec scan",
+  "formalRuntimeTouched": false,
+  "supersedes": [
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v7-complete-fist-top/manifest.json",
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v6-grip-point-lock/manifest.json"
+  ]
+}
