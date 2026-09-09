@@ -820,6 +820,7 @@
 | 2026-09-09 | Codex（art） | 🧪 T45 frame13 `atk_rightdown_2` sword -15 左4px v10 候选完成 | v9 整层精确平移 `(-2,0)`，柄心 `(197,202)`，原拳/`-15°`/weapon-front 保持，零生成、runtime 未改、机械门全过；候选路径 `assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame13-atk-rightdown-2-sword-character-right-hand-v10-left4/`，待 Leo 目验。 |
 | 2026-09-09 | Leo → Codex（art） | ✅ T45 frame13 `atk_rightdown_2` v10 视觉通过 | Leo 确认 `-15°` 左移4px版本可用；PM 第二道规格门仍待办，runtime 不动。 |
 | 2026-09-09 | Codex（art） | 📦 T45 frame13 `atk_rightdown_2` v10 候选归档 | `visualReview=selected_by_Leo`、`specGate=pending_pm_scan`、`runtimeRelease=false`；交接 `tasks/handoff/T45-hero-weapon-pilot-frame13-atk-rightdown-2-v10-left4-20260909.md`，v1→v10 证据保留。 |
+| 2026-09-09 | Codex（art） → PM2/rd | 📤 T45 主角武器右系三向候选请求第二道规格门 | right/rightup/rightdown 共 13 张候选均已 Leo 视觉通过；统一请求 PM2 核对握点、角度、层序、遮罩、命名与候选/runtime 状态，未越级写入正式 runtime。 |
 | 2026-09-09 | Leo → Codex（art） | 🔧 T45 frame13 `atk_rightdown_2` 剑位右移 | 保持 `-15°`，整剑向右移动 `2px`；原拳冻结。 |
 | 2026-09-09 | Codex（art） | 🧪 T45 frame13 `atk_rightdown_2` sword -15 右2px v8 候选完成 | v7 整层精确平移 `(+2,0)`，柄心 `(201,202)`，原拳/`-15°`/weapon-front 保持，零生成、runtime 未改、机械门全过；候选路径 `assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame13-atk-rightdown-2-sword-character-right-hand-v8-right2/`，待 Leo 目验。 |
 | 2026-09-09 | Leo → Codex（art） | ✅ T45 frame12 `atk_rightdown_1` v2 视觉通过 | Leo 确认垂直插入右手拳心版本可用；PM 第二道规格门仍待办，runtime 不动。 |
