@@ -1,0 +1,32 @@
+{
+  "schema": "weapon-model-meta (方案 v2.1 §2.2)",
+  "generatedBy": "tools/generate_hero_weapon_runtime_v2.mjs",
+  "models": {
+    "hero-sword-right": {
+      "src": "assets/characters/hero/weapon45/models/hero_sword_model_right.png",
+      "sha256": "0a48010c0dbe4bb6e957b20ab4e388b714ebc44593cb979fb500dff941a0ce5d",
+      "canvasPx": [
+        88,
+        80
+      ],
+      "gripPointModelPx": [
+        23,
+        57
+      ],
+      "angleDefinition": "screen-clockwise-positive-y-down"
+    },
+    "hero-sword-left": {
+      "src": "assets/characters/hero/weapon45/models/hero_sword_model_left.png",
+      "sha256": "2a5b6adcc7f0ef0667301e5767c4a5cf838f15c8b9b204885cf116dc47129cc2",
+      "canvasPx": [
+        88,
+        80
+      ],
+      "gripPointModelPx": [
+        23,
+        57
+      ],
+      "angleDefinition": "screen-clockwise-positive-y-down"
+    }
+  }
+}
