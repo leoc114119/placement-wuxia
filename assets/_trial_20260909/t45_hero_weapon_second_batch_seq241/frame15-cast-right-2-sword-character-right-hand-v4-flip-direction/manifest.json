@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame15-cast-right-2-sword-character-right-hand-v4-flip-direction",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "sourceBody": "assets/characters/hero/battle45/cast_right_2.png",
+  "sourceWeaponLayer": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame15-cast-right-2-sword-character-right-hand-v3-correct-hand/normalized/hero_sword_angle135_cast_right_2_v3_correct_hand.png",
+  "candidate": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame15-cast-right-2-sword-character-right-hand-v4-flip-direction/normalized/hero_sword_angle_minus45_cast_right_2_v4.png",
+  "contact": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame15-cast-right-2-sword-character-right-hand-v4-flip-direction/contact/hero_cast_right_2_sword_angle_minus45_v4.png",
+  "qa": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame15-cast-right-2-sword-character-right-hand-v4-flip-direction/qa/pilot_cast_right_2_angle_minus45_v4.json",
+  "formalRuntimeTouched": false,
+  "supersedes": "frame15-cast-right-2-sword-character-right-hand-v3-correct-hand"
+}

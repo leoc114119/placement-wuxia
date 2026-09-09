@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame15-cast-right-2-sword-character-right-hand-v4-flip-direction",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "180° direction flip to screen angle -45° about fixed handle; no generation/body edit/runtime write",
+  "nextGate": "PM second specification gate; runtime remains untouched"
+}

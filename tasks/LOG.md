@@ -828,6 +828,7 @@
 | 2026-09-09 | Codex（art） → PM2/rd | 📤 seq=232 左系派生真实交付 | 交付实际产物+SHA+ledger+manifest+QA，候选与 runtime 状态显式声明。 |
 | 2026-09-09 | PM2/rd → Codex（art） | 📋 seq=241 第二批任务单 | 第二批=右系补漏 atk_right_1/walk_rightdown_2 + 持刀施法9帧；左系镜像；manifest扩至48行；零生成、逐帧闭环，cast_right_1先行。 |
 | 2026-09-09 | Codex（art） | 🧪 seq=241 frame14 `cast_right_1` 持刀候选初版完成 | 右手=画面左上举拳，拳心约 `(93,113)`；v9 剑层零生成摆放，屏幕角 `-25°`，weapon-front+精准举拳遮罩；严格停在首帧，待 Leo 目验+PM 数据门。 |
+| 2026-09-09 | Codex（art） | 🧪 seq=241 frame15 `cast_right_2` 持刀候选完成 | 右手=画面左侧拳，拳心 `(70,178)`；按挥砍左下动作语义，剑屏幕角 `+135°`，weapon-front+精准举拳遮罩，零生成、runtime 未改、机械门全过；候选路径 `assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame15-cast-right-2-sword-character-right-hand-v1-angle135/`，待 Leo 目验。 |
 | 2026-09-09 | Leo → Codex（art） | ✅ seq=241 frame14 `cast_right_1` 视觉通过 | Leo 确认首帧持刀候选可用；PM 数据门仍待办，runtime 不动。 |
 | 2026-09-09 | Codex（art） | 📦 seq=241 frame14 `cast_right_1` 候选归档 | `visualReview=selected_by_Leo`、`specGate=pending_pm_scan`、`runtimeRelease=false`；交接 `tasks/handoff/T45-second-batch-frame14-cast-right-1-v1-20260909.md`，严格按逐帧闭环停点。 |
 | 2026-09-09 | Leo → Codex（art） | 🔧 T45 frame13 `atk_rightdown_2` 剑位右移 | 保持 `-15°`，整剑向右移动 `2px`；原拳冻结。 |
@@ -849,3 +850,11 @@
 | 09-09 | ZCode（美术PM2） | ✅ 左系 13 帧派生门检 PASS=主角武器素材 DoR 全达成（0d312f67） | 数据门 13/13（SHA/字段/遮罩贴身）；镜像剑层 frame01-06 与右系翻转 Jaccard=1.000 逐位一致；frame07-13 右源为裁剪框像素恒等不适用→方向/形状目验=七张全部正确镜像；手部钢泄漏全帧 0~5px AA；零生成；落地账 v1.4=双系 26/26 DoR 全达成，研发窗口两项可发卡（敌型接线+主角武器接线） |
 | 09-09 | PM2 → art | 📋 主角武器第二批任务单 | 施法 cast 9 帧（Leo 裁施法必须持刀，为批次重点）+补漏 atk_right_1/walk_rightdown_2 +全部左系镜像=22 行新增，manifest 扩 48 行；零生成占位剑；逐帧小闭环从 cast_right_1 起步；rd→art seq=241 |
 | 2026-09-09 | Codex（arch）→ rd | 📐 主角武器层接线方案完成（seq=242） | 定版：候选资源导入 `assets/characters/hero/weapon45/`，运行时按 `spriteKey/bodySrc` 取已定位 240×320 覆盖层；不二次旋转，tight-fist 遮罩离屏 `destination-out` 预合成。首批 26 帧覆盖 idle6/walk10/atk10；4 个消费帧缺口暂空手诊断，待第二批补齐。方案=`docs/design/03-战斗系统/主角武器层接线实施方案.md`。 |
+| 2026-09-09 | Leo → Codex（art） | 🔧 seq=241 frame15 `cast_right_2` 剑位修正 | 初版平移符号错误，冻结 `+135°` 动作角，柄心改回 `(69.57,177.59)`。 |
+| 2026-09-09 | Codex（art） | 🧪 seq=241 frame15 `cast_right_2` correct-placement v2 候选完成 | 平移 `(-23,+65)`，拳心 `(70,178)` 与柄心对齐；weapon-front+精准左拳遮罩，零生成、runtime 未改、机械门全过，候选待 Leo 目验。 |
+| 2026-09-09 | Leo → Codex（art） | 🔧 seq=241 frame15 `cast_right_2` 右手归属纠正 | 仍接错手；正确角色右手是画面右侧前伸拳，冻结 `+135°` 动作角。 |
+| 2026-09-09 | Codex（art） | 🧪 seq=241 frame15 `cast_right_2` correct-hand v3 候选完成 | 右侧拳心 `(200,209)`，整层 `(+130,+31)`，柄心 `(199.57,208.59)`；weapon-front+精准右拳遮罩，零生成、runtime 未改、机械门全过；候选路径 `assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame15-cast-right-2-sword-character-right-hand-v3-correct-hand/`，待 Leo 目验。 |
+| 2026-09-09 | Leo → Codex（art） | 🔧 seq=241 frame15 `cast_right_2` 剑方向翻转 | `+135°` 方向反了；冻结右侧拳心/动作轴，剑翻转180°为 `-45°`。 |
+| 2026-09-09 | Codex（art） | 🧪 seq=241 frame15 `cast_right_2` flipped-direction v4 候选完成 | v3 绕拳心翻转 `180°`，屏幕角 `-45°`，柄心 `(199.57,208.59)`；weapon-front+精准右拳遮罩，零生成、runtime 未改、机械门全过；候选路径 `assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame15-cast-right-2-sword-character-right-hand-v4-flip-direction/`，待 Leo 目验。 |
+| 2026-09-09 | Leo → Codex（art） | ✅ seq=241 frame15 `cast_right_2` v4 视觉通过 | Leo 确认翻转方向后可用；PM 数据门仍待办，runtime 不动。 |
+| 2026-09-09 | Codex（art） | 📦 seq=241 frame15 `cast_right_2` v4 候选归档 | `visualReview=selected_by_Leo`、`specGate=pending_pm_scan`、`runtimeRelease=false`；交接 `tasks/handoff/T45-second-batch-frame15-cast-right-2-v4-flip-direction-20260909.md`。 |

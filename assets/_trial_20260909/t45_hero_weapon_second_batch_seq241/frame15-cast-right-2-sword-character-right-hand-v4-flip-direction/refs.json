@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame15-cast-right-2-sword-character-right-hand-v4-flip-direction",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/cast_right_2.png",
+      "role": "frozen cast_right_2 body",
+      "sha256": "a722a1d9faace4cff02d23cac99904b7567c3497dad24e9afb34c5bcb533989a"
+    },
+    {
+      "path": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame15-cast-right-2-sword-character-right-hand-v3-correct-hand/normalized/hero_sword_angle135_cast_right_2_v3_correct_hand.png",
+      "role": "frame15 v3 correct-hand sword layer",
+      "sha256": "8040538a6cc85d0b711a9de22973e9b4881a27b5981ac4fdb54dcc149fb6d65e"
+    }
+  ]
+}
