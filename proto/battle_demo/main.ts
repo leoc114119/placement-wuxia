@@ -5,12 +5,12 @@
 import type { CombatantInput } from '../../types';
 import { SPEED_FACTOR } from '../../config/battle';
 import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, TRIAL_FX_01, TRIAL_FX_FALLBACK_DURATION_MS, hexToWorld, type BattleClip } from '../../config/battle-hex';
-import { WEAPON_LAYER_PROFILES } from '../../config/hero-weapon-layer'; // 【T28】武器层只读配置（runtime 路径，零候选引用）
+import { WEAPON_LAYER_PROFILES, WEAPON_MODELS } from '../../config/hero-weapon-layer'; // 【T29】武器层只读配置 v2（runtime 路径，零候选引用）
 import { FxCastGate, FxPlayer, findCastSnapshot, loadFxFramePack, type FxFramePack } from '../../ui/fx-player';
 import { WfBannerPlayer, bannerTierOf } from '../../ui/wf-banner';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
-  compositeWeaponLayer,
+  composeWeaponModelLayer,
   createView,
   drawFrame,
   enqueueHit,
@@ -96,6 +96,9 @@ async function loadAssets(): Promise<BattleHexAssets> {
   const q = (p: string): string => `${p}?v=${BATTLE_HEX_RES.ver}`;
   const frameJobs: Array<Promise<unknown>> = [];
   const frames = new Map<string, LegacyFrameStrip | DirectionalFrameStore>();
+  // 【T29 武器层 R2】directional 身体帧 路径→位图 旁路表（武器合成需按标定行 bodyFrame 取身体帧；
+  // 与 frames 库同一次 loadImg Promise 产出，零二次解码）
+  const bodyByPath = new Map<string, ImgLike | null>();
   // 【六向帧接线 §3.1】loader 按 profile 预解码：legacy=帧号条；directional=clip×facing×ordinal
   // 网格（sharedSrc 共用帧按 clip 键只解码一次——die_common 六向共用）
   for (const [kind, profile] of Object.entries(BATTLE_HEX_RES.profiles)) {
@@ -112,14 +115,26 @@ async function loadAssets(): Promise<BattleHexAssets> {
       for (const clip of Object.keys(profile.clipCounts) as BattleClip[]) {
         const shared = profile.sharedSrc[clip];
         if (shared !== undefined) {
-          jobs.push(loadImg(q(shared)).then((im) => [clip, im] as const)); // 共用帧：键=clip 名
+          jobs.push(
+            // 共用帧：键=clip 名
+            loadImg(q(shared)).then((im) => {
+              bodyByPath.set(shared, im);
+              return [clip, im] as const;
+            }),
+          );
           continue;
         }
         const count = profile.clipCounts[clip];
         for (const facing of FACINGS) {
           for (let o = 1; o <= count; o++) {
             const key = frameKeyOf(clip, facing, o);
-            jobs.push(loadImg(q(profile.frameSrc(clip, facing, o))).then((im) => [key, im] as const));
+            const src = profile.frameSrc(clip, facing, o);
+            jobs.push(
+              loadImg(q(src)).then((im) => {
+                bodyByPath.set(src, im);
+                return [key, im] as const;
+              }),
+            );
           }
         }
       }
@@ -139,11 +154,12 @@ async function loadAssets(): Promise<BattleHexAssets> {
   //（缺帧 warn 记路径+null 槽，draw 跳帧）；join 进同一 Promise.all——全部 settle 后主循环才启动，
   // 首个特功演出必然晚于预载完成。missing 非空仅告警（DoD 口径：素材 40/40 必须全在，缺=FAIL）。
   const fxJobs = loadFxFramePack(TRIAL_FX_01, (url) => loadImg(q(url)));
-  // 【T28 武器层】WEAPON_LAYER_PROFILES 预载 + 有遮挡帧离屏预合成（方案 §2.2/§4.3，每帧一次性非逐帧开销）：
-  // 剑层/蒙版缺失或合成不可用=该帧空手降级 + `hero-weapon-missing:<bodyFrame>` 写 preview asset gate；
-  // 与 directional 帧同一 Promise.all 汇合——主循环启动前武器层必就绪（首帧即有剑）。
-  // 蒙版=导入期机械转换的 alpha 蒙版（alpha=候选灰度 luma），compositeWeaponLayer 单离屏
-  // source-over→destination-out 完成，全链零 getImageData（file:// 污染 canvas/wx 开销——禁用）。
+  // 【T29 武器层 R2】方案 v2.1 §4：两张剑模+全部消费 mask 与帧预解码并行；合成在主 Promise.all
+  // 之后做（composeWeaponModelLayer 需身体帧位图）。每行产出「身体+旋转剑模+挖拳」一体离屏层
+  //（weaponLayerRectOf 动态尺寸，剑可越出身体 240×320——§4.2）；模型/蒙版/身体任一缺失或合成
+  // 不可用=该行空手降级 + `hero-weapon-missing:<bodyFrame>` 写 preview asset gate（格式沿 T28
+  // 已验收：bodyFrame 即该帧唯一键）。蒙版=导入期机械转换的 alpha 蒙版（alpha=候选灰度 luma），
+  // 全链零 getImageData（file:// 污染 canvas/wx 逐像素开销——T24 红线禁用）。
   const weaponLayers: WeaponLayerImages = new Map();
   const weaponDiag: WeaponLayerDiag = { missing: new Set(), gaps: new Set() };
   const offscreen: OffscreenCanvasFactory = (w, h) => {
@@ -153,52 +169,61 @@ async function loadAssets(): Promise<BattleHexAssets> {
     const cctx = c.getContext('2d');
     return cctx ? { canvas: c, ctx: cctx } : null;
   };
-  const weaponJobs: Array<Promise<void>> = [];
-  for (const [spriteKey, framesMap] of Object.entries(WEAPON_LAYER_PROFILES)) {
-    const store = new Map<string, ImgLike | null>();
-    weaponLayers.set(spriteKey, store);
-    for (const [bodySrc, wf] of framesMap) {
-      weaponJobs.push(
-        (async () => {
-          try {
-            const wImg = await loadImg(q(wf.weaponSrc));
-            if (!wImg) {
-              store.set(bodySrc, null);
-              weaponDiag.missing.add(bodySrc);
-              return;
-            }
-            if (wf.occlusion.kind === 'none') {
-              store.set(bodySrc, wImg); // 无遮挡帧：剑层原图直出（同矩形叠画）
-              return;
-            }
-            const mImg = await loadImg(q(wf.occlusion.maskSrc));
-            const composed = compositeWeaponLayer(wImg, mImg, offscreen);
-            if (!composed) {
-              store.set(bodySrc, null);
-              weaponDiag.missing.add(bodySrc); // 蒙版缺失/合成不可用=空手降级（禁画整剑盖拳）
-              return;
-            }
-            store.set(bodySrc, composed);
-          } catch (e) {
-            // 任何单帧武器装配异常不拖垮启动（防御；正常路径不触达）
-            store.set(bodySrc, null);
-            weaponDiag.missing.add(bodySrc);
-            console.warn(`[battle_demo][weaponLayer] ${bodySrc} 装配失败空手降级`, e);
-          }
-        })(),
-      );
+  const modelJobs = Object.entries(WEAPON_MODELS).map(
+    async ([key, meta]) => [key, await loadImg(q(meta.src))] as const,
+  );
+  const maskPathSet = new Set<string>();
+  for (const framesMap of Object.values(WEAPON_LAYER_PROFILES)) {
+    for (const row of framesMap.values()) {
+      if (row.maskPath) maskPathSet.add(row.maskPath);
     }
   }
-  const [env, topbar, plaque, facePairs, iconPairs, fxResult] = await Promise.all([
+  const maskJobs = [...maskPathSet].map(async (p) => [p, await loadImg(q(p))] as const);
+  const [env, topbar, plaque, facePairs, iconPairs, fxResult, modelPairs, maskPairs] = await Promise.all([
     loadImg(q(BATTLE_HEX_RES.env)),
     loadImg(q(BATTLE_HEX_RES.topbar)),
     loadImg(q(BATTLE_HEX_RES.plaque)),
     Promise.all(faceJobs),
     Promise.all(iconJobs),
     fxJobs,
+    Promise.all(modelJobs), // 【T29】两张剑模
+    Promise.all(maskJobs), // 【T29】消费 mask 全集
     ...frameJobs,
-    ...weaponJobs,
   ]);
+  // 【T29 武器层 R2】帧/模/蒙版全部就绪 → 逐行离屏合成（每行一次性，非逐帧开销；§4.2/§4.3）：
+  // ① source-over 旋转剑模（绕模型握点，§4.1）→ ② destination-out 挖拳 → ③ 身体入层
+  //（weapon_front=destination-over 垫剑下 / body_front=source-over 盖剑上）。任一输入缺失=该行
+  // 空手降级（禁画无孔整剑盖拳），missing 汇入 asset gate；任何单行异常不拖垮启动（防御）。
+  const modelImgOf = new Map(modelPairs as Array<readonly [string, ImgLike | null]>);
+  const maskImgOf = new Map(maskPairs as Array<readonly [string, ImgLike | null]>);
+  for (const [spriteKey, framesMap] of Object.entries(WEAPON_LAYER_PROFILES)) {
+    const store = new Map<string, ImgLike | null>();
+    weaponLayers.set(spriteKey, store);
+    for (const [bodySrc, row] of framesMap) {
+      try {
+        const meta = WEAPON_MODELS[row.weaponModelKey];
+        const body = bodyByPath.get(bodySrc) ?? null;
+        const model = modelImgOf.get(meta.src) ?? null;
+        const mask = row.maskPath ? maskImgOf.get(row.maskPath) ?? null : null;
+        if (!body || !model || (row.maskPath && !mask)) {
+          store.set(bodySrc, null);
+          weaponDiag.missing.add(bodySrc); // 禁画无孔整剑盖拳——缺任一输入即空手
+          continue;
+        }
+        const composed = composeWeaponModelLayer(body, model, meta, mask, row, offscreen);
+        if (!composed) {
+          store.set(bodySrc, null);
+          weaponDiag.missing.add(bodySrc);
+          continue;
+        }
+        store.set(bodySrc, composed);
+      } catch (e) {
+        store.set(bodySrc, null);
+        weaponDiag.missing.add(bodySrc);
+        console.warn(`[battle_demo][weaponLayer] ${bodySrc} 装配失败空手降级`, e);
+      }
+    }
+  }
   fxPack = fxResult.pack; // 【T25】预载完成的帧包带出（.then 里重建播放器实例）
   const ctrlFaces: BattleHexAssets['ctrlFaces'] = { tuoguan: null, jiasu: null, flee: null };
   for (const [key, img] of facePairs) {
@@ -231,8 +256,8 @@ async function loadAssets(): Promise<BattleHexAssets> {
       }
     }
   }
-  // 【T28 武器层】已配置 26 帧缺剑层/蒙版 → 固定格式写 gate（任务卡需求表 #6；未覆盖四缺口不算
-  // 资源债——第二批素材到前显式空手，仅 console 开发诊断，见主循环 gap 汇报）。
+  // 【T29 武器层 R2】已配置 48 行缺模型/蒙版/身体/合成失败 → 固定格式写 gate（48 行覆盖下应为
+  // 恒空=资源全量在位；未配置状态帧不算资源债，仅 console 开发诊断，见主循环 gap 汇报）。
   for (const bodySrc of weaponDiag.missing) {
     assetGateState.ok = false;
     assetGateState.failures.push(weaponMissingTag(bodySrc));
@@ -592,12 +617,12 @@ function loop(t: number): void {
       enqueueHit(view, e.actorId ?? '', e.targetId, DMG.missText, false);
     }
   }
-  // 【T28 武器层】第一批未覆盖帧缺口开发诊断（渲染侧 weaponLayerOf 记录 → 此处逐条 console 一次；
-  // 显式空手=方案 §1 裁决，禁借邻帧/镜像/静态剑；不算资源债不进 asset gate）
+  // 【T29 武器层】未配置状态帧缺口开发诊断（渲染侧 weaponLayerOf 记录 → 此处逐条 console 一次；
+  // 48 行覆盖 idle/walk/atk/cast 后恒空=防御性诊断；显式空手禁借邻帧/镜像，不算资源债不进 asset gate）
   for (const gap of assets.weaponDiag?.gaps ?? []) {
     if (!weaponGapReported.has(gap)) {
       weaponGapReported.add(gap);
-      console.warn(`[battle_demo][weaponLayer 缺口] ${gap} 第一批未覆盖：显式空手（第二批素材到后同接口补齐）`);
+      console.warn(`[battle_demo][weaponLayer 缺口] ${gap} 48 行未覆盖（防御诊断）：显式空手`);
     }
   }
   updateView(view, snap, dt, W, H);

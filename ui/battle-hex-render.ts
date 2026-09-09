@@ -52,8 +52,10 @@ import {
 } from '../config/battle-hex';
 import {
   WEAPON_LAYER_PROFILES,
-  type WeaponLayerFrame,
-} from '../config/hero-weapon-layer'; // 【T28】武器层只读配置（键=spriteKey→bodySrc；渲染只消费不算数值）
+  WEAPON_MODELS,
+  type HeroWeaponRuntimeRow,
+  type WeaponModelMeta,
+} from '../config/hero-weapon-layer'; // 【T29】武器层只读配置 v2（键=bodyFrame→48 行标定行+全局剑模；渲染只消费不算数值）
 
 // ============ 资源与视图类型 ============
 
@@ -85,21 +87,26 @@ export function frameKeyOf(clip: BattleClip, facing: BattleFacingHex, ordinal: n
   return `${clip}|${facing}|${ordinal}`;
 }
 
-// ============ T28 · hero 武器层（方案 §2.2/§3/§4：零旋转叠画 + 离屏预合成挖拳孔） ============
+// ============ T29 · hero 武器层 R2（方案 v2.1：独立剑模+48 行标定运行时合成+越界离屏层） ============
 
-/** 武器层图片包：spriteKey → bodySrc → 预合成成品（有遮挡=离屏挖孔缓存；无遮挡=剑层原图；
- * 缺图=null 走空手降级）。宿主 loader 一次性产出（main.ts preview；wx 侧接入时同式）。 */
+/** 身体源画布（六向 battle45 帧统一 240×320；mask 同为 body-space 240×320） */
+export const WEAPON_BODY_CANVAS = { w: 240, h: 320 } as const;
+/** 越界安全边距（§4.2：layer = body rect ∪ rotated sword bounds + 2px safety margin） */
+export const WEAPON_LAYER_MARGIN_PX = 2;
+
+/** 武器合成层图片包：spriteKey → bodyFrame → 离屏合成成品（身体+旋转剑模+挖拳一体层；
+ * 缺=null 走空手降级）。宿主 loader 一次性产出（main.ts preview；wx 侧接入时同式）。 */
 export type WeaponLayerImages = Map<string, Map<string, ImgLike | null>>;
 
-/** 武器层开发诊断（渲染只记录不弹窗；宿主消费——missing=已配置但缺图，进 preview asset gate；
- * gaps=第一批未覆盖帧（walk_rightdown_2/walk_leftdown_2/atk_right_1/atk_left_1 等）显式空手，
- * 仅 console 留痕禁进资源门——第二批素材到后同接口补齐即消失）。 */
+/** 武器层开发诊断（渲染只记录不弹窗；宿主消费——missing=已配置但模型/蒙版/身体缺图或合成失败，
+ * 进 preview asset gate；gaps=已消费状态帧未配置标定行（48 行覆盖下恒空，防御性诊断）显式空手，
+ * 仅 console 留痕禁进资源门）。 */
 export interface WeaponLayerDiag {
   missing: Set<string>;
   gaps: Set<string>;
 }
 
-/** preview asset gate 缺层条目固定格式（任务卡需求表 #6） */
+/** preview asset gate 缺层条目固定格式（沿用 T28 已验收格式：键=bodyFrame 身体帧路径=该帧唯一键） */
 export function weaponMissingTag(bodySrc: string): string {
   return `hero-weapon-missing:${bodySrc}`;
 }
@@ -109,29 +116,97 @@ export interface OffscreenCanvasFactory {
   (width: number, height: number): { canvas: ImgLike; ctx: CanvasRenderingContext2D } | null;
 }
 
-/** 有遮挡帧离屏预合成（方案 §4.3，loader 每帧一次性，非逐帧开销）：
- * 蒙版为导入期机械转换的 alpha 蒙版（alpha=候选灰度 luma=erase 强度，见 tools/import_hero_weapon_layer.mjs
- * ②'）→ 离屏 240×320 一次性：source-over 剑层 → globalCompositeOperation='destination-out' 绘蒙版 →
- * 拳区挖孔缓存。全链零 getImageData（file:// 预览图片污染 canvas、wx 端逐像素开销——T24 同根源禁用）。
- * 红线：禁 destination-in（语义相反）；蒙版禁直接 source-over 上主 canvas；主 canvas 零 rotate/translate。
- * 任一环不可用（工厂/蒙版缺失）返回 null=该帧空手降级（禁画整剑盖拳）。 */
-export function compositeWeaponLayer(
-  weapon: ImgLike,
+/** 旋转后剑模 bounds（§4.1 纯几何，body-space 源坐标）：模型外接框四角绕**模型握点**旋转（旋转中心
+ * 固定=模型握点，非 bbox 中心），屏幕角口径 0°=右/+Y 向下/顺时针正（与 canvas rotate 同构：x'=dx·cosθ−dy·sinθ，
+ * y'=dx·sinθ+dy·cosθ；禁 atan2 数学坐标口径），再平移到拳心 fistCenterPx。 */
+export function rotatedSwordBounds(
+  angleDeg: number,
+  canvasPx: readonly [number, number],
+  gripPointModelPx: readonly [number, number],
+  fistCenterPx: readonly [number, number],
+): { x1: number; y1: number; x2: number; y2: number } {
+  const a = (angleDeg * Math.PI) / 180;
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  let x1 = Infinity;
+  let y1 = Infinity;
+  let x2 = -Infinity;
+  let y2 = -Infinity;
+  for (const [cx, cy] of [
+    [0, 0],
+    [canvasPx[0], 0],
+    [0, canvasPx[1]],
+    [canvasPx[0], canvasPx[1]],
+  ]) {
+    const dx = cx - gripPointModelPx[0];
+    const dy = cy - gripPointModelPx[1];
+    const rx = dx * cos - dy * sin;
+    const ry = dx * sin + dy * cos;
+    if (rx < x1) x1 = rx;
+    if (rx > x2) x2 = rx;
+    if (ry < y1) y1 = ry;
+    if (ry > y2) y2 = ry;
+  }
+  return { x1: fistCenterPx[0] + x1, y1: fistCenterPx[1] + y1, x2: fistCenterPx[0] + x2, y2: fistCenterPx[1] + y2 };
+}
+
+/** 越界离屏层矩形（§4.2，源空间）：layer = body rect(0,0,240,320) ∪ rotated bounds + 2px margin。
+ * 红线：剑允许越出身体 240×320 矩形（出招长剑完整显示，Leo 验收点）；主场景只保留屏幕边界 clip，
+ * 禁加角色矩形 clip——本矩形即合成层全体，贴回主 canvas 仅一次 source-over drawImage（drawPieces）。 */
+export function weaponLayerRectOf(
+  row: HeroWeaponRuntimeRow,
+  model: WeaponModelMeta,
+): { x: number; y: number; w: number; h: number } {
+  const b = rotatedSwordBounds(row.angleDeg, model.canvasPx, model.gripPointModelPx, row.fistCenterPx);
+  const x = Math.min(0, b.x1) - WEAPON_LAYER_MARGIN_PX;
+  const y = Math.min(0, b.y1) - WEAPON_LAYER_MARGIN_PX;
+  const w = Math.max(WEAPON_BODY_CANVAS.w, b.x2) - x + WEAPON_LAYER_MARGIN_PX;
+  const h = Math.max(WEAPON_BODY_CANVAS.h, b.y2) - y + WEAPON_LAYER_MARGIN_PX;
+  return { x, y, w, h };
+}
+
+/** 武器合成层离屏合成（§4.1/§4.2/§4.3，loader 每行一次性非逐帧开销；s=1 源空间，贴回时统一缩放）：
+ * 单离屏 layer（weaponLayerRectOf 尺寸）依次：
+ * ① source-over 绘制旋转后剑模——translate(fist−layerOffset)→rotate(angleDeg·π/180)→
+ *    drawImage(model, −模型握点×1, 88, 80)（§4.1 公式；旋转中心=模型握点，左右模独立加载零 mirror）；
+ * ② 有 mask 行 destination-out 绘制 body-space mask（挖拳；α=导入期机械转换 luma，全链零 getImageData）；
+ * ③ 身体入层：weapon_front=destination-over（身体垫于挖孔剑下——拳部洞口露出身体，§4.3）；
+ *    body_front=source-over（完整身体盖于剑上）。与「先画身体再叠挖孔剑」逐像素同构（alpha 合成等价）。
+ * 红线：destination-in 禁用（语义相反）；destination-out/over 仅在离屏 layer 执行；主 canvas 零
+ * rotate/translate/gCO。工厂缺失返回 null=该帧空手降级（禁画无孔整剑盖拳）。 */
+export function composeWeaponModelLayer(
+  body: ImgLike,
+  model: ImgLike,
+  meta: WeaponModelMeta,
   mask: ImgLike | null,
+  row: HeroWeaponRuntimeRow,
   factory: OffscreenCanvasFactory | null,
-  width = 240,
-  height = 320,
 ): ImgLike | null {
-  if (!mask || !factory) return null;
-  const compSurf = factory(width, height);
-  if (!compSurf) return null;
-  const cctx = compSurf.ctx;
+  if (!factory) return null;
+  const rect = weaponLayerRectOf(row, meta);
+  const surf = factory(Math.ceil(rect.w), Math.ceil(rect.h));
+  if (!surf) return null;
+  const cctx = surf.ctx;
   cctx.globalCompositeOperation = 'source-over';
-  cctx.drawImage(weapon as unknown as CanvasImageSource, 0, 0, width, height);
-  cctx.globalCompositeOperation = 'destination-out';
-  cctx.drawImage(mask as unknown as CanvasImageSource, 0, 0, width, height);
+  cctx.save();
+  cctx.translate(row.fistCenterPx[0] - rect.x, row.fistCenterPx[1] - rect.y);
+  cctx.rotate((row.angleDeg * Math.PI) / 180);
+  cctx.drawImage(
+    model as unknown as CanvasImageSource,
+    -meta.gripPointModelPx[0],
+    -meta.gripPointModelPx[1],
+    meta.canvasPx[0],
+    meta.canvasPx[1],
+  );
+  cctx.restore();
+  if (mask) {
+    cctx.globalCompositeOperation = 'destination-out';
+    cctx.drawImage(mask as unknown as CanvasImageSource, -rect.x, -rect.y, WEAPON_BODY_CANVAS.w, WEAPON_BODY_CANVAS.h);
+  }
+  cctx.globalCompositeOperation = row.layerOrder === 'weapon_front' ? 'destination-over' : 'source-over';
+  cctx.drawImage(body as unknown as CanvasImageSource, -rect.x, -rect.y, WEAPON_BODY_CANVAS.w, WEAPON_BODY_CANVAS.h);
   cctx.globalCompositeOperation = 'source-over'; // 复位防泄漏
-  return compSurf.canvas;
+  return surf.canvas;
 }
 
 /** directional 选帧 → 实际身体帧路径（sharedSrc 共用帧按 clip 键；与 loader 预载路径同一 profile 单一出处）。
@@ -144,33 +219,32 @@ export function directionalBodySrcOf(
   return profile.sharedSrc[sel.clip] ?? profile.frameSrc(sel.clip, facing, sel.ordinal);
 }
 
-/** 武器层解析（drawPieces 专用纯查询）：返回 null=本帧无武器；命中返回配置+预合成图。
- * - jump/dead 显式无武器（方案 §4.5，不查询不诊断——调用方保证）；
- * - 已配置但图片缺失 → diag.missing（宿主写 asset gate）；
- * - idle/walk/atk/cast 未配置帧（第一批四缺口）→ diag.gaps（空手+开发诊断，禁借帧/镜像/静态剑）；
- * - 非 hero spriteKey（NPC/敌方）天然查无条目=无 overlay（本卡禁给敌方建武器层）。
- * profile 默认=冻结的 WEAPON_LAYER_PROFILES（生产路径零注入）；显式传参=第二批 cast 等扩展缝
- *（新增资源+manifest 行+map 项即生效，渲染零改动——方案 §3/§5）与测试注入共用同一接口。 */
+/** 武器层解析（drawPieces 专用纯查询）：返回 null=本帧无武器；命中返回标定行+剑模元数据+合成层。
+ * - jump/dead 显式无武器（方案 v2.1 §5，不查询不诊断——调用方保证）；
+ * - 已配置但合成层缺失 → diag.missing（宿主写 asset gate）；
+ * - idle/walk/atk/cast 未配置标定行（48 行覆盖下恒空，防御）→ diag.gaps（空手+开发诊断，禁借帧/镜像）；
+ * - 非 hero spriteKey（NPC/敌方）查无 profile=无 overlay 且零诊断（本卡禁给敌方建武器层）。
+ * profile 默认=冻结的 WEAPON_LAYER_PROFILES（生产路径零注入）；显式传参=测试注入共用同一接口。 */
 export function weaponLayerOf(
   actor: { spriteKey: string },
   bodySrc: string,
   images: WeaponLayerImages | undefined,
   diag: WeaponLayerDiag | undefined,
-  profile: Readonly<Record<string, ReadonlyMap<string, WeaponLayerFrame>>> = WEAPON_LAYER_PROFILES,
-): { frame: WeaponLayerFrame; img: ImgLike } | null {
+  profile: Readonly<Record<string, ReadonlyMap<string, HeroWeaponRuntimeRow>>> = WEAPON_LAYER_PROFILES,
+): { row: HeroWeaponRuntimeRow; model: WeaponModelMeta; layer: ImgLike } | null {
   const map = profile[actor.spriteKey];
   if (!map) return null; // 该 spriteKey 无武器层 profile（NPC/敌方）——无 overlay 且零诊断（本卡禁给敌方建武器层）
-  const frame = map.get(bodySrc) ?? null;
-  if (!frame) {
+  const row = map.get(bodySrc) ?? null;
+  if (!row) {
     if (diag) diag.gaps.add(bodySrc);
     return null;
   }
-  const img = images?.get(actor.spriteKey)?.get(bodySrc) ?? null;
-  if (!img) {
+  const layer = images?.get(actor.spriteKey)?.get(bodySrc) ?? null;
+  if (!layer) {
     if (diag) diag.missing.add(bodySrc);
     return null;
   }
-  return { frame, img };
+  return { row, model: WEAPON_MODELS[row.weaponModelKey], layer };
 }
 
 /** 渲染资源包（加载器分环境实现：wx 侧 M4 接入，preview 侧 DOM loader） */
@@ -185,10 +259,11 @@ export interface BattleHexAssets {
   /** spriteKey → 帧资源库（判别联合，与 config SPRITE_PROFILES 对应：legacy=帧号条 /
    * directional=clip×facing 网格；缺任一帧=null→剪影占位防崩，资源完整性测试另行把关） */
   frames: Map<string, LegacyFrameStrip | DirectionalFrameStore>;
-  /** 【T28 武器层】spriteKey → bodySrc → 预合成成品（可选：不提供=零影响，武器层整体静默关闭）。
-   * 宿主 loader 经 compositeWeaponLayer 一次性产出；绘制与身体同 left/top/w/h，零旋转。 */
+  /** 【T29 武器层 R2】spriteKey → bodyFrame → 离屏合成一体层（身体+旋转剑模+挖拳，越出身体矩形的
+   * weaponLayerRectOf 尺寸；可选：不提供=零影响，武器层整体静默关闭）。
+   * 宿主 loader 经 composeWeaponModelLayer 一次性产出；drawPieces 仅一次 source-over 贴回。 */
   weaponLayers?: WeaponLayerImages;
-  /** 【T28 武器层】开发诊断收集（可选；渲染记录 missing/gaps，宿主消费——missing 进 asset gate） */
+  /** 【T29 武器层】开发诊断收集（可选；渲染记录 missing/gaps，宿主消费——missing 进 asset gate） */
   weaponDiag?: WeaponLayerDiag;
 }
 
@@ -1288,11 +1363,14 @@ function drawPieces(
       ? syGround - h * PIECE.feetBaselineRatio + PIECE.feetOffsetPx - hop
       : syGround - h * PIECE.legacyFeetBaselineRatio + PIECE.feetOffsetPx - hop;
     placed.push({ actor, cx, top, h, w });
-    // 【T28 武器层】hero directional 专属（die 已在上方 continue；jump 显式无武器——方案 §4.5 不查询）。
-    // 铁律：剑层 PNG 已在 240×320 源画布完成定位/角度——与身体同 left/top/w/h 叠画，零 translate/rotate；
-    // layerOrder：body_front=剑先画（身体覆盖其上）/ weapon_front=身体后叠画；HUD/world FX/UI 时序零改（T25/T27）。
-    // 主 canvas 不做任何合成：有遮挡帧的挖拳孔在 loader 离屏预合成缓存上完成（compositeWeaponLayer）。
-    let weapon: { frame: WeaponLayerFrame; img: ImgLike } | null = null;
+    // 【T29 武器层 R2】hero directional 专属（die 已在上方 continue；jump 显式无武器——方案 v2.1 §5 不查询）。
+    // 铁律（§4.2）：剑模旋转+挖拳+身体合成在离屏 layer 完成（loader 每行一次性，composeWeaponModelLayer），
+    // 本处仅按 weaponLayerRectOf 偏移把 layer 一次 source-over 贴回（s=h/320 与身体同 scale，§4.1）——
+    // 剑自然越出身体 240×320 矩形；主 canvas 零 rotate/translate/gCO、零角色矩形 clip（只保留屏幕 clip）。
+    // layerOrder 的上下关系已在 layer 内部实现（weapon_front=destination-over 身体垫挖孔剑下 /
+    // body_front=source-over 身体盖剑上，§4.3）；HUD/world FX/UI 时序零改（T25/T27）。
+    // 合成层缺失（模型/蒙版/身体缺图）=空手降级走身体原路径 + diag.missing（宿主进 asset gate）。
+    let weapon: { row: HeroWeaponRuntimeRow; model: WeaponModelMeta; layer: ImgLike } | null = null;
     if (isDirectional && img && sel && sel.clip !== 'jump') {
       weapon = weaponLayerOf(
         actor,
@@ -1301,10 +1379,11 @@ function drawPieces(
         assets.weaponDiag,
       );
     }
-    if (weapon && weapon.frame.layerOrder === 'body_front') {
-      drawImg(ctx, weapon.img, cx - w / 2, top, w, h); // 与身体同矩形（零旋转）
-    }
-    if (img) {
+    if (weapon) {
+      const rect = weaponLayerRectOf(weapon.row, weapon.model);
+      const s = h / 320;
+      drawImg(ctx, weapon.layer, cx - w / 2 + rect.x * s, top + rect.y * s, rect.w * s, rect.h * s);
+    } else if (img) {
       ctx.save();
       if (!isDirectional && actor.facing === 'left') {
         // legacy 整图翻转（directional 禁 ctx.scale 翻转——六向独立 PNG，§4.1）
@@ -1319,9 +1398,6 @@ function drawPieces(
       ctx.beginPath();
       ctx.ellipse(cx, top + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
       ctx.fill();
-    }
-    if (weapon && weapon.frame.layerOrder !== 'body_front') {
-      drawImg(ctx, weapon.img, cx - w / 2, top, w, h); // weapon_front：身体之上叠画（同矩形零旋转）
     }
   }
   return placed;
