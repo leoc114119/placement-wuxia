@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "exact (+2,+2) translation then pivot rotation to screen angle -160°; no generation, body edit, or runtime write",
+  "nextGate": "PM second specification gate; runtime remains untouched"
+}

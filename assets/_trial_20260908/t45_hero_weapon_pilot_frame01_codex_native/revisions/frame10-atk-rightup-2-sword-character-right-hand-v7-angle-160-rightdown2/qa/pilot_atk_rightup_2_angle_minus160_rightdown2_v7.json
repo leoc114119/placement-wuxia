@@ -1,0 +1,111 @@
+{
+  "task": "T45",
+  "revision": "frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "seq": "hero-weapon-pilot-frame10-atk-rightup-2",
+  "generation": {
+    "credits": 0,
+    "rawImageGeneration": false,
+    "method": "exact (+2,+2) translation then deterministic pivot rotation from frame10 v6"
+  },
+  "body": {
+    "path": "assets/characters/hero/battle45/atk_rightup_2.png",
+    "sha256": "82655a03bab1d27da8321d04b6e750739269e69e687b69c9e244227a7412ae6e",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        48,
+        44,
+        226,
+        300
+      ],
+      "borderNonzero": 0
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v6-angle-150/normalized/hero_sword_angle_minus150_atk_rightup_2_v6.png",
+    "sourceLayerSha256": "00abbbcacc3a929dbdcf8d195c266adf34523d141c5ddb5b59568170ce766c40",
+    "normalizedPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2/normalized/hero_sword_angle_minus160_atk_rightup_2_v7.png",
+    "normalizedSha256": "061f5197865e5671e20271e2255f3f777588951770ebba0321fc02ec32a5b342",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        124,
+        63,
+        228,
+        104
+      ],
+      "borderNonzero": 0
+    },
+    "translationFromV6Px": [
+      2,
+      2
+    ],
+    "rotationAboutNewHandleDeg": 10.0,
+    "screenAngleDeg": -160.0,
+    "handlePivotPx": [
+      212.57368615160715,
+      98.58781573590227
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "screenProjection": "extended upper-right fist in atk_rightup_2",
+    "fistCenterPx": [
+      216.0,
+      96.0
+    ],
+    "handleCenterV6Px": [
+      210.57368615160715,
+      96.58781573590227
+    ],
+    "handleCenterV7Px": [
+      212.57368615160715,
+      98.58781573590227
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "body_front",
+    "maskPolicy": "none"
+  },
+  "composites": {
+    "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2/contact/hero_atk_rightup_2_sword_angle_minus160_v7.png",
+    "fistZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2/contact/atk_rightup_2_angle_minus160_rightdown2_zoom_v7.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "bodyRealAlphaPass": true,
+    "bodyBorderTransparent": true,
+    "weaponCanvasPass": true,
+    "weaponRealAlphaPass": true,
+    "angleMinus160Pass": true,
+    "handleShiftPass": true,
+    "handlePivotPreserved": true,
+    "correctHandPreserved": true,
+    "bodyFrontLayerPass": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  }
+}

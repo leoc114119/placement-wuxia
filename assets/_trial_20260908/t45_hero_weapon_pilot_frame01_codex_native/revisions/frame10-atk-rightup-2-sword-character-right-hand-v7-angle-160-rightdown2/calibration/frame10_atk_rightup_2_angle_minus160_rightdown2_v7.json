@@ -1,0 +1,30 @@
+{
+  "task": "T45",
+  "revision": "frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "sourceRevision": "frame10-atk-rightup-2-sword-character-right-hand-v6-angle-150",
+  "fistCenterPx": [
+    216.0,
+    96.0
+  ],
+  "handleCenterSourcePx": [
+    210.57368615160715,
+    96.58781573590227
+  ],
+  "handleCenterTargetPx": [
+    212.57368615160715,
+    98.58781573590227
+  ],
+  "translationFromV6Px": [
+    2,
+    2
+  ],
+  "rotationAboutNewHandleDeg": 10.0,
+  "screenAngleDeg": -160.0,
+  "layerOrder": "body_front"
+}

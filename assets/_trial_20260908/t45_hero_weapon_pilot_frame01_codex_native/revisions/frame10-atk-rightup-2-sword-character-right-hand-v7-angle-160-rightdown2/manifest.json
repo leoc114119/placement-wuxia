@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "sourceBody": "assets/characters/hero/battle45/atk_rightup_2.png",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v6-angle-150/normalized/hero_sword_angle_minus150_atk_rightup_2_v6.png",
+  "candidate": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2/normalized/hero_sword_angle_minus160_atk_rightup_2_v7.png",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2/contact/hero_atk_rightup_2_sword_angle_minus160_v7.png",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2/qa/pilot_atk_rightup_2_angle_minus160_rightdown2_v7.json",
+  "formalRuntimeTouched": false,
+  "supersedes": "frame10-atk-rightup-2-sword-character-right-hand-v6-angle-150"
+}
