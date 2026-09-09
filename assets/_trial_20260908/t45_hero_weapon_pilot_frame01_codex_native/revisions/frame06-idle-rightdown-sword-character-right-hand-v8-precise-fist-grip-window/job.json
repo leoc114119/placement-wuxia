@@ -1,0 +1,22 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame06-idle-rightdown-precise-fist-grip-window",
+  "revision": "frame06-idle-rightdown-sword-character-right-hand-v8-precise-fist-grip-window",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "sourceRevision": "frame06-idle-rightdown-sword-character-right-hand-v7-complete-fist-top",
+  "method": "deterministic v7 complete fist cutout with only the marked grip-point brown-handle window (radius 3px) opened; body, grip point (+43,-13), and -75° sword angle unchanged; no generation or runtime write",
+  "layerOrder": "weapon_front",
+  "maskPolicy": "complete_fist_cutout_top_with_grip_window",
+  "gripWindowRadiusPx": 3,
+  "checks": "allMachineChecksPass=true; precise fist remains topmost; only 15 marked grip-window weapon pixels are allowed through; runtime untouched; generation credits 0",
+  "nextGate": "Leo visual review of precise fist boundary and visible grip point, then PM spec scan",
+  "formalRuntimeTouched": false,
+  "supersedes": [
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v7-complete-fist-top/manifest.json",
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v6-grip-point-lock/manifest.json"
+  ]
+}

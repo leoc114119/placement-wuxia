@@ -1,0 +1,125 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame06-idle-rightdown-character-right-hand",
+  "revision": "frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "generation": {
+    "credits": 0,
+    "method": "deterministic horizontal mirror, pivot rotation and integer translation of the existing rightdown sword source",
+    "rawImageGeneration": false
+  },
+  "body": {
+    "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/body/battle_idle_rightdown_fist_out_v3.png",
+    "sha256": "105141f05a18ec3bbd4b70fad2f2dd1ff480baec174d15359ee50197863661de",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        48,
+        44,
+        182,
+        300
+      ],
+      "visualWidth": 134,
+      "visualHeight": 256,
+      "borderNonzero": 0
+    },
+    "sourcePath": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+    "sourceSha256": "2c0984b6a0064bc487e08786c8bfbd167a621a2315b621592f5ec1e1a5b13655",
+    "correction": "screen-left projected fist (character right hand) local +15° outward rotation around wrist; body candidate only"
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+    "sourceLayerSha256": "3e4524c1a0bac0d1abe56f8d7c7e53c35b191d110427da9d0377b47175e50208",
+    "normalizedPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/normalized/hero_sword_held_idle_rightdown_character_right_hand_v3.png",
+    "normalizedSha256": "6e8cc416939802741ae930549c78b0e10a66ac4569e601c5db5c64da1c09cbe5",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        38,
+        130,
+        122,
+        221
+      ],
+      "visualWidth": 84,
+      "visualHeight": 91,
+      "borderNonzero": 0
+    },
+    "transform": "horizontal mirror then -92.755° pivot rotation around mirrored grip; upward-left final axis",
+    "translationPx": [
+      38,
+      0
+    ],
+    "angleDeg": -133.62257341251976,
+    "handleCenterSourcePx": [
+      64.0,
+      195.0
+    ],
+    "handleCenterTargetPx": [
+      102.0,
+      195.0
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "screenProjection": "screen-left fist in idle_rightdown",
+    "fistCenterPx": [
+      102.15625,
+      195.359375
+    ],
+    "fistPixels": 23,
+    "gripPointPx": [
+      109.0,
+      193.0
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "weapon_front",
+    "maskPolicy": "precise_fist_overlay",
+    "maskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/occlusion_masks/hero_idle_rightdown_screen_left_fist_v3.png",
+    "maskSha256": "c6160c2517931c86c8ba774a7ba6acb91aed34f09cf03418477b358cf600acaa",
+    "weaponInFistBefore": 101,
+    "weaponInFistAfter": 0
+  },
+  "composites": {
+    "native": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/composites_native/hero_idle_rightdown_sword_character_right_hand_triptych_v3.png",
+    "twoX": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/composites_2x/hero_idle_rightdown_sword_character_right_hand_triptych_v3_2x.png",
+    "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/contact/hero_idle_rightdown_sword_character_right_hand_v3.png",
+    "fistZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/contact/idle_rightdown_character_right_fist_center_zoom_v3.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "bodyAlphaPass": true,
+    "bodyBorderTransparent": true,
+    "weaponCanvasPass": true,
+    "weaponRealAlphaPass": true,
+    "weaponSingleConnectedSilhouette": true,
+    "weaponLengthBandPass": true,
+    "weaponAnglePass": true,
+    "handleCenterPass": true,
+    "weaponFrontPreciseFistOverlay": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  },
+  "note": "Latest Leo direction: sword layer is in front, and only the precise character-right fist mask is restored above it. The screen-left projected fist is the character-right hand in this rightdown pose; it is rotated +15° outward and the mirrored sword axis points upward-left away from the face."
+}

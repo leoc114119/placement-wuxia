@@ -1,0 +1,33 @@
+{
+  "task": "T45",
+  "revision": "frame06-idle-rightdown-sword-character-right-hand-v5-grip-center-face15",
+  "bodyPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v5-grip-center-face15/body/battle_idle_rightdown_fist_out_v5.png",
+  "bodySourcePath": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+  "bodySourceSha256": "2c0984b6a0064bc487e08786c8bfbd167a621a2315b621592f5ec1e1a5b13655",
+  "bodySha256": "105141f05a18ec3bbd4b70fad2f2dd1ff480baec174d15359ee50197863661de",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v5-grip-center-face15/normalized/hero_sword_held_idle_rightdown_character_right_hand_v5.png",
+  "weaponSha256": "f1957645ca6d9de06fd673833130a0b62e47c14ca6f64e0922484b912ba4932f",
+  "handSemantic": "character_right_hand",
+  "screenProjection": "screen-left fist in idle_rightdown",
+  "fistCenterPx": [
+    102.15625,
+    195.359375
+  ],
+  "handleCenterSourcePx": [
+    64.0,
+    195.0
+  ],
+  "handleCenterTargetPx": [
+    102.0,
+    195.0
+  ],
+  "translationPx": [
+    38,
+    0
+  ],
+  "angleDeg": -75.0,
+  "layerOrder": "weapon_front",
+  "maskPolicy": "precise_fist_overlay",
+  "status": "candidate_only",
+  "runtimeRelease": false
+}
