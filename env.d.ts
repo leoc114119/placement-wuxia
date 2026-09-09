@@ -68,3 +68,16 @@ declare module 'node:path' {
   export function join(...parts: string[]): string;
   export function resolve(...parts: string[]): string;
 }
+declare module 'node:child_process' {
+  /** T29：preflight spawn 用例（正常模式+负例自检；vitest 运行时可用，小游戏运行时禁用） */
+  export interface SpawnSyncReturns {
+    status: number | null;
+    stdout: string;
+    stderr: string;
+  }
+  export function spawnSync(
+    command: string,
+    args: string[],
+    options: { cwd?: string; encoding?: string },
+  ): SpawnSyncReturns;
+}
