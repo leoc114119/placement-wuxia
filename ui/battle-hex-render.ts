@@ -48,7 +48,12 @@ import {
   TOPBAR,
   hexToWorld,
   type BattleClip,
+  type DirectionalSpriteProfile,
 } from '../config/battle-hex';
+import {
+  WEAPON_LAYER_PROFILES,
+  type WeaponLayerFrame,
+} from '../config/hero-weapon-layer'; // 【T28】武器层只读配置（键=spriteKey→bodySrc；渲染只消费不算数值）
 
 // ============ 资源与视图类型 ============
 
@@ -80,6 +85,94 @@ export function frameKeyOf(clip: BattleClip, facing: BattleFacingHex, ordinal: n
   return `${clip}|${facing}|${ordinal}`;
 }
 
+// ============ T28 · hero 武器层（方案 §2.2/§3/§4：零旋转叠画 + 离屏预合成挖拳孔） ============
+
+/** 武器层图片包：spriteKey → bodySrc → 预合成成品（有遮挡=离屏挖孔缓存；无遮挡=剑层原图；
+ * 缺图=null 走空手降级）。宿主 loader 一次性产出（main.ts preview；wx 侧接入时同式）。 */
+export type WeaponLayerImages = Map<string, Map<string, ImgLike | null>>;
+
+/** 武器层开发诊断（渲染只记录不弹窗；宿主消费——missing=已配置但缺图，进 preview asset gate；
+ * gaps=第一批未覆盖帧（walk_rightdown_2/walk_leftdown_2/atk_right_1/atk_left_1 等）显式空手，
+ * 仅 console 留痕禁进资源门——第二批素材到后同接口补齐即消失）。 */
+export interface WeaponLayerDiag {
+  missing: Set<string>;
+  gaps: Set<string>;
+}
+
+/** preview asset gate 缺层条目固定格式（任务卡需求表 #6） */
+export function weaponMissingTag(bodySrc: string): string {
+  return `hero-weapon-missing:${bodySrc}`;
+}
+
+/** 离屏 canvas 工厂（环境注入：preview=DOM canvas；wx=wx.createCanvas；测试=spy 假 canvas） */
+export interface OffscreenCanvasFactory {
+  (width: number, height: number): { canvas: ImgLike; ctx: CanvasRenderingContext2D } | null;
+}
+
+/** 有遮挡帧离屏预合成（方案 §4.3，loader 每帧一次性，非逐帧开销）：
+ * 蒙版为导入期机械转换的 alpha 蒙版（alpha=候选灰度 luma=erase 强度，见 tools/import_hero_weapon_layer.mjs
+ * ②'）→ 离屏 240×320 一次性：source-over 剑层 → globalCompositeOperation='destination-out' 绘蒙版 →
+ * 拳区挖孔缓存。全链零 getImageData（file:// 预览图片污染 canvas、wx 端逐像素开销——T24 同根源禁用）。
+ * 红线：禁 destination-in（语义相反）；蒙版禁直接 source-over 上主 canvas；主 canvas 零 rotate/translate。
+ * 任一环不可用（工厂/蒙版缺失）返回 null=该帧空手降级（禁画整剑盖拳）。 */
+export function compositeWeaponLayer(
+  weapon: ImgLike,
+  mask: ImgLike | null,
+  factory: OffscreenCanvasFactory | null,
+  width = 240,
+  height = 320,
+): ImgLike | null {
+  if (!mask || !factory) return null;
+  const compSurf = factory(width, height);
+  if (!compSurf) return null;
+  const cctx = compSurf.ctx;
+  cctx.globalCompositeOperation = 'source-over';
+  cctx.drawImage(weapon as unknown as CanvasImageSource, 0, 0, width, height);
+  cctx.globalCompositeOperation = 'destination-out';
+  cctx.drawImage(mask as unknown as CanvasImageSource, 0, 0, width, height);
+  cctx.globalCompositeOperation = 'source-over'; // 复位防泄漏
+  return compSurf.canvas;
+}
+
+/** directional 选帧 → 实际身体帧路径（sharedSrc 共用帧按 clip 键；与 loader 预载路径同一 profile 单一出处）。
+ * 武器层以此为查询键（config/hero-weapon-layer WEAPON_LAYER_PROFILES 键=spriteKey→bodySrc）。 */
+export function directionalBodySrcOf(
+  profile: { sharedSrc: Readonly<Partial<Record<BattleClip, string>>>; frameSrc: (clip: BattleClip, facing: BattleFacingHex, ordinal: number) => string },
+  sel: DirectionalFrameSel,
+  facing: BattleFacingHex,
+): string {
+  return profile.sharedSrc[sel.clip] ?? profile.frameSrc(sel.clip, facing, sel.ordinal);
+}
+
+/** 武器层解析（drawPieces 专用纯查询）：返回 null=本帧无武器；命中返回配置+预合成图。
+ * - jump/dead 显式无武器（方案 §4.5，不查询不诊断——调用方保证）；
+ * - 已配置但图片缺失 → diag.missing（宿主写 asset gate）；
+ * - idle/walk/atk/cast 未配置帧（第一批四缺口）→ diag.gaps（空手+开发诊断，禁借帧/镜像/静态剑）；
+ * - 非 hero spriteKey（NPC/敌方）天然查无条目=无 overlay（本卡禁给敌方建武器层）。
+ * profile 默认=冻结的 WEAPON_LAYER_PROFILES（生产路径零注入）；显式传参=第二批 cast 等扩展缝
+ *（新增资源+manifest 行+map 项即生效，渲染零改动——方案 §3/§5）与测试注入共用同一接口。 */
+export function weaponLayerOf(
+  actor: { spriteKey: string },
+  bodySrc: string,
+  images: WeaponLayerImages | undefined,
+  diag: WeaponLayerDiag | undefined,
+  profile: Readonly<Record<string, ReadonlyMap<string, WeaponLayerFrame>>> = WEAPON_LAYER_PROFILES,
+): { frame: WeaponLayerFrame; img: ImgLike } | null {
+  const map = profile[actor.spriteKey];
+  if (!map) return null; // 该 spriteKey 无武器层 profile（NPC/敌方）——无 overlay 且零诊断（本卡禁给敌方建武器层）
+  const frame = map.get(bodySrc) ?? null;
+  if (!frame) {
+    if (diag) diag.gaps.add(bodySrc);
+    return null;
+  }
+  const img = images?.get(actor.spriteKey)?.get(bodySrc) ?? null;
+  if (!img) {
+    if (diag) diag.missing.add(bodySrc);
+    return null;
+  }
+  return { frame, img };
+}
+
 /** 渲染资源包（加载器分环境实现：wx 侧 M4 接入，preview 侧 DOM loader） */
 export interface BattleHexAssets {
   env: ImgLike | null;
@@ -92,6 +185,11 @@ export interface BattleHexAssets {
   /** spriteKey → 帧资源库（判别联合，与 config SPRITE_PROFILES 对应：legacy=帧号条 /
    * directional=clip×facing 网格；缺任一帧=null→剪影占位防崩，资源完整性测试另行把关） */
   frames: Map<string, LegacyFrameStrip | DirectionalFrameStore>;
+  /** 【T28 武器层】spriteKey → bodySrc → 预合成成品（可选：不提供=零影响，武器层整体静默关闭）。
+   * 宿主 loader 经 compositeWeaponLayer 一次性产出；绘制与身体同 left/top/w/h，零旋转。 */
+  weaponLayers?: WeaponLayerImages;
+  /** 【T28 武器层】开发诊断收集（可选；渲染记录 missing/gaps，宿主消费——missing 进 asset gate） */
+  weaponDiag?: WeaponLayerDiag;
 }
 
 /** 主角技能钮数据源（弧形四钮置灰判定）——契约类型唯一出处 types.ts（联调 F2 起由快照必选字段供给），
@@ -1143,9 +1241,11 @@ function drawPieces(
     const profile = SPRITE_PROFILES[actor.spriteKey];
     const isDirectional = !!profile && profile.mode === 'directional';
     let img: ImgLike | null = null;
+    let sel: DirectionalFrameSel | null = null; // 【T28】directional 选帧提升（武器层按同一 sel 的身体帧路径查询）
     if (isDirectional) {
       const store = assets.frames.get(actor.spriteKey);
-      img = store && !Array.isArray(store) ? directionalImg(store, directionalFrameOf(view, actor), actor.facingHex) : null;
+      sel = directionalFrameOf(view, actor);
+      img = store && !Array.isArray(store) ? directionalImg(store, sel, actor.facingHex) : null;
     } else {
       const frameState = ma && ma.t < ma.duration ? 'walk' : actor.animState; // 演出期帧组强制 walk（空中不站立滑行）
       const strip = assets.frames.get(actor.spriteKey);
@@ -1188,6 +1288,22 @@ function drawPieces(
       ? syGround - h * PIECE.feetBaselineRatio + PIECE.feetOffsetPx - hop
       : syGround - h * PIECE.legacyFeetBaselineRatio + PIECE.feetOffsetPx - hop;
     placed.push({ actor, cx, top, h, w });
+    // 【T28 武器层】hero directional 专属（die 已在上方 continue；jump 显式无武器——方案 §4.5 不查询）。
+    // 铁律：剑层 PNG 已在 240×320 源画布完成定位/角度——与身体同 left/top/w/h 叠画，零 translate/rotate；
+    // layerOrder：body_front=剑先画（身体覆盖其上）/ weapon_front=身体后叠画；HUD/world FX/UI 时序零改（T25/T27）。
+    // 主 canvas 不做任何合成：有遮挡帧的挖拳孔在 loader 离屏预合成缓存上完成（compositeWeaponLayer）。
+    let weapon: { frame: WeaponLayerFrame; img: ImgLike } | null = null;
+    if (isDirectional && img && sel && sel.clip !== 'jump') {
+      weapon = weaponLayerOf(
+        actor,
+        directionalBodySrcOf(profile as DirectionalSpriteProfile, sel, actor.facingHex),
+        assets.weaponLayers,
+        assets.weaponDiag,
+      );
+    }
+    if (weapon && weapon.frame.layerOrder === 'body_front') {
+      drawImg(ctx, weapon.img, cx - w / 2, top, w, h); // 与身体同矩形（零旋转）
+    }
     if (img) {
       ctx.save();
       if (!isDirectional && actor.facing === 'left') {
@@ -1203,6 +1319,9 @@ function drawPieces(
       ctx.beginPath();
       ctx.ellipse(cx, top + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
       ctx.fill();
+    }
+    if (weapon && weapon.frame.layerOrder !== 'body_front') {
+      drawImg(ctx, weapon.img, cx - w / 2, top, w, h); // weapon_front：身体之上叠画（同矩形零旋转）
     }
   }
   return placed;

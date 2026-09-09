@@ -1,0 +1,764 @@
+{
+  "schema": "hero-weapon45-runtime (14 字段模板同候选 seq=231+232；mask 路径=runtime 相对；增补 weaponPath/weaponSha256/weaponCandidatePath)",
+  "generatedBy": "tools/import_hero_weapon_layer.mjs from 候选 manifest-26rows-seq232.json（seq=231+seq=232；候选溯源只在导入回执，runtime 消费面零候选路径）",
+  "frameCount": 26,
+  "canvas": {
+    "w": 240,
+    "h": 320
+  },
+  "fields": [
+    "frameId",
+    "bodyFrame",
+    "candidateBodySha256",
+    "runtimeBodySha256",
+    "bodyCorrection",
+    "gripPointPx",
+    "fistCenterPx",
+    "angleDeg",
+    "angleDefinition",
+    "layerOrder",
+    "maskPolicy",
+    "occlusionMaskPath+occlusionMaskSha256",
+    "visibleStubs",
+    "status"
+  ],
+  "maskPolicyAlgorithms": {
+    "original_body_alpha_tight_fist_roi": "body-alpha-tight-fist-roi",
+    "original_body_alpha_tight_fist_polygon": "body-alpha-tight-fist-roi",
+    "original_body_alpha_precise_connected_fist": "body-alpha-tight-fist-roi",
+    "precise_original_body_alpha_fist_polygon": "body-alpha-tight-fist-roi",
+    "precise_original_body_alpha_fist": "body-alpha-tight-fist-roi",
+    "complete_fist_cutout_top_with_grip_window": "body-alpha-tight-fist-roi",
+    "none": "none"
+  },
+  "rows": [
+    {
+      "frameId": "frame01",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_right.png",
+      "candidateBodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+      "runtimeBodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        113,
+        196
+      ],
+      "fistCenterPx": [
+        102,
+        206
+      ],
+      "angleDeg": -40,
+      "angleDefinition": "screen angle; 0°=right, -40°=up-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_tight_fist_roi",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_battle_idle_right.png",
+        "sha256": "07754810410f3bb8d7ac40b8b74fe3c962d375b3491e400c04e0e4e7eabae9bc"
+      },
+      "visibleStubs": "none; runtime consumes independent weapon source via WeaponAnchor",
+      "status": "runtime-release",
+      "candidateMaskSha256": "6291bfd584bd8d4c3e915bf0b8a5a0548e5d368222e5d607e461070ab22b5c87",
+      "weaponPath": "weapon_battle_idle_right.png",
+      "weaponSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d"
+    },
+    {
+      "frameId": "frame02",
+      "bodyFrame": "assets/characters/hero/battle45/walk_right_1.png",
+      "candidateBodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+      "runtimeBodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        98.4896717287,
+        206.587805724
+      ],
+      "fistCenterPx": [
+        84,
+        207
+      ],
+      "angleDeg": 0,
+      "angleDefinition": "screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_tight_fist_polygon",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_walk_right_1.png",
+        "sha256": "3990298b72207049de6ea855b7135c1c827a2bc66a4bc0cc93df5dc1cc669a04"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "f13d411c43ee95a7b0666ec6e93bf16853c225815a00b6360f27a9949270c1a1",
+      "weaponPath": "weapon_walk_right_1.png",
+      "weaponSha256": "e4daf035adf788de89c44fadde74ba4cf337b3b7373d8bb001f465b0470bb1d4"
+    },
+    {
+      "frameId": "frame03",
+      "bodyFrame": "assets/characters/hero/battle45/walk_right_2.png",
+      "candidateBodySha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
+      "runtimeBodySha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        115.9814206992,
+        199.7272669341
+      ],
+      "fistCenterPx": [
+        102,
+        204
+      ],
+      "angleDeg": -15,
+      "angleDefinition": "screen angle; 0°=screen-right, -15°=up-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_precise_connected_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_walk_right_2.png",
+        "sha256": "cdc865df32923dfb45427f6c88e1a31fbb666474138391fcc147d1b1b3df5921"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "20f268a866555c2c45f0c40b77f980dca24b14136ab3ad9fd39785d753404395",
+      "weaponPath": "weapon_walk_right_2.png",
+      "weaponSha256": "2761f8ce877e5a960eb18de19126fa74c0657582a801f3c0a64b09753178425e"
+    },
+    {
+      "frameId": "frame04",
+      "bodyFrame": "assets/characters/hero/battle45/atk_right_2.png",
+      "candidateBodySha256": "26e3b5e9e0b876b63363ef137d4b44c565a4190bc268d9fb4c196c71ab5fe000",
+      "runtimeBodySha256": "949e05763f06f03ef3ae7934e156fc26512d7c9ae26e125b1adea92f678e0ecd",
+      "bodyCorrection": "full-frame; Leo-selected fist-up body variant frame04-atk-right-2-fist-up-v1",
+      "gripPointPx": [
+        214,
+        168
+      ],
+      "fistCenterPx": [
+        203.0731707317,
+        177.6422764228
+      ],
+      "angleDeg": -40,
+      "angleDefinition": "screen angle; 0°=screen-right, -40°=up-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist_polygon",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_atk_right_2.png",
+        "sha256": "b9dd8222dab2c18d51e16d11503a2de6e332ee85471d128adad96dbe3349812c"
+      },
+      "visibleStubs": "preview right-edge crop accepted; runtime consumes independent source",
+      "status": "runtime-release",
+      "candidateMaskSha256": "62a9f1c4713c3e2f76f1c1252e446b685e187b47af21fc1f7a88c3bdf672adbe",
+      "weaponPath": "weapon_atk_right_2.png",
+      "weaponSha256": "8f419afc3d10b6970bd6f6b13e250b0021f415b9731ca2bf8d68a737ecefe9f7"
+    },
+    {
+      "frameId": "frame05",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_rightup.png",
+      "candidateBodySha256": "84da13aea03fadea7d363befe7fbe073aa554c164bb4c1710125a5534b0faf66",
+      "runtimeBodySha256": "84da13aea03fadea7d363befe7fbe073aa554c164bb4c1710125a5534b0faf66",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        189,
+        190
+      ],
+      "fistCenterPx": [
+        178.1052631579,
+        204.5
+      ],
+      "angleDeg": -40,
+      "angleDefinition": "screen angle; 0°=screen-right, -40°=up-right, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_battle_idle_rightup.png",
+        "sha256": "a7bc5c6df599fef0eca16351ca53edc9b7489b6d16edba866b6a68ca4b915220"
+      },
+      "visibleStubs": "right-edge preview crop accepted; runtime consumes independent source",
+      "status": "runtime-release",
+      "candidateMaskSha256": "4829e6c71040eacba021dfd1bb8cdfb3cac496cc3ebe56423006cb09e8e9db31",
+      "weaponPath": "weapon_battle_idle_rightup.png",
+      "weaponSha256": "ae500aef1a9921c06373f7bd4ff144c8be24548433d8379999faee410c83ca57"
+    },
+    {
+      "frameId": "frame06",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+      "candidateBodySha256": "105141f05a18ec3bbd4b70fad2f2dd1ff480baec174d15359ee50197863661de",
+      "runtimeBodySha256": "2c0984b6a0064bc487e08786c8bfbd167a621a2315b621592f5ec1e1a5b13655",
+      "bodyCorrection": "local; screen-left projected fist +15° outward; candidate body only",
+      "gripPointPx": [
+        102,
+        195
+      ],
+      "fistCenterPx": [
+        102.15625,
+        195.359375
+      ],
+      "angleDeg": -75,
+      "angleDefinition": "screen angle; 0°=screen-right, -75°=up-left, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "complete_fist_cutout_top_with_grip_window",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_battle_idle_rightdown.png",
+        "sha256": "e6c12023c2143e6d921728fa1734edd2a0ce134575aa49e503ac5e07cacd5165"
+      },
+      "visibleStubs": "upper-right annotated handle segment intentionally visible",
+      "status": "runtime-release",
+      "candidateMaskSha256": "edaadc786bb0d806879ecf888d5f01930d3538f12f51e1be83518ed9097d8e43",
+      "weaponPath": "weapon_battle_idle_rightdown.png",
+      "weaponSha256": "f8653f8d4cf0529eb7850dd956964c40344711d884007283d9e2f4a5f72661dd"
+    },
+    {
+      "frameId": "frame07",
+      "bodyFrame": "assets/characters/hero/battle45/walk_rightup_1.png",
+      "candidateBodySha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1",
+      "runtimeBodySha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        178.5736861516,
+        186.5878157359
+      ],
+      "fistCenterPx": [
+        181,
+        189
+      ],
+      "angleDeg": -90,
+      "angleDefinition": "screen angle; -90°=vertical up, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "none",
+      "weaponPath": "weapon_walk_rightup_1.png",
+      "weaponSha256": "8f7dadcdc1cab263ffdc8d4d5e1bef78f9ab0f2891018f01f994348a109ed55a"
+    },
+    {
+      "frameId": "frame08",
+      "bodyFrame": "assets/characters/hero/battle45/walk_rightup_2.png",
+      "candidateBodySha256": "1e65c48d8a0ac271244b1beb1103a33ceace4653fd4885381ed4019afa62e421",
+      "runtimeBodySha256": "1e65c48d8a0ac271244b1beb1103a33ceace4653fd4885381ed4019afa62e421",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        186.5736861516,
+        189.5878157359
+      ],
+      "fistCenterPx": [
+        189,
+        192
+      ],
+      "angleDeg": -90,
+      "angleDefinition": "screen angle; -90°=vertical up, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "none",
+      "weaponPath": "weapon_walk_rightup_2.png",
+      "weaponSha256": "a358789e80f4ba1e43bc8ff63233c583460d9859d1130e4987dca9b63a22e190"
+    },
+    {
+      "frameId": "frame09",
+      "bodyFrame": "assets/characters/hero/battle45/atk_rightup_1.png",
+      "candidateBodySha256": "dbe19b78988688563633d3530c41b874be3ca48746cb1a14a4bce06793c3a431",
+      "runtimeBodySha256": "dbe19b78988688563633d3530c41b874be3ca48746cb1a14a4bce06793c3a431",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        157.5736861516,
+        183.5878157359
+      ],
+      "fistCenterPx": [
+        164,
+        181
+      ],
+      "angleDeg": -90,
+      "angleDefinition": "screen angle; -90°=vertical up, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "none",
+      "weaponPath": "weapon_atk_rightup_1.png",
+      "weaponSha256": "556cf39b84b9604d2c2bdebb32f6f00c728d488f45fa1da4389ef6122752b194"
+    },
+    {
+      "frameId": "frame10",
+      "bodyFrame": "assets/characters/hero/battle45/atk_rightup_2.png",
+      "candidateBodySha256": "82655a03bab1d27da8321d04b6e750739269e69e687b69c9e244227a7412ae6e",
+      "runtimeBodySha256": "82655a03bab1d27da8321d04b6e750739269e69e687b69c9e244227a7412ae6e",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        212.5736861516,
+        98.5878157359
+      ],
+      "fistCenterPx": [
+        216,
+        96
+      ],
+      "angleDeg": -160,
+      "angleDefinition": "screen angle; -160°=left-up shallow, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "none",
+      "weaponPath": "weapon_atk_rightup_2.png",
+      "weaponSha256": "061f5197865e5671e20271e2255f3f777588951770ebba0321fc02ec32a5b342"
+    },
+    {
+      "frameId": "frame11",
+      "bodyFrame": "assets/characters/hero/battle45/walk_rightdown_1.png",
+      "candidateBodySha256": "ee53392e0bb82b09db23bbdb99a5a97a9f0a4b674f8078972ff30fc33de1f331",
+      "runtimeBodySha256": "ee53392e0bb82b09db23bbdb99a5a97a9f0a4b674f8078972ff30fc33de1f331",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        82,
+        207
+      ],
+      "fistCenterPx": [
+        82,
+        206
+      ],
+      "angleDeg": 35,
+      "angleDefinition": "screen angle; +35°=forward down-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_walk_rightdown_1.png",
+        "sha256": "ff95063c9b870cc298a83a0ad04e4328689238247e30ec5e55f3b93ba49210df"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "508914e54b734877e8f846569e6fade47ea2aa3432c4e34e20a8015cb0e6b149",
+      "weaponPath": "weapon_walk_rightdown_1.png",
+      "weaponSha256": "a58b0d91c23c99183a80187b51ecc05c7d4338de73ef942d800b83dd24da96ac"
+    },
+    {
+      "frameId": "frame12",
+      "bodyFrame": "assets/characters/hero/battle45/atk_rightdown_1.png",
+      "candidateBodySha256": "8660390de33c5130d1ceb0f986881d3eb457e14a132002ee41cb51f74fcf722c",
+      "runtimeBodySha256": "8660390de33c5130d1ceb0f986881d3eb457e14a132002ee41cb51f74fcf722c",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        121,
+        186
+      ],
+      "fistCenterPx": [
+        121,
+        186
+      ],
+      "angleDeg": -90,
+      "angleDefinition": "screen angle; -90°=vertical up, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_atk_rightdown_1.png",
+        "sha256": "6d15785acf669675f7d9a34d9aa96e9c27625dd6d68f1b1b3be43aa635e4ef16"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "a9f58d9fbcf7eef778246ea61f3667beda6dcae69470108f123e7cba782173ca",
+      "weaponPath": "weapon_atk_rightdown_1.png",
+      "weaponSha256": "2a655c13ce6d8884c836d97bcdb8c08ee2306bcf68b8eb34399d212331db185f"
+    },
+    {
+      "frameId": "frame13",
+      "bodyFrame": "assets/characters/hero/battle45/atk_rightdown_2.png",
+      "candidateBodySha256": "8d27698792df7bd0d45bbde2dd034995c61ab4e8937a53a6fa63942c54db646c",
+      "runtimeBodySha256": "8d27698792df7bd0d45bbde2dd034995c61ab4e8937a53a6fa63942c54db646c",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        197,
+        202
+      ],
+      "fistCenterPx": [
+        201,
+        200
+      ],
+      "angleDeg": -15,
+      "angleDefinition": "screen angle; -15°=up-right shallow, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_atk_rightdown_2.png",
+        "sha256": "8fb5e5e29abffeda40e819853bf6491ad79a7dfacbc23c8bc94eeab104824e68"
+      },
+      "visibleStubs": "none",
+      "status": "runtime-release",
+      "candidateMaskSha256": "513c5e19f61a6fa0edbcb5505991082e9d7fda76db5debcc05e672fc0c0af19d",
+      "weaponPath": "weapon_atk_rightdown_2.png",
+      "weaponSha256": "fbab3dd75d8519e1a4b58aab6d610dc3d0a5e90bf00d6704a37de3fe98dfbc7a"
+    },
+    {
+      "frameId": "frame01_left",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_left.png",
+      "candidateBodySha256": "36e3d52a6d5afda24e57880bff355d706aa3b44c8a212d5af7f0b071a9f7b8c0",
+      "runtimeBodySha256": "36e3d52a6d5afda24e57880bff355d706aa3b44c8a212d5af7f0b071a9f7b8c0",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        126,
+        196
+      ],
+      "fistCenterPx": [
+        137,
+        206
+      ],
+      "angleDeg": 40,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_tight_fist_roi",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_battle_idle_left.png",
+        "sha256": "214ee770bca162e28378f244a7b750065d206211c62220a2543c43394bc4964b"
+      },
+      "visibleStubs": "none; runtime consumes independent weapon source via WeaponAnchor; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "b6cae26b2a46b0ab458b03b6ffced727fc5920cbe030bc011a422ea21a010478",
+      "weaponPath": "weapon_battle_idle_left.png",
+      "weaponSha256": "709204e10a5f77b0bb4313fa2ad69714fa6cb3274fe51cc7637f0f92642c627a"
+    },
+    {
+      "frameId": "frame02_left",
+      "bodyFrame": "assets/characters/hero/battle45/walk_left_1.png",
+      "candidateBodySha256": "9354a76b78637a0f2ad0c15d4b7091177410ecee46e37156662b718bc34f57d5",
+      "runtimeBodySha256": "9354a76b78637a0f2ad0c15d4b7091177410ecee46e37156662b718bc34f57d5",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        140.510328,
+        206.587805724
+      ],
+      "fistCenterPx": [
+        155,
+        207
+      ],
+      "angleDeg": 0,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_tight_fist_polygon",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_walk_left_1.png",
+        "sha256": "5f57016ddbf20d1ee10f17e64e94d080a640eea38590d0ae2d86120189a43e41"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "0fbba919f47eb26af8d345f3a73d917517d756ff161bb186ff58fd37be7c80ac",
+      "weaponPath": "weapon_walk_left_1.png",
+      "weaponSha256": "2ee4095dc66f818ac77ef3c8f72eddac481f48966993bf8ca4e77a3ea2539081"
+    },
+    {
+      "frameId": "frame03_left",
+      "bodyFrame": "assets/characters/hero/battle45/walk_left_2.png",
+      "candidateBodySha256": "d092901b0549c29aead4ac04a48616b91b7b04d8e1c0c9a2537ff6d5b531ffd3",
+      "runtimeBodySha256": "d092901b0549c29aead4ac04a48616b91b7b04d8e1c0c9a2537ff6d5b531ffd3",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        123.018579,
+        199.7272669341
+      ],
+      "fistCenterPx": [
+        137,
+        204
+      ],
+      "angleDeg": 15,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_precise_connected_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_walk_left_2.png",
+        "sha256": "ea18d08d21d1ae0b237ab2f67350c302c3d940aff0b35f10cde86d6ff2eef547"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "7de5131a14163474c213a55ac7e6d09cae65d64f3191fa61d043b501ae666dd4",
+      "weaponPath": "weapon_walk_left_2.png",
+      "weaponSha256": "d3ef47c0f212c13b6d8a39e1db37293d94e9c7b75fae01784b9c377315e631aa"
+    },
+    {
+      "frameId": "frame04_left",
+      "bodyFrame": "assets/characters/hero/battle45/atk_left_2.png",
+      "candidateBodySha256": "ae240ecd3fed63372ed607aca20afb305595d839f0da353a496491c252d6459e",
+      "runtimeBodySha256": "579837bd2ac49cac6f8e97fd31a441340450b0a79fe1065ecd23ca848a65f084",
+      "bodyCorrection": "full-frame; Leo-selected fist-up body variant frame04-atk-right-2-fist-up-v1; left candidate is deterministic horizontal mirror",
+      "gripPointPx": [
+        25,
+        168
+      ],
+      "fistCenterPx": [
+        35.926829,
+        177.6422764228
+      ],
+      "angleDeg": 40,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist_polygon",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_atk_left_2.png",
+        "sha256": "01d3ed61a8a9c905593185af51dfe6333cdd98c4cece924ad39babc4c3bacfdd"
+      },
+      "visibleStubs": "preview right-edge crop accepted; runtime consumes independent source; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "ea73d27344ec43b725a985696e08f6c408f6f43f96e69037ff1e0b81f8d0f02b",
+      "weaponPath": "weapon_atk_left_2.png",
+      "weaponSha256": "c08def30a29aef0bf75b5c663838214addfbc205f11e308b68b908f16ad1deb6"
+    },
+    {
+      "frameId": "frame05_left",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_leftup.png",
+      "candidateBodySha256": "20a058551d74b0205e70234d5c5347906b188d26ecdb6cbd5b6a5a55d828c411",
+      "runtimeBodySha256": "20a058551d74b0205e70234d5c5347906b188d26ecdb6cbd5b6a5a55d828c411",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        50,
+        190
+      ],
+      "fistCenterPx": [
+        60.894737,
+        204.5
+      ],
+      "angleDeg": 40,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_battle_idle_leftup.png",
+        "sha256": "ec910f0cb23ab0972410173cb8659227d7afb823ad0f7af240b3805c97cfb5f8"
+      },
+      "visibleStubs": "right-edge preview crop accepted; runtime consumes independent source; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "ab7aad6ab0a5cd7e024382f58af065dd2a43e6d291cd3e7f2eccc5a6a9b9bee1",
+      "weaponPath": "weapon_battle_idle_leftup.png",
+      "weaponSha256": "d3953b4b377a51c3afadefcfb79e855d053ddf0f168cd24fcd62424c4475656c"
+    },
+    {
+      "frameId": "frame06_left",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_leftdown.png",
+      "candidateBodySha256": "727d3b1a8f110af29aad78704dbf095a35cfd65e889b5c3459124d3492d072c1",
+      "runtimeBodySha256": "317c660d7e76b87198da809cc2f00d445aace990a0c9d4cc7380c06b0f2d4965",
+      "bodyCorrection": "local; screen-left projected fist +15° outward; candidate body only; left candidate is deterministic horizontal mirror",
+      "gripPointPx": [
+        137,
+        195
+      ],
+      "fistCenterPx": [
+        136.84375,
+        195.359375
+      ],
+      "angleDeg": 75,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "complete_fist_cutout_top_with_grip_window",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_battle_idle_leftdown.png",
+        "sha256": "e4e91382aa675a237f2d1165cba684b5905120f5b1388a92b9985511ba55e324"
+      },
+      "visibleStubs": "upper-right annotated handle segment intentionally visible; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "256a885c22e933e025b18ff8b92f0a97ea1ba9d8ae4ee588bdf3cb10571d43d7",
+      "weaponPath": "weapon_battle_idle_leftdown.png",
+      "weaponSha256": "465fcd4a41092cb452865833073c2ccb53b9b5c7842c7370455d2568f0943051"
+    },
+    {
+      "frameId": "frame07_left",
+      "bodyFrame": "assets/characters/hero/battle45/walk_leftup_1.png",
+      "candidateBodySha256": "b8e176cfddae9b33fda245f6d8931e11fb5b7fab087f28a915088bd7ff9a1cbd",
+      "runtimeBodySha256": "b8e176cfddae9b33fda245f6d8931e11fb5b7fab087f28a915088bd7ff9a1cbd",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        60.426314,
+        186.5878157359
+      ],
+      "fistCenterPx": [
+        58,
+        189
+      ],
+      "angleDeg": 90,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "none",
+      "weaponPath": "weapon_walk_leftup_1.png",
+      "weaponSha256": "97e0d55e4fc8adbe62eaac21215affadb306e76745d07d8775d4bffba5ad0010"
+    },
+    {
+      "frameId": "frame08_left",
+      "bodyFrame": "assets/characters/hero/battle45/walk_leftup_2.png",
+      "candidateBodySha256": "85218afa207493862ffa3b463cd54dca16a707316bf2d3064ded8091632f187b",
+      "runtimeBodySha256": "85218afa207493862ffa3b463cd54dca16a707316bf2d3064ded8091632f187b",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        52.426314,
+        189.5878157359
+      ],
+      "fistCenterPx": [
+        50,
+        192
+      ],
+      "angleDeg": 90,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "none",
+      "weaponPath": "weapon_walk_leftup_2.png",
+      "weaponSha256": "f4d6a884f605f1e05a79bc4eae8ac5953e71a958e371b87ac9d17dbb5bb6ec9d"
+    },
+    {
+      "frameId": "frame09_left",
+      "bodyFrame": "assets/characters/hero/battle45/atk_leftup_1.png",
+      "candidateBodySha256": "85d0aadb365fe3f0fc21b288c0443cc27c7b4abdfee6ff5fbe070f74d52b1b60",
+      "runtimeBodySha256": "85d0aadb365fe3f0fc21b288c0443cc27c7b4abdfee6ff5fbe070f74d52b1b60",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        81.426314,
+        183.5878157359
+      ],
+      "fistCenterPx": [
+        75,
+        181
+      ],
+      "angleDeg": 90,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "none",
+      "weaponPath": "weapon_atk_leftup_1.png",
+      "weaponSha256": "8613452d5acd252ee24b5d96c172eef632283e16aeacf8a20abd9933ec425d16"
+    },
+    {
+      "frameId": "frame10_left",
+      "bodyFrame": "assets/characters/hero/battle45/atk_leftup_2.png",
+      "candidateBodySha256": "7db1f7298c749e36cb91e91d5d2fa68a7eae11c13cccbaf3f67d4e16966ab5c6",
+      "runtimeBodySha256": "7db1f7298c749e36cb91e91d5d2fa68a7eae11c13cccbaf3f67d4e16966ab5c6",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        26.426314,
+        98.5878157359
+      ],
+      "fistCenterPx": [
+        23,
+        96
+      ],
+      "angleDeg": 160,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "none",
+      "weaponPath": "weapon_atk_leftup_2.png",
+      "weaponSha256": "5df17354597a1394e029ac4936b3984e10906844d229bbe4821a744ef2050fdb"
+    },
+    {
+      "frameId": "frame11_left",
+      "bodyFrame": "assets/characters/hero/battle45/walk_leftdown_1.png",
+      "candidateBodySha256": "324ceda831a3db9966dbb2aba200539784cc818b0a1ceb06965a8930792d91de",
+      "runtimeBodySha256": "324ceda831a3db9966dbb2aba200539784cc818b0a1ceb06965a8930792d91de",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        157,
+        207
+      ],
+      "fistCenterPx": [
+        157,
+        206
+      ],
+      "angleDeg": -35,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_walk_leftdown_1.png",
+        "sha256": "81b10ca6259aac9438314faec0dd07f387a61ec9901c0c1d33d9d4101cab8973"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "cc7284bc202a08daa999c041a977d42a71f5974998e559750a5505cd8089df65",
+      "weaponPath": "weapon_walk_leftdown_1.png",
+      "weaponSha256": "b7e7c111e863b6275106f4d9a9bde6f2da6be71fe66398e63c492cc5e4ec19d7"
+    },
+    {
+      "frameId": "frame12_left",
+      "bodyFrame": "assets/characters/hero/battle45/atk_leftdown_1.png",
+      "candidateBodySha256": "0d6aa35c61749344acc96eba30f8a7803a2f4d4e626f8a2dba3cb3492492de2d",
+      "runtimeBodySha256": "0d6aa35c61749344acc96eba30f8a7803a2f4d4e626f8a2dba3cb3492492de2d",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        118,
+        186
+      ],
+      "fistCenterPx": [
+        118,
+        186
+      ],
+      "angleDeg": 90,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_atk_leftdown_1.png",
+        "sha256": "dcd109824492455c7c28f7493be6b403febe110681c984cb837a3c32169eebfb"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "c84f0b3302432423c4be531ad0a9ac6d84d65955e994bbd81e71520b0be5249f",
+      "weaponPath": "weapon_atk_leftdown_1.png",
+      "weaponSha256": "6be1852eb1ae1022be4570e0bf21f79ff40145604fdec1eae130fe076c80d886"
+    },
+    {
+      "frameId": "frame13_left",
+      "bodyFrame": "assets/characters/hero/battle45/atk_leftdown_2.png",
+      "candidateBodySha256": "6ac5788db7da499978c2d3da98cff94e56480b36b5d3d6f68149b5744808cc2a",
+      "runtimeBodySha256": "6ac5788db7da499978c2d3da98cff94e56480b36b5d3d6f68149b5744808cc2a",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        42,
+        202
+      ],
+      "fistCenterPx": [
+        38,
+        200
+      ],
+      "angleDeg": 15,
+      "angleDefinition": "horizontal mirror of right screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "masks/mask_atk_leftdown_2.png",
+        "sha256": "1ee247be4c3837c399df0c37dab31884b882baeb8e53890a59dd6851e9d4c08a"
+      },
+      "visibleStubs": "none; horizontal mirror",
+      "status": "runtime-release",
+      "candidateMaskSha256": "d729b3a27e5afbfba885699e5576017acebbc6f114eaec38b58a9e45f7dc0c4f",
+      "weaponPath": "weapon_atk_leftdown_2.png",
+      "weaponSha256": "6950a485f084998704b9932b126b45a90ee7e4a5459bc37c065efebfe945296f"
+    }
+  ]
+}

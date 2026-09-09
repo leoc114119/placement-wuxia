@@ -5,10 +5,12 @@
 import type { CombatantInput } from '../../types';
 import { SPEED_FACTOR } from '../../config/battle';
 import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, TRIAL_FX_01, TRIAL_FX_FALLBACK_DURATION_MS, hexToWorld, type BattleClip } from '../../config/battle-hex';
+import { WEAPON_LAYER_PROFILES } from '../../config/hero-weapon-layer'; // 【T28】武器层只读配置（runtime 路径，零候选引用）
 import { FxCastGate, FxPlayer, findCastSnapshot, loadFxFramePack, type FxFramePack } from '../../ui/fx-player';
 import { WfBannerPlayer, bannerTierOf } from '../../ui/wf-banner';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
 import {
+  compositeWeaponLayer,
   createView,
   drawFrame,
   enqueueHit,
@@ -16,10 +18,14 @@ import {
   pieceHop,
   spawnNoteFx,
   updateView,
+  weaponMissingTag,
   type BattleHexAssets,
   type DirectionalFrameStore,
   type ImgLike,
   type LegacyFrameStrip,
+  type OffscreenCanvasFactory,
+  type WeaponLayerDiag,
+  type WeaponLayerImages,
 } from '../../ui/battle-hex-render';
 import { createHexBattle } from '../../systems/battle-session';
 
@@ -133,6 +139,56 @@ async function loadAssets(): Promise<BattleHexAssets> {
   //（缺帧 warn 记路径+null 槽，draw 跳帧）；join 进同一 Promise.all——全部 settle 后主循环才启动，
   // 首个特功演出必然晚于预载完成。missing 非空仅告警（DoD 口径：素材 40/40 必须全在，缺=FAIL）。
   const fxJobs = loadFxFramePack(TRIAL_FX_01, (url) => loadImg(q(url)));
+  // 【T28 武器层】WEAPON_LAYER_PROFILES 预载 + 有遮挡帧离屏预合成（方案 §2.2/§4.3，每帧一次性非逐帧开销）：
+  // 剑层/蒙版缺失或合成不可用=该帧空手降级 + `hero-weapon-missing:<bodyFrame>` 写 preview asset gate；
+  // 与 directional 帧同一 Promise.all 汇合——主循环启动前武器层必就绪（首帧即有剑）。
+  // 蒙版=导入期机械转换的 alpha 蒙版（alpha=候选灰度 luma），compositeWeaponLayer 单离屏
+  // source-over→destination-out 完成，全链零 getImageData（file:// 污染 canvas/wx 开销——禁用）。
+  const weaponLayers: WeaponLayerImages = new Map();
+  const weaponDiag: WeaponLayerDiag = { missing: new Set(), gaps: new Set() };
+  const offscreen: OffscreenCanvasFactory = (w, h) => {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const cctx = c.getContext('2d');
+    return cctx ? { canvas: c, ctx: cctx } : null;
+  };
+  const weaponJobs: Array<Promise<void>> = [];
+  for (const [spriteKey, framesMap] of Object.entries(WEAPON_LAYER_PROFILES)) {
+    const store = new Map<string, ImgLike | null>();
+    weaponLayers.set(spriteKey, store);
+    for (const [bodySrc, wf] of framesMap) {
+      weaponJobs.push(
+        (async () => {
+          try {
+            const wImg = await loadImg(q(wf.weaponSrc));
+            if (!wImg) {
+              store.set(bodySrc, null);
+              weaponDiag.missing.add(bodySrc);
+              return;
+            }
+            if (wf.occlusion.kind === 'none') {
+              store.set(bodySrc, wImg); // 无遮挡帧：剑层原图直出（同矩形叠画）
+              return;
+            }
+            const mImg = await loadImg(q(wf.occlusion.maskSrc));
+            const composed = compositeWeaponLayer(wImg, mImg, offscreen);
+            if (!composed) {
+              store.set(bodySrc, null);
+              weaponDiag.missing.add(bodySrc); // 蒙版缺失/合成不可用=空手降级（禁画整剑盖拳）
+              return;
+            }
+            store.set(bodySrc, composed);
+          } catch (e) {
+            // 任何单帧武器装配异常不拖垮启动（防御；正常路径不触达）
+            store.set(bodySrc, null);
+            weaponDiag.missing.add(bodySrc);
+            console.warn(`[battle_demo][weaponLayer] ${bodySrc} 装配失败空手降级`, e);
+          }
+        })(),
+      );
+    }
+  }
   const [env, topbar, plaque, facePairs, iconPairs, fxResult] = await Promise.all([
     loadImg(q(BATTLE_HEX_RES.env)),
     loadImg(q(BATTLE_HEX_RES.topbar)),
@@ -141,6 +197,7 @@ async function loadAssets(): Promise<BattleHexAssets> {
     Promise.all(iconJobs),
     fxJobs,
     ...frameJobs,
+    ...weaponJobs,
   ]);
   fxPack = fxResult.pack; // 【T25】预载完成的帧包带出（.then 里重建播放器实例）
   const ctrlFaces: BattleHexAssets['ctrlFaces'] = { tuoguan: null, jiasu: null, flee: null };
@@ -174,6 +231,12 @@ async function loadAssets(): Promise<BattleHexAssets> {
       }
     }
   }
+  // 【T28 武器层】已配置 26 帧缺剑层/蒙版 → 固定格式写 gate（任务卡需求表 #6；未覆盖四缺口不算
+  // 资源债——第二批素材到前显式空手，仅 console 开发诊断，见主循环 gap 汇报）。
+  for (const bodySrc of weaponDiag.missing) {
+    assetGateState.ok = false;
+    assetGateState.failures.push(weaponMissingTag(bodySrc));
+  }
   paintAssetGate();
   console.log(
     `[battle_demo] 资源：env=${ok(env)} topbar=${ok(topbar)} plaque=${ok(plaque)} ` +
@@ -183,7 +246,7 @@ async function loadAssets(): Promise<BattleHexAssets> {
       `FX=${TRIAL_FX_01.id}:${fxResult.loadedCount}/${fxResult.expectedCount}` +
       (fxResult.missing.length > 0 ? `（缺失！${fxResult.missing.join(',')}）` : ''),
   );
-  return { env, topbar, plaque, ctrlFaces, statusIcons, frames };
+  return { env, topbar, plaque, ctrlFaces, statusIcons, frames, weaponLayers, weaponDiag };
 }
 
 // ===== 对局构造（联调：真 session；演示阵容=主角四技 vs 山贼双敌（Leo 09-04 裁定摘狼：设计无狼 NPC），R-07 档位语义占位） =====
@@ -281,6 +344,7 @@ let assets: BattleHexAssets = {
   frames: new Map(),
 };
 
+let assetsReady = false; // 【T28】资源装配完成标记（shot/e2e 时序锚；调试挂载只读）
 const input = createBattleInput({
   dispatch: (req) => {
     const ok = session.submit(req);
@@ -427,6 +491,10 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
   get assetGate() {
     return assetGateState;
   },
+  /** 【T28】资源装配完成（loadAssets resolve 且主循环将启）；shot 脚本时序锚 */
+  get assetsReady() {
+    return assetsReady;
+  },
   get W() {
     return W;
   },
@@ -476,6 +544,7 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
 let last = performance.now();
 let frameLog: Array<{ t: number; q: number; r: number; hop: number }> = [];
 let frameLogOn = false;
+const weaponGapReported = new Set<string>(); // 【T28】缺口诊断去重（每 bodySrc 只报一次）
 function loop(t: number): void {
   const realDt = Math.min(0.05, (t - last) / 1000 || 0);
   last = t;
@@ -523,6 +592,14 @@ function loop(t: number): void {
       enqueueHit(view, e.actorId ?? '', e.targetId, DMG.missText, false);
     }
   }
+  // 【T28 武器层】第一批未覆盖帧缺口开发诊断（渲染侧 weaponLayerOf 记录 → 此处逐条 console 一次；
+  // 显式空手=方案 §1 裁决，禁借邻帧/镜像/静态剑；不算资源债不进 asset gate）
+  for (const gap of assets.weaponDiag?.gaps ?? []) {
+    if (!weaponGapReported.has(gap)) {
+      weaponGapReported.add(gap);
+      console.warn(`[battle_demo][weaponLayer 缺口] ${gap} 第一批未覆盖：显式空手（第二批素材到后同接口补齐）`);
+    }
+  }
   updateView(view, snap, dt, W, H);
   // 【T25】光影播放器与演出钟同源推进（x1/x2 只改逻辑 dt 速率=只改播放速度，配方时长不变）
   fxPlayer.update(view.time);
@@ -534,6 +611,7 @@ function loop(t: number): void {
 void loadAssets().then((a) => {
   assets = a;
   fxPlayer.setPack(fxPack); // 【T25】预载完成的帧包注入（稳定实例；主循环此刻才启动）
+  assetsReady = true;
   requestAnimationFrame((t) => {
     last = t;
     loop(t);
