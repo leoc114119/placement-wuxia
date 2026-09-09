@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame13-atk-rightdown-2-sword-character-right-hand-v10-left4",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "exact (-2,0) translation; angle -15° and original body/fist frozen; no generation/runtime write",
+  "nextGate": "PM second specification gate; runtime remains untouched"
+}
