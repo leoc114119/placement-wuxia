@@ -982,3 +982,6 @@
 | 2026-09-09 | Leo → Codex（art） | ✅ seq=241 frame24 `walk_rightdown_2` v4 视觉通过 | `-30°`、像素级拳心、遮罩与握柄 reveal 通过；PM 第二道规格门仍待办。 |
 | 2026-09-09 | Codex（art） | 📦 seq=241 frame24 `walk_rightdown_2` v4 候选归档 | `visualReview=selected_by_Leo`、`candidate-only`、`specGate=pending_pm_scan`、`runtimeRelease=false`；交接已落盘。 |
 | 2026-09-09 | Codex（art） | 🪞 seq=241 第二批左系确定性镜像完成 | 11 个 Leo 通过右系候选已逐帧水平镜像，生成 11 个 left candidate PNG；manifest 共 22 行（11 right + 11 left），全部 candidate-only、runtime 未改；产物 `assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/left_mirror_seq241_v1/`。 |
+| 09-09 | PM2 → art | ❌ 第二批 manifest 打回整合（第 4 种 schema） | 22 行=右 11（施法9+补2）+左 11 范围正确、revision 内标定数据在；但 manifest 为指针式清单违反 seq=231 锁定模板（缺 12 项运行时字段）+visualReview 全标 pending_Leo 与"Leo 已通过"事实不符；整改=按锁定模板整合重出+状态更正，重交后全量门检；rd→art seq=243 |
+| 2026-09-09 | rd → art seq=252 | 📋 独立剑模型补件任务单 | 从 Leo 已通过 v9 剑层确定性导出紧致右模型、镜像左模型，补柄原点/基准角/bbox 元数据；零生成，runtime 不动，交付供 PM2 即检即转 Leo。 |
+| 2026-09-09 | Codex（art） | 🧪 seq=252 独立剑模型 v1 完成 | v9 源紧致 alpha crop `[90,139,178,219]`；右/左模型、柄原点 `(0.5737,76.5878)`、grip `(23,57)`、右 `-40°`/左 `+40°`、角度定义和 SHA 已落盘，0 生成、runtime 未改，待 commit/delivery。 |

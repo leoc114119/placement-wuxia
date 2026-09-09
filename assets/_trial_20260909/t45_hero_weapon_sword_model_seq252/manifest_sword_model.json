@@ -1,0 +1,60 @@
+{
+  "task": "T45",
+  "seq": "252",
+  "revision": "t45-hero-weapon-sword-model-seq252-v1",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "source": {
+    "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d"
+  },
+  "swordModel": {
+    "rightPath": "assets/_trial_20260909/t45_hero_weapon_sword_model_seq252/normalized/hero_sword_model_right.png",
+    "rightSha256": "0a48010c0dbe4bb6e957b20ab4e388b714ebc44593cb979fb500dff941a0ce5d",
+    "leftPath": "assets/_trial_20260909/t45_hero_weapon_sword_model_seq252/normalized/hero_sword_model_left.png",
+    "leftSha256": "2a5b6adcc7f0ef0667301e5767c4a5cf838f15c8b9b204885cf116dc47129cc2",
+    "cropBboxFullPx": [
+      90,
+      139,
+      178,
+      219
+    ],
+    "contentBboxModelPx": [
+      0,
+      0,
+      88,
+      80
+    ],
+    "handleOriginModelPx": [
+      0.5736861516071485,
+      76.58781573590227
+    ],
+    "gripPointModelPx": [
+      23.0,
+      57.0
+    ],
+    "rightBaseAngleDeg": -40.0,
+    "leftBaseAngleDeg": 40.0,
+    "angleDefinition": "blade axis from handle/grip toward tip; 0°=screen-right, +Y down, clockwise-positive",
+    "flipX": true,
+    "processing": "deterministic tight alpha crop and horizontal mirror; no redraw"
+  },
+  "checks": {
+    "sourceCanvasPass": true,
+    "rightModePass": true,
+    "leftModePass": true,
+    "rightAlphaPass": true,
+    "leftAlphaPass": true,
+    "bboxT32TightPass": true,
+    "rightShaPass": true,
+    "leftShaPass": true,
+    "zeroGenerationPass": true,
+    "runtimeUntouched": true,
+    "allMachineChecksPass": true
+  },
+  "contact": "assets/_trial_20260909/t45_hero_weapon_sword_model_seq252/contact/sword_model_right_left.png"
+}

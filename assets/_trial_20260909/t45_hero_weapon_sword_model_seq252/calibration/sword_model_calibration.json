@@ -1,0 +1,36 @@
+{
+  "task": "T45",
+  "seq": "252",
+  "revision": "t45-hero-weapon-sword-model-seq252-v1",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "sourceHandleOriginFullPx": [
+    90.57368615160715,
+    215.58781573590227
+  ],
+  "sourceGripPointFullPx": [
+    113.0,
+    196.0
+  ],
+  "modelHandleOriginPx": [
+    0.5736861516071485,
+    76.58781573590227
+  ],
+  "modelGripPointPx": [
+    23.0,
+    57.0
+  ],
+  "contentBboxModelPx": [
+    0,
+    0,
+    88,
+    80
+  ],
+  "rightBaseAngleDeg": -40.0,
+  "leftBaseAngleDeg": 40.0,
+  "angleDefinition": "blade axis from handle/grip toward tip; 0°=screen-right, +Y down, clockwise-positive"
+}

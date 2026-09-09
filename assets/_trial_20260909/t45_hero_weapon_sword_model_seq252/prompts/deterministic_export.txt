@@ -1,0 +1,1 @@
+Deterministic export only. Source v9 selected sword layer; crop tight alpha bbox; preserve pixels; horizontal mirror for left model. No image generation.
