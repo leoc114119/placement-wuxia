@@ -63,7 +63,12 @@
     "handlePivotPx": [
       199.57368615160715,
       208.58781573590227
-    ]
+    ],
+    "gripPointPx": [
+      210,
+      198
+    ],
+    "gripPointMeasurement": "pixel-measured blade/guard junction on final -45° layer"
   },
   "hand": {
     "semantic": "character_right_hand",

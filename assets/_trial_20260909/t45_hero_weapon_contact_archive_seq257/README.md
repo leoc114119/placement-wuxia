@@ -1,0 +1,1 @@
+Unified visual archive for T45 frame01-13 first batch plus seq241 second batch frames14-24. Each right contact is mirrored deterministically to its left counterpart. Source contacts remain in their original revision directories. Candidate-only; runtime untouched.

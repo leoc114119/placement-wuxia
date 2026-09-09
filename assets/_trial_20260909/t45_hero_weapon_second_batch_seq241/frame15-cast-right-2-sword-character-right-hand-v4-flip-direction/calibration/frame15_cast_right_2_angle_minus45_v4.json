@@ -19,5 +19,10 @@
   "rotationAboutHandleDeg": 180.0,
   "screenAngleDeg": -45.0,
   "layerOrder": "weapon_front",
-  "direction": "flipped"
+  "direction": "flipped",
+  "gripPointPx": [
+    210,
+    198
+  ],
+  "gripPointMeasurement": "pixel-measured blade/guard junction on final -45° layer"
 }
