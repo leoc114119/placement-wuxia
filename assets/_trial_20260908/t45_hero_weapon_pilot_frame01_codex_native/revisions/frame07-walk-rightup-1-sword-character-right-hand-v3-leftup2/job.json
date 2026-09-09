@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame07-walk-rightup-1-sword-character-right-hand-v3-leftup2",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "exact (-2,-2) translation of v2; no rotation, generation, body edit, or runtime write",
+  "nextGate": "PM second specification gate; runtime remains untouched"
+}

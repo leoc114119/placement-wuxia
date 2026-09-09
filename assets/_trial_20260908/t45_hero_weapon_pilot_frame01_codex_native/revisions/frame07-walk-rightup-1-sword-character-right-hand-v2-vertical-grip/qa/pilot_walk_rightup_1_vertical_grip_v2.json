@@ -1,0 +1,102 @@
+{
+  "task": "T45",
+  "revision": "frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "seq": "hero-weapon-pilot-frame07-walk-rightup-1",
+  "generation": {
+    "credits": 0,
+    "rawImageGeneration": false,
+    "method": "deterministic 50° pivot rotation plus integer translation of approved v9 sword layer"
+  },
+  "body": {
+    "path": "assets/characters/hero/battle45/walk_rightup_1.png",
+    "sha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        35,
+        44,
+        192,
+        300
+      ],
+      "borderNonzero": 0
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sourceLayerSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "normalizedPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip/normalized/hero_sword_vertical_walk_rightup_1_v2.png",
+    "normalizedSha256": "15d62db769dac987714e027a4191834f4e81d6647aeffa40f0c60be17c607226",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        175,
+        88,
+        191,
+        204
+      ],
+      "borderNonzero": 0
+    },
+    "rotationDeg": 50.0,
+    "screenAngleDeg": -90.0,
+    "translationPx": [
+      79,
+      -17
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "screenProjection": "screen-right fist in walk_rightup_1",
+    "fistCenterPx": [
+      181.0,
+      189.0
+    ],
+    "handleCenterPx": [
+      180.57368615160715,
+      188.58781573590227
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "body_front",
+    "maskPolicy": "none"
+  },
+  "composites": {
+    "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip/contact/hero_walk_rightup_1_sword_vertical_v2.png",
+    "fistZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip/contact/walk_rightup_1_vertical_grip_zoom_v2.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "bodyRealAlphaPass": true,
+    "bodyBorderTransparent": true,
+    "weaponCanvasPass": true,
+    "weaponRealAlphaPass": true,
+    "weaponSingleConnectedSilhouette": true,
+    "verticalAnglePass": true,
+    "handleCenterPass": true,
+    "bodyFrontLayerPass": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  }
+}

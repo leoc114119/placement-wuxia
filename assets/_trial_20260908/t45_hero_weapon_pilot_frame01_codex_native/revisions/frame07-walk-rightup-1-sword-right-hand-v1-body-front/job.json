@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame07-walk-rightup-1-sword-right-hand-v1-body-front",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "integer RGBA translation plus complete-body-front compositing; no generation or body edit",
+  "nextGate": "Leo visual review"
+}

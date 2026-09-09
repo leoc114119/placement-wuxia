@@ -1,0 +1,34 @@
+{
+  "task": "T45",
+  "revision": "frame07-walk-rightup-1-sword-right-hand-v1-body-front",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "bodyPath": "assets/characters/hero/battle45/walk_rightup_1.png",
+  "bodySha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1",
+  "weaponPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-right-hand-v1-body-front/normalized/hero_sword_held_walk_rightup_1_v1.png",
+  "weaponSha256": "257171390b00e569427a6d339c54e351c268f0376bee07089d120cfbfe50f45e",
+  "handSemantic": "character_right_hand",
+  "screenProjection": "screen-right fist",
+  "fistCenterPx": [
+    181.0,
+    189.0
+  ],
+  "handleCenterSourcePx": [
+    101.57368615160716,
+    205.58781573590227
+  ],
+  "handleCenterTargetPx": [
+    180.57368615160715,
+    183.58781573590227
+  ],
+  "translationPx": [
+    79,
+    -22
+  ],
+  "angleDeg": -40.0,
+  "layerOrder": "body_front"
+}

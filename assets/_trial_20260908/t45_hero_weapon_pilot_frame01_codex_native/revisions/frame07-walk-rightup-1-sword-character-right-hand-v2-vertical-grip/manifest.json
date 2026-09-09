@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "sourceBody": "assets/characters/hero/battle45/walk_rightup_1.png",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+  "candidate": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip/normalized/hero_sword_vertical_walk_rightup_1_v2.png",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip/contact/hero_walk_rightup_1_sword_vertical_v2.png",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip/qa/pilot_walk_rightup_1_vertical_grip_v2.json",
+  "formalRuntimeTouched": false,
+  "supersedes": "frame07-walk-rightup-1-sword-right-hand-v1-body-front"
+}

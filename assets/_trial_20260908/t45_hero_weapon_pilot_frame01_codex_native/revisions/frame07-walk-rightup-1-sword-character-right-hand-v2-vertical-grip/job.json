@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame07-walk-rightup-1-sword-character-right-hand-v2-vertical-grip",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "deterministic pivot rotation and body-front compositing; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

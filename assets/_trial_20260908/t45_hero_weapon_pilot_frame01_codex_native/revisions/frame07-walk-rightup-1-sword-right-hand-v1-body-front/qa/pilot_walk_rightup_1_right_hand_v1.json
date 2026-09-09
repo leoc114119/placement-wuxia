@@ -1,0 +1,139 @@
+{
+  "task": "T45",
+  "revision": "frame07-walk-rightup-1-sword-right-hand-v1-body-front",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "seq": "hero-weapon-pilot-frame07-walk-rightup-1",
+  "generation": {
+    "credits": 0,
+    "rawImageGeneration": false
+  },
+  "body": {
+    "path": "assets/characters/hero/battle45/walk_rightup_1.png",
+    "sha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        35,
+        44,
+        192,
+        300
+      ],
+      "visualWidth": 157,
+      "visualHeight": 256,
+      "borderNonzero": 0
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sourceLayerSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "normalizedPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-right-hand-v1-body-front/normalized/hero_sword_held_walk_rightup_1_v1.png",
+    "normalizedSha256": "257171390b00e569427a6d339c54e351c268f0376bee07089d120cfbfe50f45e",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        169,
+        131,
+        240,
+        197
+      ],
+      "visualWidth": 71,
+      "visualHeight": 66,
+      "borderNonzero": 12
+    },
+    "translationPx": [
+      79,
+      -22
+    ],
+    "angleDeg": -40.0,
+    "axisLengthPx": 95.524865872714
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "screenProjection": "screen-right fist in walk_rightup_1",
+    "fistCenterPx": [
+      181.0,
+      189.0
+    ],
+    "handleCenterPx": [
+      180.57368615160715,
+      183.58781573590227
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "body_front",
+    "maskPolicy": "none",
+    "diagnosticMaskPath": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-right-hand-v1-body-front/occlusion_masks/hero_walk_rightup_1_screen_right_fist_diagnostic.png",
+    "diagnosticMaskPixels": 197,
+    "weaponInDiagnosticFist": 91,
+    "diagnosticPolygon": [
+      [
+        173,
+        181
+      ],
+      [
+        181,
+        180
+      ],
+      [
+        187,
+        184
+      ],
+      [
+        188,
+        191
+      ],
+      [
+        184,
+        196
+      ],
+      [
+        177,
+        196
+      ],
+      [
+        173,
+        192
+      ]
+    ]
+  },
+  "composites": {
+    "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-right-hand-v1-body-front/contact/hero_walk_rightup_1_sword_right_hand_v1.png",
+    "fistZoom": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-right-hand-v1-body-front/contact/walk_rightup_1_right_fist_center_zoom_v1.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "bodyRealAlphaPass": true,
+    "bodyBorderTransparent": true,
+    "weaponCanvasPass": true,
+    "weaponRealAlphaPass": true,
+    "weaponSingleConnectedSilhouette": true,
+    "weaponAnglePass": true,
+    "handlePlacementPass": true,
+    "bodyFrontLayerPass": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  },
+  "note": "The sword reaches the canvas right edge because the frozen walk-rightup pose extends the character-right hand at screen right; no scaling, rotation, or body change was applied."
+}
