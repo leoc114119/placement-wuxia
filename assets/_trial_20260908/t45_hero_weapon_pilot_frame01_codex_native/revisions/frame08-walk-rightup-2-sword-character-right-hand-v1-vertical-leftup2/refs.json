@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame08-walk-rightup-2-sword-character-right-hand-v1-vertical-leftup2",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/walk_rightup_2.png",
+      "role": "frozen target body",
+      "sha256": "1e65c48d8a0ac271244b1beb1103a33ceace4653fd4885381ed4019afa62e421"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-character-right-hand-v3-leftup2/normalized/hero_sword_vertical_walk_rightup_1_v3_leftup2.png",
+      "role": "selected frame07 v3 weapon layer",
+      "sha256": "8f7dadcdc1cab263ffdc8d4d5e1bef78f9ab0f2891018f01f994348a109ed55a"
+    }
+  ]
+}
