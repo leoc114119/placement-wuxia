@@ -1,0 +1,25 @@
+{
+  "task": "T45",
+  "revision": "frame11-walk-rightdown-1-sword-character-right-hand-v6-angle35-down1",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "sourceRevision": "frame11-walk-rightdown-1-sword-character-right-hand-v5-angle35-forward",
+  "fistCenterPx": [
+    82.0,
+    206.0
+  ],
+  "handleCenterPx": [
+    82.0,
+    207.0
+  ],
+  "translationFromV5Px": [
+    0,
+    1
+  ],
+  "screenAngleDeg": 35.0,
+  "layerOrder": "weapon_front"
+}

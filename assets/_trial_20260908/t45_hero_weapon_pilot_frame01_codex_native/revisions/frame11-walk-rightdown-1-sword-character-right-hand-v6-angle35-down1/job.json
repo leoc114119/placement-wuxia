@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame11-walk-rightdown-1-sword-character-right-hand-v6-angle35-down1",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "exact (0,+1) translation, angle +35° preserved; no generation/body edit/runtime write",
+  "nextGate": "PM second specification gate; runtime remains untouched"
+}
