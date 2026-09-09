@@ -1,0 +1,59 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame06-idle-rightdown-character-right-hand-grip-point-lock",
+  "revision": "frame06-idle-rightdown-sword-character-right-hand-v6-grip-point-lock",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "sourceRevision": "frame06-idle-rightdown-sword-character-right-hand-v5-grip-center-face15",
+  "method": "deterministic reuse of v5 candidate body and sword; use marked lower-handle grip point (mirrored source 74,185), rotate around separate pivot (64,195), translate (+43,-13) to grip target/fist center pixel (102,195), final blade axis -75°; weapon-front compositing with precise fist overlay; no generation or runtime write",
+  "handSemantic": "character_right_hand_screen_left_fist",
+  "fistCenterPx": [
+    102.15625,
+    195.359375
+  ],
+  "fistCenterLockPixelPx": [
+    102,
+    195
+  ],
+  "gripPointSourceAfterMirrorPx": [
+    74,
+    185
+  ],
+  "rotationPivotAfterMirrorPx": [
+    64,
+    195
+  ],
+  "gripPointTargetPx": [
+    102,
+    195
+  ],
+  "translationPx": [
+    43,
+    -13
+  ],
+  "fistToGripOffsetPx": [
+    -0.15625,
+    -0.359375
+  ],
+  "angleDeg": -75.0,
+  "layerOrder": "weapon_front",
+  "maskPolicy": "precise_fist_overlay",
+  "bodyCandidate": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v6-grip-point-lock/body/battle_idle_rightdown_fist_out_v6.png",
+  "runtimeBodySource": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+  "weaponSource": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v6-grip-point-lock/normalized/hero_sword_held_idle_rightdown_character_right_hand_v6.png",
+  "preciseFistMask": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v6-grip-point-lock/occlusion_masks/hero_idle_rightdown_screen_left_fist_v6.png",
+  "checks": "allMachineChecksPass=true; marked lower-handle grip point locked to fist center pixel; final sword axis -75° (15° toward face); weapon-front plus precise fist overlay; 240x320 RGBA; runtime untouched; generation credits 0",
+  "nextGate": "Leo visual review of marked grip-point lock and 15° toward-face angle, then PM spec scan",
+  "formalRuntimeTouched": false,
+  "supersedes": [
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v5-grip-center-face15/manifest.json",
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v4-vertical-grip/manifest.json",
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/manifest.json",
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-right-hand-v2-fist-out-body-front/manifest.json",
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-right-hand-v1-body-front/manifest.json"
+  ]
+}

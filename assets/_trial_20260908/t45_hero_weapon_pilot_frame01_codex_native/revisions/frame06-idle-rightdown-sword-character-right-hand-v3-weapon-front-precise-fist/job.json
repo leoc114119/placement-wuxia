@@ -1,0 +1,44 @@
+{
+  "task": "T45",
+  "seq": "hero-weapon-pilot-frame06-idle-rightdown-character-right-hand",
+  "revision": "frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "sourceRevision": "frame06-idle-rightdown-sword-right-hand-v2-fist-out-body-front",
+  "method": "deterministic candidate body fist rotation (+15° outward) plus horizontal mirror and pivot rotation of existing rightdown sword (-92.755°), integer translation (+38,0), then weapon-front compositing with precise fist overlay; no generation or runtime write",
+  "handSemantic": "character_right_hand_screen_left_fist",
+  "fistCenterPx": [
+    102.15625,
+    195.359375
+  ],
+  "handleCenterSourcePx": [
+    64.0,
+    195.0
+  ],
+  "handleCenterTargetPx": [
+    102.0,
+    195.0
+  ],
+  "fistToHandleOffsetPx": [
+    -0.15625,
+    -0.359375
+  ],
+  "angleDeg": -133.62257341251976,
+  "layerOrder": "weapon_front",
+  "maskPolicy": "precise_fist_overlay",
+  "bodyCandidate": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/body/battle_idle_rightdown_fist_out_v3.png",
+  "runtimeBodySource": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+  "weaponSource": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/normalized/hero_sword_held_rightdown.png",
+  "weaponNormalized": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/normalized/hero_sword_held_idle_rightdown_character_right_hand_v3.png",
+  "preciseFistMask": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v3-weapon-front-precise-fist/occlusion_masks/hero_idle_rightdown_screen_left_fist_v3.png",
+  "checks": "allMachineChecksPass=true; sword connected and upward-left axis; handle-to-fist delta <1px; weapon-front plus precise fist overlay; 240x320 RGBA; runtime untouched; generation credits 0",
+  "nextGate": "Leo visual review of character-right hand, upward sword direction and precise fist occlusion, then PM spec scan",
+  "formalRuntimeTouched": false,
+  "supersedes": [
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-right-hand-v2-fist-out-body-front/manifest.json",
+    "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-right-hand-v1-body-front/manifest.json"
+  ]
+}
