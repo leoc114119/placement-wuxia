@@ -26,7 +26,7 @@ Leo 标注确认握点位于剑柄中段，不是剑柄与剑刃交接点。本�
 
 ## 机械核验
 
-`qa/pilot_idle_rightdown_character_right_hand_v6.json`：`allMachineChecksPass=true`。240×320 RGBA、剑单主体连通、轴向长度、`-75°`、标注握点/拳心对齐、weapon-front+精确拳遮罩、runtime 未改、生成额度为 0 均通过；拳区武器 `91→0`。
+`qa/pilot_idle_rightdown_character_right_hand_v6.json`：`allMachineChecksPass=true`。240×320 RGBA、剑单主体连通、轴向长度、`-75°`、标注握点/拳心对齐、weapon-front+精确拳遮罩、runtime 未改、生成额度为 0 均通过；拳区武器 `53→0`。
 
 ## 目测证据
 
