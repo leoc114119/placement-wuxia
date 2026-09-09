@@ -1,0 +1,28 @@
+{
+  "task": "T45",
+  "revision": "frame15-cast-right-2-sword-character-right-hand-v4-flip-direction",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "sourceRevision": "frame15-cast-right-2-sword-character-right-hand-v3-correct-hand",
+  "fistCenterPx": [
+    200.0,
+    209.0
+  ],
+  "handleCenterPx": [
+    199.57368615160715,
+    208.58781573590227
+  ],
+  "rotationAboutHandleDeg": 180.0,
+  "screenAngleDeg": -45.0,
+  "layerOrder": "weapon_front",
+  "direction": "flipped",
+  "gripPointPx": [
+    210,
+    198
+  ],
+  "gripPointMeasurement": "pixel-measured blade/guard junction on final -45° layer"
+}
