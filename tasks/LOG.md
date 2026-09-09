@@ -822,6 +822,7 @@
 | 2026-09-09 | Codex（art） | 📦 T45 frame13 `atk_rightdown_2` v10 候选归档 | `visualReview=selected_by_Leo`、`specGate=pending_pm_scan`、`runtimeRelease=false`；交接 `tasks/handoff/T45-hero-weapon-pilot-frame13-atk-rightdown-2-v10-left4-20260909.md`，v1→v10 证据保留。 |
 | 2026-09-09 | Codex（art） → PM2/rd | 📤 T45 主角武器右系三向候选请求第二道规格门 | right/rightup/rightdown 共 13 张候选均已 Leo 视觉通过；统一请求 PM2 核对握点、角度、层序、遮罩、命名与候选/runtime 状态，未越级写入正式 runtime。 |
 | 2026-09-09 | PM2/rd → Codex（art） | 📐 seq=231 manifest 模板锁定 | 后续 T45 美术交表严格照抄 14 字段模板，字段名/层级/口径不自改、不扩展；seq=231 为二次审核格式唯一真源。 |
+| 2026-09-09 | Codex（art） → PM2/rd | 📋 seq=231 13 行总 manifest 交表 | `tasks/handoff/T45-hero-weapon-right-series-manifest-13rows-seq231-20260909.json` 已生成并通过 JSON 解析/字段数/13行顺序校验，附 13 行 QA 汇总；全体 `candidate-only`，runtime 状态未越级。 |
 | 2026-09-09 | Leo → Codex（art） | 🔧 T45 frame13 `atk_rightdown_2` 剑位右移 | 保持 `-15°`，整剑向右移动 `2px`；原拳冻结。 |
 | 2026-09-09 | Codex（art） | 🧪 T45 frame13 `atk_rightdown_2` sword -15 右2px v8 候选完成 | v7 整层精确平移 `(+2,0)`，柄心 `(201,202)`，原拳/`-15°`/weapon-front 保持，零生成、runtime 未改、机械门全过；候选路径 `assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame13-atk-rightdown-2-sword-character-right-hand-v8-right2/`，待 Leo 目验。 |
 | 2026-09-09 | Leo → Codex（art） | ✅ T45 frame12 `atk_rightdown_1` v2 视觉通过 | Leo 确认垂直插入右手拳心版本可用；PM 第二道规格门仍待办，runtime 不动。 |
@@ -830,3 +831,5 @@
 | 2026-09-09 | Codex（art） | 📦 T45 frame11 `walk_rightdown_1` v6 候选归档 | `visualReview=selected_by_Leo`、`specGate=pending_pm_scan`、`runtimeRelease=false`；交接 `tasks/handoff/T45-hero-weapon-pilot-frame11-walk-rightdown-1-v6-angle35-down1-20260909.md`，v1→v6 证据保留。 |
 | 09-09 | ZCode（美术PM2） | 📋 主角武器右系 13 张候选门检结论（有条件通过） | 内容层 PASS=状态合规 13/13+角度/层序/握点逐帧在案（Leo 窗口迭代定版）+体修正溯源清（frame04=Leo 选定 fist_up 变体属身体帧升级候选/frame06 拳部局部收敛/其余 runtime 体无修改）；结构层整改=manifest schema 三代并存→要求统一 13 行总 manifest（PM 复核后移交研发）；像素深检待统一格式后按新判据补全；终态交付 5 项 ack accepted（201/206/208/214/217）；rd→art seq=207 门检结论单 |
 | 09-09 | Leo → PM2 → art | 📐 主角武器路线图明确+manifest 模板下发 | 路线=美术统一 manifest（唯一卡点）→PM2 复核+13 帧全量深检→主角接线卡素材 DoR 达成→研发接线卡+真机 spike→Leo in-engine 目验；并行=敌型接线卡（DoR 已齐）/白骨接线门随时可动，美术空档可插左系镜像+棋盘小样；manifest 14 字段模板发死（seq=208） |
+| 09-09 | Leo → PM2 | ✅ 主角武器上战场定案 | v9 剑层=成型剑件（汉剑形制/轴长 115.5px 落剑类带）无需新生成；单剑+逐帧旋转模式跑通（不须六向各出）；上战场=研发线 hero 武器层渲染最小实现（frame01 标定：握点(100,185)/-40°/front/拳区遮挡），交接话术已拟交 Leo 转研发窗口；观感升级件（如需）另行 1 张生成 |
+| 09-09 | Leo → PM2 → art | 🔧 补派生：左系 13 帧合并标定+镜像剑层 | Leo 指出左镜像未派生（战场朝左无剑）；派生=镜像剑层+逐帧标定（239−x+dx 公式 dx 读账本/遮挡轮廓镜像/角度镜像换算）；自验=左合成 vs runtime 左帧体素匹配+剪影零柄；统一 manifest 扩 26 行；rd→art seq=209（09-09 段） |

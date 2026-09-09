@@ -1,0 +1,428 @@
+{
+  "schema": "seq=231",
+  "templateSource": "PM2/rd seq=231",
+  "fields": [
+    "frameId",
+    "bodyFrame",
+    "candidateBodySha256",
+    "runtimeBodySha256",
+    "bodyCorrection",
+    "gripPointPx",
+    "fistCenterPx",
+    "angleDeg",
+    "angleDefinition",
+    "layerOrder",
+    "maskPolicy",
+    "occlusionMaskPath+occlusionMaskSha256",
+    "visibleStubs",
+    "status"
+  ],
+  "rows": [
+    {
+      "frameId": "frame01",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_right.png",
+      "candidateBodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+      "runtimeBodySha256": "713095264eead7e19fc6a0bded89af98b3b29fba68d5ad945a29820f0f5ec498",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        113,
+        196
+      ],
+      "fistCenterPx": [
+        102,
+        206
+      ],
+      "angleDeg": -40,
+      "angleDefinition": "screen angle; 0°=right, -40°=up-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_tight_fist_roi",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/occlusion_masks/hero_idle_right_character_right_fist.png",
+        "sha256": "6291bfd584bd8d4c3e915bf0b8a5a0548e5d368222e5d607e461070ab22b5c87"
+      },
+      "visibleStubs": "none; runtime consumes independent weapon source via WeaponAnchor",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame02",
+      "bodyFrame": "assets/characters/hero/battle45/walk_right_1.png",
+      "candidateBodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+      "runtimeBodySha256": "f350258ed12a573032f9d407b1d224ef2310800c6ee923aee10a26e17cfb8aff",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        98.4896717287,
+        206.587805724
+      ],
+      "fistCenterPx": [
+        84,
+        207
+      ],
+      "angleDeg": 0,
+      "angleDefinition": "screen angle; 0°=screen-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_tight_fist_polygon",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/occlusion_masks/hero_walk_right_1_character_right_fist.png",
+        "sha256": "f13d411c43ee95a7b0666ec6e93bf16853c225815a00b6360f27a9949270c1a1"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame03",
+      "bodyFrame": "assets/characters/hero/battle45/walk_right_2.png",
+      "candidateBodySha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
+      "runtimeBodySha256": "3153d033b893cb4797cddc126357779e06cd4db2bb98eea6fa4dff5fee8f4166",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        115.9814206992,
+        199.7272669341
+      ],
+      "fistCenterPx": [
+        102,
+        204
+      ],
+      "angleDeg": -15,
+      "angleDefinition": "screen angle; 0°=screen-right, -15°=up-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "original_body_alpha_precise_connected_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-angle-up15-v2/occlusion_masks/hero_walk_right_2_character_right_fist_v2.png",
+        "sha256": "20f268a866555c2c45f0c40b77f980dca24b14136ab3ad9fd39785d753404395"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame04",
+      "bodyFrame": "assets/characters/hero/battle45/atk_right_2.png",
+      "candidateBodySha256": "26e3b5e9e0b876b63363ef137d4b44c565a4190bc268d9fb4c196c71ab5fe000",
+      "runtimeBodySha256": "949e05763f06f03ef3ae7934e156fc26512d7c9ae26e125b1adea92f678e0ecd",
+      "bodyCorrection": "full-frame; Leo-selected fist-up body variant frame04-atk-right-2-fist-up-v1",
+      "gripPointPx": [
+        214,
+        168
+      ],
+      "fistCenterPx": [
+        203.0731707317,
+        177.6422764228
+      ],
+      "angleDeg": -40,
+      "angleDefinition": "screen angle; 0°=screen-right, -40°=up-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist_polygon",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame04-atk-right-2-sword-right-hand-v2/occlusion_masks/hero_atk_right_2_screen_right_fist_v2.png",
+        "sha256": "62a9f1c4713c3e2f76f1c1252e446b685e187b47af21fc1f7a88c3bdf672adbe"
+      },
+      "visibleStubs": "preview right-edge crop accepted; runtime consumes independent source",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame05",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_rightup.png",
+      "candidateBodySha256": "84da13aea03fadea7d363befe7fbe073aa554c164bb4c1710125a5534b0faf66",
+      "runtimeBodySha256": "84da13aea03fadea7d363befe7fbe073aa554c164bb4c1710125a5534b0faf66",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        189,
+        190
+      ],
+      "fistCenterPx": [
+        178.1052631579,
+        204.5
+      ],
+      "angleDeg": -40,
+      "angleDefinition": "screen angle; 0°=screen-right, -40°=up-right, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/occlusion_masks/hero_idle_rightup_screen_right_fist_v4.png",
+        "sha256": "4829e6c71040eacba021dfd1bb8cdfb3cac496cc3ebe56423006cb09e8e9db31"
+      },
+      "visibleStubs": "right-edge preview crop accepted; runtime consumes independent source",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame06",
+      "bodyFrame": "assets/characters/hero/battle45/battle_idle_rightdown.png",
+      "candidateBodySha256": "105141f05a18ec3bbd4b70fad2f2dd1ff480baec174d15359ee50197863661de",
+      "runtimeBodySha256": "2c0984b6a0064bc487e08786c8bfbd167a621a2315b621592f5ec1e1a5b13655",
+      "bodyCorrection": "local; screen-left projected fist +15° outward; candidate body only",
+      "gripPointPx": [
+        102,
+        195
+      ],
+      "fistCenterPx": [
+        102.15625,
+        195.359375
+      ],
+      "angleDeg": -75,
+      "angleDefinition": "screen angle; 0°=screen-right, -75°=up-left, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "complete_fist_cutout_top_with_grip_window",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/occlusion_masks/hero_idle_rightdown_screen_left_fist_v9.png",
+        "sha256": "edaadc786bb0d806879ecf888d5f01930d3538f12f51e1be83518ed9097d8e43"
+      },
+      "visibleStubs": "upper-right annotated handle segment intentionally visible",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame07",
+      "bodyFrame": "assets/characters/hero/battle45/walk_rightup_1.png",
+      "candidateBodySha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1",
+      "runtimeBodySha256": "a8a0f1fe6a0d46f6c2b41b766985a9c634e02a126d79e2c67186c430a16fa7c1",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        178.5736861516,
+        186.5878157359
+      ],
+      "fistCenterPx": [
+        181,
+        189
+      ],
+      "angleDeg": -90,
+      "angleDefinition": "screen angle; -90°=vertical up, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame08",
+      "bodyFrame": "assets/characters/hero/battle45/walk_rightup_2.png",
+      "candidateBodySha256": "1e65c48d8a0ac271244b1beb1103a33ceace4653fd4885381ed4019afa62e421",
+      "runtimeBodySha256": "1e65c48d8a0ac271244b1beb1103a33ceace4653fd4885381ed4019afa62e421",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        186.5736861516,
+        189.5878157359
+      ],
+      "fistCenterPx": [
+        189,
+        192
+      ],
+      "angleDeg": -90,
+      "angleDefinition": "screen angle; -90°=vertical up, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame09",
+      "bodyFrame": "assets/characters/hero/battle45/atk_rightup_1.png",
+      "candidateBodySha256": "dbe19b78988688563633d3530c41b874be3ca48746cb1a14a4bce06793c3a431",
+      "runtimeBodySha256": "dbe19b78988688563633d3530c41b874be3ca48746cb1a14a4bce06793c3a431",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        157.5736861516,
+        183.5878157359
+      ],
+      "fistCenterPx": [
+        164,
+        181
+      ],
+      "angleDeg": -90,
+      "angleDefinition": "screen angle; -90°=vertical up, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame10",
+      "bodyFrame": "assets/characters/hero/battle45/atk_rightup_2.png",
+      "candidateBodySha256": "82655a03bab1d27da8321d04b6e750739269e69e687b69c9e244227a7412ae6e",
+      "runtimeBodySha256": "82655a03bab1d27da8321d04b6e750739269e69e687b69c9e244227a7412ae6e",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        212.5736861516,
+        98.5878157359
+      ],
+      "fistCenterPx": [
+        216,
+        96
+      ],
+      "angleDeg": -160,
+      "angleDefinition": "screen angle; -160°=left-up shallow, +Y down",
+      "layerOrder": "body_front",
+      "maskPolicy": "none",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "none",
+        "sha256": "none"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame11",
+      "bodyFrame": "assets/characters/hero/battle45/walk_rightdown_1.png",
+      "candidateBodySha256": "ee53392e0bb82b09db23bbdb99a5a97a9f0a4b674f8078972ff30fc33de1f331",
+      "runtimeBodySha256": "ee53392e0bb82b09db23bbdb99a5a97a9f0a4b674f8078972ff30fc33de1f331",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        82,
+        207
+      ],
+      "fistCenterPx": [
+        82,
+        206
+      ],
+      "angleDeg": 35,
+      "angleDefinition": "screen angle; +35°=forward down-right, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame11-walk-rightdown-1-sword-character-right-hand-v6-angle35-down1/occlusion_masks/walk_rightdown_1_screen_left_fist_v6.png",
+        "sha256": "508914e54b734877e8f846569e6fade47ea2aa3432c4e34e20a8015cb0e6b149"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame12",
+      "bodyFrame": "assets/characters/hero/battle45/atk_rightdown_1.png",
+      "candidateBodySha256": "8660390de33c5130d1ceb0f986881d3eb457e14a132002ee41cb51f74fcf722c",
+      "runtimeBodySha256": "8660390de33c5130d1ceb0f986881d3eb457e14a132002ee41cb51f74fcf722c",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        121,
+        186
+      ],
+      "fistCenterPx": [
+        121,
+        186
+      ],
+      "angleDeg": -90,
+      "angleDefinition": "screen angle; -90°=vertical up, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame12-atk-rightdown-1-sword-character-right-hand-v2-vertical/occlusion_masks/atk_rightdown_1_screen_left_fist_v2.png",
+        "sha256": "a9f58d9fbcf7eef778246ea61f3667beda6dcae69470108f123e7cba782173ca"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    },
+    {
+      "frameId": "frame13",
+      "bodyFrame": "assets/characters/hero/battle45/atk_rightdown_2.png",
+      "candidateBodySha256": "8d27698792df7bd0d45bbde2dd034995c61ab4e8937a53a6fa63942c54db646c",
+      "runtimeBodySha256": "8d27698792df7bd0d45bbde2dd034995c61ab4e8937a53a6fa63942c54db646c",
+      "bodyCorrection": "none",
+      "gripPointPx": [
+        197,
+        202
+      ],
+      "fistCenterPx": [
+        201,
+        200
+      ],
+      "angleDeg": -15,
+      "angleDefinition": "screen angle; -15°=up-right shallow, +Y down",
+      "layerOrder": "weapon_front",
+      "maskPolicy": "precise_original_body_alpha_fist",
+      "occlusionMaskPath+occlusionMaskSha256": {
+        "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame13-atk-rightdown-2-sword-character-right-hand-v10-left4/occlusion_masks/atk_rightdown_2_screen_right_fist_v10.png",
+        "sha256": "513c5e19f61a6fa0edbcb5505991082e9d7fda76db5debcc05e672fc0c0af19d"
+      },
+      "visibleStubs": "none",
+      "status": "candidate-only"
+    }
+  ],
+  "qaSummary": [
+    {
+      "frameId": "frame01",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/composites_native/hero_idle_right_sword_triptych_v9.png"
+    },
+    {
+      "frameId": "frame02",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/composites_native/hero_walk_right_1_sword_triptych_v2.png"
+    },
+    {
+      "frameId": "frame03",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-angle-up15-v2/composites_native/hero_walk_right_2_sword_triptych_up15_v2.png"
+    },
+    {
+      "frameId": "frame04",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame04-atk-right-2-sword-right-hand-v2/composites_native/hero_atk_right_2_sword_right_hand_triptych_v2.png"
+    },
+    {
+      "frameId": "frame05",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/composites_native/hero_idle_rightup_sword_right_hand_triptych_v4.png"
+    },
+    {
+      "frameId": "frame06",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/composites_native/hero_idle_rightdown_sword_character_right_hand_triptych_v9.png"
+    },
+    {
+      "frameId": "frame07",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; contact is primary"
+    },
+    {
+      "frameId": "frame08",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; contact is primary"
+    },
+    {
+      "frameId": "frame09",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; contact is primary"
+    },
+    {
+      "frameId": "frame10",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; contact is primary"
+    },
+    {
+      "frameId": "frame11",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; contact is primary"
+    },
+    {
+      "frameId": "frame12",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; contact is primary"
+    },
+    {
+      "frameId": "frame13",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; contact is primary"
+    }
+  ],
+  "reviewState": "candidate-only; visualReview=selected_by_Leo; specGate=pending_pm_scan; runtimeRelease=false"
+}
