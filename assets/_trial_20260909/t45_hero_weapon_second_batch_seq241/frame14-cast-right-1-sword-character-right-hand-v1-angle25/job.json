@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame14-cast-right-1-sword-character-right-hand-v1-angle25",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "deterministic sword placement to raised right fist; sword=-25°; no generation/body edit/runtime write",
+  "nextGate": "PM second specification gate; runtime remains untouched"
+}

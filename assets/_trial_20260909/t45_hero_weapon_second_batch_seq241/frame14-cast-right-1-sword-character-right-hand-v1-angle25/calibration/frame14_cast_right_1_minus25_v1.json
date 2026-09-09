@@ -1,0 +1,30 @@
+{
+  "task": "T45",
+  "revision": "frame14-cast-right-1-sword-character-right-hand-v1-angle25",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "bodyPath": "assets/characters/hero/battle45/cast_right_1.png",
+  "fistCenterPx": [
+    93.0,
+    113.0
+  ],
+  "handleCenterSourcePx": [
+    101.57368615160715,
+    205.58781573590227
+  ],
+  "handleCenterTargetPx": [
+    92.57368615160715,
+    112.58781573590227
+  ],
+  "rotationAboutSourceHandleDeg": -15.0,
+  "translationPx": [
+    -9,
+    -93
+  ],
+  "screenAngleDeg": -25.0,
+  "layerOrder": "weapon_front"
+}

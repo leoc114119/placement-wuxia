@@ -828,6 +828,8 @@
 | 2026-09-09 | Codex（art） → PM2/rd | 📤 seq=232 左系派生真实交付 | 交付实际产物+SHA+ledger+manifest+QA，候选与 runtime 状态显式声明。 |
 | 2026-09-09 | PM2/rd → Codex（art） | 📋 seq=241 第二批任务单 | 第二批=右系补漏 atk_right_1/walk_rightdown_2 + 持刀施法9帧；左系镜像；manifest扩至48行；零生成、逐帧闭环，cast_right_1先行。 |
 | 2026-09-09 | Codex（art） | 🧪 seq=241 frame14 `cast_right_1` 持刀候选初版完成 | 右手=画面左上举拳，拳心约 `(93,113)`；v9 剑层零生成摆放，屏幕角 `-25°`，weapon-front+精准举拳遮罩；严格停在首帧，待 Leo 目验+PM 数据门。 |
+| 2026-09-09 | Leo → Codex（art） | ✅ seq=241 frame14 `cast_right_1` 视觉通过 | Leo 确认首帧持刀候选可用；PM 数据门仍待办，runtime 不动。 |
+| 2026-09-09 | Codex（art） | 📦 seq=241 frame14 `cast_right_1` 候选归档 | `visualReview=selected_by_Leo`、`specGate=pending_pm_scan`、`runtimeRelease=false`；交接 `tasks/handoff/T45-second-batch-frame14-cast-right-1-v1-20260909.md`，严格按逐帧闭环停点。 |
 | 2026-09-09 | Leo → Codex（art） | 🔧 T45 frame13 `atk_rightdown_2` 剑位右移 | 保持 `-15°`，整剑向右移动 `2px`；原拳冻结。 |
 | 2026-09-09 | Codex（art） | 🧪 T45 frame13 `atk_rightdown_2` sword -15 右2px v8 候选完成 | v7 整层精确平移 `(+2,0)`，柄心 `(201,202)`，原拳/`-15°`/weapon-front 保持，零生成、runtime 未改、机械门全过；候选路径 `assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame13-atk-rightdown-2-sword-character-right-hand-v8-right2/`，待 Leo 目验。 |
 | 2026-09-09 | Leo → Codex（art） | ✅ T45 frame12 `atk_rightdown_1` v2 视觉通过 | Leo 确认垂直插入右手拳心版本可用；PM 第二道规格门仍待办，runtime 不动。 |
