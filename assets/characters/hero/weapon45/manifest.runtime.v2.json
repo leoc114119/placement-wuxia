@@ -536,7 +536,7 @@
       "angleDeg": -25,
       "layerOrder": "weapon_front",
       "maskPath": "masks/mask_cast_right_1.png",
-      "maskSha256": "482c0a21e5641834124c2245e26db2a39228811073be781878ffae5b211b711b",
+      "maskSha256": "a9e5045083103b4cefc506224c0c3d09aa4e6100d6e13f2eaa99bd9023fe7b9d",
       "candidateMaskSha256": "7995c86738efc6a96fcf142ac571c96564a113ac91a7ebb497756bdfbec84ae2",
       "status": "runtime-release"
     },
@@ -556,7 +556,7 @@
       "angleDeg": 25,
       "layerOrder": "weapon_front",
       "maskPath": "masks/mask_cast_left_1.png",
-      "maskSha256": "4a8f8455c3cb975690187dfbf25aa397f5bff0fd00a6d8fd79c409063ec62cac",
+      "maskSha256": "21bf3530b22d119edb9c86bfa24de72f9e5ca9938e483fee3a1dfb91e421b264",
       "candidateMaskSha256": "bc19097e109037bc7c4da7310300d997f141558222f0cd576842289960332c94",
       "status": "runtime-release"
     },
@@ -576,7 +576,7 @@
       "angleDeg": -45,
       "layerOrder": "weapon_front",
       "maskPath": "masks/mask_cast_right_2.png",
-      "maskSha256": "e8a421536427283e03253e621ecdc73a7fa85ca700340ade891e89f0531cdbbf",
+      "maskSha256": "0fd875248ce69bf522ed8c68bbcae6a10a58035138a2d048107339fb363e56bf",
       "candidateMaskSha256": "918e5519ca383ef95a0e088c0bfc1f06e41bbba30e241185768d048644f54dfe",
       "status": "runtime-release"
     },
@@ -596,7 +596,7 @@
       "angleDeg": 45,
       "layerOrder": "weapon_front",
       "maskPath": "masks/mask_cast_left_2.png",
-      "maskSha256": "46f63b709b65b9d2687bea7b589ba64c4f52f7260d2cb7795c436f7740dc298b",
+      "maskSha256": "495bbc12d384b3ec97a0e346e31a6199e1af83f37caa41179f442d5812581841",
       "candidateMaskSha256": "22030af25ee7e893cd7d509a44b81f956bc762f82dbf4037597188f400dfd783",
       "status": "runtime-release"
     },
@@ -616,7 +616,7 @@
       "angleDeg": 0,
       "layerOrder": "weapon_front",
       "maskPath": "masks/mask_cast_right_3.png",
-      "maskSha256": "2f89a590d8f5d8c4888e236876d85e1fdea10d767590c09743e529f27870a5f7",
+      "maskSha256": "2c64f43d2ae00b26000575219d21a0d9824bea6c276eef1d0f13fbd3e0abb206",
       "candidateMaskSha256": "f9bca22c254e0e92cd83dd01bdff1de35d45c8532e36b21171f129df32566077",
       "status": "runtime-release"
     },
@@ -636,7 +636,7 @@
       "angleDeg": 0,
       "layerOrder": "weapon_front",
       "maskPath": "masks/mask_cast_left_3.png",
-      "maskSha256": "5883fb1b161130b955f4de9a60ee321d00d66907b5f9b8659d0190cbef1a7b70",
+      "maskSha256": "39e9393724b06001df3a9282dd317901780df4e6a0a5dc00c00a674a5dc76f11",
       "candidateMaskSha256": "6361f99163ac41825293d4138be2c015535ada189eaf84ba118e7fb9d59db66e",
       "status": "runtime-release"
     },

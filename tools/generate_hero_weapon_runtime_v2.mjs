@@ -108,7 +108,7 @@ const CRC_TABLE = (() => {
 })();
 function crc32(buf) {
   let c = -1;
-  for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 0);
+  for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
   return (c ^ -1) >>> 0;
 }
 function pngChunk(type, data) {
@@ -140,11 +140,27 @@ function grayToRgbaPng({ w, h, gray }) {
   ihdr[9] = 6;
   return Buffer.concat([PNG_SIG, pngChunk('IHDR', ihdr), pngChunk('IDAT', zlib.deflateSync(raw, { level: 9 })), pngChunk('IEND', Buffer.alloc(0))]);
 }
+/** PNG chunk 级 CRC 校验（编码器自锁——浏览器按 CRC 拒收坏帧，自研解码器不查 CRC 会漏） */
+function verifyPngCrc(buf, label) {
+  let off = 8;
+  while (off < buf.length) {
+    const len = buf.readUInt32BE(off);
+    const type = buf.toString('ascii', off + 4, off + 8);
+    const data = buf.subarray(off + 8, off + 8 + len);
+    const stored = buf.readUInt32BE(off + 8 + len);
+    const actual = crc32(Buffer.concat([Buffer.from(type, 'ascii'), data]));
+    if (stored !== actual) throw new Error(`${label}: chunk ${type} CRC 不符（编码器缺陷）`);
+    off += 12 + len;
+    if (type === 'IEND') return;
+  }
+  throw new Error(`${label}: 缺 IEND`);
+}
 /** 灰度(luma=erase 强度)→RGBA(alpha=luma)；回读逐像素校验后返回（T28 ②' 同式） */
 function convertMaskToAlpha(buf, label) {
   const dec = decodeGrayPng(buf);
   if (dec.w !== 240 || dec.h !== 320) throw new Error(`${label}: 蒙版尺寸 ${dec.w}x${dec.h}≠240x320`);
   const out = grayToRgbaPng(dec);
+  verifyPngCrc(out, label);
   // 回读校验：RGBA IDAT 重解码，逐像素 alpha==luma
   let off = 8;
   const idat = [];

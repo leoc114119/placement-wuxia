@@ -203,7 +203,7 @@ async function loadAssets(): Promise<BattleHexAssets> {
       try {
         const meta = WEAPON_MODELS[row.weaponModelKey];
         const body = bodyByPath.get(bodySrc) ?? null;
-        const model = modelImgOf.get(meta.src) ?? null;
+        const model = modelImgOf.get(row.weaponModelKey) ?? null; // modelJobs 键=模型 key
         const mask = row.maskPath ? maskImgOf.get(row.maskPath) ?? null : null;
         if (!body || !model || (row.maskPath && !mask)) {
           store.set(bodySrc, null);
