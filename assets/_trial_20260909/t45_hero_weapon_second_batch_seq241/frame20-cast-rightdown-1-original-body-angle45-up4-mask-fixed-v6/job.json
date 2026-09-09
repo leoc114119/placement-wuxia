@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame20-cast-rightdown-1-original-body-angle45-up4-mask-fixed-v6",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "correct sword-back/fist-mask-front/local-grip-reveal order; angle -45°, up4",
+  "nextGate": "Leo visual review"
+}

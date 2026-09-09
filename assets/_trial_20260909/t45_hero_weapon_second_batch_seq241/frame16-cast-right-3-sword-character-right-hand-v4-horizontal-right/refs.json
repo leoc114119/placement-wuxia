@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame16-cast-right-3-sword-character-right-hand-v4-horizontal-right",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/cast_right_3.png",
+      "role": "frozen cast_right_3 body",
+      "sha256": "9f75dc98916a8a594ca77332ecac7087074098bfe47b6d543227397f516ed20e"
+    },
+    {
+      "path": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame16-cast-right-3-sword-character-right-hand-v2-correct-hand/normalized/hero_sword_angle_minus40_cast_right_3_v2_correct_hand.png",
+      "role": "v2 correct-hand sword layer",
+      "sha256": "663f180c1c2c13801dc269654442e78a7552621d548e40101163342273f87635"
+    }
+  ]
+}

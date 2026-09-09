@@ -1,0 +1,16 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-original-body-angle110-v3-no-handle-leak",
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/cast_rightup_1.png",
+      "role": "original cast_rightup_1 body; sole body input",
+      "sha256": "70dae35295facdfdffc9ae54081d45506cb90abdc8d261a4e3566e55d1dc9b78"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+      "role": "selected sword layer v9",
+      "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d"
+    }
+  ]
+}

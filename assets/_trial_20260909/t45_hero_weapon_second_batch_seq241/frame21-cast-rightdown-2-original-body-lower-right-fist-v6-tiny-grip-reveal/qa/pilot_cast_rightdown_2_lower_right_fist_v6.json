@@ -1,0 +1,56 @@
+{
+  "task": "T45",
+  "revision": "frame21-cast-rightdown-2-original-body-lower-right-fist-v6-tiny-grip-reveal",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "body": {
+    "path": "assets/characters/hero/battle45/cast_rightdown_2.png",
+    "sha256": "ae00941e1de8cb2cd4743b8440c2b0df94260020fca108470cb5923185932e8a"
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "screenAngleDeg": -45.0,
+    "handleCenterPx": [
+      149.57368615160715,
+      202.58781573590227
+    ],
+    "translationPx": [
+      48,
+      -3
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "screenProjection": "screen-right chest fist",
+    "fistCenterPx": [
+      149.0,
+      203.0
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "weapon_back_correct_right_fist_front_local_grip_reveal",
+    "maskPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame21-cast-rightdown-2-original-body-lower-right-fist-v6-tiny-grip-reveal/occlusion_masks/right_screen_fist_precise_v6.png",
+    "revealPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame21-cast-rightdown-2-original-body-lower-right-fist-v6-tiny-grip-reveal/occlusion_masks/right_screen_fist_grip_reveal_v6.png"
+  },
+  "composites": {
+    "contact": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame21-cast-rightdown-2-original-body-lower-right-fist-v6-tiny-grip-reveal/contact/hero_cast_rightdown_2_correct_hand_sword_minus45_v6.png",
+    "zoom": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame21-cast-rightdown-2-original-body-lower-right-fist-v6-tiny-grip-reveal/contact/cast_rightdown_2_correct_hand_zoom_v6.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "weaponCanvasPass": true,
+    "correctRightHandPass": true,
+    "fistMaskPass": true,
+    "tinyGripRevealPass": true,
+    "angleMinus45Pass": true,
+    "handleCenterPass": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  }
+}

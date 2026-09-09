@@ -1,0 +1,21 @@
+{
+  "task": "T45",
+  "revision": "frame20-cast-rightdown-1-original-body-angle45-fist-mask-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "bodyPath": "assets/characters/hero/battle45/cast_rightdown_1.png",
+  "fistCenterPx": [
+    94.0,
+    123.0
+  ],
+  "handleCenterPx": [
+    94.57368615160715,
+    122.58781573590227
+  ],
+  "screenAngleDeg": -45.0,
+  "layerOrder": "weapon_back_original_fist_top_grip_only_reveal"
+}

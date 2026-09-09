@@ -1,0 +1,26 @@
+{
+  "task": "T45",
+  "revision": "frame19-cast-rightup-3-original-body-angle10-body-front-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "bodyPath": "assets/characters/hero/battle45/cast_rightup_3.png",
+  "fistCenterPx": [
+    190.0,
+    211.0
+  ],
+  "handleCenterPx": [
+    190.57368615160715,
+    210.58781573590227
+  ],
+  "screenAngleDeg": 10.0,
+  "translationPx": [
+    89,
+    5
+  ],
+  "layerOrder": "full_body_front",
+  "mask": "none"
+}

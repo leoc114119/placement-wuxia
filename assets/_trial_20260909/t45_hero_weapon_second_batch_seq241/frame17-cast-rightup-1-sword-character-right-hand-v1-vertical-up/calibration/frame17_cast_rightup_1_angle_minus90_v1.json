@@ -1,0 +1,30 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-sword-character-right-hand-v1-vertical-up",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "bodyPath": "assets/characters/hero/battle45/cast_rightup_1.png",
+  "fistCenterPx": [
+    183.0,
+    95.0
+  ],
+  "handleCenterSourcePx": [
+    101.57368615160715,
+    205.58781573590227
+  ],
+  "handleCenterTargetPx": [
+    183.57368615160715,
+    94.58781573590227
+  ],
+  "rotationAboutSourceHandleDeg": 50.0,
+  "translationPx": [
+    82,
+    -111
+  ],
+  "screenAngleDeg": -90.0,
+  "layerOrder": "weapon_front"
+}

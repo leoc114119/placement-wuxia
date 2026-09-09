@@ -1,0 +1,113 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-fist-redraw-v1-and-sword",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "seq": "hero-weapon-second-batch-frame17-cast-rightup-1",
+  "generation": {
+    "credits": "built-in image_gen",
+    "rawImageGeneration": true,
+    "method": "native local fist redraw followed by deterministic sword placement",
+    "generatedSource": "/Users/leochen/.codex/generated_images/01a06f37-6f31-77a3-a9e0-cd919de56beb/exec-c328fad3-2363-419e-a66e-aa7ea916920f.png"
+  },
+  "body": {
+    "sourcePath": "assets/characters/hero/battle45/cast_rightup_1.png",
+    "sourceSha256": "70dae35295facdfdffc9ae54081d45506cb90abdc8d261a4e3566e55d1dc9b78",
+    "candidatePath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-palm-up-v2-and-sword/normalized/cast_rightup_1_fist_redrawn_body_candidate.png",
+    "candidateSha256": "5c829895c7555a93ae3f414b2f54238b33490064420a44880b981980010a8992",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "borderNonzero": 0
+    },
+    "patchTargetPx": [
+      170,
+      79,
+      196,
+      111
+    ]
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sourceLayerSha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "normalizedPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-palm-up-v2-and-sword/normalized/hero_sword_angle_minus90_cast_rightup_1_fist_redrawn_v1.png",
+    "normalizedSha256": "e6656e509fdeef3f00b6d14518a31ffc81c88b68fb1eac09954d8c981dbd44b7",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        178,
+        0,
+        194,
+        110
+      ],
+      "borderNonzero": 8
+    },
+    "rotationAboutSourceHandleDeg": 50.0,
+    "screenAngleDeg": -90.0,
+    "translationPx": [
+      82,
+      -111
+    ],
+    "handleCenterTargetPx": [
+      183.57368615160715,
+      94.58781573590227
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "fistCenterPx": [
+      183.0,
+      95.0
+    ],
+    "redrawPatchSource": "/Users/leochen/.codex/generated_images/01a06f37-6f31-77a3-a9e0-cd919de56beb/exec-c328fad3-2363-419e-a66e-aa7ea916920f.png"
+  },
+  "occlusion": {
+    "layerOrder": "weapon_front_with_narrow_handle_reveal",
+    "maskPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-palm-up-v2-and-sword/occlusion_masks/cast_rightup_1_redrawn_right_fist_v1.png",
+    "handleRevealMaskPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-palm-up-v2-and-sword/occlusion_masks/cast_rightup_1_redrawn_fist_handle_reveal_v1.png"
+  },
+  "composites": {
+    "contact": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-palm-up-v2-and-sword/contact/hero_cast_rightup_1_fist_redrawn_sword_minus90_v1.png",
+    "fistZoom": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-palm-up-v2-and-sword/contact/cast_rightup_1_fist_redrawn_sword_zoom_v1.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "bodyRealAlphaPass": true,
+    "bodyBorderTransparent": true,
+    "weaponCanvasPass": true,
+    "weaponRealAlphaPass": true,
+    "compositeCanvasPass": true,
+    "angleMinus90Pass": true,
+    "handleCenterTargetPass": true,
+    "redrawnFistPatchPass": true,
+    "narrowHandleRevealPass": true,
+    "weaponFrontLayerPass": true,
+    "runtimeUntouched": true,
+    "allMachineChecksPass": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-sword-character-right-hand-v3-handle-in-fist",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "restore handle to fist center and reveal only narrow 9x13px grip segment; -90° unchanged; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

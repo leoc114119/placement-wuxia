@@ -1,0 +1,40 @@
+{
+  "task": "T45",
+  "revision": "frame16-cast-right-3-sword-character-right-hand-v6-handle-tip-only",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "bodyPath": "assets/characters/hero/battle45/cast_right_3.png",
+  "fistCenterPx": [
+    87.5,
+    223.0
+  ],
+  "handleCenterPx": [
+    87.57368615160715,
+    222.58781573590227
+  ],
+  "screenAngleDeg": 0.0,
+  "positionUnchanged": true,
+  "handleRevealPolygonPx": [
+    [
+      72,
+      217
+    ],
+    [
+      101,
+      217
+    ],
+    [
+      107,
+      231
+    ],
+    [
+      72,
+      231
+    ]
+  ],
+  "layerOrder": "weapon_front_with_local_handle_reveal"
+}

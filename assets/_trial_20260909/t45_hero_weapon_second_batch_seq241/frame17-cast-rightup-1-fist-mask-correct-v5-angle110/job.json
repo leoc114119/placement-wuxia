@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-fist-mask-correct-v5-angle110",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "tight fist mask first, then place -110° sword with grip-only reveal at fist center; no body/redraw/runtime changes",
+  "nextGate": "Leo visual review"
+}

@@ -1,0 +1,1 @@
+Original cast_rightup_2 body; full body layer is above sword, no fist mask. Sword screen angle -110°, whole sword shifted left 3px total; handle target (187.57,186.59).

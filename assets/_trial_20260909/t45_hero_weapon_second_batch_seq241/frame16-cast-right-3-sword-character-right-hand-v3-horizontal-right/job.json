@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame16-cast-right-3-sword-character-right-hand-v3-horizontal-right",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "exact +40° rotation about frozen handle to horizontal right; position unchanged; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

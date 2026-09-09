@@ -1,0 +1,16 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-fist-angle70-v3-and-sword",
+  "references": [
+    {
+      "path": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-palm-up-v2-and-sword/normalized/cast_rightup_1_fist_redrawn_body_candidate.png",
+      "role": "palm-up redrawn fist body v2",
+      "sha256": "1dae2736ec9df478d7311bc7b764de21a1446d171109ba3a332a37d69913a431"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+      "role": "selected sword layer v9",
+      "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d"
+    }
+  ]
+}

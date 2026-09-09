@@ -1,0 +1,72 @@
+{
+  "task": "T45",
+  "revision": "frame24-walk-rightdown-2-pixel-fist-angle60-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "body": {
+    "path": "assets/characters/hero/battle45/walk_rightdown_2.png",
+    "sha256": "c422a9073335fbc4147ca8700016c123013f8785a499b3fcf2dc10f2f12f1af4",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        45,
+        44,
+        191,
+        300
+      ]
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "screenAngleDeg": -60,
+    "handleCenterPx": [
+      89.57368615160715,
+      200.58781573590227
+    ],
+    "translationPx": [
+      -12,
+      -5
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "screenProjection": "screen-left lower fist",
+    "fistCenterPx": [
+      89,
+      201
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "weapon_back_pixel_fist_front_local_grip_reveal",
+    "maskPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame24-walk-rightdown-2-pixel-fist-angle60-mask-v2/occlusion_masks/walk_rightdown_2_right_fist_precise_v2.png",
+    "revealPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame24-walk-rightdown-2-pixel-fist-angle60-mask-v2/occlusion_masks/walk_rightdown_2_grip_reveal_v2.png"
+  },
+  "composites": {
+    "contact": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame24-walk-rightdown-2-pixel-fist-angle60-mask-v2/contact/hero_walk_rightdown_2_pixel_fist_sword_minus60_v2.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "weaponCanvasPass": true,
+    "pixelFistPass": true,
+    "fistMaskPass": true,
+    "gripRevealPass": true,
+    "angleMinus60Pass": true,
+    "handleCenterPass": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame16-cast-right-3-sword-character-right-hand-v6-handle-tip-only",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "local small handle-tip reveal over frozen right-hand fist; horizontal 0° and position unchanged; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

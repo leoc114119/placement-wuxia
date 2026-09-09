@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame21-cast-rightdown-2-original-body-lower-right-fist-v5-no-leak",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "correct screen-right hand; -45° sword into fist center with precise mask and no grip reveal",
+  "nextGate": "Leo visual review"
+}

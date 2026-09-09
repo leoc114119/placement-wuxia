@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "revision": "frame23-atk-right-1-original-body-angle45-right-hand-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "fistCenterPx": [
+    149.0,
+    203.0
+  ],
+  "handleCenterPx": [
+    112.57368615160715,
+    179.58781573590227
+  ],
+  "screenAngleDeg": -45.0,
+  "layerOrder": "weapon_back_correct_right_fist_front_local_grip_reveal"
+}

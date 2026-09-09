@@ -1,0 +1,16 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-fist-mask-correct-v5-angle110",
+  "references": [
+    {
+      "path": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-angle110-v4-and-sword/normalized/cast_rightup_1_fist_redrawn_body_candidate.png",
+      "role": "frozen angle110 redrawn fist body",
+      "sha256": "0449928b6ac24bc4938f1b0f4d7673e49e72d40ef209ec6cae38c9f291712386"
+    },
+    {
+      "path": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-angle110-v4-and-sword/normalized/hero_sword_angle_minus110_cast_rightup_1_fist_redrawn_angle110_v4.png",
+      "role": "frozen -110 sword layer",
+      "sha256": "424ac69acf5b0a62fd1d3fad7201eb347d267758662ca38abae4d86613180c6d"
+    }
+  ]
+}

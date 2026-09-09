@@ -1,0 +1,39 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-fist-redraw-angle110-v4-and-sword",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "bodyPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-angle110-v4-and-sword/normalized/cast_rightup_1_fist_redrawn_body_candidate.png",
+  "fistCenterPx": [
+    183.0,
+    95.0
+  ],
+  "handleCenterPx": [
+    183.57368615160715,
+    94.58781573590227
+  ],
+  "screenAngleDeg": -110.0,
+  "handleRevealPolygonPx": [
+    [
+      179,
+      89
+    ],
+    [
+      188,
+      89
+    ],
+    [
+      188,
+      102
+    ],
+    [
+      179,
+      102
+    ]
+  ],
+  "layerOrder": "weapon_front_with_narrow_handle_reveal"
+}

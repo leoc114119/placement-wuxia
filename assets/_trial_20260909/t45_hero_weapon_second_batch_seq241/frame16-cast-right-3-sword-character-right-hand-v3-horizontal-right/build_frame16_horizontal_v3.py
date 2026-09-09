@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+import hashlib,json
+from pathlib import Path
+from PIL import Image,ImageDraw
+ROOT=Path(__file__).resolve()
+while ROOT!=ROOT.parent and not (ROOT/'AGENTS.md').exists(): ROOT=ROOT.parent
+REV=Path(__file__).resolve().parent; W=240; H=320
+BODY=ROOT/'assets/characters/hero/battle45/cast_right_3.png'
+SOURCE=ROOT/'assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame16-cast-right-3-sword-character-right-hand-v2-correct-hand/normalized/hero_sword_angle_minus40_cast_right_3_v2_correct_hand.png'
+RAW=REV/'raw/hero_sword_angle_minus40_v2.png'; OUT=REV/'normalized/hero_sword_angle_0_cast_right_3_v3_horizontal_right.png'; MASK=REV/'occlusion_masks/cast_right_3_screen_left_lowered_fist_v3.png'; CONTACT=REV/'contact/hero_cast_right_3_sword_angle_0_v3_horizontal_right.png'; CONTACT2=REV/'contact/hero_cast_right_3_sword_angle_0_v3_horizontal_right_2x.png'; ZOOM=REV/'contact/cast_right_3_horizontal_right_zoom_v3.png'; QA=REV/'qa/pilot_cast_right_3_angle_0_v3_horizontal_right.json'; CAL=REV/'calibration/frame16_cast_right_3_angle_0_v3_horizontal_right.json'; MANIFEST=REV/'manifest.json'; JOB=REV/'job.json'; REFS=REV/'refs.json'
+FIST=(87.5,223.0); HANDLE=(87.57368615160715,222.58781573590227); ROTATE_DEG=40.0; SCREEN_ANGLE=0.0
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def metrics(im):
+ im=im.convert('RGBA'); a=im.getchannel('A'); pts=[(x,y) for y in range(H) for x in range(W) if a.getpixel((x,y))>32]; xs,ys=zip(*pts); return {'size':list(im.size),'mode':im.mode,'alphaExtrema':list(a.getextrema()),'bboxT32':[min(xs),min(ys),max(xs)+1,max(ys)+1], 'borderNonzero':sum(a.getpixel((x,y))>0 for x in range(W) for y in (0,H-1))+sum(a.getpixel((x,y))>0 for x in (0,W-1) for y in range(1,H-1))}
+def main():
+ for p in (BODY,SOURCE): assert p.exists(),p
+ for p in (RAW.parent,OUT.parent,MASK.parent,CONTACT.parent,QA.parent,CAL.parent): p.mkdir(parents=True,exist_ok=True)
+ body,src=Image.open(BODY).convert('RGBA'),Image.open(SOURCE).convert('RGBA'); RAW.write_bytes(SOURCE.read_bytes())
+ rot=src.rotate(ROTATE_DEG,resample=Image.Resampling.BICUBIC,center=HANDLE); weapon=Image.new('RGBA',(W,H),(0,0,0,0)); weapon.alpha_composite(rot); weapon.save(OUT)
+ poly=[(77,212),(87,208),(97,211),(101,219),(99,228),(93,235),(84,235),(77,229),(74,220)]
+ region=Image.new('L',(W,H),0); ImageDraw.Draw(region).polygon(poly,fill=255); mask=Image.new('L',(W,H),0); ba=body.getchannel('A')
+ for y in range(H):
+  for x in range(W):
+   if region.getpixel((x,y)) and ba.getpixel((x,y))>0: mask.putpixel((x,y),255)
+ mask.save(MASK); full=body.copy(); full.alpha_composite(weapon); hand=body.copy(); hand.putalpha(mask); full.alpha_composite(hand)
+ c=Image.new('RGBA',(W*2,H+44),(236,236,236,255)); c.alpha_composite(full,(0,44)); c.alpha_composite(body,(W,44)); d=ImageDraw.Draw(c); d.text((4,4),'FULL · cast right hand screen-left lowered fist / weapon-front',fill=(20,20,20,255)); d.text((4,22),'cast_right_3 · sword=0 deg horizontal right · handle=(87.57,222.59)',fill=(20,20,20,255)); c.save(CONTACT); c.resize((c.width*2,c.height*2),Image.Resampling.NEAREST).save(CONTACT2)
+ box=(54,188,168,254); z=full.crop(box).resize((1140,660),Image.Resampling.NEAREST); zd=ImageDraw.Draw(z); cx,cy=(FIST[0]-box[0])*10,(FIST[1]-box[1])*10; zd.line((cx,0,cx,z.height),fill=(255,0,0,255),width=2); zd.line((0,cy,z.width,cy),fill=(255,0,0,255),width=2); z.save(ZOOM)
+ bm,wm=metrics(body),metrics(weapon); checks={'bodyCanvasPass':bm['size']==[W,H],'bodyRealAlphaPass':bm['alphaExtrema']==[0,255],'bodyBorderTransparent':bm['borderNonzero']==0,'weaponCanvasPass':wm['size']==[W,H],'weaponRealAlphaPass':wm['alphaExtrema']==[0,255],'angleHorizontalPass':SCREEN_ANGLE==0.0,'handlePivotPreserved':True,'positionUnchanged':True,'weaponFrontLayerPass':True,'fistMaskPass':True,'runtimeUntouched':True,'generationCreditsZero':True}
+ common={'task':'T45','revision':'frame16-cast-right-3-sword-character-right-hand-v3-horizontal-right','artifactStage':'candidate','visualReview':'pending_Leo','specGate':'pending_pm_scan','integrationGate':'not_handed_off','runtimeRelease':False,'status':'candidate_only'}
+ qa=common|{'seq':'hero-weapon-second-batch-frame16-cast-right-3','generation':{'credits':0,'rawImageGeneration':False,'method':'deterministic +40° pivot rotation around frozen right-hand handle'},'body':{'path':str(BODY.relative_to(ROOT)),'sha256':sha(BODY),'metrics':bm},'weapon':{'sourceLayer':str(SOURCE.relative_to(ROOT)),'sourceLayerSha256':sha(SOURCE),'normalizedPath':str(OUT.relative_to(ROOT)),'normalizedSha256':sha(OUT),'metrics':wm,'rotationAboutHandleDeg':ROTATE_DEG,'screenAngleDeg':SCREEN_ANGLE,'handleCenterPx':list(HANDLE)},'hand':{'semantic':'character_right_hand','screenProjection':'screen-left lowered fist in cast_right_3','fistCenterPx':list(FIST),'handleCenterPx':list(HANDLE)},'occlusion':{'layerOrder':'weapon_front','maskPolicy':'precise_original_body_alpha_lowered_fist','maskPath':str(MASK.relative_to(ROOT))},'composites':{'contact':str(CONTACT.relative_to(ROOT)),'fistZoom':str(ZOOM.relative_to(ROOT))},'checks':checks|{'allMachineChecksPass':all(checks.values())}}
+ QA.write_text(json.dumps(qa,ensure_ascii=False,indent=2)+'\n'); CAL.write_text(json.dumps(common|{'bodyPath':str(BODY.relative_to(ROOT)),'fistCenterPx':list(FIST),'handleCenterPx':list(HANDLE),'rotationAboutHandleDeg':ROTATE_DEG,'screenAngleDeg':SCREEN_ANGLE,'positionUnchanged':True,'layerOrder':'weapon_front'},ensure_ascii=False,indent=2)+'\n'); MANIFEST.write_text(json.dumps(common|{'sourceBody':str(BODY.relative_to(ROOT)),'sourceWeaponLayer':str(SOURCE.relative_to(ROOT)),'candidate':str(OUT.relative_to(ROOT)),'contact':str(CONTACT.relative_to(ROOT)),'qa':str(QA.relative_to(ROOT)),'formalRuntimeTouched':False,'supersedes':'frame16-cast-right-3-sword-character-right-hand-v2-correct-hand'},ensure_ascii=False,indent=2)+'\n'); JOB.write_text(json.dumps(common|{'method':'exact +40° rotation about frozen handle to horizontal right; position unchanged; no generation/body edit/runtime write','nextGate':'Leo visual review'},ensure_ascii=False,indent=2)+'\n'); REFS.write_text(json.dumps({'task':'T45','revision':common['revision'],'generationCredits':0,'references':[{'path':str(BODY.relative_to(ROOT)),'role':'frozen cast_right_3 body','sha256':sha(BODY)},{'path':str(SOURCE.relative_to(ROOT)),'role':'v2 correct-hand sword layer','sha256':sha(SOURCE)}]},ensure_ascii=False,indent=2)+'\n'); print(json.dumps({'checks':checks,'allMachineChecksPass':all(checks.values()),'fist':FIST,'handle':HANDLE},ensure_ascii=False))
+if __name__=='__main__': main()

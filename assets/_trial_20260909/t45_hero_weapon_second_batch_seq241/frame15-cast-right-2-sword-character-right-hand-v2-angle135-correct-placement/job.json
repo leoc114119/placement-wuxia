@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame15-cast-right-2-sword-character-right-hand-v2-angle135-correct-placement",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "corrected handle translation (-23,+65) with +135° action angle; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

@@ -1,0 +1,62 @@
+{
+  "task": "T45",
+  "revision": "frame22-cast-rightdown-3-original-body-angle135-body-back-v3",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "body": {
+    "path": "assets/characters/hero/battle45/cast_rightdown_3.png",
+    "sha256": "195f8661b11a570949116432cf7a83941f1cec507563d74f528f3a2e3c35bbca",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ]
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "screenAngleDeg": -135,
+    "handleCenterPx": [
+      55.57368615160715,
+      214.58781573590227
+    ],
+    "translationPx": [
+      -46,
+      9
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "fistCenterPx": [
+      55,
+      215
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "weapon_back_full_body_front",
+    "maskPolicy": "none_by_Leo_direction"
+  },
+  "composites": {
+    "contact": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame22-cast-rightdown-3-original-body-angle135-body-back-v3/contact/hero_cast_rightdown_3_body_back_sword_minus135_v3.png"
+  },
+  "checks": {
+    "bodyFrontLayerPass": true,
+    "swordBehindBodyPass": true,
+    "noFistMaskByLeoPass": true,
+    "angleMinus135Pass": true,
+    "handleCenterPass": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  }
+}

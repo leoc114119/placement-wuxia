@@ -1,0 +1,16 @@
+{
+  "task": "T45",
+  "revision": "frame18-cast-rightup-2-original-body-angle110-left3-body-front-v3",
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/cast_rightup_2.png",
+      "role": "original cast_rightup_2 body",
+      "sha256": "3ba90146e6332341659f532d9220e21ee078ff5959e5a2e4b9c920684ad4fc28"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+      "role": "selected sword layer v9",
+      "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d"
+    }
+  ]
+}

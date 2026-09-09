@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame16-cast-right-3-sword-character-right-hand-v1-angle-minus40",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "exact (+44,-29) translation to screen-right chest fist; sword=-40°; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

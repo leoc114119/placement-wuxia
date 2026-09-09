@@ -1,0 +1,13 @@
+{
+  "task": "T45",
+  "revision": "frame21-cast-rightdown-2-original-body-angle45-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "candidate": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame21-cast-rightdown-2-original-body-angle45-v1/contact/hero_cast_rightdown_2_mask_fixed_v1.png",
+  "qa": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame21-cast-rightdown-2-original-body-angle45-v1/qa/pilot_cast_rightdown_2_mask_fixed_v1.json",
+  "formalRuntimeTouched": false
+}

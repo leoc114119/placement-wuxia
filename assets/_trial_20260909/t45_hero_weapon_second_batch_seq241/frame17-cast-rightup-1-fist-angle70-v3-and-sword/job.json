@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-fist-angle70-v3-and-sword",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "deterministic -20° local fist rotation to ≈70° and +30° sword pivot rotation to -70°; handle center fixed; no new generation/runtime write",
+  "nextGate": "Leo visual review"
+}

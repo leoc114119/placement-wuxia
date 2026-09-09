@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame18-cast-rightup-2-original-body-angle110-left2-body-front-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "-110° sword and whole-layer left2px shift; full body above sword; no fist mask; no runtime write",
+  "nextGate": "Leo visual review"
+}

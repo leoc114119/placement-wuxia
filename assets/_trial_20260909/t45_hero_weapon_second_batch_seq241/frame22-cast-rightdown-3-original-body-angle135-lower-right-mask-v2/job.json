@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame22-cast-rightdown-3-original-body-angle135-lower-right-mask-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "correct screen-right hand; -45° sword into fist center with precise mask and expanded grip reveal",
+  "nextGate": "Leo visual review"
+}

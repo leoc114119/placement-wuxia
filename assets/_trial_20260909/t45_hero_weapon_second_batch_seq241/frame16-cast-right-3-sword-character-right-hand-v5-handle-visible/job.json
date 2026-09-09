@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame16-cast-right-3-sword-character-right-hand-v5-handle-visible",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "local handle-corridor reveal over frozen right-hand fist; horizontal 0° and position unchanged; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

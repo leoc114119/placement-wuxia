@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "revision": "frame23-atk-right-1-original-body-angle115-down3-right3-mask-v6",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "sourceBody": "assets/characters/hero/battle45/atk_right_1.png",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+  "candidate": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame23-atk-right-1-original-body-angle115-down3-right3-mask-v6/contact/hero_atk_right_1_mask_rebuilt_minus95_v6.png",
+  "qa": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame23-atk-right-1-original-body-angle115-down3-right3-mask-v6/qa/pilot_atk_right_1_mask_rebuilt_v6.json",
+  "formalRuntimeTouched": false
+}

@@ -1,0 +1,21 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-original-body-angle110-v2-cover-handle-leak",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "bodyPath": "assets/characters/hero/battle45/cast_rightup_1.png",
+  "fistCenterPx": [
+    183.0,
+    95.0
+  ],
+  "handleCenterPx": [
+    183.57368615160715,
+    94.58781573590227
+  ],
+  "screenAngleDeg": -110.0,
+  "layerOrder": "weapon_back_original_fist_top_grip_only_reveal"
+}

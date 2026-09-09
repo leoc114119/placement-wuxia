@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame18-cast-rightup-2-original-body-vertical-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "restart from original cast_rightup_2 body; precise screen-right fist mask, vertical -90° sword, no handle reveal; no runtime write",
+  "nextGate": "Leo visual review"
+}

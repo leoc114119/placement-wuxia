@@ -1,0 +1,69 @@
+{
+  "task": "T45",
+  "revision": "frame24-walk-rightdown-2-original-body-angle45-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "body": {
+    "path": "assets/characters/hero/battle45/walk_rightdown_2.png",
+    "sha256": "c422a9073335fbc4147ca8700016c123013f8785a499b3fcf2dc10f2f12f1af4",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        45,
+        44,
+        191,
+        300
+      ]
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "screenAngleDeg": -45,
+    "handleCenterPx": [
+      91.57368615160715,
+      201.58781573590227
+    ],
+    "translationPx": [
+      -10,
+      -4
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "fistCenterPx": [
+      91,
+      202
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "weapon_back_precise_right_fist_front",
+    "maskPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame24-walk-rightdown-2-original-body-angle45-v1/occlusion_masks/walk_rightdown_2_right_fist_precise_v1.png"
+  },
+  "composites": {
+    "contact": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame24-walk-rightdown-2-original-body-angle45-v1/contact/hero_walk_rightdown_2_mask_rebuilt_minus95_v1.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "weaponCanvasPass": true,
+    "fistMaskPass": true,
+    "swordBackLayerPass": true,
+    "angleMinus45Pass": true,
+    "handleCenterPass": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  }
+}

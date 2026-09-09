@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame19-cast-rightup-3-original-body-angle20-body-front-v3",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "-80° sword placement into original rightup_3 hand; full body above sword; no fist mask; no runtime write",
+  "nextGate": "Leo visual review"
+}

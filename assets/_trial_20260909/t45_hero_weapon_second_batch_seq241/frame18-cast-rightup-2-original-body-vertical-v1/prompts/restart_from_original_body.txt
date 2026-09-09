@@ -1,0 +1,1 @@
+Original cast_rightup_2 body only; character right hand is the screen-right fist around (190,187). Deterministic sword baseline: screen angle -90 degrees, handle point (190.57,186.59), no redraw or prior candidate input.

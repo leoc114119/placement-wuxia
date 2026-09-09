@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame20-cast-rightdown-1-original-body-angle45-up2-sword-front-v3",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "restart from original cast_rightdown_1 body; precise original fist mask, then -110° sword with precise fist mask; no redraw/runtime write",
+  "nextGate": "Leo visual review"
+}

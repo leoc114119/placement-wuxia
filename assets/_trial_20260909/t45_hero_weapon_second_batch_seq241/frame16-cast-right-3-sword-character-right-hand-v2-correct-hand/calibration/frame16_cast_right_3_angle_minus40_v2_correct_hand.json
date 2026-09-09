@@ -1,0 +1,25 @@
+{
+  "task": "T45",
+  "revision": "frame16-cast-right-3-sword-character-right-hand-v2-correct-hand",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "bodyPath": "assets/characters/hero/battle45/cast_right_3.png",
+  "fistCenterPx": [
+    87.5,
+    223.0
+  ],
+  "handleCenterTargetPx": [
+    87.57368615160715,
+    222.58781573590227
+  ],
+  "translationPx": [
+    -58,
+    46
+  ],
+  "screenAngleDeg": -40.0,
+  "layerOrder": "weapon_front"
+}

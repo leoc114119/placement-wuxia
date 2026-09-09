@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "revision": "frame21-cast-rightdown-2-original-body-lower-right-fist-v5-no-leak",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "fistCenterPx": [
+    149.0,
+    203.0
+  ],
+  "handleCenterPx": [
+    149.57368615160715,
+    202.58781573590227
+  ],
+  "screenAngleDeg": -45.0,
+  "layerOrder": "weapon_back_correct_right_fist_front_local_grip_reveal"
+}

@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "revision": "frame23-atk-right-1-original-body-angle95-mask-rebuilt-v3",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "fistCenterPx": [
+    112,
+    180
+  ],
+  "handleCenterPx": [
+    112.57368615160715,
+    179.58781573590227
+  ],
+  "screenAngleDeg": -95,
+  "layerOrder": "weapon_back_precise_right_fist_front"
+}

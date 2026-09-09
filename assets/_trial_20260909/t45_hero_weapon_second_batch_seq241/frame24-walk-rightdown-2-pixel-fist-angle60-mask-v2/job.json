@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame24-walk-rightdown-2-pixel-fist-angle60-v2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "pixel-located fist `(89,201)`, -60° sword, precise fist mask and local grip reveal",
+  "nextGate": "Leo visual review"
+}

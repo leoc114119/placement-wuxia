@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "revision": "frame24-walk-rightdown-2-original-body-angle45-v1",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "fistCenterPx": [
+    91,
+    202
+  ],
+  "handleCenterPx": [
+    91.57368615160715,
+    201.58781573590227
+  ],
+  "screenAngleDeg": -45,
+  "layerOrder": "weapon_back_precise_right_fist_front"
+}

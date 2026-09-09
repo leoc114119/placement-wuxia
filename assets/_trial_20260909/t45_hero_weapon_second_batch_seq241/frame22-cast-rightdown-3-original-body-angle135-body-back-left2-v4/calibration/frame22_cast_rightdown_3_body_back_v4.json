@@ -1,0 +1,21 @@
+{
+  "task": "T45",
+  "revision": "frame22-cast-rightdown-3-original-body-angle135-body-back-left2-v4",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "fistCenterPx": [
+    55,
+    215
+  ],
+  "handleCenterPx": [
+    53.57368615160715,
+    214.58781573590227
+  ],
+  "screenAngleDeg": -135,
+  "layerOrder": "weapon_back_full_body_front",
+  "mask": "none"
+}

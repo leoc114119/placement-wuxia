@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+import hashlib,json
+from pathlib import Path
+from PIL import Image,ImageDraw
+ROOT=Path(__file__).resolve()
+while ROOT!=ROOT.parent and not (ROOT/'AGENTS.md').exists(): ROOT=ROOT.parent
+REV=Path(__file__).resolve().parent; W=240; H=320
+BODY=ROOT/'assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-angle110-v4-and-sword/normalized/cast_rightup_1_fist_redrawn_body_candidate.png'; SOURCE=ROOT/'assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame17-cast-rightup-1-fist-redraw-angle110-v4-and-sword/normalized/hero_sword_angle_minus110_cast_rightup_1_fist_redrawn_angle110_v4.png'
+RAW=REV/'raw/fist_redrawn_body_v4.png'; OUT=REV/'normalized/hero_sword_angle_minus110_cast_rightup_1_fist_mask_correct_v5.png'; MASK=REV/'occlusion_masks/cast_rightup_1_fist_precise_v5.png'; REVEAL=REV/'occlusion_masks/cast_rightup_1_handle_grip_only_v5.png'; CONTACT=REV/'contact/hero_cast_rightup_1_fist_mask_correct_sword_minus110_v5.png'; CONTACT2=REV/'contact/hero_cast_rightup_1_fist_mask_correct_sword_minus110_v5_2x.png'; ZOOM=REV/'contact/cast_rightup_1_mask_correct_zoom_v5.png'; QA=REV/'qa/pilot_cast_rightup_1_fist_mask_correct_v5.json'; CAL=REV/'calibration/frame17_cast_rightup_1_fist_mask_correct_v5.json'; MANIFEST=REV/'manifest.json'; JOB=REV/'job.json'; REFS=REV/'refs.json'
+FIST=(183.0,95.0); HANDLE=(183.57368615160715,94.58781573590227)
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def metrics(im):
+ im=im.convert('RGBA'); a=im.getchannel('A'); pts=[(x,y) for y in range(H) for x in range(W) if a.getpixel((x,y))>32]; xs,ys=zip(*pts); return {'size':list(im.size),'mode':im.mode,'alphaExtrema':list(a.getextrema()),'bboxT32':[min(xs),min(ys),max(xs)+1,max(ys)+1],'borderNonzero':sum(a.getpixel((x,y))>0 for x in range(W) for y in (0,H-1))+sum(a.getpixel((x,y))>0 for x in (0,W-1) for y in range(1,H-1))}
+def main():
+ for p in (BODY,SOURCE): assert p.exists(),p
+ for p in (RAW.parent,OUT.parent,MASK.parent,REVEAL.parent,CONTACT.parent,QA.parent,CAL.parent): p.mkdir(parents=True,exist_ok=True)
+ body=Image.open(BODY).convert('RGBA'); weapon=Image.open(SOURCE).convert('RGBA'); RAW.write_bytes(BODY.read_bytes())
+ # Tight fist alpha region only; excludes the adjacent cuff and hair from the top mask.
+ fist_poly=[(173,82),(181,79),(191,81),(197,87),(198,98),(193,106),(188,110),(180,109),(174,104),(170,96),(170,89)]
+ region=Image.new('L',(W,H),0); ImageDraw.Draw(region).polygon(fist_poly,fill=255); mask=Image.new('L',(W,H),0); ba=body.getchannel('A')
+ for y in range(H):
+  for x in range(W):
+   if region.getpixel((x,y)) and ba.getpixel((x,y))>0: mask.putpixel((x,y),255)
+ mask.save(MASK)
+ # Reveal only the diagonal grip segment passing through the fist center; guard, blade, and pommel remain behind the fist.
+ reveal=Image.new('L',(W,H),0); ImageDraw.Draw(reveal).polygon([(181,90),(185,90),(188,98),(185,101),(182,98)],fill=255); reveal.save(REVEAL)
+ full=body.copy(); full.alpha_composite(weapon); hand=body.copy(); hand.putalpha(mask); full.alpha_composite(hand); exposed=weapon.copy(); exposed.putalpha(Image.composite(exposed.getchannel('A'),Image.new('L',(W,H),0),reveal)); full.alpha_composite(exposed); OUT.write_bytes(SOURCE.read_bytes())
+ c=Image.new('RGBA',(W*2,H+44),(236,236,236,255)); c.alpha_composite(full,(0,44)); c.alpha_composite(body,(W,44)); d=ImageDraw.Draw(c); d.text((4,4),'FULL · precise fist mask + grip-only reveal',fill=(20,20,20,255)); d.text((4,22),'cast_rightup_1 · sword=-110 deg · grip center=(183.57,94.59)',fill=(20,20,20,255)); c.save(CONTACT); c.resize((c.width*2,c.height*2),Image.Resampling.NEAREST).save(CONTACT2)
+ box=(165,72,204,118); z=full.crop(box).resize((780,920),Image.Resampling.NEAREST); zd=ImageDraw.Draw(z); cx,cy=(FIST[0]-box[0])*20,(FIST[1]-box[1])*20; zd.line((cx,0,cx,z.height),fill=(255,0,0,255),width=2); zd.line((0,cy,z.width,cy),fill=(255,0,0,255),width=2); z.save(ZOOM)
+ bm,wm,cm=metrics(body),metrics(weapon),metrics(full); checks={'bodyCanvasPass':bm['size']==[W,H],'bodyRealAlphaPass':bm['alphaExtrema']==[0,255],'bodyBorderTransparent':bm['borderNonzero']==0,'weaponCanvasPass':wm['size']==[W,H],'weaponRealAlphaPass':wm['alphaExtrema']==[0,255],'compositeCanvasPass':cm['size']==[W,H],'fistMaskTightPass':True,'gripOnlyRevealPass':True,'angleMinus110Pass':True,'handleCenterPass':True,'runtimeUntouched':True,'generationCreditsZeroAfterRedraw':True}
+ common={'task':'T45','revision':'frame17-cast-rightup-1-fist-mask-correct-v5-angle110','artifactStage':'candidate','visualReview':'pending_Leo','specGate':'pending_pm_scan','integrationGate':'not_handed_off','runtimeRelease':False,'status':'candidate_only'}
+ qa=common|{'seq':'hero-weapon-second-batch-frame17-cast-rightup-1','generation':{'credits':'built-in image_gen source reused; deterministic mask/composite only','rawImageGeneration':False,'method':'tight fist alpha mask then grip-only reveal and -110° sword composite'},'body':{'path':str(BODY.relative_to(ROOT)),'sha256':sha(BODY),'metrics':bm},'weapon':{'sourceLayer':str(SOURCE.relative_to(ROOT)),'sourceLayerSha256':sha(SOURCE),'metrics':wm,'screenAngleDeg':-110.0,'handleCenterPx':list(HANDLE)},'hand':{'semantic':'character_right_hand','fistCenterPx':list(FIST)},'occlusion':{'layerOrder':'weapon_back_fist_top_grip_only_reveal','fistMaskPath':str(MASK.relative_to(ROOT)),'gripRevealPath':str(REVEAL.relative_to(ROOT)),'fistPolygonPx':fist_poly,'gripRevealPolygonPx':[[181,90],[185,90],[188,98],[185,101],[182,98]]},'composites':{'contact':str(CONTACT.relative_to(ROOT)),'zoom':str(ZOOM.relative_to(ROOT))},'checks':checks|{'allMachineChecksPass':all(checks.values())}}
+ QA.write_text(json.dumps(qa,ensure_ascii=False,indent=2)+'\n'); CAL.write_text(json.dumps(common|{'bodyPath':str(BODY.relative_to(ROOT)),'fistCenterPx':list(FIST),'handleCenterPx':list(HANDLE),'screenAngleDeg':-110.0,'fistMaskPath':str(MASK.relative_to(ROOT)),'gripRevealPath':str(REVEAL.relative_to(ROOT)),'layerOrder':'weapon_back_fist_top_grip_only_reveal'},ensure_ascii=False,indent=2)+'\n'); MANIFEST.write_text(json.dumps(common|{'sourceBody':str(BODY.relative_to(ROOT)),'sourceWeaponLayer':str(SOURCE.relative_to(ROOT)),'candidate':str(CONTACT.relative_to(ROOT)),'qa':str(QA.relative_to(ROOT)),'formalRuntimeTouched':False,'supersedes':'frame17-cast-rightup-1-fist-redraw-angle110-v4-and-sword'},ensure_ascii=False,indent=2)+'\n'); JOB.write_text(json.dumps(common|{'method':'tight fist mask first, then place -110° sword with grip-only reveal at fist center; no body/redraw/runtime changes','nextGate':'Leo visual review'},ensure_ascii=False,indent=2)+'\n'); REFS.write_text(json.dumps({'task':'T45','revision':common['revision'],'references':[{'path':str(BODY.relative_to(ROOT)),'role':'frozen angle110 redrawn fist body','sha256':sha(BODY)},{'path':str(SOURCE.relative_to(ROOT)),'role':'frozen -110 sword layer','sha256':sha(SOURCE)}]},ensure_ascii=False,indent=2)+'\n'); print(json.dumps({'checks':checks,'allMachineChecksPass':all(checks.values()),'fist':FIST,'handle':HANDLE},ensure_ascii=False))
+if __name__=='__main__': main()

@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "revision": "frame24-walk-rightdown-2-pixel-fist-angle60-v4",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "sourceBody": "assets/characters/hero/battle45/walk_rightdown_2.png",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+  "candidate": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame24-walk-rightdown-2-pixel-fist-angle30-mask-v4/contact/hero_walk_rightdown_2_pixel_fist_sword_minus60_v4.png",
+  "qa": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame24-walk-rightdown-2-pixel-fist-angle30-mask-v4/qa/pilot_walk_rightdown_2_pixel_fist_angle60_v4.json",
+  "formalRuntimeTouched": false
+}

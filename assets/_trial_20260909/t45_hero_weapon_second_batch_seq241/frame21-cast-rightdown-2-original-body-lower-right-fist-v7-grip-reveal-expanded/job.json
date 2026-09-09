@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame21-cast-rightdown-2-original-body-lower-right-fist-v7-grip-reveal-expanded",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "correct screen-right hand; -45° sword into fist center with precise mask and expanded grip reveal",
+  "nextGate": "Leo visual review"
+}

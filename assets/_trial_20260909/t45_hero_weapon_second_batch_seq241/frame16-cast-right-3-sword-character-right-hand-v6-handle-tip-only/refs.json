@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame16-cast-right-3-sword-character-right-hand-v6-handle-tip-only",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/cast_right_3.png",
+      "role": "frozen cast_right_3 body",
+      "sha256": "9f75dc98916a8a594ca77332ecac7087074098bfe47b6d543227397f516ed20e"
+    },
+    {
+      "path": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame16-cast-right-3-sword-character-right-hand-v4-horizontal-right/normalized/hero_sword_angle_0_cast_right_3_v4_horizontal_right.png",
+      "role": "v4 horizontal sword layer",
+      "sha256": "fdc1f2e3e23d06f1454fce93f11fe1fd5590e8fb0005e7413c0cd63d1ccdccc3"
+    }
+  ]
+}

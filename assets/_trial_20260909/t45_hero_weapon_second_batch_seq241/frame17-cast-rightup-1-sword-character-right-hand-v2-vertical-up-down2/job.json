@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-sword-character-right-hand-v2-vertical-up-down2",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "deterministic +50° rotation about source handle to vertical -90°; exact translation (+82,-109) after downward 2px adjustment; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

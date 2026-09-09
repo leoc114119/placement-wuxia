@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame23-atk-right-1-original-body-angle105-mask-rebuilt-v4",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "fresh rebuild: -95° sword, weapon back, precise right fist front, no prior script reuse",
+  "nextGate": "Leo visual review"
+}

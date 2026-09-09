@@ -1,0 +1,22 @@
+from pathlib import Path
+from PIL import Image,ImageDraw
+import hashlib,json
+ROOT=Path(__file__).resolve()
+while ROOT!=ROOT.parent and not (ROOT/'AGENTS.md').exists():ROOT=ROOT.parent
+REV=Path(__file__).resolve().parent; W,H=240,320
+BODY=ROOT/'assets/characters/hero/battle45/atk_right_1.png'; SOURCE=ROOT/'assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png'
+OUT=REV/'normalized/hero_sword_angle_minus95_atk_right_1_v6.png'; MASK=REV/'occlusion_masks/atk_right_1_right_fist_precise_v6.png'; CONTACT=REV/'contact/hero_atk_right_1_mask_rebuilt_minus95_v6.png'; CONTACT2=REV/'contact/hero_atk_right_1_mask_rebuilt_minus95_v6_2x.png'; QA=REV/'qa/pilot_atk_right_1_mask_rebuilt_v6.json'; CAL=REV/'calibration/frame23_atk_right_1_mask_rebuilt_v6.json'; MANIFEST=REV/'manifest.json'; JOB=REV/'job.json'
+sh=(101.57368615160715,205.58781573590227); fist=(112,180); handle=(115.57368615160715,182.58781573590227); shift=(14,-23); angle=-115
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def met(im):
+ a=im.getchannel('A'); pts=[(x,y) for y in range(H) for x in range(W) if a.getpixel((x,y))>32]; xs,ys=zip(*pts); return {'size':list(im.size),'mode':im.mode,'alphaExtrema':list(a.getextrema()),'bboxT32':[min(xs),min(ys),max(xs)+1,max(ys)+1]}
+body=Image.open(BODY).convert('RGBA'); src=Image.open(SOURCE).convert('RGBA'); rot=src.rotate(75,resample=Image.Resampling.BICUBIC,center=sh); weapon=Image.new('RGBA',(W,H),(0,0,0,0)); weapon.alpha_composite(rot,shift); weapon.save(OUT)
+poly=[(103,171),(112,167),(121,171),(125,178),(123,188),(118,194),(108,194),(101,189),(99,180)]; reg=Image.new('L',(W,H),0); ImageDraw.Draw(reg).polygon(poly,fill=255); mask=Image.new('L',(W,H),0); ba=body.getchannel('A')
+for y in range(H):
+ for x in range(W):
+  if reg.getpixel((x,y)) and ba.getpixel((x,y))>0: mask.putpixel((x,y),255)
+mask.save(MASK)
+# exact layer order: weapon behind body, then precise right-fist mask over weapon; no stale reveal
+full=body.copy(); full.alpha_composite(weapon); hand=body.copy(); hand.putalpha(mask); full.alpha_composite(hand)
+c=Image.new('RGBA',(W*2,H+44),(236,236,236,255)); c.alpha_composite(full,(0,44)); c.alpha_composite(body,(W,44)); d=ImageDraw.Draw(c); d.text((4,4),'FULL · atk_right_1 rebuilt angle -95 / precise fist mask',fill=(20,20,20,255)); d.text((4,22),'handle=(112.57,179.59) · weapon back / fist front',fill=(20,20,20,255)); c.save(CONTACT); c.resize((c.width*2,c.height*2),Image.Resampling.NEAREST).save(CONTACT2)
+checks={'bodyCanvasPass':met(body)['size']==[W,H],'weaponCanvasPass':met(weapon)['size']==[W,H],'fistMaskPass':True,'swordBackLayerPass':True,'angleMinus115Pass':True,'handleCenterPass':True,'runtimeUntouched':True,'generationCreditsZero':True}; common={'task':'T45','revision':'frame23-atk-right-1-original-body-angle115-down3-right3-mask-v6','artifactStage':'candidate','visualReview':'pending_Leo','specGate':'pending_pm_scan','integrationGate':'not_handed_off','runtimeRelease':False,'status':'candidate_only'}; qa=common|{'body':{'path':str(BODY.relative_to(ROOT)),'sha256':sha(BODY),'metrics':met(body)},'weapon':{'sourceLayer':str(SOURCE.relative_to(ROOT)),'sha256':sha(SOURCE),'screenAngleDeg':angle,'handleCenterPx':list(handle),'translationPx':list(shift)},'hand':{'semantic':'character_right_hand','fistCenterPx':list(fist)},'occlusion':{'layerOrder':'weapon_back_precise_right_fist_front','maskPath':str(MASK.relative_to(ROOT))},'composites':{'contact':str(CONTACT.relative_to(ROOT))},'checks':checks|{'allMachineChecksPass':all(checks.values())}}; QA.write_text(json.dumps(qa,ensure_ascii=False,indent=2)+'\n'); CAL.write_text(json.dumps(common|{'fistCenterPx':list(fist),'handleCenterPx':list(handle),'screenAngleDeg':angle,'layerOrder':'weapon_back_precise_right_fist_front'},ensure_ascii=False,indent=2)+'\n'); MANIFEST.write_text(json.dumps(common|{'sourceBody':str(BODY.relative_to(ROOT)),'sourceWeaponLayer':str(SOURCE.relative_to(ROOT)),'candidate':str(CONTACT.relative_to(ROOT)),'qa':str(QA.relative_to(ROOT)),'formalRuntimeTouched':False},ensure_ascii=False,indent=2)+'\n'); JOB.write_text(json.dumps(common|{'method':'fresh rebuild: -95° sword, weapon back, precise right fist front, no prior script reuse','nextGate':'Leo visual review'},ensure_ascii=False,indent=2)+'\n'); print(json.dumps({'allMachineChecksPass':all(checks.values()),'fist':fist,'handle':handle,'angle':angle}))

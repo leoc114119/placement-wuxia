@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "revision": "frame20-cast-rightdown-1-original-body-angle45-up4-mask-fixed-v6",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "handleCenterPx": [
+    94.57368615160715,
+    118.58781573590227
+  ],
+  "layerOrder": "weapon_back_fist_mask_front_local_grip_reveal"
+}

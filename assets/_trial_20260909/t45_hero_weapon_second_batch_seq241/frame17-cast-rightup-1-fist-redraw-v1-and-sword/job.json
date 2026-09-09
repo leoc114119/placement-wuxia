@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame17-cast-rightup-1-fist-redraw-v1-and-sword",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "native local fist redraw then deterministic -90° sword placement into fist center; narrow handle reveal; no runtime write",
+  "nextGate": "Leo visual review"
+}

@@ -1,0 +1,1 @@
+Restart from original cast_rightdown_1 body only; do not use any fist-redraw candidate. Deterministic sword placement target: original right fist center (183,95), screen angle -110 degrees, handle point (183.57,94.59).

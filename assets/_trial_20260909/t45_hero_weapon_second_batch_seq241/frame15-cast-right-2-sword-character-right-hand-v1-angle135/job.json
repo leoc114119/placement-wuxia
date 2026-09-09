@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame15-cast-right-2-sword-character-right-hand-v1-angle135",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "method": "deterministic action-angle +135° left-down sword placement to raised cast hand; no generation/body edit/runtime write",
+  "nextGate": "Leo visual review"
+}

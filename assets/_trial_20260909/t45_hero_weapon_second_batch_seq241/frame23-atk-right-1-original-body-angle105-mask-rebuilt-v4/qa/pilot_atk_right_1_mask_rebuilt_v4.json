@@ -1,0 +1,69 @@
+{
+  "task": "T45",
+  "revision": "frame23-atk-right-1-original-body-angle105-mask-rebuilt-v4",
+  "artifactStage": "candidate",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_only",
+  "body": {
+    "path": "assets/characters/hero/battle45/atk_right_1.png",
+    "sha256": "27e813ac35ffcab7f86b77156fec15e745a45f183f481fcc9d40472a01bc6a13",
+    "metrics": {
+      "size": [
+        240,
+        320
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxT32": [
+        45,
+        44,
+        193,
+        300
+      ]
+    }
+  },
+  "weapon": {
+    "sourceLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+    "sha256": "9d6d593e664f40f91baf26968d5c9c2d24280e38dd54bf3007fc09c56fb4258d",
+    "screenAngleDeg": -105,
+    "handleCenterPx": [
+      112.57368615160715,
+      179.58781573590227
+    ],
+    "translationPx": [
+      11,
+      -26
+    ]
+  },
+  "hand": {
+    "semantic": "character_right_hand",
+    "fistCenterPx": [
+      112,
+      180
+    ]
+  },
+  "occlusion": {
+    "layerOrder": "weapon_back_precise_right_fist_front",
+    "maskPath": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame23-atk-right-1-original-body-angle105-mask-rebuilt-v4/occlusion_masks/atk_right_1_right_fist_precise_v4.png"
+  },
+  "composites": {
+    "contact": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/frame23-atk-right-1-original-body-angle105-mask-rebuilt-v4/contact/hero_atk_right_1_mask_rebuilt_minus95_v4.png"
+  },
+  "checks": {
+    "bodyCanvasPass": true,
+    "weaponCanvasPass": true,
+    "fistMaskPass": true,
+    "swordBackLayerPass": true,
+    "angleMinus105Pass": true,
+    "handleCenterPass": true,
+    "runtimeUntouched": true,
+    "generationCreditsZero": true,
+    "allMachineChecksPass": true
+  }
+}

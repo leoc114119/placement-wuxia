@@ -1,0 +1,12 @@
+{
+  "task": "T45",
+  "revision": "frame22-cast-rightdown-3-original-body-angle135-body-back-left2-v4",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "method": "-135° sword behind full character body; no fist mask per Leo direction; no runtime write",
+  "nextGate": "Leo visual review"
+}
