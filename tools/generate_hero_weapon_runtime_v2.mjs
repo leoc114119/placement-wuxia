@@ -201,19 +201,23 @@ const unified = JSON.parse(unifiedBuf.toString('utf8'));
 if (!Array.isArray(unified.rows) || unified.rows.length !== 48) fatal(`候选行数 ${unified.rows?.length}≠48`);
 
 const modelManifest = JSON.parse(fs.readFileSync(path.join(CAND, MODEL_MANIFEST_REL), 'utf8'));
+// 左模握点裁决：art manifest 记载 flipX:true（左模=右模逐像素水平镜像，x→W-1-x，已实测 7040/7040
+// 像素一致+握点 alpha 孪生 250/250 核验）→ 左模握点=右模握点镜像映射，随右模标定派生（非独立标定值）。
+const RIGHT_GRIP = modelManifest.swordModel.gripPointModelPx;
+const LEFT_GRIP = [88 - 1 - RIGHT_GRIP[0], RIGHT_GRIP[1]];
 const MODEL_META = {
   'hero-sword-right': {
     src: `${OUT_REL}/models/hero_sword_model_right.png`,
     sha256: modelManifest.swordModel.rightSha256,
     canvasPx: [88, 80],
-    gripPointModelPx: modelManifest.swordModel.gripPointModelPx,
+    gripPointModelPx: RIGHT_GRIP,
     angleDefinition: 'screen-clockwise-positive-y-down',
   },
   'hero-sword-left': {
     src: `${OUT_REL}/models/hero_sword_model_left.png`,
     sha256: modelManifest.swordModel.leftSha256,
     canvasPx: [88, 80],
-    gripPointModelPx: modelManifest.swordModel.gripPointModelPx,
+    gripPointModelPx: LEFT_GRIP,
     angleDefinition: 'screen-clockwise-positive-y-down',
   },
 };
@@ -344,7 +348,7 @@ const runtimeV2 = {
   generatedBy: 'tools/generate_hero_weapon_runtime_v2.mjs（候选 manifest_48_rows_seq257_v3 统一投影；runtime 行零候选路径）',
   frameCount: 48,
   canvas: { w: 240, h: 320 },
-  angleDefinition: 'screen-clockwise-positive-y-down（0°=右，+Y 向下，顺时针正；禁 atan2 数学口径）',
+  angleDefinition: 'screen-clockwise-positive-y-down', // 纯 token（机器比对面；口径说明见 §4.1 与 models/manifest.json）
   sourceLedger: {
     unifiedManifest: { path: UNIFIED_REL, sha256: sha256(unifiedBuf) },
     firstBatch26: { path: FIRST_MANIFEST_REL, sha256: sha256(fs.readFileSync(path.join(CAND, FIRST_MANIFEST_REL))) },

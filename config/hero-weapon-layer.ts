@@ -50,7 +50,7 @@ export const WEAPON_MODELS: Readonly<Record<WeaponModelKey, WeaponModelMeta>> = 
     src: 'assets/characters/hero/weapon45/models/hero_sword_model_left.png',
     sha256: '2a5b6adcc7f0ef0667301e5767c4a5cf838f15c8b9b204885cf116dc47129cc2',
     canvasPx: [88, 80],
-    gripPointModelPx: [23, 57],
+    gripPointModelPx: [64, 57],
     angleDefinition: 'screen-clockwise-positive-y-down',
   },
 };

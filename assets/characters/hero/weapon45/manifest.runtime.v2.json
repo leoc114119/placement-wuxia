@@ -6,7 +6,7 @@
     "w": 240,
     "h": 320
   },
-  "angleDefinition": "screen-clockwise-positive-y-down（0°=右，+Y 向下，顺时针正；禁 atan2 数学口径）",
+  "angleDefinition": "screen-clockwise-positive-y-down",
   "sourceLedger": {
     "unifiedManifest": {
       "path": "assets/_trial_20260909/t45_hero_weapon_second_batch_seq241/left_mirror_seq241_v1/manifest_48_rows_seq257_v3.json",
