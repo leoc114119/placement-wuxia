@@ -1,0 +1,163 @@
+{
+  "count": 13,
+  "allMachineChecksPass": true,
+  "sourceLedger": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/qa/source_ledger.json",
+  "rows": [
+    {
+      "frameId": "frame01_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame01",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/handle-center-half-length-v9/normalized/hero_sword_held_rightup_v9.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame01_left_sword.png",
+      "weaponSha256": "709204e10a5f77b0bb4313fa2ad69714fa6cb3274fe51cc7637f0f92642c627a",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame02_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame02",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame02-walk-right-1-horizontal-angle-v2/normalized/hero_sword_held_horizontal_walk_right_1_v2.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame02_left_sword.png",
+      "weaponSha256": "2ee4095dc66f818ac77ef3c8f72eddac481f48966993bf8ca4e77a3ea2539081",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame03_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame03",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame03-walk-right-2-angle-up15-v2/normalized/hero_sword_held_up15_walk_right_2_v2.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame03_left_sword.png",
+      "weaponSha256": "d3ef47c0f212c13b6d8a39e1db37293d94e9c7b75fae01784b9c377315e631aa",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame04_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame04",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame04-atk-right-2-sword-right-hand-v2/normalized/hero_sword_held_atk_right_2_character_right_hand_v2.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame04_left_sword.png",
+      "weaponSha256": "c08def30a29aef0bf75b5c663838214addfbc205f11e308b68b908f16ad1deb6",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame05_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame05",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame05-idle-rightup-sword-right-hand-v4-body-front-up2/normalized/hero_sword_held_idle_rightup_character_right_hand_v4.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame05_left_sword.png",
+      "weaponSha256": "d3953b4b377a51c3afadefcfb79e855d053ddf0f168cd24fcd62424c4475656c",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame06_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame06",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame06-idle-rightdown-sword-character-right-hand-v9-precise-fist-mask-repair/normalized/hero_sword_held_idle_rightdown_character_right_hand_v9.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame06_left_sword.png",
+      "weaponSha256": "465fcd4a41092cb452865833073c2ccb53b9b5c7842c7370455d2568f0943051",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame07_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame07",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame07-walk-rightup-1-sword-character-right-hand-v3-leftup2/normalized/hero_sword_vertical_walk_rightup_1_v3_leftup2.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame07_left_sword.png",
+      "weaponSha256": "97e0d55e4fc8adbe62eaac21215affadb306e76745d07d8775d4bffba5ad0010",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame08_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame08",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame08-walk-rightup-2-sword-character-right-hand-v1-vertical-leftup2/normalized/hero_sword_vertical_walk_rightup_2_v1.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame08_left_sword.png",
+      "weaponSha256": "f4d6a884f605f1e05a79bc4eae8ac5953e71a958e371b87ac9d17dbb5bb6ec9d",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame09_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame09",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame09-atk-rightup-1-sword-character-right-hand-v5-down1/normalized/hero_sword_vertical_atk_rightup_1_v5_down1.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame09_left_sword.png",
+      "weaponSha256": "8613452d5acd252ee24b5d96c172eef632283e16aeacf8a20abd9933ec425d16",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame10_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame10",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame10-atk-rightup-2-sword-character-right-hand-v7-angle-160-rightdown2/normalized/hero_sword_angle_minus160_atk_rightup_2_v7.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame10_left_sword.png",
+      "weaponSha256": "5df17354597a1394e029ac4936b3984e10906844d229bbe4821a744ef2050fdb",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame11_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame11",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame11-walk-rightdown-1-sword-character-right-hand-v6-angle35-down1/normalized/hero_sword_angle35_walk_rightdown_1_v6_down1.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame11_left_sword.png",
+      "weaponSha256": "b7e7c111e863b6275106f4d9a9bde6f2da6be71fe66398e63c492cc5e4ec19d7",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame12_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame12",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame12-atk-rightdown-1-sword-character-right-hand-v2-vertical/normalized/hero_sword_vertical_atk_rightdown_1_v2.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame12_left_sword.png",
+      "weaponSha256": "6be1852eb1ae1022be4570e0bf21f79ff40145604fdec1eae130fe076c80d886",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    },
+    {
+      "frameId": "frame13_left",
+      "allMachineChecksPass": true,
+      "credits": 0,
+      "compositeNative": "none; deterministic mirror contact/QA primary",
+      "sourceRightFrame": "frame13",
+      "derivedFromWeapon": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame13-atk-rightdown-2-sword-character-right-hand-v10-left4/normalized/hero_sword_angle_minus15_atk_rightdown_2_v10_left4.png",
+      "derivedWeaponPath": "assets/_trial_20260909/t45_hero_weapon_left_derivation_seq232/sword_layers/frame13_left_sword.png",
+      "weaponSha256": "6950a485f084998704b9932b126b45a90ee7e4a5459bc37c065efebfe945296f",
+      "dxPx": 0,
+      "bodyMirrorExact": true
+    }
+  ]
+}
