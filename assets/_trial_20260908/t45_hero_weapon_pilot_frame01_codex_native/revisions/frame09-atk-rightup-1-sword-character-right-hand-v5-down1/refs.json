@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame09-atk-rightup-1-sword-character-right-hand-v5-down1",
+  "generationCredits": 0,
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/atk_rightup_1.png",
+      "role": "frozen target body",
+      "sha256": "dbe19b78988688563633d3530c41b874be3ca48746cb1a14a4bce06793c3a431"
+    },
+    {
+      "path": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame09-atk-rightup-1-sword-character-right-hand-v4-leftdown2/normalized/hero_sword_vertical_atk_rightup_1_v4_leftdown2.png",
+      "role": "frame09 v4 vertical sword layer",
+      "sha256": "5653bb67ac2d31cbef9121bd1ab7d35f73d55803efb20add10d0b9de9bdd08db"
+    }
+  ]
+}
