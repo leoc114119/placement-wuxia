@@ -826,6 +826,8 @@
 | 2026-09-09 | PM2/rd → Codex（art） | 🔧 seq=232 左系派生在飞 | 右系 13 帧已过内容门；左系按确定性镜像剑层与遮罩派生，逐帧 dx 必须读取集成来源账本，manifest 扩为左右 26 行，零生成且不改右系原件。 |
 | 2026-09-09 | Codex（art） | 🧪 seq=232 左系实际派生完成 | 已生成 13 张镜像剑层、9 张镜像遮罩、2 张左体修正候选、source_ledger、26 行 manifest、26 行 QA 汇总；身体 exact mirror 13/13，dx ledger 13/13，零生成，右系未改。 |
 | 2026-09-09 | Codex（art） → PM2/rd | 📤 seq=232 左系派生真实交付 | 交付实际产物+SHA+ledger+manifest+QA，候选与 runtime 状态显式声明。 |
+| 2026-09-09 | PM2/rd → Codex（art） | 📋 seq=241 第二批任务单 | 第二批=右系补漏 atk_right_1/walk_rightdown_2 + 持刀施法9帧；左系镜像；manifest扩至48行；零生成、逐帧闭环，cast_right_1先行。 |
+| 2026-09-09 | Codex（art） | 🧪 seq=241 frame14 `cast_right_1` 持刀候选初版完成 | 右手=画面左上举拳，拳心约 `(93,113)`；v9 剑层零生成摆放，屏幕角 `-25°`，weapon-front+精准举拳遮罩；严格停在首帧，待 Leo 目验+PM 数据门。 |
 | 2026-09-09 | Leo → Codex（art） | 🔧 T45 frame13 `atk_rightdown_2` 剑位右移 | 保持 `-15°`，整剑向右移动 `2px`；原拳冻结。 |
 | 2026-09-09 | Codex（art） | 🧪 T45 frame13 `atk_rightdown_2` sword -15 右2px v8 候选完成 | v7 整层精确平移 `(+2,0)`，柄心 `(201,202)`，原拳/`-15°`/weapon-front 保持，零生成、runtime 未改、机械门全过；候选路径 `assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame13-atk-rightdown-2-sword-character-right-hand-v8-right2/`，待 Leo 目验。 |
 | 2026-09-09 | Leo → Codex（art） | ✅ T45 frame12 `atk_rightdown_1` v2 视觉通过 | Leo 确认垂直插入右手拳心版本可用；PM 第二道规格门仍待办，runtime 不动。 |
@@ -842,3 +844,5 @@
 | 09-09 | Leo → PM2 → art | 🔧 山贼终态澄清（Leo 终裁） | 现有 62 空手帧=最终态不重生成不被替换（T27 已接线生效）；"待带武器帧替换"表述作废；直出规则仅适用于未来新增带武器 NPC（无当前任务）；落地账 v1.3+规范 v1.10 落盘已推；rd→art seq=237 订正通知（含美术 SOP/T45 需求文档同步要求）；美术线 v1.9 行签字"PM2 落盘"系误标已在 v1.10 更正 |
 | 09-09 | PM2 → art | ❌ 口径记录≠交付更正单 | 查实 26 行 manifest/镜像剑层/左系标定产物均不存在（e0aaf8f6 仅文字记录）；依落地纪律第 3 条要求完成实际派生并带 SHA delivery；PM2 四项门检清单待命 |
 | 09-09 | Leo → PM2 → art | 🔧 美术流程新纪律：禁回执式提交 | commit 必须包含交付内容（产物/数据/文档实质变更），纯回执/在飞状态/口径承诺禁单独成 commit；过程留痕走 LOG 文字随下一实质交付入库；已入 AGENTS 素材落地纪律第 4 条+bus 通知美术线（seq=238）；左系 13 帧派生按此执行 |
+| 09-09 | ZCode（美术PM2） | ✅ 左系 13 帧派生门检 PASS=主角武器素材 DoR 全达成（0d312f67） | 数据门 13/13（SHA/字段/遮罩贴身）；镜像剑层 frame01-06 与右系翻转 Jaccard=1.000 逐位一致；frame07-13 右源为裁剪框像素恒等不适用→方向/形状目验=七张全部正确镜像；手部钢泄漏全帧 0~5px AA；零生成；落地账 v1.4=双系 26/26 DoR 全达成，研发窗口两项可发卡（敌型接线+主角武器接线） |
+| 09-09 | PM2 → art | 📋 主角武器第二批任务单 | 施法 cast 9 帧（Leo 裁施法必须持刀，为批次重点）+补漏 atk_right_1/walk_rightdown_2 +全部左系镜像=22 行新增，manifest 扩 48 行；零生成占位剑；逐帧小闭环从 cast_right_1 起步；rd→art seq=241 |
