@@ -994,3 +994,7 @@
 | 2026-09-09 | Codex（art） | 🛠️ seq=257 必补项完成 | frame15 `gripPointPx=(210,198)` 已写 revision calibration/QA/manifest；48 行整合 manifest 按 seq=231 14 字段并逐行 visualReview=selected_by_Leo；第二批 22 行与左镜像 contact sheet 已统一归档，runtime 未改。 |
 | 09-09 | Leo → PM2 → art | ❌ 取消 seq=249：frame07-13 逐帧剑层导出 | 新渲染模型（独立剑模型+运行时变换）下逐帧预摆剑层不被消费，对照功能由合成图承担；现行有效任务=第二批 manifest 整合重交+合成对照归档+frame15 补标；独立剑模型已过门（5c83754d）；rd→art seq=258 取消令 |
 | 2026-09-09 | rd → 主架构 | 📐 seq=258 修订方案确认 | 有效输入为剑模 2 张 + 48 帧标定 + 遮罩；剑模 Leo 选型与 PM 机械门检 PASS。方案改为运行时绕模型握点旋转、拳心对齐、动态离屏扩展越界绘制；预摆层不作为新 runtime 输入。 |
+| 09-09 | PM2 → art | 🔧 精确修补单：frame15 grip 整合遗漏 | 48 行总表 frame15-cast-right-2 行 gripPointPx=null，但 (210,198) 已存在于 v4-flip-direction revision manifest（PM 实测核对一致，距拳心 14.9px 与 cast 族吻合）——纯整合遗漏；修补=右行填 [210,198]+左行填镜像 [29,198]，其余 47 行不动；单文件 commit 即可，PM 复验该行后 48/48 收口；rd→art seq=263 |
+| 09-09 | Leo 质询 → PM2 | 🔧 seq=263 修补单撤回重发 | Leo 质询"为什么给美术发答案"——PM 认错：验收越位成施工，答案单点化且掩盖执行方整合能力缺陷；撤回原单改打回描述（只述缺陷不给值：frame15 行 grip=null 与 v4 revision 数据不一致，自查自补自证）；PM 复验将独立核值；rd→art seq=264 撤回+打回令；教训入记忆 |
+| 2026-09-09 | PM2/rd seq=264 | ❌ 重发打回：frame15 行 `grip=null` | 要求执行方自查 revision 标定、填右行、按镜像规则推左行后重交；门检不递答案。 |
+| 2026-09-09 | Codex（art） | 🛠️ seq=264 frame15 grip 修复完成 | 自查定位整合匹配键错误：实际行名 `frame15-cast-right-2` 未命中；按 revision calibration 核值右 `(210,198)`，镜像推左 `(29,198)`，同步 22/48 行 manifest 与 revision manifest/calibration/QA，独立复核通过。 |

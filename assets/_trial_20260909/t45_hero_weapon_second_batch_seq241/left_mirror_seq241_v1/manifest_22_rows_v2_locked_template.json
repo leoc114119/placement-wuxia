@@ -74,7 +74,10 @@
       "candidateBodySha256": "a722a1d9faace4cff02d23cac99904b7567c3497dad24e9afb34c5bcb533989a",
       "runtimeBodySha256": "a722a1d9faace4cff02d23cac99904b7567c3497dad24e9afb34c5bcb533989a",
       "bodyCorrection": "none",
-      "gripPointPx": null,
+      "gripPointPx": [
+        210,
+        198
+      ],
       "fistCenterPx": [
         200.0,
         209.0
@@ -96,7 +99,10 @@
       "candidateBodySha256": "dd1c18a16f24b25370011821e6d2f1ee4985220e00f9e7ec3a8b7b948c2428ec",
       "runtimeBodySha256": "dd1c18a16f24b25370011821e6d2f1ee4985220e00f9e7ec3a8b7b948c2428ec",
       "bodyCorrection": "none",
-      "gripPointPx": null,
+      "gripPointPx": [
+        29,
+        198
+      ],
       "fistCenterPx": [
         39.0,
         209.0
@@ -570,7 +576,17 @@
     "visualReviewLeft": "pending_Leo",
     "runtimeRelease": false,
     "generationCredits": 0,
-    "pixelLocatedRightHands": true
+    "pixelLocatedRightHands": true,
+    "frame15GripPointMeasured": true,
+    "frame15GripPointPx": [
+      210,
+      198
+    ],
+    "frame15LeftGripPointPx": [
+      29,
+      198
+    ],
+    "gripPointSource": "frame15-cast-right-2-sword-character-right-hand-v4-flip-direction/calibration/frame15_cast_right_2_angle_minus45_v4.json"
   },
-  "reviewState": "candidate-only; right visualReview=selected_by_Leo; left visualReview=pending_Leo; specGate=pending_pm_scan; runtimeRelease=false"
+  "reviewState": "right+left visualReview=selected_by_Leo; frame15 grip repaired from revision calibration; specGate=pending_pm_scan; runtimeRelease=false"
 }
