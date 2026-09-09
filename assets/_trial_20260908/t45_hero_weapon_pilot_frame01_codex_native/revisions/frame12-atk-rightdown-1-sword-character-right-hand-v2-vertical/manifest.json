@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "revision": "frame12-atk-rightdown-1-sword-character-right-hand-v2-vertical",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "status": "candidate_selected_waiting_pm_spec_gate",
+  "sourceBody": "assets/characters/hero/battle45/atk_rightdown_1.png",
+  "sourceWeaponLayer": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame12-atk-rightdown-1-sword-character-right-hand-v1-angle35-forward/normalized/hero_sword_angle35_atk_rightdown_1_v1.png",
+  "candidate": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame12-atk-rightdown-1-sword-character-right-hand-v2-vertical/normalized/hero_sword_vertical_atk_rightdown_1_v2.png",
+  "contact": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame12-atk-rightdown-1-sword-character-right-hand-v2-vertical/contact/hero_atk_rightdown_1_sword_vertical_v2.png",
+  "qa": "assets/_trial_20260908/t45_hero_weapon_pilot_frame01_codex_native/revisions/frame12-atk-rightdown-1-sword-character-right-hand-v2-vertical/qa/pilot_atk_rightdown_1_vertical_v2.json",
+  "formalRuntimeTouched": false,
+  "supersedes": "frame12-atk-rightdown-1-sword-character-right-hand-v1-angle35-forward"
+}
