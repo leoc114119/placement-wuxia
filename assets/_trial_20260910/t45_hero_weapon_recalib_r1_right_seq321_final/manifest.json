@@ -1,0 +1,19 @@
+{
+  "task": "T45",
+  "seq": "321",
+  "revision": "R1.8",
+  "phase": "right_side_final_bbox_center_fallback",
+  "status": "candidate-only",
+  "frameCount": 10,
+  "qa": "qa/r1_right_seq321_final.json",
+  "contact": "contact/right_r1_seq321_final.png",
+  "runtimeRelease": false,
+  "runtimeTouched": false,
+  "phaseBStarted": false,
+  "coefficientSource": "Leo frozen 0.780 / atk 1.19444",
+  "placementMode": "jump_right_3=bbox_center_fallback x=3; others=centroid_center",
+  "shaDistinct": true,
+  "otherNineShaUnchangedFromSeq317": true,
+  "allHardGatesPass": true,
+  "failedFrames": []
+}
