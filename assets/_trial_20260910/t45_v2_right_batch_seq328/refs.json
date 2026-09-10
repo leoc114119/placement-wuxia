@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "seq": "328",
+  "stage": "idle_sample_gate",
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_right.png",
+      "role": "唯一身份/比例/画风/站立尺度锚",
+      "inspection": "240x320 RGBA，透明底，站立高256，脚底y=300",
+      "allowed": "身份、比例、服装、画风、总体尺度",
+      "forbidden": "不作为动作姿势或武器参照；不改正式runtime"
+    }
+  ],
+  "generation": {
+    "channel": "Codex native ImageGen",
+    "sampleOnly": true,
+    "futureFrames": "walk3 + atk3 + jump3 only after sample gate",
+    "runtimeTouched": false
+  }
+}

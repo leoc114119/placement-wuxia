@@ -1,0 +1,38 @@
+{
+  "task": "T45",
+  "seq": "328",
+  "stage": "idle_sample_gate",
+  "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/idle_right_native.png",
+  "sourceSha256": "f179980d80f3cb708b216cc972e260ef6af563be3820ee04108971f31334ae05",
+  "sourceCropBox": [
+    0,
+    23,
+    973,
+    1416
+  ],
+  "sampleOnlyNormalizationScale": 0.18377602297200288,
+  "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/idle_right.png",
+  "outputSha256": "43f9efa5da9b353beedf69329c105405945e604f1532a8e5f28719e3b13b87b4",
+  "outputBBoxAlphaGt32": [
+    59,
+    88,
+    180,
+    300
+  ],
+  "outputCentroidX": 119.74247797155387,
+  "checks": {
+    "size240x320": true,
+    "rgba": true,
+    "alphaHas0And255": true,
+    "fourBorderZeroAlpha": true,
+    "feetY300": true,
+    "alphaGt32SingleComponent": true,
+    "centroidXWithin1": true
+  },
+  "allMachineChecksPass": true,
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "runtimeTouched": false,
+  "next": "Do not generate walk/atk/jump until Leo and PM2 pass this sample gate",
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/contact/idle_sample_vs_baseline.png"
+}

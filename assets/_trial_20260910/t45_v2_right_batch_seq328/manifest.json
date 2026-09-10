@@ -1,0 +1,11 @@
+{
+  "task": "T45",
+  "seq": "328",
+  "stage": "idle_sample_gate",
+  "status": "candidate-only",
+  "sample": "idle_right",
+  "qa": "qa/idle_sample.json",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "runtimeRelease": false
+}
