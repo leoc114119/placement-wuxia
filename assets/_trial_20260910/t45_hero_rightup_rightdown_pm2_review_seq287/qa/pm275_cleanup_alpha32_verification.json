@@ -1,0 +1,112 @@
+{
+  "task": "T45",
+  "seq": "287",
+  "check": "PM2 seq277 alpha>32 4-connectivity cleanup",
+  "method": "clear only 2px-expanded ROIs around PM2-located secondary components; preserve RGB/main body",
+  "targets": [
+    {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_3.png",
+      "beforeSha256": "3acae1dd190e6f56f5d38c39af588518ed5e4309a01aada86a486e4bbc6ca598",
+      "targetBboxes": [
+        [
+          167,
+          221,
+          168,
+          222
+        ]
+      ],
+      "clearedRois": [
+        [
+          165,
+          219,
+          170,
+          224
+        ]
+      ],
+      "removedAlphaPixels": 18,
+      "afterSha256": "b514137c8a299d3a25e784b1a5f790cdc922bdbc91dc1734211afbbd02cf5e67",
+      "componentsAlphaGt32": [
+        {
+          "pixels": 25221,
+          "bbox": [
+            30,
+            44,
+            210,
+            300
+          ]
+        }
+      ],
+      "singleComponentAlphaGt32": true
+    },
+    {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_1.png",
+      "beforeSha256": "473227b3c6181eb79e9a04a6a725d4230e1cedd42bdda889a78e0868274e7a1e",
+      "targetBboxes": [
+        [
+          222,
+          166,
+          224,
+          167
+        ]
+      ],
+      "clearedRois": [
+        [
+          220,
+          164,
+          226,
+          169
+        ]
+      ],
+      "removedAlphaPixels": 19,
+      "afterSha256": "179c3b31ea90f1bce0056cfa89634561373afae59b122fb0bc8929cdd2b32634",
+      "componentsAlphaGt32": [
+        {
+          "pixels": 36382,
+          "bbox": [
+            1,
+            48,
+            231,
+            300
+          ]
+        }
+      ],
+      "singleComponentAlphaGt32": true
+    },
+    {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_3.png",
+      "beforeSha256": "d296fbbb4982c090adeb671608958fc76a3eb4805cd8c425c0884f5a2157ec12",
+      "targetBboxes": [
+        [
+          208,
+          130,
+          209,
+          132
+        ]
+      ],
+      "clearedRois": [
+        [
+          206,
+          128,
+          211,
+          134
+        ]
+      ],
+      "removedAlphaPixels": 20,
+      "afterSha256": "3fb006e56b4efa4c80464a7efdde8737fcdf6ce5f96f3c567b24bb4cd777704f",
+      "componentsAlphaGt32": [
+        {
+          "pixels": 26686,
+          "bbox": [
+            16,
+            44,
+            239,
+            300
+          ]
+        }
+      ],
+      "singleComponentAlphaGt32": true
+    }
+  ],
+  "allTargetsSingleComponent": true,
+  "runtimeTouched": false
+}

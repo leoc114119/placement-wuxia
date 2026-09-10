@@ -267,7 +267,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
           "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_1.png",
-          "outputSha256": "473227b3c6181eb79e9a04a6a725d4230e1cedd42bdda889a78e0868274e7a1e",
+          "outputSha256": "179c3b31ea90f1bce0056cfa89634561373afae59b122fb0bc8929cdd2b32634",
           "metrics": {
             "size": [
               240,
@@ -341,7 +341,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
           "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_3.png",
-          "outputSha256": "d296fbbb4982c090adeb671608958fc76a3eb4805cd8c425c0884f5a2157ec12",
+          "outputSha256": "3fb006e56b4efa4c80464a7efdde8737fcdf6ce5f96f3c567b24bb4cd777704f",
           "metrics": {
             "size": [
               240,
@@ -559,7 +559,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
           "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_3.png",
-          "outputSha256": "3acae1dd190e6f56f5d38c39af588518ed5e4309a01aada86a486e4bbc6ca598",
+          "outputSha256": "b514137c8a299d3a25e784b1a5f790cdc922bdbc91dc1734211afbbd02cf5e67",
           "metrics": {
             "size": [
               240,
@@ -740,7 +740,7 @@
     }
   },
   "allMachineChecksPass": true,
-  "candidateStatus": "ready_for_pm2_recheck_after_pm275_cleanup",
+  "candidateStatus": "ready_for_pm2_recheck_after_alpha32_cleanup",
   "runtimeRelease": false,
   "frozenPolicy": {
     "idle": "unchanged original three direction idle frames",
@@ -749,7 +749,7 @@
   },
   "pm275Cleanup": {
     "status": "completed",
-    "method": "deterministic retain largest alpha>0 connected component; remove only secondary components",
+    "method": "alpha>32 4-connectivity; clear only PM2-located secondary-component ROIs; no redraw or renormalization",
     "targets": [
       {
         "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_3.png",
@@ -888,7 +888,8 @@
     ],
     "runtimeTouched": false,
     "recheck": "all three target files now single alpha>0 connected component",
-    "verification": "qa/pm275_cleanup_verification.json",
-    "allTargetsSingleComponent": true
+    "verification": "qa/pm275_cleanup_alpha32_verification.json",
+    "allTargetsSingleComponent": true,
+    "alphaGt32SingleComponent": true
   }
 }
