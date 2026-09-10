@@ -1,0 +1,1821 @@
+{
+  "task": "T45",
+  "seq": "288",
+  "phase": "A_rightNormalize",
+  "frames": {
+    "walk_right_1": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
+      "sourceSha256": "d98cf8bb6d96f3efce30e36636418f3376738ad76515409f5e5a66ddd17ba650",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/walk_right_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/walk_right_1.png",
+      "outputSha256": "41a3241cafa5cc1949b80525379d1754cdc51bfb44d74f54f3a90fdc97885b8d",
+      "processing": {
+        "cutBBox": [
+          78,
+          41,
+          328,
+          353
+        ],
+        "scale": 0.8205128205128205,
+        "scaledSize": [
+          205,
+          256
+        ],
+        "alphaCentroidXLocal": 105.71956469021679,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            27555
+          ],
+          "removedAlphaGt32Pixels": [],
+          "componentsAfter": [
+            27555
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          14,
+          44,
+          219,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.71956469021679,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 27555,
+            "bbox": [
+              14,
+              44,
+              219,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_2": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
+      "sourceSha256": "d032b05594e9ea3eb270581b7aa78af74097f0dcba6e136b2b6c6a13fac2230f",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/walk_right_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/walk_right_2.png",
+      "outputSha256": "2c71d3414361667ebaed1ffadb46c290db4793145ae213806925fa25bda9ff46",
+      "processing": {
+        "cutBBox": [
+          63,
+          38,
+          310,
+          349
+        ],
+        "scale": 0.8231511254019293,
+        "scaledSize": [
+          203,
+          256
+        ],
+        "alphaCentroidXLocal": 110.52389579494003,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            29603,
+            4,
+            2
+          ],
+          "removedAlphaGt32Pixels": [
+            [
+              89,
+              188
+            ],
+            [
+              89,
+              189
+            ],
+            [
+              90,
+              189
+            ],
+            [
+              88,
+              189
+            ],
+            [
+              147,
+              203
+            ],
+            [
+              147,
+              204
+            ]
+          ],
+          "componentsAfter": [
+            29603
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          9,
+          44,
+          212,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.52456042859646,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 29603,
+            "bbox": [
+              9,
+              44,
+              212,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_3": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
+      "sourceSha256": "6d37049e58d8a68b89cce095a17135062522fce41c979d1f1bafba649c9a76ed",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/walk_right_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/walk_right_3.png",
+      "outputSha256": "1361d82ee56146736bd80e07b9051c29c99393a3b6eec78a13f81f2e9ac01df1",
+      "processing": {
+        "cutBBox": [
+          45,
+          38,
+          283,
+          356
+        ],
+        "scale": 0.8050314465408805,
+        "scaledSize": [
+          192,
+          256
+        ],
+        "alphaCentroidXLocal": 101.66736581958973,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            26964,
+            3,
+            2
+          ],
+          "removedAlphaGt32Pixels": [
+            [
+              186,
+              214
+            ],
+            [
+              186,
+              215
+            ],
+            [
+              185,
+              215
+            ],
+            [
+              175,
+              169
+            ],
+            [
+              175,
+              170
+            ]
+          ],
+          "componentsAfter": [
+            26964
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          18,
+          44,
+          210,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.66373167324625,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 26964,
+            "bbox": [
+              18,
+              44,
+              210,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_1": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_1.png",
+      "sourceSha256": "0369e6256c16777f6f0aeccb7a2372d02f42cb2696ec0164f7700a96a6e74bcc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/jump_right_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/jump_right_1.png",
+      "outputSha256": "f4a47bca8812a4fec27565cae9e795ded7b3d9824be540daa17cf083f9b88379",
+      "processing": {
+        "cutBBox": [
+          75,
+          66,
+          309,
+          322
+        ],
+        "scale": 1.0,
+        "scaledSize": [
+          234,
+          256
+        ],
+        "alphaCentroidXLocal": 125.57418503365449,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            37804,
+            5,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "removedAlphaGt32Pixels": [
+            [
+              54,
+              200
+            ],
+            [
+              55,
+              200
+            ],
+            [
+              56,
+              200
+            ],
+            [
+              57,
+              200
+            ],
+            [
+              57,
+              201
+            ],
+            [
+              51,
+              157
+            ],
+            [
+              74,
+              157
+            ],
+            [
+              76,
+              157
+            ],
+            [
+              191,
+              192
+            ],
+            [
+              59,
+              200
+            ]
+          ],
+          "componentsAfter": [
+            37804
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          1,
+          44,
+          228,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.81509893133001,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 37804,
+            "bbox": [
+              1,
+              44,
+              228,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_2": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_2.png",
+      "sourceSha256": "8a97dd5d3d3fa8c9f93215b17c4621fb0a4e771ad035e259e6fe3cc7b6388ba7",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/jump_right_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/jump_right_2.png",
+      "outputSha256": "3cb679647fd2281c574c15cc1a9b2ce06eda88ae06faac126fb9949b5940b16d",
+      "processing": {
+        "cutBBox": [
+          65,
+          2,
+          296,
+          292
+        ],
+        "scale": 0.8827586206896552,
+        "scaledSize": [
+          204,
+          256
+        ],
+        "alphaCentroidXLocal": 107.34402406174992,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            28162
+          ],
+          "removedAlphaGt32Pixels": [],
+          "componentsAfter": [
+            28162
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          13,
+          44,
+          217,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.34402406174992,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 28162,
+            "bbox": [
+              13,
+              44,
+              217,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_3": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_3.png",
+      "sourceSha256": "bcb3b840c79cba8c2c3410153e6accf6f7509a0d9dad9fe3bf8e4811b541148c",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/jump_right_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/jump_right_3.png",
+      "outputSha256": "8631094cb5180b0633949aae6e6e5d61c232c4d18492511b1b4ba09ed25ad503",
+      "processing": {
+        "cutBBox": [
+          31,
+          2,
+          330,
+          305
+        ],
+        "scale": 0.7892976588628763,
+        "scaledSize": [
+          236,
+          239
+        ],
+        "alphaCentroidXLocal": 113.17491782013296,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            25985,
+            3
+          ],
+          "removedAlphaGt32Pixels": [
+            [
+              33,
+              244
+            ],
+            [
+              33,
+              245
+            ],
+            [
+              33,
+              246
+            ]
+          ],
+          "componentsAfter": [
+            25985
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          7,
+          61,
+          239,
+          300
+        ],
+        "visualHeight": 239,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.01198120159235,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 25985,
+            "bbox": [
+              7,
+              61,
+              239,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_1": {
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_1.png",
+      "sourceSha256": "4d81984301ca3ec4b2b003630e6442523102b5eda29023b39057f3bd3c005b30",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/atk_right_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/atk_right_1.png",
+      "outputSha256": "0cd10fd2f9ff709f6c3f719756433ad5d25ff9ff5809f2ce3e90c6c44a7a218a",
+      "processing": {
+        "cutBBox": [
+          1,
+          21,
+          129,
+          235
+        ],
+        "scale": 1.1962616822429906,
+        "scaledSize": [
+          153,
+          256
+        ],
+        "alphaCentroidXLocal": 71.66180752855227,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            22796,
+            7,
+            4
+          ],
+          "removedAlphaGt32Pixels": [
+            [
+              200,
+              138
+            ],
+            [
+              200,
+              139
+            ],
+            [
+              200,
+              140
+            ],
+            [
+              200,
+              141
+            ],
+            [
+              199,
+              141
+            ],
+            [
+              199,
+              140
+            ],
+            [
+              199,
+              139
+            ],
+            [
+              199,
+              119
+            ],
+            [
+              199,
+              120
+            ],
+            [
+              200,
+              120
+            ],
+            [
+              200,
+              119
+            ]
+          ],
+          "componentsAfter": [
+            22796
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          48,
+          44,
+          201,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.6400783368569,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 22796,
+            "bbox": [
+              48,
+              44,
+              192,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_2": {
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_2.png",
+      "sourceSha256": "015416f37d5a0f9c40f95be935fd5cddd42690ee121f3481d474c0d0ee4d54fc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/atk_right_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/atk_right_2.png",
+      "outputSha256": "7fdafba3f6c319fd816634337aeb5063d29dd00625816d8d1068f8cf3c4ced37",
+      "processing": {
+        "cutBBox": [
+          0,
+          21,
+          130,
+          235
+        ],
+        "scale": 1.1962616822429906,
+        "scaledSize": [
+          156,
+          256
+        ],
+        "alphaCentroidXLocal": 74.0432217432458,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            21475,
+            138,
+            55,
+            37
+          ],
+          "removedAlphaGt32Pixels": [
+            [
+              200,
+              125
+            ],
+            [
+              200,
+              126
+            ],
+            [
+              200,
+              127
+            ],
+            [
+              200,
+              128
+            ],
+            [
+              200,
+              129
+            ],
+            [
+              200,
+              130
+            ],
+            [
+              200,
+              131
+            ],
+            [
+              200,
+              132
+            ],
+            [
+              200,
+              133
+            ],
+            [
+              200,
+              134
+            ],
+            [
+              200,
+              135
+            ],
+            [
+              200,
+              136
+            ],
+            [
+              200,
+              137
+            ],
+            [
+              200,
+              138
+            ],
+            [
+              200,
+              139
+            ],
+            [
+              200,
+              140
+            ],
+            [
+              200,
+              141
+            ],
+            [
+              200,
+              142
+            ],
+            [
+              200,
+              143
+            ],
+            [
+              200,
+              144
+            ],
+            [
+              200,
+              145
+            ],
+            [
+              200,
+              146
+            ],
+            [
+              200,
+              147
+            ],
+            [
+              200,
+              148
+            ],
+            [
+              200,
+              149
+            ],
+            [
+              200,
+              150
+            ],
+            [
+              200,
+              151
+            ],
+            [
+              200,
+              152
+            ],
+            [
+              201,
+              152
+            ],
+            [
+              201,
+              151
+            ],
+            [
+              199,
+              151
+            ],
+            [
+              201,
+              150
+            ],
+            [
+              199,
+              150
+            ],
+            [
+              198,
+              150
+            ],
+            [
+              198,
+              149
+            ],
+            [
+              198,
+              148
+            ],
+            [
+              198,
+              147
+            ],
+            [
+              198,
+              146
+            ],
+            [
+              198,
+              145
+            ],
+            [
+              198,
+              144
+            ],
+            [
+              198,
+              143
+            ],
+            [
+              198,
+              142
+            ],
+            [
+              198,
+              141
+            ],
+            [
+              198,
+              140
+            ],
+            [
+              198,
+              139
+            ],
+            [
+              198,
+              138
+            ],
+            [
+              198,
+              137
+            ],
+            [
+              198,
+              136
+            ],
+            [
+              198,
+              135
+            ],
+            [
+              198,
+              134
+            ],
+            [
+              198,
+              133
+            ],
+            [
+              198,
+              132
+            ],
+            [
+              198,
+              131
+            ],
+            [
+              198,
+              130
+            ],
+            [
+              197,
+              131
+            ],
+            [
+              197,
+              132
+            ],
+            [
+              197,
+              133
+            ],
+            [
+              196,
+              133
+            ],
+            [
+              196,
+              134
+            ],
+            [
+              196,
+              135
+            ],
+            [
+              196,
+              136
+            ],
+            [
+              196,
+              137
+            ],
+            [
+              196,
+              138
+            ],
+            [
+              196,
+              139
+            ],
+            [
+              196,
+              140
+            ],
+            [
+              196,
+              141
+            ],
+            [
+              196,
+              142
+            ],
+            [
+              196,
+              143
+            ],
+            [
+              196,
+              144
+            ],
+            [
+              196,
+              145
+            ],
+            [
+              196,
+              146
+            ],
+            [
+              196,
+              147
+            ],
+            [
+              195,
+              143
+            ],
+            [
+              195,
+              142
+            ],
+            [
+              194,
+              142
+            ],
+            [
+              197,
+              134
+            ],
+            [
+              197,
+              135
+            ],
+            [
+              197,
+              136
+            ],
+            [
+              197,
+              137
+            ],
+            [
+              197,
+              138
+            ],
+            [
+              197,
+              139
+            ],
+            [
+              197,
+              140
+            ],
+            [
+              197,
+              141
+            ],
+            [
+              197,
+              142
+            ],
+            [
+              197,
+              143
+            ],
+            [
+              197,
+              144
+            ],
+            [
+              197,
+              145
+            ],
+            [
+              197,
+              146
+            ],
+            [
+              197,
+              147
+            ],
+            [
+              197,
+              148
+            ],
+            [
+              197,
+              149
+            ],
+            [
+              201,
+              149
+            ],
+            [
+              199,
+              149
+            ],
+            [
+              201,
+              148
+            ],
+            [
+              199,
+              148
+            ],
+            [
+              201,
+              147
+            ],
+            [
+              199,
+              147
+            ],
+            [
+              201,
+              146
+            ],
+            [
+              199,
+              146
+            ],
+            [
+              201,
+              145
+            ],
+            [
+              199,
+              145
+            ],
+            [
+              201,
+              144
+            ],
+            [
+              199,
+              144
+            ],
+            [
+              201,
+              143
+            ],
+            [
+              199,
+              143
+            ],
+            [
+              201,
+              142
+            ],
+            [
+              199,
+              142
+            ],
+            [
+              201,
+              141
+            ],
+            [
+              199,
+              141
+            ],
+            [
+              201,
+              140
+            ],
+            [
+              199,
+              140
+            ],
+            [
+              201,
+              139
+            ],
+            [
+              199,
+              139
+            ],
+            [
+              201,
+              138
+            ],
+            [
+              199,
+              138
+            ],
+            [
+              201,
+              137
+            ],
+            [
+              199,
+              137
+            ],
+            [
+              201,
+              136
+            ],
+            [
+              199,
+              136
+            ],
+            [
+              201,
+              135
+            ],
+            [
+              199,
+              135
+            ],
+            [
+              201,
+              134
+            ],
+            [
+              199,
+              134
+            ],
+            [
+              201,
+              133
+            ],
+            [
+              199,
+              133
+            ],
+            [
+              201,
+              132
+            ],
+            [
+              199,
+              132
+            ],
+            [
+              201,
+              131
+            ],
+            [
+              199,
+              131
+            ],
+            [
+              201,
+              130
+            ],
+            [
+              199,
+              130
+            ],
+            [
+              201,
+              129
+            ],
+            [
+              199,
+              129
+            ],
+            [
+              201,
+              128
+            ],
+            [
+              199,
+              128
+            ],
+            [
+              201,
+              127
+            ],
+            [
+              201,
+              126
+            ],
+            [
+              201,
+              125
+            ],
+            [
+              200,
+              162
+            ],
+            [
+              200,
+              163
+            ],
+            [
+              200,
+              164
+            ],
+            [
+              200,
+              165
+            ],
+            [
+              200,
+              166
+            ],
+            [
+              200,
+              167
+            ],
+            [
+              200,
+              168
+            ],
+            [
+              200,
+              169
+            ],
+            [
+              200,
+              170
+            ],
+            [
+              200,
+              171
+            ],
+            [
+              200,
+              172
+            ],
+            [
+              200,
+              173
+            ],
+            [
+              200,
+              174
+            ],
+            [
+              200,
+              175
+            ],
+            [
+              200,
+              176
+            ],
+            [
+              201,
+              176
+            ],
+            [
+              201,
+              175
+            ],
+            [
+              201,
+              174
+            ],
+            [
+              199,
+              174
+            ],
+            [
+              198,
+              174
+            ],
+            [
+              198,
+              173
+            ],
+            [
+              198,
+              172
+            ],
+            [
+              198,
+              171
+            ],
+            [
+              198,
+              170
+            ],
+            [
+              198,
+              169
+            ],
+            [
+              198,
+              168
+            ],
+            [
+              197,
+              169
+            ],
+            [
+              197,
+              170
+            ],
+            [
+              197,
+              171
+            ],
+            [
+              197,
+              172
+            ],
+            [
+              196,
+              172
+            ],
+            [
+              196,
+              173
+            ],
+            [
+              197,
+              173
+            ],
+            [
+              197,
+              174
+            ],
+            [
+              201,
+              173
+            ],
+            [
+              199,
+              173
+            ],
+            [
+              201,
+              172
+            ],
+            [
+              199,
+              172
+            ],
+            [
+              201,
+              171
+            ],
+            [
+              199,
+              171
+            ],
+            [
+              201,
+              170
+            ],
+            [
+              199,
+              170
+            ],
+            [
+              201,
+              169
+            ],
+            [
+              199,
+              169
+            ],
+            [
+              201,
+              168
+            ],
+            [
+              199,
+              168
+            ],
+            [
+              201,
+              167
+            ],
+            [
+              199,
+              167
+            ],
+            [
+              201,
+              166
+            ],
+            [
+              199,
+              166
+            ],
+            [
+              201,
+              165
+            ],
+            [
+              199,
+              165
+            ],
+            [
+              201,
+              164
+            ],
+            [
+              201,
+              163
+            ],
+            [
+              201,
+              162
+            ],
+            [
+              196,
+              118
+            ],
+            [
+              196,
+              119
+            ],
+            [
+              196,
+              120
+            ],
+            [
+              196,
+              121
+            ],
+            [
+              197,
+              121
+            ],
+            [
+              197,
+              122
+            ],
+            [
+              198,
+              122
+            ],
+            [
+              199,
+              122
+            ],
+            [
+              199,
+              121
+            ],
+            [
+              199,
+              120
+            ],
+            [
+              199,
+              119
+            ],
+            [
+              199,
+              118
+            ],
+            [
+              200,
+              118
+            ],
+            [
+              201,
+              118
+            ],
+            [
+              201,
+              119
+            ],
+            [
+              201,
+              120
+            ],
+            [
+              201,
+              121
+            ],
+            [
+              201,
+              122
+            ],
+            [
+              201,
+              123
+            ],
+            [
+              200,
+              123
+            ],
+            [
+              198,
+              118
+            ],
+            [
+              200,
+              119
+            ],
+            [
+              198,
+              119
+            ],
+            [
+              200,
+              120
+            ],
+            [
+              198,
+              120
+            ],
+            [
+              200,
+              121
+            ],
+            [
+              200,
+              122
+            ],
+            [
+              198,
+              121
+            ],
+            [
+              195,
+              121
+            ],
+            [
+              194,
+              121
+            ],
+            [
+              194,
+              120
+            ],
+            [
+              194,
+              119
+            ],
+            [
+              197,
+              120
+            ],
+            [
+              195,
+              120
+            ],
+            [
+              197,
+              119
+            ],
+            [
+              195,
+              119
+            ],
+            [
+              197,
+              118
+            ]
+          ],
+          "componentsAfter": [
+            21475
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          46,
+          44,
+          202,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.29815464306812,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 21475,
+            "bbox": [
+              46,
+              44,
+              190,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_3": {
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_3.png",
+      "sourceSha256": "9c6ec014b3b543c26fee657d74fcc83cb576370ba311abbfb04402e9668dcffc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/atk_right_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/atk_right_3.png",
+      "outputSha256": "1e674c587fc5fc1f855a3f88e744f27874df5a1eb1cf48cdb836d36a2e937c00",
+      "processing": {
+        "cutBBox": [
+          0,
+          21,
+          129,
+          235
+        ],
+        "scale": 1.1962616822429906,
+        "scaledSize": [
+          154,
+          256
+        ],
+        "alphaCentroidXLocal": 71.87221527184913,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            22287
+          ],
+          "removedAlphaGt32Pixels": [],
+          "componentsAfter": [
+            22287
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          48,
+          44,
+          202,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.87221527184913,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 22287,
+            "bbox": [
+              48,
+              44,
+              202,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_4": {
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_4.png",
+      "sourceSha256": "8aade595178249bc668960f0ff0e0491b9c29bc1315d26e7e1d562162ec8e303",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/raw_sources/atk_right_4.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_seq288/normalized/right/atk_right_4.png",
+      "outputSha256": "0bb9b6f56710900832346be622a3362934ac05d728a031578fd966ddb795abf4",
+      "processing": {
+        "cutBBox": [
+          0,
+          20,
+          123,
+          235
+        ],
+        "scale": 1.1906976744186046,
+        "scaledSize": [
+          146,
+          256
+        ],
+        "alphaCentroidXLocal": 74.93018996175309,
+        "secondaryCleanup": {
+          "componentsBefore": [
+            22633
+          ],
+          "removedAlphaGt32Pixels": [],
+          "componentsAfter": [
+            22633
+          ]
+        }
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          45,
+          44,
+          191,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.93018996175309,
+        "borderNonzero": 0,
+        "componentsAlphaGt32": [
+          {
+            "pixels": 22633,
+            "bbox": [
+              45,
+              44,
+              191,
+              300
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "heightBand": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true,
+        "singleAlphaGt32Component": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "runtimeTouched": false,
+  "allHardGatesPass": true
+}

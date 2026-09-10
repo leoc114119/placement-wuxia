@@ -1,0 +1,14 @@
+{
+  "task":"T45",
+  "seq":"288",
+  "phase":"A_rightNormalize",
+  "frameCount":10,
+  "frames":["walk_right_1","walk_right_2","walk_right_3","jump_right_1","jump_right_2","jump_right_3","atk_right_1","atk_right_2","atk_right_3","atk_right_4"],
+  "processing":"deterministic checkerboard edge cut; aspect-preserving fit; 240x320 RGBA; feet y=300; alpha>32 centroid x=120; border alpha=0; exact secondary-component cleanup",
+  "qa":"qa/phase_a_right_normalize.json",
+  "allHardGatesPass":true,
+  "generationCredits":0,
+  "runtimeRelease":false,
+  "runtimeTouched":false,
+  "next":"After PM2 Phase A acceptance, process Phase B weapon anchor/mask one frame at a time."
+}
