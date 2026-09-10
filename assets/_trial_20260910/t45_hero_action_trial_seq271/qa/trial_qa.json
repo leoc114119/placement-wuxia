@@ -1,0 +1,22 @@
+{
+  "task": "T45",
+  "seq": "271",
+  "mode": "single-reference constrained action trial",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "output": "assets/_trial_20260910/t45_hero_action_trial_seq271/raw/generated_13frame_thrust_swing_trial.png",
+  "layout": "4 rows with 3/3/4/3 cells",
+  "rows": {
+    "1": "fast movement toward screen-right, 3 poses",
+    "2": "empty-handed sword-thrust pose, 3 poses",
+    "3": "one-hand left-to-right weapon-swing gesture, 4 poses",
+    "4": "lightness jump, 3 poses"
+  },
+  "outputDimensions": [1086,1448],
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "artifactStage": "raw",
+  "runtimeRelease": false,
+  "generationCredits": "built-in image_gen",
+  "runtimeTouched": false,
+  "note": "Weapons intentionally absent; this is a pose study. Proportion and 240x320 per-cell scale requested frozen."
+}

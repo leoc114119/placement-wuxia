@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "seq": "271",
+  "mode": "single-reference constrained action trial",
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_right.png",
+      "role": "sole identity/style/scale reference",
+      "responsibility": "character identity, palette, proportions, 240x320 frame scale",
+      "forbidden": "do not use prior action sheets as image input"
+    }
+  ],
+  "generationPlan": "13-frame action study: right movement 3, empty-handed sword-thrust pose 3, one-hand left-to-right swing 4, lightness jump 3",
+  "constraints": "same proportions, same cell scale and foot baseline; no rendered weapons"
+}
