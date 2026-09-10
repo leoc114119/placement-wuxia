@@ -1,0 +1,11 @@
+{
+  "task": "T45",
+  "seq": "273",
+  "mode": "single-reference correction trial",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "corrections": [
+    "thrust frame 2 must use character right hand only",
+    "swing frame 1 must raise right hand before left-to-right swing; no backward throw"
+  ],
+  "preserve": "walk and jump remain from seq270; only attack/cast gestures regenerated"
+}

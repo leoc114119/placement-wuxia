@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "seq": "273",
+  "mode": "single-reference correction trial",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "output": "assets/_trial_20260910/t45_hero_attack_cast_trial_seq273/raw/generated_7frame_corrected_trial.png",
+  "layout": "2 rows with 3/4 cells",
+  "corrections": {
+    "thrustFrame2": "right-hand-only direct extension requested",
+    "swingFrame1": "right fist raised before swing; no backward throw requested"
+  },
+  "outputDimensions": [1536,1024],
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "artifactStage": "raw",
+  "runtimeRelease": false,
+  "generationCredits": "built-in image_gen",
+  "runtimeTouched": false,
+  "note": "Walk and jump frames remain preserved from seq270; this trial regenerates attack/cast gestures only. Weapons absent."
+}
