@@ -1,0 +1,98 @@
+{
+  "task": "T45",
+  "seq": "279",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "selection": "Leo selected all four cells in attached right-facing atk strip",
+  "source": {
+    "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/source_atk_right_4frame.png",
+    "sha256": "7f0388b86118a92f5701913b6ebee5a8feedd5605702e27e924f9c7f52965deb",
+    "dimensions": [
+      518,
+      257
+    ],
+    "mode": "RGBA",
+    "alphaExtrema": [
+      255,
+      255
+    ]
+  },
+  "processing": "deterministic exact four-cell crop only; no redraw or resize; runtime untouched",
+  "frames": [
+    {
+      "index": 1,
+      "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_1.png",
+      "sha256": "4d81984301ca3ec4b2b003630e6442523102b5eda29023b39057f3bd3c005b30",
+      "dimensions": [
+        129,
+        257
+      ]
+    },
+    {
+      "index": 2,
+      "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_2.png",
+      "sha256": "015416f37d5a0f9c40f95be935fd5cddd42690ee121f3481d474c0d0ee4d54fc",
+      "dimensions": [
+        130,
+        257
+      ]
+    },
+    {
+      "index": 3,
+      "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_3.png",
+      "sha256": "9c6ec014b3b543c26fee657d74fcc83cb576370ba311abbfb04402e9668dcffc",
+      "dimensions": [
+        129,
+        257
+      ]
+    },
+    {
+      "index": 4,
+      "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_4.png",
+      "sha256": "8aade595178249bc668960f0ff0e0491b9c29bc1315d26e7e1d562162ec8e303",
+      "dimensions": [
+        130,
+        257
+      ]
+    }
+  ],
+  "castPolicy": "cast unchanged; use original three runtime frames",
+  "castOriginalFrames": [
+    {
+      "index": 1,
+      "path": "assets/characters/hero/battle45/cast_right_1.png",
+      "exists": true,
+      "sha256": "22bb3f7a7a355bba3440b62f5e60be661c14a3a52246c39ff68634713b3c351d",
+      "dimensions": [
+        240,
+        320
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "index": 2,
+      "path": "assets/characters/hero/battle45/cast_right_2.png",
+      "exists": true,
+      "sha256": "a722a1d9faace4cff02d23cac99904b7567c3497dad24e9afb34c5bcb533989a",
+      "dimensions": [
+        240,
+        320
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "index": 3,
+      "path": "assets/characters/hero/battle45/cast_right_3.png",
+      "exists": true,
+      "sha256": "9f75dc98916a8a594ca77332ecac7087074098bfe47b6d543227397f516ed20e",
+      "dimensions": [
+        240,
+        320
+      ],
+      "mode": "RGBA"
+    }
+  ],
+  "note": "Attached image has baked checkerboard with alpha fully opaque; retain as raw candidate until PM cutout/normalization gate."
+}

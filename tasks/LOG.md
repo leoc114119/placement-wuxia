@@ -1023,3 +1023,5 @@
 | 2026-09-10 | Leo → Codex（art） | ❌ seq=277 右向重复试产作废 | 右向 `walk / atk / jump` 已确定；该六格试产不纳入后续优化，现有右向定稿继续沿用。 |
 | 2026-09-10 | Leo → Codex（art） | ✅ 右向 walk / jump 视觉定稿确认 | 附件第一行 3 格 walk 与最后一行 3 格 jump 定稿保存；右向 atk/施法不纳入本次保存。 |
 | 2026-09-10 | Codex（art） | 📦 seq=278 右向 walk/jump 六格候选保存 | `assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/`：原图+6 个逐格 PNG+两行条带+QA；`selected_by_Leo`、PM 规格门待办、runtime 未改。 |
+| 2026-09-10 | Leo → Codex（art） | ✅ 右向 atk 四帧视觉定稿；cast 恢复原三帧 | 采用附件 4 格右向 atk；cast 不调整，沿用原 `cast_right_1..3.png`。 |
+| 2026-09-10 | Codex（art） | 📦 seq=279 右向 atk 四格保存 | `assets/_trial_20260910/t45_hero_atk_selected_seq279/` 保存原图与 4 个逐格 PNG；QA 记录 cast 原三帧 SHA；候选仅待 PM 规格门，runtime 未改。 |
