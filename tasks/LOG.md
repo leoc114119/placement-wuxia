@@ -1042,3 +1042,5 @@
 | 2026-09-10 | Codex（art） | 🛠️ seq=285 右上 walk 背景处理与水平居中完成 | 三帧执行棋盘底连通抠除、256px 高度归一、脚底 y=300、全像素质心 x=120；3/3 帧 240×320 RGBA 机械门全过，contact=`assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/contact/rightup_walk_aligned_240x320.png`，runtime 未改。 |
 | 2026-09-10 | Leo → Codex（art） | ✅ 右下 walk_2 替换请求 | 右下 walk 中间帧采用 Leo 提供图，要求与 walk_1/3 合并并执行同样背景/对齐处理。 |
 | 2026-09-10 | Codex（art） | 🛠️ seq=286 右下 walk 三帧背景处理与居中完成 | 三帧去棋盘底、256px 高度、脚底 y=300、全像素质心 x=120；240×320 RGBA 机械门全过，runtime 未改。 |
+| 2026-09-10 | Leo → Codex（art） | ✅ seq=287 局部定稿范围确认 | 右下 atk、右上/右下 jump 通过；右上 atk 沿用现版；两向 walk 使用已处理的中间帧版本，提交 PM2 二审。 |
+| 2026-09-10 | Codex（art） | 📦 seq=287 右上/右下 walk-atk-jump 二审包 | 两向各 10 帧（walk3+atk4+jump3），20 帧均 240×320 RGBA/脚底 y=300/质心 x=120±1/边缘透明；idle/cast/runtime 冻结，candidate-only。 |

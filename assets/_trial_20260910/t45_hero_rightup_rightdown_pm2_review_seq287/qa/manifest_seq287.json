@@ -1,0 +1,730 @@
+{
+  "task": "T45",
+  "seq": "287",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "directions": {
+    "rightup": {
+      "sourceSheet": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
+      "sourceSheetSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
+      "frames": [
+        {
+          "action": "walk",
+          "index": 1,
+          "source": "assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/normalized/rightup_walk_1.png",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/walk_rightup_1.png",
+          "sourceSha256": "5dfb1e62d3427900b6a630d9fd534ed724985f1352662f90acedb7e61673d593",
+          "outputSha256": "5dfb1e62d3427900b6a630d9fd534ed724985f1352662f90acedb7e61673d593",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              12,
+              44,
+              211,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.8076057176482,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "walk",
+          "index": 2,
+          "source": "assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/normalized/rightup_walk_2.png",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/walk_rightup_2.png",
+          "sourceSha256": "d9f69303237324997db7d39231ac83cc2d5dccc804162e145a325242f58839cb",
+          "outputSha256": "d9f69303237324997db7d39231ac83cc2d5dccc804162e145a325242f58839cb",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              25,
+              44,
+              203,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.81107012403194,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "walk",
+          "index": 3,
+          "source": "assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/normalized/rightup_walk_3.png",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/walk_rightup_3.png",
+          "sourceSha256": "ce919967cdf2f7de14bbaaa33bba2369da4a07bb161eb3527ac5dca54fd5ec4e",
+          "outputSha256": "ce919967cdf2f7de14bbaaa33bba2369da4a07bb161eb3527ac5dca54fd5ec4e",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              20,
+              44,
+              209,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.99910505781534,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "atk",
+          "index": 1,
+          "sheetCell": [
+            0,
+            3
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
+          "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/atk_rightup_1.png",
+          "outputSha256": "b058b54cad596a02f330fa8e02b542fa973f79604eced6f237424444b9e40105",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              32,
+              44,
+              193,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.16523550838814,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "atk",
+          "index": 2,
+          "sheetCell": [
+            0,
+            4
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
+          "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/atk_rightup_2.png",
+          "outputSha256": "d19a9998a2a1ac7108be138ce313a77b6d3bf1f0b8e8222458b3b3af9c73b344",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              36,
+              44,
+              207,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.65921011688361,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "atk",
+          "index": 3,
+          "sheetCell": [
+            1,
+            0
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
+          "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/atk_rightup_3.png",
+          "outputSha256": "3cd5696a3fe4ea51f6f4c6ed9331b0996f6ea8c18b9698b95440a9ba0f91c701",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              30,
+              44,
+              218,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.65197980261323,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "atk",
+          "index": 4,
+          "sheetCell": [
+            1,
+            1
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
+          "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/atk_rightup_4.png",
+          "outputSha256": "9e7d1a5236fe8aae8af30d3d699940d4fa6ea0b5e4f5602ef95eafcbd0243138",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              33,
+              44,
+              196,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.71795056263801,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "jump",
+          "index": 1,
+          "sheetCell": [
+            1,
+            2
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
+          "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_1.png",
+          "outputSha256": "51080f33c5e622ca34b128dcca533bd424f053c6502faf2a54bcb5db36241f99",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              1,
+              48,
+              231,
+              300
+            ],
+            "visualHeight": 252,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.19188592323673,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "jump",
+          "index": 2,
+          "sheetCell": [
+            1,
+            3
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
+          "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_2.png",
+          "outputSha256": "97c09cbf62fa1584ee3931c72b399a7df87f314a172c45aedbc25f64e400e8f1",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              5,
+              44,
+              220,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.06763913373987,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "jump",
+          "index": 3,
+          "sheetCell": [
+            1,
+            4
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
+          "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_3.png",
+          "outputSha256": "5b9692df1afe93b90ae7270a6e74fbcfb47b737ebb5762c42f437c4f73cd95bd",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              16,
+              44,
+              239,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.21323142776194,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        }
+      ],
+      "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/contact/rightup_10frame_240x320.png",
+      "allMachineChecksPass": true
+    },
+    "rightdown": {
+      "sourceSheet": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
+      "sourceSheetSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
+      "frames": [
+        {
+          "action": "walk",
+          "index": 1,
+          "source": "assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/normalized/rightdown_walk_1.png",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/walk_rightdown_1.png",
+          "sourceSha256": "0a2e7d313fba334b79c8c9a47b485349731a4465144795491ae6413be637ae10",
+          "outputSha256": "0a2e7d313fba334b79c8c9a47b485349731a4465144795491ae6413be637ae10",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              33,
+              44,
+              200,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.85483796861459,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "walk",
+          "index": 2,
+          "source": "assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/normalized/rightdown_walk_2.png",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/walk_rightdown_2.png",
+          "sourceSha256": "ede1eb252286be566aec149bee0ec16acd0226428bbd7f5de08e72ef68453c13",
+          "outputSha256": "ede1eb252286be566aec149bee0ec16acd0226428bbd7f5de08e72ef68453c13",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              17,
+              44,
+              206,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.30876499032071,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "walk",
+          "index": 3,
+          "source": "assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/normalized/rightdown_walk_3.png",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/walk_rightdown_3.png",
+          "sourceSha256": "79fe6fd51123d2a389037f1fce79ccd585dd4465e93795f02dee8ab8e5314290",
+          "outputSha256": "79fe6fd51123d2a389037f1fce79ccd585dd4465e93795f02dee8ab8e5314290",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              29,
+              44,
+              202,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.5729045848911,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "atk",
+          "index": 1,
+          "sheetCell": [
+            0,
+            3
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
+          "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_1.png",
+          "outputSha256": "ef6027767c2496c4a185f6d1c9a2248e99231598f8c03d266f1bcce9f851855a",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              37,
+              44,
+              203,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.40936901643686,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "atk",
+          "index": 2,
+          "sheetCell": [
+            0,
+            4
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
+          "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_2.png",
+          "outputSha256": "7761b9143e17ff1d48b56b3344289cb71bad302f82a2006ccd9a530998fa4395",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              33,
+              44,
+              213,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.86382109681155,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "atk",
+          "index": 3,
+          "sheetCell": [
+            1,
+            0
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
+          "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_3.png",
+          "outputSha256": "5e131d4cf850947f27de0759c485b198faf4bec60e5edf08309c0b30d55ad218",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              30,
+              44,
+              210,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.80327689085264,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "atk",
+          "index": 4,
+          "sheetCell": [
+            1,
+            1
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
+          "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_4.png",
+          "outputSha256": "8ee98b2bafc34c96d8c90cf10f98fa28d402ed74287f8b9bc6c80ad006e558f5",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              35,
+              44,
+              206,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.32122352452744,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "jump",
+          "index": 1,
+          "sheetCell": [
+            1,
+            2
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
+          "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/jump_rightdown_1.png",
+          "outputSha256": "7b8d90271414e52e0e1ed52712e3fe600dcdc51bbd2a4aca2d95cc4aaf73c1d3",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              1,
+              44,
+              229,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.57967163213986,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "jump",
+          "index": 2,
+          "sheetCell": [
+            1,
+            3
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
+          "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/jump_rightdown_2.png",
+          "outputSha256": "61d55aab994511b305c740623c29f5e8654b6c7ce1883d1184b420de5ae2b533",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              14,
+              44,
+              216,
+              300
+            ],
+            "visualHeight": 256,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 120.12922238371509,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        },
+        {
+          "action": "jump",
+          "index": 3,
+          "sheetCell": [
+            1,
+            4
+          ],
+          "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
+          "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
+          "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/jump_rightdown_3.png",
+          "outputSha256": "7caadd521abd71a5c2e35fe90027020157154d7299da4b5dc1aae7dfdf6611ca",
+          "metrics": {
+            "size": [
+              240,
+              320
+            ],
+            "mode": "RGBA",
+            "alphaExtrema": [
+              0,
+              255
+            ],
+            "bbox": [
+              8,
+              66,
+              239,
+              300
+            ],
+            "visualHeight": 234,
+            "feetYExclusive": 300,
+            "alphaCentroidX": 119.90625971885792,
+            "borderNonzero": 0
+          },
+          "visualReview": "selected_by_Leo",
+          "specGate": "pending_pm_scan",
+          "integrationGate": "not_handed_off"
+        }
+      ],
+      "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/contact/rightdown_10frame_240x320.png",
+      "allMachineChecksPass": true
+    }
+  },
+  "allMachineChecksPass": true,
+  "candidateStatus": "ready_for_pm2_second_review",
+  "runtimeRelease": false,
+  "frozenPolicy": {
+    "idle": "unchanged original three direction idle frames",
+    "cast": "unchanged original three-frame sets",
+    "runtime": "untouched"
+  }
+}

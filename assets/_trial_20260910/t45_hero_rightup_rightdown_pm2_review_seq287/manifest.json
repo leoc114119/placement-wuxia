@@ -1,0 +1,18 @@
+{
+  "task": "T45",
+  "seq": "287",
+  "scope": "hero rightup/rightdown walk-atk-jump candidate for PM2 review",
+  "frameCountPerDirection": {"walk": 3, "atk": 4, "jump": 3, "total": 10},
+  "directions": ["rightup", "rightdown"],
+  "sourceLineage": {
+    "walk": "Leo-selected rightup/rightdown walk middle-frame replacements from seq285/seq286",
+    "atk": "Leo-selected right-facing atk source carried through seq272 regenerated sheets; rightdown atk accepted, rightup atk unchanged per Leo",
+    "jump": "seq272 regenerated sheets; rightup/rightdown jump accepted by Leo"
+  },
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "runtimeRelease": false,
+  "frozen": {"idle": "original unchanged", "cast": "original three frames unchanged", "runtime": "untouched"},
+  "qa": "qa/manifest_seq287.json"
+}
