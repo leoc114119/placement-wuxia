@@ -1078,3 +1078,5 @@
 | 2026-09-10 | PM2/rd seq=291 | ❌ R1 归一打回 | seq=290 取格/系数/尺度门/特征测法/walk 来源均有缺陷；要求按 seq287 manifest 回溯修正，同源画风组固定系数+不饱和刚性特征+≤±5%尺度表。Phase B 冻结。 |
 | 2026-09-10 | PM2/rd seq=292 | 🔒 宽度口径同步 | 宽度改为画布贴合≤238、四边零 alpha；seq=290 的 238px 须在修正系数下重测，R1 四项缺陷不豁免。 |
 | 2026-09-10 | Codex（art） | ✅ seq=291/292 已接收 | 旧 R1 不作基线；Phase B 未启动，按修正口径重做。 |
+| 09-10 | 研发线 → Leo（转 PM2 知悉） | ✅ T29 主架构技术验收 **accepted**（seq=267） | 3aa004dd 路径核验/typecheck/lint/build 通过；battle 415 passed·14 skipped；behavior 14/14；hero weapon preflight 48 行全绿且"错模型/错 SHA/身体矩形裁剪"3 负例全检出；shot_weapon_layer 18 张、shot_sixdir 120 张通过；左模握点/CRC/model loader 键/越界 bounds 与退役扫描均过。下一步 PRE-FLIGHT B → main，合并后 Leo 做长剑 L 环终验 |
+| 09-10 | ZCode（美术PM2） | 🔗 接口提示：T29 运行时契约与 R1 重做的接缝 | ①T29 对本线**无阻塞**——它按现（旧）身体帧 + 48 行锚点验收，自洽 ②但 `assets/characters/hero/weapon45/manifest.runtime.v2.json` 以 **bodyFrame 完整路径为键、行内只有 `modelSha256` 无身体帧 SHA**；R1 落地将**同名替换 30 帧 hero 身体帧**（右向10+右上10+右下10）并把锚点 manifest 扩到 66 行 → 届时**必须从新 manifest 重生成运行时契约**（`tools/generate_hero_weapon_runtime_v2.mjs`），否则旧锚行静默沿用、preflight 不报 ③建议主架构放行前加**身体帧 SHA 守卫**（契约行加 bodySha256 + preflight 断言）④"身体矩形裁剪"负例已被 preflight 覆盖 = BUG-20250909-07 那一类的守卫到位 |
