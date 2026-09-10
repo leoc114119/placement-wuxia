@@ -1025,3 +1025,10 @@
 | 2026-09-10 | Codex（art） | 📦 seq=278 右向 walk/jump 六格候选保存 | `assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/`：原图+6 个逐格 PNG+两行条带+QA；`selected_by_Leo`、PM 规格门待办、runtime 未改。 |
 | 2026-09-10 | Leo → Codex（art） | ✅ 右向 atk 四帧视觉定稿；cast 恢复原三帧 | 采用附件 4 格右向 atk；cast 不调整，沿用原 `cast_right_1..3.png`。 |
 | 2026-09-10 | Codex（art） | 📦 seq=279 右向 atk 四格保存 | `assets/_trial_20260910/t45_hero_atk_selected_seq279/` 保存原图与 4 个逐格 PNG；QA 记录 cast 原三帧 SHA；候选仅待 PM 规格门，runtime 未改。 |
+| 09-10 | Leo → PM2 → art | 🎨 右上/右下战场帧重生成任务单 | Leo 定=右向静止帧保留不变；右上/右下各重生成 8 帧（行走2+普攻4 回防/挥1/挥2/收势+轻功2），img2img 同向一次过；静止帧三向保留旧版；rd→art seq=270 任务单（提示词全文内嵌）；交付后=PM 门检→武器/遮罩重标定→左系镜像→runtime 集成 |
+| 09-09 | Leo → PM2 | 📐 三档身高规格草案落盘（候拍板） | 矮2.2头身 210~220px / 中2.5头身 256px（现役不动）/ 高3.2头身 290~300px；全档 240×320/脚线300/质心120 不变；参考图入库 refs/像素角色比例统一-参考图-20260910.png；草案落角色帧规范 §1.1 候拍板——数字定后转正式并出各档生成 prompt 模板 |
+| 09-09 | ZCode（美术PM2） | 🖼️ 三档身高对比图生成+实测（Leo 令，mxai img2img 2 分） | 生成=height_tier_compare_v1.png（1536×1024，参照=hero idle_right 身份锚+无文字比例剪影布局锚）；程序化实测三档高=448/568/679px → 相对 矮/中=0.789（草案 0.840）高/中=1.195（草案 1.152）——略夸张于草案但同族；候选包 assets/_trial_20260910/t45_height_tier_compare/（credits 已登记 2 分）；候 Leo 目验拍板 §1.1 数字 |
+| 2026-09-10 | Leo → Codex（art） | 🔧 seq=272 帧数口径修正 | 右上/右下与右向对齐为 `walk 3 + atk 4 + jump 3 = 10 格/向`；先前 8 格右上原图作废并留 QA 记录。 |
+| 09-10 | Leo → PM2 | ✅ 三档身高规格定稿（§1.1 转正式） | 矮 2.2头身/215px/宽比0.55~0.62 禁肥胖｜中 2.5头身/256px 现役不变｜高 3.2头身/295px/宽比0.45~0.52 禁大长腿匀称；数字按 v3 对比图实测校准（Leo 目验通过）；两版否决教训（v2 矮胖/大长腿）成文为生成硬条款；约束范围=未来新 NPC/敌人生成 |
+| 2026-09-10 | Leo → Codex（art） | ❌ seq=272 旧参考链作废并纠正 | 右上/右下重生成必须以 seq278+279 已定稿右向 `walk / atk / jump` 为唯一动作参考；旧右上/右下参考链结果不采用。 |
+| 2026-09-10 | Codex（art） | 🧪 seq=272 corrected rightup/rightdown 生成完成 | 右向定稿动作源=`refs/rightward_selected/rightward_walk_atk_jump_2x5_source.png`；右上/右下各一次 img2img，2×5 十格（walk3+atk4+jump3）；候选待 Leo 目验，runtime 未改。 |

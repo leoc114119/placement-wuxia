@@ -1,0 +1,52 @@
+{
+  "task": "T45",
+  "seq": "272",
+  "direction": "rightdown",
+  "revision": "from_rightward_selected_v1",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "path": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+  "sha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+  "dimensions": [
+    1717,
+    916
+  ],
+  "mode": "RGB",
+  "alpha": {
+    "hasAlpha": false,
+    "extrema": null
+  },
+  "layout": {
+    "rows": 2,
+    "columns": 5,
+    "cells": 10,
+    "cellWidth": 343.4,
+    "cellHeight": 458.0,
+    "order": [
+      "walk_1",
+      "walk_2",
+      "walk_3",
+      "atk_1",
+      "atk_2",
+      "atk_3",
+      "atk_4",
+      "jump_1",
+      "jump_2",
+      "jump_3"
+    ]
+  },
+  "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/refs/rightward_selected/rightward_walk_atk_jump_2x5_source.png",
+  "sourceMeaning": "new Leo-selected right-facing walk/atk/jump references from seq278+seq279",
+  "directionCheck": "45-degree front-oblique rightdown; eyes/right cheek/front torso visible",
+  "contentCheck": {
+    "weaponRendered": false,
+    "castRendered": false,
+    "textRendered": false,
+    "fullBodyCells": 10
+  },
+  "generatedBy": "Codex ImageGen",
+  "generationAttempts": 1,
+  "note": "Corrected source lineage; no frame cutting, normalization, mirror, or runtime integration."
+}

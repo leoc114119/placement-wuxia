@@ -1,0 +1,38 @@
+{
+  "task": "T45",
+  "seq": "272",
+  "status": "candidate",
+  "directions": [
+    "rightup",
+    "rightdown"
+  ],
+  "frameCountPerDirection": {
+    "walk": 3,
+    "atk": 4,
+    "jump": 3,
+    "total": 10
+  },
+  "generation": {
+    "provider": "Codex native ImageGen",
+    "mode": "same-direction img2img",
+    "attempts": {
+      "rightup_from_rightward": 1,
+      "rightdown_from_rightward": 1
+    },
+    "correctedSource": "refs/rightward_selected/rightward_walk_atk_jump_2x5_source.png"
+  },
+  "frozen": [
+    "rightup/rightdown idle",
+    "original cast_rightup/rightdown 3-frame sets",
+    "runtime"
+  ],
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "referenceLineage": "corrected: rightup/rightdown generated from new right-facing seq278 walk+jump and seq279 atk",
+  "supersededOutputs": [
+    "raw/rightup_regenerated_2x4.png",
+    "raw/rightup_regenerated_2x5.png",
+    "raw/rightdown_regenerated_2x5.png"
+  ]
+}

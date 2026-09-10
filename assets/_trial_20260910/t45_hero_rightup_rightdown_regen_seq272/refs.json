@@ -1,0 +1,19 @@
+{
+  "task": "T45",
+  "seq": "272",
+  "mode": "img2img same-direction one-pass regeneration",
+  "references": {
+    "rightup": {
+      "path": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/refs/rightup/rightup_action_sheet_2x4_source.png",
+      "role": "rightup existing action sheet: pose/layout source only; 45-degree back-oblique direction",
+      "verified": true
+    },
+    "rightdown": {
+      "path": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/refs/rightdown/rightdown_action_sheet_2x4_source.png",
+      "role": "rightdown existing action sheet: pose/layout source only; 45-degree front-oblique direction",
+      "verified": true
+    }
+  },
+  "frozen": "rightup/rightdown idle frames and original cast_rightup/rightdown three-frame sets remain unchanged",
+  "output": "each direction regenerated once as an 8-cell 2x4 sheet; no left mirror until Leo selects"
+}

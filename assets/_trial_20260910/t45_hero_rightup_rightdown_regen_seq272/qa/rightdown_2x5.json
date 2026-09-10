@@ -1,0 +1,50 @@
+{
+  "task": "T45",
+  "seq": "272",
+  "direction": "rightdown",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "path": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_regenerated_2x5.png",
+  "sha256": "833b093e22e230204526d98e552430b08e83545321a5ba0ef4d4ad03464e6758",
+  "dimensions": [
+    1717,
+    916
+  ],
+  "mode": "RGB",
+  "alpha": {
+    "hasAlpha": false,
+    "extrema": null
+  },
+  "layout": {
+    "rows": 2,
+    "columns": 5,
+    "cells": 10,
+    "cellWidth": 343.4,
+    "cellHeight": 458.0,
+    "order": [
+      "walk_1",
+      "walk_2",
+      "walk_3",
+      "atk_1",
+      "atk_2",
+      "atk_3",
+      "atk_4",
+      "jump_1",
+      "jump_2",
+      "jump_3"
+    ]
+  },
+  "directionCheck": "rightdown 45-degree front-oblique; eyes/right cheek visible",
+  "contentCheck": {
+    "weaponRendered": false,
+    "castRendered": false,
+    "textRendered": false,
+    "fullBodyCells": 10
+  },
+  "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/refs/rightdown/rightdown_action_sheet_2x5_source.png",
+  "generatedBy": "Codex ImageGen",
+  "generationAttempts": 1,
+  "note": "Raw one-pass regeneration; no frame cutting, normalization, mirror, or runtime integration."
+}

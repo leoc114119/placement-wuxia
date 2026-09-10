@@ -1,0 +1,1 @@
+Use the supplied rightdown 2x5 sheet as the only image reference. Preserve its 45-degree front-oblique view facing toward the lower-right: both eyes and the right cheek are clearly visible, with the front torso plane readable. Regenerate all ten cells with the same identity and layout. Do not turn the character back-facing or pure side-facing.
