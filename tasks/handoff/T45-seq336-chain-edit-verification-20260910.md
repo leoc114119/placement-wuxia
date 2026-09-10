@@ -1,6 +1,6 @@
 # T45 · 验证单：链式编辑能否消除头身比漂移（Leo 2026-09-10 批准）
 
-**成本上限：3 张新生成 = 6 分**（idle 用现有产物，不重生成）
+**成本口径（09-10 更正）**：Codex **原生生图走 Plus 订阅、不扣积分**——本单**不产生积分消耗**（此前写作"3 张 = 6 分"是把 mxai 计价错套到原生通道，作废）。真实约束是 **`image_gen` 用量限制**（app 内 `usageLimitExceeded / limitId="image_gen"`，带 `resetsAt` 重置）与**轮次预算**，故仍限"**只跑 3 张**"。
 **性质：一次性验证，不产正式资产、不动 runtime、不铺量。**
 
 ---
@@ -51,7 +51,7 @@ assets/_trial_<日期>/t45_chain_edit_test/
   raw/（3 张原生，未加工）
   qa/chain_probe.json     ← 见下
   contact/chain_vs_parallel.png
-  credits.json            ← 3 次生成，记账
+  credits.json            ← 3 次生成；**原生通道记 `provider=codex-native`、`cost=0`（订阅内）**，禁填积分
 ```
 
 **`qa/chain_probe.json` 必含**（程序化，禁目测）：
