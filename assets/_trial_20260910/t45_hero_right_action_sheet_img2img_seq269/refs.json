@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "seq": "269",
+  "mode": "single img2img trial",
+  "references": [
+    {
+      "path": "assets/_trial_20260910/t45_hero_right_action_sheet_img2img_seq269/raw/base_action_sheet_right_10.png",
+      "role": "edit target and pose/layout source",
+      "responsibility": "2x5 layout and ten frame action poses",
+      "forbidden": "do not change frame order, pose phase, or canvas layout"
+    }
+  ],
+  "generationPolicy": "one native img2img generation; zero external generation; output is candidate-only",
+  "constraints": "preserve transparent background, same 2x5 layout, consistent character, empty hands, no text or weapons"
+}

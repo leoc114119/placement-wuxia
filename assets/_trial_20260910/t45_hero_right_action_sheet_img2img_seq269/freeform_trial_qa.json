@@ -1,0 +1,21 @@
+{
+  "task": "T45",
+  "seq": "269",
+  "mode": "single-reference freeform img2img exploration",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "output": "assets/_trial_20260910/t45_hero_right_action_sheet_img2img_seq269/raw/generated_free_action_exploration_single_ref.png",
+  "outputDimensions": [
+    1536,
+    1024
+  ],
+  "observedPoseCount": 15,
+  "layout": "freeform 3 rows x 5 exploratory poses chosen by Image 2.5; no fixed frame-count requirement",
+  "visualObservation": "same-character identity and palette broadly retained; actions substantially more varied than constrained ten-cell sheet",
+  "constraintObservation": "open palms and cyan energy effects appear in some poses; this is exploratory output and has not been normalized or accepted",
+  "artifactStage": "raw",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "runtimeRelease": false,
+  "generationCredits": "built-in image_gen",
+  "runtimeTouched": false
+}
