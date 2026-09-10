@@ -1044,3 +1044,6 @@
 | 2026-09-10 | Codex（art） | 🛠️ seq=286 右下 walk 三帧背景处理与居中完成 | 三帧去棋盘底、256px 高度、脚底 y=300、全像素质心 x=120；240×320 RGBA 机械门全过，runtime 未改。 |
 | 2026-09-10 | Leo → Codex（art） | ✅ seq=287 局部定稿范围确认 | 右下 atk、右上/右下 jump 通过；右上 atk 沿用现版；两向 walk 使用已处理的中间帧版本，提交 PM2 二审。 |
 | 2026-09-10 | Codex（art） | 📦 seq=287 右上/右下 walk-atk-jump 二审包 | 两向各 10 帧（walk3+atk4+jump3），20 帧均 240×320 RGBA/脚底 y=300/质心 x=120±1/边缘透明；idle/cast/runtime 冻结，candidate-only。 |
+| 09-10 | ZCode（美术PM2） | 📋 右上/右下 20 帧门检：17 全过+3 帧 1~2px 游离杂点随批清理（1164fd2c） | 机械门=尺寸/RGBA/脚线 300 口径/质心 120±0.6 全过；一致性目验=同向一次过生成目标达成（十格渲染状态一致非常强）；向性语义全对；帧数口径变化提醒=walk3/atk4/jump3 新帧表结构（老 2/2/2），T29 卡帧表映射按新帧数；状态 candidate-only 确认；rd→art seq=288 门检结论 |
+| 2026-09-10 | PM2/rd seq=275 | ✅ 右上/右下 20 帧内容门检 PASS | 17 帧全过；`atk_rightdown_3`、`jump_rightup_1`、`jump_rightup_3` 各有 1~2px 游离杂点，随集成批次 PIL 清理；candidate-only/runtime untouched。 |
+| 2026-09-10 | Codex（art） | 📥 seq=275 回执已收 | 三帧清理项保留，seq=287 二审包作为候选基线；正式路径集成时确定性清理后再交付。 |
