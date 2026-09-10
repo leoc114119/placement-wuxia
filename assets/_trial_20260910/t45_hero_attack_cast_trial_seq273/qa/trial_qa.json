@@ -9,7 +9,10 @@
     "thrustFrame2": "right-hand-only direct extension requested",
     "swingFrame1": "right fist raised before swing; no backward throw requested"
   },
-  "outputDimensions": [1536,1024],
+  "outputDimensions": [
+    1358,
+    1159
+  ],
   "visualReview": "pending_Leo",
   "specGate": "pending_pm_scan",
   "artifactStage": "raw",
