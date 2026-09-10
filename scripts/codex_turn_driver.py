@@ -125,8 +125,9 @@ def turn_in_progress(thread):
             return (time.time() - row[0]) < 180
         return False
     except Exception as e:
-        log(f"inprogress probe failed: {e}")
-        return False
+        # 保守失败：探测不了就当"在跑"，宁可漏唤一次，也不能打断正在进行的回合
+        log(f"inprogress probe failed (fail-closed -> treat as in-progress): {e}")
+        return True
 
 
 def unread_after(role, watermark):
