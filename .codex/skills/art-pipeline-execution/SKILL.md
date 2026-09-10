@@ -246,3 +246,33 @@ Codex 产出候选并完成自身适用门检，即完成生产阶段；Leo 目�
 ### 12.4 一句话
 
 **规则要落文件、判据要机械可算；不要依赖"会话记得"。** 会话会压缩、会衰减、最终会损坏；仓库不会。
+
+### 12.5 projbus 自动唤醒链路（2026-09-10 建成并实测）
+
+**问题**：Codex 是回合制——一个回合干完即停；无人投递第二个回合时，它就静止（表现为"回一条消息就停、要人催"）。
+
+**链路（已装）**：
+```
+Codex turn-ended ──notify钩子──► scripts/codex_notify_wrapper.sh
+                                   ├─(原样转发)─► Computer Use 客户端（不破坏原行为）
+                                   └─(后台)────► scripts/codex_turn_driver.py
+                                                  ├─ 读水位线（只认新消息）
+                                                  ├─ 限频（≤6 次/小时）
+                                                  ├─ 在跑则跳过（不打断回合）
+                                                  └─ codex queue --thread <目标> --message "<摘要+继续指令>"
+```
+**实测结论（2026-09-10 17:23）**：投递 → 美术线程回合数 9→10，自动起新回合，无需人工催。
+
+**三条必须知道的坑**：
+1. **`poll-context` 默认只返回最旧的 `--limit`（50）条**：收件箱积压时**新消息完全不可见**。取信一律带 `--after-seq <上次水位>`（+ `--limit 300`）。
+2. **收件箱要及时 ack**：不 ack 会积压（实测美术线积压 61 条），既掩盖新消息，也让"有没有新活"无法判断。
+3. **目标线程写在** `~/.codex/projbus-drive-state.json`：**线程轮换后必须** `python3 scripts/codex_turn_driver.py --set-thread <新UUID>`，否则会往死线程投递。
+
+**运维命令**：
+```bash
+python3 scripts/codex_turn_driver.py --status   # 看水位线/新消息数/是否在跑/唤醒计数
+python3 scripts/codex_turn_driver.py --dry-run  # 演练：只打印将投递的内容
+tail -20 ~/.codex/projbus-drive.log             # 链路日志（含 Codex 钩子 argv 契约）
+```
+
+**护栏**：水位线（只认新消息，不因历史积压误触）／限频 6 次每小时／在跑不打断／锁防并发双发／失败不推进水位线／钩子任何异常都 exit 0 不影响宿主。
