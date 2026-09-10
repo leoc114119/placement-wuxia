@@ -1,0 +1,32 @@
+{
+  "task": "T45",
+  "seq": "300",
+  "revision": "R1",
+  "purpose": "Leo visual feedback: jump head appears larger",
+  "method": "deterministic outer light crown contour in upper 45% of each normalized 240x320 frame; diagnostic only, no artwork mutation",
+  "benchmark": {"frame": "assets/characters/hero/battle45/battle_idle_right.png", "bbox": [111, 53, 124, 71], "width": 13, "height": 18},
+  "groups": {
+    "walk_right": [
+      {"frame": "walk_right_1", "bbox": [138, 55, 155, 75], "width": 17, "height": 20, "widthDeltaPctVsBenchmark": 30.77},
+      {"frame": "walk_right_2", "bbox": [129, 57, 147, 77], "width": 18, "height": 20, "widthDeltaPctVsBenchmark": 38.46},
+      {"frame": "walk_right_3", "bbox": [131, 52, 148, 74], "width": 17, "height": 22, "widthDeltaPctVsBenchmark": 30.77}
+    ],
+    "atk_right": [
+      {"frame": "atk_right_1", "bbox": [113, 54, 127, 73], "width": 14, "height": 19, "widthDeltaPctVsBenchmark": 7.69},
+      {"frame": "atk_right_2", "bbox": [112, 54, 126, 73], "width": 14, "height": 19, "widthDeltaPctVsBenchmark": 7.69},
+      {"frame": "atk_right_3", "bbox": [109, 54, 123, 73], "width": 14, "height": 19, "widthDeltaPctVsBenchmark": 7.69},
+      {"frame": "atk_right_4", "bbox": [112, 54, 125, 73], "width": 13, "height": 19, "widthDeltaPctVsBenchmark": 0.0}
+    ],
+    "jump_right": [
+      {"frame": "jump_right_1", "bbox": [131, 104, 148, 123], "width": 17, "height": 19, "widthDeltaPctVsBenchmark": 30.77},
+      {"frame": "jump_right_2", "bbox": [126, 76, 143, 96], "width": 17, "height": 20, "widthDeltaPctVsBenchmark": 30.77},
+      {"frame": "jump_right_3", "bbox": [136, 62, 152, 82], "width": 16, "height": 20, "widthDeltaPctVsBenchmark": 23.08}
+    ]
+  },
+  "interpretation": {
+    "absoluteCrownWidthCaveat": "jump/walk crown pixels are wider than the idle crown, but this contour changes with pose and visibility and cannot alone prove head/body scale drift",
+    "rigidProbe": "the accepted 12-frame calibration set reads 87px on the dark head probe with 0% variation; seq278 walk+jump use one fixed coefficient",
+    "visualInterpretation": "jump bodies are naturally shorter because of crouch/takeoff pose, so the same absolute head reads as a larger fraction of the full character",
+    "r1Status": "mechanical head-scale drift not proven; Leo visual concern remains an aesthetic gate. If rejected, return to source generation/selection rather than per-frame resize or head editing"
+  }
+}

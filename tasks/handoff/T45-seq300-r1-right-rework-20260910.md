@@ -34,4 +34,4 @@ walk 3 帧、atk 4 帧、jump 1/2：240×320 RGBA、脚底 y=300、alpha>32 质�
 
 ## 停点
 
-问题登记：`tasks/questions/Q4-T45-r1-right-jump3-border.md`。PM2/Leo 裁定前：右上/右下 R1、Phase B 锚/遮罩、Phase C 左系镜像、runtime 均冻结。
+问题登记：`tasks/questions/Q4-T45-r1-right-jump3-border.md`、`tasks/questions/Q5-T45-r1-head-proportion.md`。Leo 目测 jump 头部偏大；复核确认固定头部探针在 12 张保留帧上为 87px、波动 0%，机械上未证实单帧放大；视觉差异主要来自 jump 身体自然缩短后的占比变化。PM2/Leo 裁定前：右上/右下 R1、Phase B 锚/遮罩、Phase C 左系镜像、runtime 均冻结。

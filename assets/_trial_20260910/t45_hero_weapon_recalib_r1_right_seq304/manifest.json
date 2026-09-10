@@ -1,0 +1,19 @@
+{
+  "task": "T45",
+  "seq": "304",
+  "revision": "R1",
+  "phase": "right_side_fixed_scale_rework_manual_rigid_feature",
+  "status": "candidate-only",
+  "frameCount": 10,
+  "qa": "qa/r1_right_seq304_manual.json",
+  "contact": "contact/right_r1_seq304_manual_feature.png",
+  "runtimeRelease": false,
+  "runtimeTouched": false,
+  "phaseBStarted": false,
+  "shaDistinct": true,
+  "allHardGatesPass": false,
+  "failedFrames": [
+    "jump_right_3"
+  ],
+  "stopReason": "jump_right_3 has no placement satisfying border-zero and centroid x=120±1 without crop"
+}
