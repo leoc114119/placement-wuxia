@@ -1,0 +1,231 @@
+{
+  "task": "T45",
+  "seq": "338",
+  "stage": "jump_chain_proportion",
+  "chainDefinition": "idle_right -> jump_right_1 -> jump_right_2 -> jump_right_3",
+  "generatedCount": 3,
+  "cost": 0,
+  "costUnit": "subscription-included",
+  "runtimeTouched": false,
+  "formalAssetsTouched": false,
+  "steps": [
+    {
+      "step": 1,
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/chain/idle_right.png",
+      "inputSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/raw/jump_right_1_chain.png",
+      "outputSha256": "3306e5270a9c08dfeaad76e3b829cebed479bb87b740ad34922531934992c9b4",
+      "promptPath": "prompts/jump_right_1_edit.txt",
+      "prompt": "Edit the visible previous sprite only. Change exactly one observable property: convert the idle pose into a right-facing light-jump takeoff phase, naturally crouched with knees bent and body compact, clearly beginning the jump. Preserve identity, face, hair, ponytail attachment, head-to-body ratio, clothing, palette, outline, camera, and real character scale exactly. Do not resize or redesign the character. One isolated full-body sprite; background may remain as-is and must not stop this edit. No weapon, text, watermark, extra limbs, sheet layout, or crop.\n",
+      "referenceMechanism": "num_last_images_to_include=1"
+    },
+    {
+      "step": 2,
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/chain/jump_right_1.png",
+      "inputSha256": "3306e5270a9c08dfeaad76e3b829cebed479bb87b740ad34922531934992c9b4",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/raw/jump_right_2_chain.png",
+      "outputSha256": "a20e3e020125a06b5cf7741d2f64d6d0ed94df7ad68a52478e5606bedbff969e",
+      "promptPath": "prompts/jump_right_2_edit.txt",
+      "prompt": "Edit the visible previous jump takeoff sprite only. Change exactly one observable property: advance to a right-facing airborne mid-jump phase with both feet clearly off the ground and knees bent naturally. Preserve identity, face, hair, ponytail attachment, head-to-body ratio, clothing, palette, outline, camera, and real character scale exactly. Do not resize or redesign the character. One isolated full-body sprite; background may remain as-is and must not stop this edit. No weapon, text, watermark, extra limbs, sheet layout, or crop.\n",
+      "referenceMechanism": "num_last_images_to_include=1"
+    },
+    {
+      "step": 3,
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/chain/jump_right_2.png",
+      "inputSha256": "a20e3e020125a06b5cf7741d2f64d6d0ed94df7ad68a52478e5606bedbff969e",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/raw/jump_right_3_chain.png",
+      "outputSha256": "7a8265a1a2f574c8fe86dd5925175f211943e5cd0dbdfa7c3776e52dc42c23dd",
+      "promptPath": "prompts/jump_right_3_edit.txt",
+      "prompt": "Edit the visible previous airborne sprite only. Change exactly one observable property: advance to a right-facing jump landing/recovery phase, knees bent naturally and feet approaching the ground, distinct from takeoff and mid-air poses. Preserve identity, face, hair, ponytail attachment, head-to-body ratio, clothing, palette, outline, camera, and real character scale exactly. Do not resize or redesign the character. One isolated full-body sprite; background may remain as-is and must not stop this edit. No weapon, text, watermark, extra limbs, sheet layout, or crop.\n",
+      "referenceMechanism": "num_last_images_to_include=1"
+    }
+  ],
+  "chainAuthenticity": {
+    "allInputsArePreviousProducts": true,
+    "referenceCountPerStep": 1
+  },
+  "probes": {
+    "idle_right": {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/chain/idle_right.png",
+      "sha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "size": [
+        240,
+        320
+      ],
+      "personBBox": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "personHeight": 256,
+      "crownBBox": [
+        111,
+        53,
+        125,
+        71
+      ],
+      "crownWidth": 14,
+      "faceBBox": [
+        130,
+        119,
+        165,
+        153
+      ],
+      "faceWidth": 35,
+      "crownWidthScaleTo240": 14.0,
+      "faceWidthScaleTo240": 35.0,
+      "crownWidthOverPersonHeight": 0.0546875,
+      "faceWidthOverPersonHeight": 0.13671875,
+      "alphaExtrema": [
+        0,
+        255
+      ]
+    },
+    "jump_right_1": {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/chain/jump_right_1.png",
+      "sha256": "3306e5270a9c08dfeaad76e3b829cebed479bb87b740ad34922531934992c9b4",
+      "size": [
+        1086,
+        1448
+      ],
+      "personBBox": [
+        159,
+        302,
+        916,
+        1327
+      ],
+      "personHeight": 1025,
+      "crownBBox": [
+        584,
+        343,
+        654,
+        429
+      ],
+      "crownWidth": 70,
+      "faceBBox": [
+        667,
+        640,
+        831,
+        804
+      ],
+      "faceWidth": 164,
+      "crownWidthScaleTo240": 15.469613259668508,
+      "faceWidthScaleTo240": 36.24309392265193,
+      "crownWidthOverPersonHeight": 0.06829268292682927,
+      "faceWidthOverPersonHeight": 0.16,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    "jump_right_2": {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/chain/jump_right_2.png",
+      "sha256": "a20e3e020125a06b5cf7741d2f64d6d0ed94df7ad68a52478e5606bedbff969e",
+      "size": [
+        1086,
+        1448
+      ],
+      "personBBox": [
+        103,
+        247,
+        920,
+        1236
+      ],
+      "personHeight": 989,
+      "crownBBox": [
+        593,
+        287,
+        663,
+        378
+      ],
+      "crownWidth": 70,
+      "faceBBox": [
+        661,
+        580,
+        838,
+        734
+      ],
+      "faceWidth": 177,
+      "crownWidthScaleTo240": 15.469613259668508,
+      "faceWidthScaleTo240": 39.11602209944751,
+      "crownWidthOverPersonHeight": 0.07077856420626896,
+      "faceWidthOverPersonHeight": 0.1789686552072801,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    "jump_right_3": {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/chain/jump_right_3.png",
+      "sha256": "7a8265a1a2f574c8fe86dd5925175f211943e5cd0dbdfa7c3776e52dc42c23dd",
+      "size": [
+        1086,
+        1448
+      ],
+      "personBBox": [
+        93,
+        349,
+        924,
+        1182
+      ],
+      "personHeight": 833,
+      "crownBBox": [
+        604,
+        392,
+        676,
+        481
+      ],
+      "crownWidth": 72,
+      "faceBBox": [
+        674,
+        680,
+        839,
+        827
+      ],
+      "faceWidth": 165,
+      "crownWidthScaleTo240": 15.91160220994475,
+      "faceWidthScaleTo240": 36.46408839779006,
+      "crownWidthOverPersonHeight": 0.08643457382953182,
+      "faceWidthOverPersonHeight": 0.19807923169267708,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    "crownWidthScaleTo240Values": [
+      14.0,
+      15.469613259668508,
+      15.469613259668508,
+      15.91160220994475
+    ],
+    "faceWidthScaleTo240Values": [
+      35.0,
+      36.24309392265193,
+      39.11602209944751,
+      36.46408839779006
+    ]
+  },
+  "criterion": {
+    "crownRangePct": 12.565825313237688,
+    "faceRangePct": 11.213546566321728,
+    "thresholdPct": 5,
+    "pass": false
+  },
+  "parallelBaseline": {
+    "jump_right_1": {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/jump_right_1.png",
+      "sha256": "54d0789b6b23faca39363b9fb12db0f587e42e65ccafb5c228460df406691e8f"
+    },
+    "jump_right_2": {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/jump_right_2.png",
+      "sha256": "63e4b1106996424337c02399ff5de5b9979b50fa3cfaf0f4518e04fdf37b907e"
+    },
+    "jump_right_3": {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/jump_right_3.png",
+      "sha256": "9556b9b59c661107949688de011a1e05420348d24672fdbffe50489cc039b9b2"
+    }
+  },
+  "conclusion": "FAIL: rigid probe range exceeds 5%",
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_jump_test/contact/chain_jump_vs_parallel.png"
+}
