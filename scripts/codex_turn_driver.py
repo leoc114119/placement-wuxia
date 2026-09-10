@@ -174,6 +174,7 @@ def main():
     ap.add_argument("--status", action="store_true")
     ap.add_argument("--set-thread")
     ap.add_argument("--reset-watermark", action="store_true")
+    ap.add_argument("--force", action="store_true", help="人工派单：跳过每小时唤醒上限")
     ap.add_argument("--note", default="")
     ap.add_argument("event", nargs="?", default="")      # Codex 传：turn-ended
     ap.add_argument("payload", nargs="?", default="")    # Codex 传：JSON payload
@@ -220,8 +221,8 @@ def _drive(a, st, thread, wm, wakes):
     if not thread:
         log("no target thread; skip")
         return 0
-    if len(wakes) >= MAX_WAKES_PER_HOUR:
-        log("rate limit reached; skip")
+    if len(wakes) >= MAX_WAKES_PER_HOUR and not a.force:
+        log("rate limit reached; skip (use --force for manual dispatch)")
         return 0
     # 注意：不再因"在跑"而跳过——`codex queue` 本身是队列语义（不打断当前回合），
     # 跳过只会让消息更晚到达。改为照常入队（水位线保证同一条只投一次）。

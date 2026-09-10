@@ -18,7 +18,8 @@ python3 "$REPO/scripts/projbus/projbus" send --from rd --to "$TO" --kind deliver
   --kind "$KIND" --payload-file "$PAYLOAD" --idempotency-key "$KEY"
 
 echo "── 2) 立即唤醒 $TO（命令行 codex queue）──"
-python3 "$REPO/scripts/codex_turn_driver.py" --role "$TO" || true
+# --force：人工派单不受自动唤醒的每小时上限约束
+python3 "$REPO/scripts/codex_turn_driver.py" --role "$TO" --force || true
 
 echo "── 3) 收件方线程状态 ──"
 python3 "$REPO/scripts/codex_turn_driver.py" --status | sed -n '1,4p'
