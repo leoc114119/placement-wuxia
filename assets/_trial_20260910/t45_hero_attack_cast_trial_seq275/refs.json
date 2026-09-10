@@ -1,0 +1,8 @@
+{
+  "task": "T45",
+  "seq": "275",
+  "mode": "single-reference empty-hand pose trial",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "poses": ["right-hand sword-thrust gesture x4", "right-hand left-to-right swing gesture x4"],
+  "constraints": "empty hands for later independent weapon compositing; same identity/proportion/scale; no previous sheet as input"
+}

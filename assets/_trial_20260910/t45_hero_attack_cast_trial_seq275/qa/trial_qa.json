@@ -1,0 +1,23 @@
+{
+  "task": "T45",
+  "seq": "275",
+  "mode": "single-reference empty-hand pose trial",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "output": "assets/_trial_20260910/t45_hero_attack_cast_trial_seq275/raw/generated_8frame_emptyhand_trial.png",
+  "layout": "2 rows x 4 cells",
+  "rows": {
+    "1": "right-hand-only sword-thrust gesture, 4 poses",
+    "2": "right-hand-only left-to-right swing gesture, 4 poses"
+  },
+  "outputDimensions": [
+    1086,
+    1448
+  ],
+  "artifactStage": "raw",
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "runtimeRelease": false,
+  "generationCredits": "built-in image_gen",
+  "runtimeTouched": false,
+  "note": "Both hands empty for later independent weapon compositing; left hand is instructed to stay relaxed."
+}
