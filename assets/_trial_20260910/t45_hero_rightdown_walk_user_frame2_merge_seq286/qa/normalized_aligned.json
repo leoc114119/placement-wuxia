@@ -1,0 +1,121 @@
+{
+  "task": "T45",
+  "seq": "286",
+  "direction": "rightdown",
+  "processing": "checkerboard edge cut + 256px height + feet y=300 + alpha centroid x=120",
+  "frames": {
+    "rightdown_walk_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/raw/rightdown_walk_1.png",
+      "sourceSha256": "9d307a3bb5fa6daad153d9315044741d6683c12340ba55e103f013376e97e121",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/normalized/rightdown_walk_1.png",
+      "outputSha256": "0a2e7d313fba334b79c8c9a47b485349731a4465144795491ae6413be637ae10",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          33,
+          44,
+          200,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.85483796861459,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "height256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_walk_2": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/raw/rightdown_walk_2_user.png",
+      "sourceSha256": "0f9168b76ddcd0fc0991e0afc0a812662d05d0fa54429170c08de1ec26018507",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/normalized/rightdown_walk_2.png",
+      "outputSha256": "ede1eb252286be566aec149bee0ec16acd0226428bbd7f5de08e72ef68453c13",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          17,
+          44,
+          206,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.30876499032071,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "height256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_walk_3": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/raw/rightdown_walk_3.png",
+      "sourceSha256": "55c1b82306e86a1e9e69ae9c98f64e6c6051d2cb724b8fc13db7b8259f4d9289",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/normalized/rightdown_walk_3.png",
+      "outputSha256": "79fe6fd51123d2a389037f1fce79ccd585dd4465e93795f02dee8ab8e5314290",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          29,
+          44,
+          202,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.5729045848911,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "height256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/contact/rightdown_walk_aligned_240x320.png",
+  "allHardGatesPass": true
+}
