@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "seq": "352",
+  "referenceRoles": {
+    "image1": "previous chain output: identity, style, camera, body continuity",
+    "image2": "PM2-provided pose diagram: target limb pose only; blue=action limb, gray=retracted limb"
+  },
+  "poseDiagrams": [
+    "pose_diagrams/legs_A_right_forward.png",
+    "pose_diagrams/legs_B_left_forward.png",
+    "pose_diagrams/fist_A_right_out.png",
+    "pose_diagrams/fist_B_left_out.png"
+  ],
+  "forbidden": ["self-drawn-pose-diagram", "contact-sheet-as-input", "runtime-write", "batch-expansion"]
+}

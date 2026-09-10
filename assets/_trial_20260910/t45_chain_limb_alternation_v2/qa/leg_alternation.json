@@ -1,0 +1,291 @@
+{
+  "task": "T45",
+  "seq": "352",
+  "chain": "A_legs",
+  "runtimeTouched": false,
+  "transparentJudged": false,
+  "ratioJudged": false,
+  "chainIntegrity": [
+    {
+      "frame": "walk_right_1",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/chain/idle_right.png",
+      "inputSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/walk_right_1_chain.png",
+      "outputSha256": "e3f0f2b74c38e553eac23ef18dd108b41b8e554fef08ccaf56802a894f1fb823",
+      "inputMatchesPreviousOutput": true
+    },
+    {
+      "frame": "walk_right_2",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/walk_right_1_chain.png",
+      "inputSha256": "e3f0f2b74c38e553eac23ef18dd108b41b8e554fef08ccaf56802a894f1fb823",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/walk_right_2_chain.png",
+      "outputSha256": "57a1c45803349beda8cb1cd3f73b19478c3c9c0aab158e84c349a2158e0af8a1",
+      "inputMatchesPreviousOutput": true
+    },
+    {
+      "frame": "walk_right_3",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/walk_right_2_chain.png",
+      "inputSha256": "57a1c45803349beda8cb1cd3f73b19478c3c9c0aab158e84c349a2158e0af8a1",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/walk_right_3_chain.png",
+      "outputSha256": "ed989bc3c03193e7952400d707aee6cdce4a7d631a734261790975321599d585",
+      "inputMatchesPreviousOutput": true
+    }
+  ],
+  "chainIntegrityPass": true,
+  "normalization": {
+    "rawCanvas": [
+      1086,
+      1448
+    ],
+    "comparisonCanvas": [
+      240,
+      320
+    ],
+    "scaleX": 0.22099447513812154,
+    "scaleY": 0.22099447513812154
+  },
+  "frames": [
+    {
+      "frame": "walk_right_1",
+      "feet": [
+        {
+          "pixels": 1972,
+          "bboxRaw": [
+            242,
+            1191,
+            345,
+            1318
+          ],
+          "centerRaw": [
+            280.2991886409736,
+            1268.521298174442
+          ],
+          "centerNormalized": [
+            61.944572075353285,
+            280.3361984915894
+          ]
+        },
+        {
+          "pixels": 1800,
+          "bboxRaw": [
+            736,
+            1281,
+            907,
+            1328
+          ],
+          "centerRaw": [
+            811.6361111111111,
+            1313.548888888889
+          ],
+          "centerNormalized": [
+            179.36709637814607,
+            290.28704726826277
+          ]
+        }
+      ]
+    },
+    {
+      "frame": "walk_right_2",
+      "feet": [
+        {
+          "pixels": 1873,
+          "bboxRaw": [
+            222,
+            1168,
+            338,
+            1302
+          ],
+          "centerRaw": [
+            268.0896956753871,
+            1246.8211425520556
+          ],
+          "centerNormalized": [
+            59.2463415857209,
+            275.5405839894045
+          ]
+        },
+        {
+          "pixels": 2092,
+          "bboxRaw": [
+            742,
+            1242,
+            913,
+            1327
+          ],
+          "centerRaw": [
+            818.4153919694072,
+            1299.8795411089866
+          ],
+          "centerNormalized": [
+            180.86527999323914,
+            287.2661969301628
+          ]
+        }
+      ]
+    },
+    {
+      "frame": "walk_right_3",
+      "feet": [
+        {
+          "pixels": 928,
+          "bboxRaw": [
+            233,
+            1301,
+            336,
+            1334
+          ],
+          "centerRaw": [
+            283.76400862068965,
+            1321.5032327586207
+          ],
+          "centerNormalized": [
+            62.710278148218705,
+            292.04491331682226
+          ]
+        },
+        {
+          "pixels": 1623,
+          "bboxRaw": [
+            714,
+            1302,
+            869,
+            1335
+          ],
+          "centerRaw": [
+            781.852741836106,
+            1322.0067775723967
+          ],
+          "centerNormalized": [
+            172.7851363173715,
+            292.1561939386512
+          ]
+        }
+      ]
+    }
+  ],
+  "expectedActiveLimb": [
+    "image-right",
+    "image-left",
+    "image-right"
+  ],
+  "measuredCenters": {
+    "image-left": [
+      [
+        61.944572075353285,
+        280.3361984915894
+      ],
+      [
+        59.2463415857209,
+        275.5405839894045
+      ],
+      [
+        62.710278148218705,
+        292.04491331682226
+      ]
+    ],
+    "image-right": [
+      [
+        179.36709637814607,
+        290.28704726826277
+      ],
+      [
+        180.86527999323914,
+        287.2661969301628
+      ],
+      [
+        172.7851363173715,
+        292.1561939386512
+      ]
+    ]
+  },
+  "activeLimbCenters": [
+    [
+      179.36709637814607,
+      290.28704726826277
+    ],
+    [
+      59.2463415857209,
+      275.5405839894045
+    ],
+    [
+      172.7851363173715,
+      292.1561939386512
+    ]
+  ],
+  "activeLimbTransitionMovePx": [
+    null,
+    121.02253472447455,
+    114.74814335361333
+  ],
+  "phaseSwitchCount": 2,
+  "frontFootCentersX": [
+    179.36709637814607,
+    59.2463415857209,
+    172.7851363173715
+  ],
+  "rearFootCentersX": [
+    61.944572075353285,
+    180.86527999323914,
+    62.710278148218705
+  ],
+  "frontFootRangePx": 120.12075479242517,
+  "rearFootRangePx": 118.92070791788586,
+  "frontRearStridePx": [
+    117.4225243027928,
+    121.61893840751824,
+    110.07485816915279
+  ],
+  "phaseOrder": [
+    1,
+    -1,
+    1
+  ],
+  "phaseReversalCount": 2,
+  "measureMethod": "orange shoe/sole connected components in lower-body crop; components sorted by normalized x; active limb assigned against PM2 pose diagram",
+  "criteria": {
+    "A1_exactlyTwoFeetEachFrame": {
+      "observed": [
+        2,
+        2,
+        2
+      ],
+      "pass": true
+    },
+    "A2_expectedAlternationRightLeftRight": {
+      "observed": [
+        "image-right",
+        "image-left",
+        "image-right"
+      ],
+      "pass": true
+    },
+    "A3_eachPostFirstTransitionAtLeast40Px": {
+      "observed": [
+        121.02253472447455,
+        114.74814335361333
+      ],
+      "threshold": 40,
+      "pass": true
+    },
+    "A1_frontFootRangeAtLeast15": {
+      "observed": 120.12075479242517,
+      "threshold": 15,
+      "pass": true
+    },
+    "A2_phaseReversalAtLeast1": {
+      "observed": 2,
+      "threshold": 1,
+      "pass": true
+    },
+    "A3_stride20to160EachFrame": {
+      "observed": [
+        117.4225243027928,
+        121.61893840751824,
+        110.07485816915279
+      ],
+      "pass": true
+    }
+  },
+  "overallPass": true,
+  "visualDescription": "PM2 A/B/A leg phases were compared directly: walk_right_1 right leg forward, walk_right_2 left leg forward, walk_right_3 right leg forward; the two visible phase transitions are large on the normalized canvas."
+}

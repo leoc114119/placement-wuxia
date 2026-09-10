@@ -1,0 +1,290 @@
+{
+  "task": "T45",
+  "seq": "352",
+  "chain": "B_fists",
+  "runtimeTouched": false,
+  "transparentJudged": false,
+  "ratioJudged": false,
+  "chainIntegrity": [
+    {
+      "frame": "atk_right_1",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/chain/idle_right.png",
+      "inputSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/atk_right_1_chain.png",
+      "outputSha256": "a5dd353d5e0f277f664329b24e1a98437bf6547d592a21aeb4534d40f5be25e0",
+      "inputMatchesPreviousOutput": true
+    },
+    {
+      "frame": "atk_right_2",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/atk_right_1_chain.png",
+      "inputSha256": "a5dd353d5e0f277f664329b24e1a98437bf6547d592a21aeb4534d40f5be25e0",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/atk_right_2_chain.png",
+      "outputSha256": "f91e6b69843cbc9b48e526088e32ca33e8aa2074b3cbf20abc7816fbd16b0393",
+      "inputMatchesPreviousOutput": true
+    },
+    {
+      "frame": "atk_right_3",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/atk_right_2_chain.png",
+      "inputSha256": "f91e6b69843cbc9b48e526088e32ca33e8aa2074b3cbf20abc7816fbd16b0393",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/atk_right_3_chain.png",
+      "outputSha256": "e3f0f2b74c38e553eac23ef18dd108b41b8e554fef08ccaf56802a894f1fb823",
+      "inputMatchesPreviousOutput": true
+    }
+  ],
+  "chainIntegrityPass": true,
+  "normalization": {
+    "rawCanvas": [
+      1086,
+      1448
+    ],
+    "comparisonCanvas": [
+      240,
+      320
+    ],
+    "scaleX": 0.22099447513812154,
+    "scaleY": 0.22099447513812154
+  },
+  "frames": [
+    {
+      "frame": "atk_right_1",
+      "fists": [
+        {
+          "pixels": 3448,
+          "bboxRaw": [
+            419,
+            859,
+            494,
+            932
+          ],
+          "centerRaw": [
+            453.834686774942,
+            894.8723897911833
+          ],
+          "centerNormalized": [
+            100.29495840330209,
+            197.76185409749905
+          ]
+        },
+        {
+          "pixels": 4162,
+          "bboxRaw": [
+            932,
+            720,
+            1021,
+            790
+          ],
+          "centerRaw": [
+            974.1537722248919,
+            752.1950985103316
+          ],
+          "centerNormalized": [
+            215.28260159666118,
+            166.23096099675837
+          ]
+        }
+      ]
+    },
+    {
+      "frame": "atk_right_2",
+      "fists": [
+        {
+          "pixels": 4222,
+          "bboxRaw": [
+            123,
+            716,
+            212,
+            787
+          ],
+          "centerRaw": [
+            167.6544291804832,
+            747.9201800094742
+          ],
+          "centerNormalized": [
+            37.05070258132225,
+            165.28622762640313
+          ]
+        },
+        {
+          "pixels": 3496,
+          "bboxRaw": [
+            654,
+            853,
+            729,
+            926
+          ],
+          "centerRaw": [
+            693.949942791762,
+            887.9605263157895
+          ],
+          "centerNormalized": [
+            153.35910337939492,
+            196.23437045652804
+          ]
+        }
+      ]
+    },
+    {
+      "frame": "atk_right_3",
+      "fists": [
+        {
+          "pixels": 2847,
+          "bboxRaw": [
+            436,
+            888,
+            516,
+            966
+          ],
+          "centerRaw": [
+            472.2809975412715,
+            927.3038285914998
+          ],
+          "centerNormalized": [
+            104.37149116934177,
+            204.92902289314912
+          ]
+        },
+        {
+          "pixels": 3190,
+          "bboxRaw": [
+            781,
+            838,
+            866,
+            917
+          ],
+          "centerRaw": [
+            821.4316614420063,
+            876.1106583072101
+          ],
+          "centerNormalized": [
+            181.53185888221134,
+            193.61561509551603
+          ]
+        }
+      ]
+    }
+  ],
+  "expectedActiveLimb": [
+    "image-right",
+    "image-left",
+    "image-right"
+  ],
+  "measuredCenters": {
+    "image-left": [
+      [
+        100.29495840330209,
+        197.76185409749905
+      ],
+      [
+        37.05070258132225,
+        165.28622762640313
+      ],
+      [
+        104.37149116934177,
+        204.92902289314912
+      ]
+    ],
+    "image-right": [
+      [
+        215.28260159666118,
+        166.23096099675837
+      ],
+      [
+        153.35910337939492,
+        196.23437045652804
+      ],
+      [
+        181.53185888221134,
+        193.61561509551603
+      ]
+    ]
+  },
+  "activeLimbCenters": [
+    [
+      215.28260159666118,
+      166.23096099675837
+    ],
+    [
+      37.05070258132225,
+      165.28622762640313
+    ],
+    [
+      181.53185888221134,
+      193.61561509551603
+    ]
+  ],
+  "activeLimbTransitionMovePx": [
+    null,
+    178.23440281762396,
+    147.2323290599489
+  ],
+  "handSwitchCount": 2,
+  "frontFistCenters": [
+    {
+      "x": 215.28260159666118,
+      "y": 166.23096099675837
+    },
+    {
+      "x": 37.05070258132225,
+      "y": 165.28622762640313
+    },
+    {
+      "x": 181.53185888221134,
+      "y": 193.61561509551603
+    }
+  ],
+  "frontFistRangeX": 178.23189901533894,
+  "frontFistRangeY": 28.329387469112902,
+  "frontFistLabels": [
+    "image-right",
+    "image-left",
+    "image-right"
+  ],
+  "measureMethod": "skin-color connected components in upper-body crop, excluding face by y bound; components sorted by normalized x; active limb assigned against PM2 pose diagram",
+  "criteria": {
+    "B1_exactlyTwoFistsEachFrame": {
+      "observed": [
+        2,
+        2,
+        2
+      ],
+      "pass": true
+    },
+    "B2_expectedAlternationRightLeftRight": {
+      "observed": [
+        "image-right",
+        "image-left",
+        "image-right"
+      ],
+      "pass": true
+    },
+    "B3_eachPostFirstTransitionAtLeast40Px": {
+      "observed": [
+        178.23440281762396,
+        147.2323290599489
+      ],
+      "threshold": 40,
+      "pass": true
+    },
+    "B1_frontFistPositionRangeAtLeast15": {
+      "observedX": 178.23189901533894,
+      "observedY": 28.329387469112902,
+      "threshold": 15,
+      "pass": true
+    },
+    "B2_handSwitchAtLeast1": {
+      "observed": 2,
+      "threshold": 1,
+      "pass": true
+    },
+    "B3_exactlyTwoFistsEachFrame": {
+      "observed": [
+        2,
+        2,
+        2
+      ],
+      "pass": true
+    }
+  },
+  "overallPass": true,
+  "visualDescription": "PM2 A/B/A fist phases were compared directly: atk_right_1 right fist extended, atk_right_2 left fist extended, atk_right_3 right fist extended; exactly two fists remain visible and both switches exceed the normalized movement threshold."
+}
