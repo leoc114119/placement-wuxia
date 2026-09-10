@@ -1,11 +1,39 @@
 {
   "task": "T45",
   "seq": "328",
-  "stage": "idle_sample_gate",
+  "revision": "V2-R2",
+  "stage": "four_frame_sample_gate",
+  "frames": [
+    "idle_right",
+    "walk_right_1",
+    "atk_right_1",
+    "jump_right_1"
+  ],
+  "sourceSelection": {
+    "idle_right": "idle_right_native.png",
+    "walk_right_1": "walk_right_1_native.png",
+    "atk_right_1": "atk_right_1_native_attempt2.png",
+    "jump_right_1": "jump_right_1_native.png"
+  },
+  "rejectedCandidates": {
+    "atk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_1_native.png",
+      "reason": "same coefficient produced alpha>32 bbox height 248px; standing-frame gate requires 256±1px"
+    }
+  },
+  "failedCandidate": {
+    "atk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_1_native_attempt2.png",
+      "reason": "same coefficient produced alpha>32 bbox height 246px; standing-frame gate requires 256±1px"
+    }
+  },
+  "coefficient": 0.22241529105125976,
+  "qa": "qa/four_frame_sample.json",
+  "contact": "contact/four_frame_sample_vs_baseline.png",
   "status": "candidate-only",
-  "sample": "idle_right",
-  "qa": "qa/idle_sample.json",
-  "visualReview": "pending_Leo",
-  "specGate": "pending_pm_scan",
-  "runtimeRelease": false
+  "runtimeRelease": false,
+  "allHardGatesPass": false,
+  "failedFrames": [
+    "atk_right_1"
+  ]
 }

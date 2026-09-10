@@ -1,7 +1,7 @@
 {
   "task": "T45",
   "seq": "328",
-  "stage": "idle_sample_gate",
+  "stage": "four_frame_sample_gate",
   "references": [
     {
       "path": "assets/characters/hero/battle45/battle_idle_right.png",
@@ -14,7 +14,8 @@
   "generation": {
     "channel": "Codex native ImageGen",
     "sampleOnly": true,
-    "futureFrames": "walk3 + atk3 + jump3 only after sample gate",
+    "sampleFrames": ["idle_right", "walk_right_1", "atk_right_1", "jump_right_1"],
+    "futureFrames": "remaining walk2 + walk3 + atk2 + atk3 + jump2 + jump3 only after four-frame sample gate",
     "runtimeTouched": false
   }
 }

@@ -1,0 +1,179 @@
+{
+  "task": "T45",
+  "seq": "328",
+  "revision": "V2-R2",
+  "stage": "four_frame_sample_gate",
+  "coefficientSource": "single coefficient derived from idle_right alpha>32 bbox height = 256 / source idle bbox height",
+  "coefficient": 0.22241529105125976,
+  "sourceSelection": {
+    "idle_right": "idle_right_native.png",
+    "walk_right_1": "walk_right_1_native.png",
+    "atk_right_1": "atk_right_1_native_attempt2.png",
+    "jump_right_1": "jump_right_1_native.png"
+  },
+  "rejectedCandidates": {
+    "atk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_1_native.png",
+      "reason": "same coefficient produced alpha>32 bbox height 248px; standing-frame gate requires 256±1px"
+    }
+  },
+  "failedCandidate": {
+    "atk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_1_native_attempt2.png",
+      "reason": "same coefficient produced alpha>32 bbox height 246px; standing-frame gate requires 256±1px"
+    }
+  },
+  "frames": {
+    "idle_right": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/idle_right_native.png",
+      "sourceSha256": "f179980d80f3cb708b216cc972e260ef6af563be3820ee04108971f31334ae05",
+      "sourceBBoxAlphaGt32": [
+        213,
+        202,
+        869,
+        1353
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        146,
+        256
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/idle_right.png",
+      "outputSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "outputBBoxAlphaGt32": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "outputCentroidX": 120.35584895603994,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithin1": true,
+        "standingBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/walk_right_1_native.png",
+      "sourceSha256": "7035f8824dca4330d158cc313a0c6f15c3dc930b47216811acf5072863da96e9",
+      "sourceBBoxAlphaGt32": [
+        235,
+        214,
+        906,
+        1319
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        149,
+        246
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/walk_right_1.png",
+      "outputSha256": "902519ce54a6884e33429780a5415a4d0abd135ba275987a65f8e24c85f2fda0",
+      "outputBBoxAlphaGt32": [
+        43,
+        54,
+        192,
+        300
+      ],
+      "outputCentroidX": 119.91910760891388,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithin1": true,
+        "standingBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_1_native_attempt2.png",
+      "sourceSha256": "05a22bd95eb93f43687f202fd6d776733785b7542fe33c68caaa02c67174e65f",
+      "sourceBBoxAlphaGt32": [
+        169,
+        202,
+        982,
+        1310
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        181,
+        246
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/atk_right_1.png",
+      "outputSha256": "3f30c5a02c5d89150573062ef0280d2555f83fa4b95addf5197cda58ef8aa29c",
+      "outputBBoxAlphaGt32": [
+        38,
+        54,
+        219,
+        300
+      ],
+      "outputCentroidX": 120.38923076187879,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithin1": true,
+        "standingBBox256": false
+      },
+      "allHardGatesPass": false
+    },
+    "jump_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/jump_right_1_native.png",
+      "sourceSha256": "7f8817f47849cbce5e398fbfb601e93021f3e7d7c78013f8fa04fcdb5616a005",
+      "sourceBBoxAlphaGt32": [
+        224,
+        324,
+        910,
+        1275
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        153,
+        212
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/jump_right_1.png",
+      "outputSha256": "54d0789b6b23faca39363b9fb12db0f587e42e65ccafb5c228460df406691e8f",
+      "outputBBoxAlphaGt32": [
+        44,
+        88,
+        197,
+        300
+      ],
+      "outputCentroidX": 119.98855711586907,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithin1": true,
+        "standingBBox256": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "runtimeTouched": false,
+  "shaDistinct": true,
+  "allHardGatesPass": false,
+  "failedFrames": [
+    "atk_right_1"
+  ],
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/contact/four_frame_sample_vs_baseline.png"
+}
