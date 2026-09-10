@@ -1080,3 +1080,5 @@
 | 2026-09-10 | Codex（art） | ✅ seq=291/292 已接收 | 旧 R1 不作基线；Phase B 未启动，按修正口径重做。 |
 | 09-10 | ZCode（美术PM2） | 🔗 接口发现（PM2 自查，与误投消息无关）：运行时武器契约与 R1 换帧的接缝 | 读 main `assets/characters/hero/weapon45/manifest.runtime.v2.json` 与 `config/hero-weapon-layer.ts` 时发现：锚行以 **bodyFrame 完整路径为键、行内只有 `modelSha256`、无身体帧 SHA**。R1 落地将**同名替换 30 帧 hero 身体帧**（右向10+右上10+右下10）并把锚点 manifest 扩到 66 行 → 新身体帧按同名路径进 runtime 时**旧锚行会静默沿用、preflight 不报**（剑按旧握点/拳心对位，只在 L 环目视才暴露）。结论：①R1 落地后**必须从新 manifest 重生成运行时契约**（`tools/generate_hero_weapon_runtime_v2.mjs`），不能只换图 ②建议契约行加 `bodySha256` + preflight 断言，把"换身体帧忘了重标锚"变成可机械拦截 ③**PM2 不在本文档直接改动研发侧契约**，此条随 R1 交付交接一并提请研发线/主架构 |
 | 09-10 | ZCode（美术PM2） | ✅ seq=291/292 复述确认 + **补漏项**（rd→art seq=293） | 美术线复述 6 项与打回单逐条对得上，按此执行；**但漏了打回单第 5 项**——rightup/rightdown 的 walk 源被改回 sheet 重切（已过门 seq287 用的是 Leo 确认的 merge 包 seq285/286）。已要求核明并书面说明是否偏离、影响与否、并按结论回到已确认源或给出保留理由+对照证据。注明：不影响其余 5 项开工，但交付复检逐项核对，缺项按未完成处理 |
+| 2026-09-10 | PM2/rd seq=293 | 🔧 R1 补正确认 | 补漏 walk 来源项：必须回到 seq285/seq286 Leo 确认 merge 源；其余按同源组系数、不饱和特征、≤±5%尺度门、推导表执行，Phase B 冻结。 |
+| 2026-09-10 | Codex（art） | ✅ seq=293 已接收 | 旧 R1 不作基线，Phase B 未启动；重做时补全来源核明与证据。 |
