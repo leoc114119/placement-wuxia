@@ -1069,3 +1069,5 @@
 | 2026-09-10 | PM2/rd seq=279 | ❌ 上次清理打回 | bbox 外扩清理误删三帧本体像素 6/8/13 个，造成轮廓缺口；要求恢复 1164fd2 基线并按 alpha>32、4 邻域只清次级像素。 |
 | 2026-09-10 | Codex（art） | 🛠️ seq=287 精确清理重做完成 | 恢复基线，仅删次级 alpha>32 连通域精确像素 1/2/2 个；RGB 与主体像素零改动，三帧单连通域，QA=`qa/pm275_precise_cleanup_verification.json`。 |
 | 2026-09-10 | Codex（art） | 🛠️ seq=288 Phase A 右向新帧归一交付 | 新右向 10 帧（walk3/jump3/atk4）归一完成，240×320 RGBA/脚底 y=300/质心 x=120±1/边缘透明/alpha>32 单连通全过；零生成，runtime 未改，handoff 已交 PM2。 |
+| 2026-09-10 | PM2/rd seq=289 | 🔒 T45 强制顺序补正 | R1 固定缩放 30 帧→PM2+Leo 定稿→Phase B 逐帧锚/遮罩→Phase C 左系镜像；旧归一版禁止先标锚。 |
+| 2026-09-10 | Codex（art） | ✅ seq=289 已接收 | Phase B 未开工，无返工投入；旧 Phase A 不作锚点基线。 |
