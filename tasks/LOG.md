@@ -1037,3 +1037,5 @@
 | 2026-09-10 | Codex（art） | ❌ seq=282 右上 walk 第二格左脚修正失败 | 参考 Leo 三格图并辅助右向 walk_2，两次原生编辑仍未形成明确 A/B/A 支撑脚；按两次上限停止，raw/QA 留档。 |
 | 2026-09-10 | Leo → Codex（art） | 🔧 seq=284 单参考规则 | 方向互换每次只上传一张参考图；双参考方案作废，动作/脚步/画面规格必须保持。 |
 | 2026-09-10 | Codex（art） | 🧪 seq=284 单参考中间 walk 方向互换完成 | rightup←rightdown 中间帧、rightdown←rightup 中间帧，各一次方向-only img2img；raw/QA 已归档，待 Leo 目验，runtime 未改。 |
+| 2026-09-10 | Leo → Codex（art） | 🧩 seq=285 右上 walk_2 替换对照请求 | Leo 提供单帧作为右上 walk_2，要求与现有 walk_1/3 合并看连续性；仅确定性拼接。 |
+| 2026-09-10 | Codex（art） | 🧪 seq=285 右上 walk 替换对照完成 | 用户帧已置中，左右沿用现有右上 walk_1/3，330×440 对照；未生成/未改 runtime。 |

@@ -1,0 +1,27 @@
+{
+  "task": "T45",
+  "seq": "285",
+  "direction": "rightup",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "processing": "deterministic contact merge; existing rightup walk_1 and walk_3 cropped from prior 2x5 candidate, user-provided frame inserted as walk_2; all fitted to 330x440 for comparison; no redraw",
+  "sources": {
+    "base": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+    "user": "refs/user_rightup_walk_2.png"
+  },
+  "layout": {
+    "cells": 3,
+    "cellSize": [
+      330,
+      440
+    ],
+    "order": [
+      "existing_rightup_walk_1",
+      "user_frame2",
+      "existing_rightup_walk_3"
+    ]
+  },
+  "note": "Continuity review candidate only; no runtime write."
+}
