@@ -51,3 +51,7 @@
 2. 输出刚体 ≤5% 的门，是否按当前输出像素绿色探针判定，还是按 `sourceCrownWidth × coefficient` 的连续理论值判定；若改用外轮廓/白三角，请给出精确判据及锚值。
 
 在裁定前：不铺右向其余 20 帧、不处理右上/右下、不生成左系、不写 runtime。
+
+## 批次收尾健康门
+
+收尾复跑 `python3 scripts/codex_thread_health.py --thread 01a08a45-f703-7190-a484-442a2d0af631`：rollout 85.6 MB、22 轮、inProgress 计数 1、contextCompaction 2 次；未达到 SKILL §12 的轮换阈值（150 轮 / 300 MB / 30 次压缩）。
