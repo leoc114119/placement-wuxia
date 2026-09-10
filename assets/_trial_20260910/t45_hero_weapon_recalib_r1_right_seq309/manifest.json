@@ -1,0 +1,18 @@
+{
+  "task": "T45",
+  "seq": "309",
+  "revision": "R1",
+  "phase": "right_side_final_placement_fix",
+  "status": "candidate-only",
+  "frameCount": 10,
+  "qa": "qa/r1_right_seq309_final.json",
+  "contact": "contact/right_r1_seq309_final.png",
+  "runtimeRelease": false,
+  "runtimeTouched": false,
+  "phaseBStarted": false,
+  "shaDistinct": true,
+  "otherNineShaUnchanged": true,
+  "allHardGatesPass": true,
+  "failedFrames": [],
+  "placementMode": "jump_right_3=bbox_center_fallback; others=centroid_center"
+}

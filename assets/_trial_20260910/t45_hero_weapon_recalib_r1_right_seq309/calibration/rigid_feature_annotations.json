@@ -1,0 +1,270 @@
+{
+  "task": "T45",
+  "seq": "304",
+  "method": "manual anatomical two-point annotation; non-saturated",
+  "benchmark": {
+    "top": [
+      120,
+      53
+    ],
+    "bottom": [
+      145,
+      139
+    ],
+    "spanPx": 86
+  },
+  "retained": {
+    "battle_idle_right": {
+      "top": [
+        120,
+        53
+      ],
+      "bottom": [
+        145,
+        139
+      ],
+      "spanPx": 86
+    },
+    "battle_idle_rightup": {
+      "top": [
+        124,
+        47
+      ],
+      "bottom": [
+        148,
+        133
+      ],
+      "spanPx": 86
+    },
+    "battle_idle_rightdown": {
+      "top": [
+        114,
+        57
+      ],
+      "bottom": [
+        142,
+        142
+      ],
+      "spanPx": 85
+    },
+    "cast_right_1": {
+      "top": [
+        115,
+        51
+      ],
+      "bottom": [
+        143,
+        137
+      ],
+      "spanPx": 86
+    },
+    "cast_right_2": {
+      "top": [
+        135,
+        54
+      ],
+      "bottom": [
+        163,
+        141
+      ],
+      "spanPx": 87
+    },
+    "cast_right_3": {
+      "top": [
+        131,
+        53
+      ],
+      "bottom": [
+        159,
+        139
+      ],
+      "spanPx": 86
+    },
+    "cast_rightup_1": {
+      "top": [
+        120,
+        46
+      ],
+      "bottom": [
+        145,
+        132
+      ],
+      "spanPx": 86
+    },
+    "cast_rightup_2": {
+      "top": [
+        149,
+        52
+      ],
+      "bottom": [
+        174,
+        139
+      ],
+      "spanPx": 87
+    },
+    "cast_rightup_3": {
+      "top": [
+        125,
+        49
+      ],
+      "bottom": [
+        151,
+        135
+      ],
+      "spanPx": 86
+    },
+    "cast_rightdown_1": {
+      "top": [
+        116,
+        58
+      ],
+      "bottom": [
+        143,
+        144
+      ],
+      "spanPx": 86
+    },
+    "cast_rightdown_2": {
+      "top": [
+        128,
+        57
+      ],
+      "bottom": [
+        154,
+        142
+      ],
+      "spanPx": 85
+    },
+    "cast_rightdown_3": {
+      "top": [
+        129,
+        59
+      ],
+      "bottom": [
+        155,
+        145
+      ],
+      "spanPx": 86
+    }
+  },
+  "source": {
+    "walk_right_1": {
+      "top": [
+        240,
+        55
+      ],
+      "bottom": [
+        278,
+        163
+      ],
+      "spanPx": 108
+    },
+    "walk_right_2": {
+      "top": [
+        220,
+        52
+      ],
+      "bottom": [
+        267,
+        160
+      ],
+      "spanPx": 108
+    },
+    "walk_right_3": {
+      "top": [
+        194,
+        53
+      ],
+      "bottom": [
+        238,
+        160
+      ],
+      "spanPx": 107
+    },
+    "jump_right_1": {
+      "top": [
+        225,
+        82
+      ],
+      "bottom": [
+        253,
+        186
+      ],
+      "spanPx": 104
+    },
+    "jump_right_2": {
+      "top": [
+        205,
+        19
+      ],
+      "bottom": [
+        253,
+        128
+      ],
+      "spanPx": 109
+    },
+    "jump_right_3": {
+      "top": [
+        205,
+        15
+      ],
+      "bottom": [
+        264,
+        124
+      ],
+      "spanPx": 109
+    },
+    "atk_right_1": {
+      "top": [
+        61,
+        29
+      ],
+      "bottom": [
+        84,
+        101
+      ],
+      "spanPx": 72
+    },
+    "atk_right_2": {
+      "top": [
+        60,
+        29
+      ],
+      "bottom": [
+        83,
+        101
+      ],
+      "spanPx": 72
+    },
+    "atk_right_3": {
+      "top": [
+        58,
+        29
+      ],
+      "bottom": [
+        81,
+        101
+      ],
+      "spanPx": 72
+    },
+    "atk_right_4": {
+      "top": [
+        62,
+        29
+      ],
+      "bottom": [
+        85,
+        102
+      ],
+      "spanPx": 73
+    }
+  },
+  "anchorScales": {
+    "seq278_walk_jump": 0.7962962962962963,
+    "seq279_atk": 1.1944444444444444
+  },
+  "fixedScales": {
+    "seq278_walk_jump": 0.7959866220735786,
+    "seq279_atk": 1.1944444444444444
+  }
+}
