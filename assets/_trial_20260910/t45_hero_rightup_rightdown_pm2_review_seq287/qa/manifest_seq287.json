@@ -40,7 +40,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "walk",
@@ -72,7 +73,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "walk",
@@ -104,7 +106,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "atk",
@@ -140,7 +143,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "atk",
@@ -176,7 +180,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "atk",
@@ -212,7 +217,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "atk",
@@ -248,7 +254,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "jump",
@@ -260,7 +267,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
           "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_1.png",
-          "outputSha256": "51080f33c5e622ca34b128dcca533bd424f053c6502faf2a54bcb5db36241f99",
+          "outputSha256": "473227b3c6181eb79e9a04a6a725d4230e1cedd42bdda889a78e0868274e7a1e",
           "metrics": {
             "size": [
               240,
@@ -284,7 +291,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "jump",
@@ -320,7 +328,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "jump",
@@ -332,7 +341,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
           "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_3.png",
-          "outputSha256": "5b9692df1afe93b90ae7270a6e74fbcfb47b737ebb5762c42f437c4f73cd95bd",
+          "outputSha256": "d296fbbb4982c090adeb671608958fc76a3eb4805cd8c425c0884f5a2157ec12",
           "metrics": {
             "size": [
               240,
@@ -356,7 +365,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         }
       ],
       "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/contact/rightup_10frame_240x320.png",
@@ -396,7 +406,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "walk",
@@ -428,7 +439,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "walk",
@@ -460,7 +472,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "atk",
@@ -496,7 +509,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "atk",
@@ -532,7 +546,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "atk",
@@ -544,7 +559,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
           "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_3.png",
-          "outputSha256": "5e131d4cf850947f27de0759c485b198faf4bec60e5edf08309c0b30d55ad218",
+          "outputSha256": "3acae1dd190e6f56f5d38c39af588518ed5e4309a01aada86a486e4bbc6ca598",
           "metrics": {
             "size": [
               240,
@@ -568,7 +583,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "atk",
@@ -604,7 +620,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "jump",
@@ -640,7 +657,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "jump",
@@ -676,7 +694,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         },
         {
           "action": "jump",
@@ -712,7 +731,8 @@
           },
           "visualReview": "selected_by_Leo",
           "specGate": "pending_pm_scan",
-          "integrationGate": "not_handed_off"
+          "integrationGate": "not_handed_off",
+          "cleanupApplied": false
         }
       ],
       "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/contact/rightdown_10frame_240x320.png",
@@ -720,11 +740,155 @@
     }
   },
   "allMachineChecksPass": true,
-  "candidateStatus": "ready_for_pm2_second_review",
+  "candidateStatus": "ready_for_pm2_recheck_after_pm275_cleanup",
   "runtimeRelease": false,
   "frozenPolicy": {
     "idle": "unchanged original three direction idle frames",
     "cast": "unchanged original three-frame sets",
     "runtime": "untouched"
+  },
+  "pm275Cleanup": {
+    "status": "completed",
+    "method": "deterministic retain largest alpha>0 connected component; remove only secondary components",
+    "targets": [
+      {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_3.png",
+        "beforeSha256": "5e131d4cf850947f27de0759c485b198faf4bec60e5edf08309c0b30d55ad218",
+        "componentsBefore": [
+          {
+            "pixels": 26469,
+            "bbox": [
+              30,
+              44,
+              210,
+              300
+            ],
+            "maxAlpha": 255
+          },
+          {
+            "pixels": 17,
+            "bbox": [
+              113,
+              262,
+              130,
+              263
+            ],
+            "maxAlpha": 5
+          }
+        ],
+        "removedPixels": 17,
+        "afterSha256": "3acae1dd190e6f56f5d38c39af588518ed5e4309a01aada86a486e4bbc6ca598"
+      },
+      {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_1.png",
+        "beforeSha256": "51080f33c5e622ca34b128dcca533bd424f053c6502faf2a54bcb5db36241f99",
+        "componentsBefore": [
+          {
+            "pixels": 37661,
+            "bbox": [
+              1,
+              48,
+              231,
+              300
+            ],
+            "maxAlpha": 255
+          },
+          {
+            "pixels": 10,
+            "bbox": [
+              98,
+              285,
+              99,
+              295
+            ],
+            "maxAlpha": 1
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              131,
+              284,
+              132,
+              285
+            ],
+            "maxAlpha": 3
+          }
+        ],
+        "removedPixels": 11,
+        "afterSha256": "473227b3c6181eb79e9a04a6a725d4230e1cedd42bdda889a78e0868274e7a1e"
+      },
+      {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_3.png",
+        "beforeSha256": "5b9692df1afe93b90ae7270a6e74fbcfb47b737ebb5762c42f437c4f73cd95bd",
+        "componentsBefore": [
+          {
+            "pixels": 27958,
+            "bbox": [
+              16,
+              44,
+              239,
+              300
+            ],
+            "maxAlpha": 255
+          },
+          {
+            "pixels": 7,
+            "bbox": [
+              73,
+              174,
+              80,
+              175
+            ],
+            "maxAlpha": 4
+          },
+          {
+            "pixels": 6,
+            "bbox": [
+              45,
+              73,
+              46,
+              79
+            ],
+            "maxAlpha": 4
+          },
+          {
+            "pixels": 5,
+            "bbox": [
+              20,
+              267,
+              21,
+              272
+            ],
+            "maxAlpha": 4
+          },
+          {
+            "pixels": 3,
+            "bbox": [
+              38,
+              238,
+              39,
+              241
+            ],
+            "maxAlpha": 3
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              65,
+              263,
+              66,
+              264
+            ],
+            "maxAlpha": 4
+          }
+        ],
+        "removedPixels": 22,
+        "afterSha256": "d296fbbb4982c090adeb671608958fc76a3eb4805cd8c425c0884f5a2157ec12"
+      }
+    ],
+    "runtimeTouched": false,
+    "recheck": "all three target files now single alpha>0 connected component",
+    "verification": "qa/pm275_cleanup_verification.json",
+    "allTargetsSingleComponent": true
   }
 }
