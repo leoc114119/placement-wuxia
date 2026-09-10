@@ -1,0 +1,23 @@
+{
+  "task": "T45",
+  "seq": "342",
+  "revision": "legacy-rigid-renorm-right10",
+  "artifactStage": "candidate",
+  "visualReview": "codex_reviewed_pending_Leo",
+  "specGate": "needs_PM2_ruling",
+  "integrationGate": "not_handed_off",
+  "generation": {
+    "provider": "none",
+    "cost": 0,
+    "reason": "deterministic processing of existing raw sources"
+  },
+  "runtimeTouched": false,
+  "qa": [
+    "qa/right_legacy_renorm_pilot.json",
+    "qa/rigid_derivation.json"
+  ],
+  "contacts": [
+    "contact/right_legacy_renorm_pilot_vs_baseline.png",
+    "contact/right_legacy_renorm_pilot_vs_v2.png"
+  ]
+}

@@ -1,0 +1,453 @@
+{
+  "formula": "(anchor crown width / frame crown width) * (256 / anchor source bbox height)",
+  "anchor": {
+    "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260905/t45_batch0_codex_native/raw/idle_right_attempt1.png",
+    "sha256": "f696e25efe78ccb5eb634a3f5e0bd3eb12be0e7de86fa3ff105f47a559e194de",
+    "cleanup": {
+      "componentsBefore": 1,
+      "mainComponentPixels": 396559,
+      "removedAlphaGt32Pixels": 0
+    },
+    "processingSafety": {
+      "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260905/t45_batch0_codex_native/raw/idle_right_attempt1.png",
+      "targetBackgroundPixels": 1175969,
+      "targetDetachedAlphaGt32Pixels": 0,
+      "targetDeletedPixels": 1175969,
+      "observedChangedPixels": 1175969,
+      "subjectDomainDeletedPixels": 0,
+      "rgbChangedPixels": 0,
+      "pass": true
+    },
+    "crownWidth": 34,
+    "crownBBox": [
+      502,
+      237,
+      536,
+      281
+    ],
+    "crownPixels": 763,
+    "sourceBBox": [
+      205,
+      171,
+      819,
+      1273
+    ],
+    "sourceBBoxHeight": 1102
+  },
+  "frames": {
+    "walk_right_1": {
+      "crownWidth": 11,
+      "sourceBBoxHeight": 312,
+      "coefficient": 0.7180333278336908,
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "outputRigidProbe": {
+        "width": 9,
+        "bbox": [
+          141,
+          93,
+          150,
+          101
+        ],
+        "pixels": 44,
+        "detected": true
+      },
+      "outputHeight": 224,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
+        "targetBackgroundPixels": 90902,
+        "targetDetachedAlphaGt32Pixels": 6,
+        "targetDeletedPixels": 90908,
+        "observedChangedPixels": 90908,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "walk_right_2": {
+      "crownWidth": 12,
+      "sourceBBoxHeight": 311,
+      "coefficient": 0.6581972171808832,
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "outputRigidProbe": {
+        "width": 7,
+        "bbox": [
+          133,
+          111,
+          140,
+          118
+        ],
+        "pixels": 33,
+        "detected": true
+      },
+      "outputHeight": 205,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
+        "targetBackgroundPixels": 88104,
+        "targetDetachedAlphaGt32Pixels": 20,
+        "targetDeletedPixels": 88124,
+        "observedChangedPixels": 88124,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "walk_right_3": {
+      "crownWidth": 12,
+      "sourceBBoxHeight": 317,
+      "coefficient": 0.6581972171808832,
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "outputRigidProbe": {
+        "width": 7,
+        "bbox": [
+          134,
+          107,
+          141,
+          115
+        ],
+        "pixels": 35,
+        "detected": true
+      },
+      "outputHeight": 209,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
+        "targetBackgroundPixels": 90379,
+        "targetDetachedAlphaGt32Pixels": 8,
+        "targetDeletedPixels": 90387,
+        "observedChangedPixels": 90387,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "atk_right_1": {
+      "crownWidth": 7,
+      "sourceBBoxHeight": 214,
+      "coefficient": 1.1283380865957997,
+      "expectedOutputRigidWidthContinuous": 7.8983666061705975,
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          119,
+          75,
+          127,
+          82
+        ],
+        "pixels": 30,
+        "detected": true
+      },
+      "outputHeight": 241,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_1.png",
+        "targetBackgroundPixels": 17506,
+        "targetDetachedAlphaGt32Pixels": 4,
+        "targetDeletedPixels": 17510,
+        "observedChangedPixels": 17510,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "atk_right_2": {
+      "crownWidth": 7,
+      "sourceBBoxHeight": 214,
+      "coefficient": 1.1283380865957997,
+      "expectedOutputRigidWidthContinuous": 7.8983666061705975,
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          117,
+          75,
+          125,
+          82
+        ],
+        "pixels": 31,
+        "detected": true
+      },
+      "outputHeight": 241,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_2.png",
+        "targetBackgroundPixels": 18603,
+        "targetDetachedAlphaGt32Pixels": 140,
+        "targetDeletedPixels": 18743,
+        "observedChangedPixels": 18743,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "atk_right_3": {
+      "crownWidth": 7,
+      "sourceBBoxHeight": 214,
+      "coefficient": 1.1283380865957997,
+      "expectedOutputRigidWidthContinuous": 7.8983666061705975,
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          115,
+          75,
+          123,
+          82
+        ],
+        "pixels": 32,
+        "detected": true
+      },
+      "outputHeight": 241,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_3.png",
+        "targetBackgroundPixels": 17845,
+        "targetDetachedAlphaGt32Pixels": 0,
+        "targetDeletedPixels": 17845,
+        "observedChangedPixels": 17845,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "atk_right_4": {
+      "crownWidth": 7,
+      "sourceBBoxHeight": 215,
+      "coefficient": 1.1283380865957997,
+      "expectedOutputRigidWidthContinuous": 7.8983666061705975,
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          117,
+          74,
+          125,
+          82
+        ],
+        "pixels": 32,
+        "detected": true
+      },
+      "outputHeight": 243,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_4.png",
+        "targetBackgroundPixels": 17710,
+        "targetDetachedAlphaGt32Pixels": 0,
+        "targetDeletedPixels": 17710,
+        "observedChangedPixels": 17710,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "jump_right_1": {
+      "crownWidth": 12,
+      "sourceBBoxHeight": 256,
+      "coefficient": 0.6581972171808832,
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          134,
+          149,
+          142,
+          156
+        ],
+        "pixels": 34,
+        "detected": true
+      },
+      "outputHeight": 168,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_1.png",
+        "targetBackgroundPixels": 93159,
+        "targetDetachedAlphaGt32Pixels": 10,
+        "targetDeletedPixels": 93169,
+        "observedChangedPixels": 93169,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "jump_right_2": {
+      "crownWidth": 11,
+      "sourceBBoxHeight": 290,
+      "coefficient": 0.7180333278336908,
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "outputRigidProbe": {
+        "width": 7,
+        "bbox": [
+          132,
+          111,
+          139,
+          118
+        ],
+        "pixels": 36,
+        "detected": true
+      },
+      "outputHeight": 208,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_2.png",
+        "targetBackgroundPixels": 95518,
+        "targetDetachedAlphaGt32Pixels": 5,
+        "targetDeletedPixels": 95523,
+        "observedChangedPixels": 95523,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    },
+    "jump_right_3": {
+      "crownWidth": 11,
+      "sourceBBoxHeight": 303,
+      "coefficient": 0.7180333278336908,
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "outputRigidProbe": {
+        "width": 7,
+        "bbox": [
+          140,
+          98,
+          147,
+          106
+        ],
+        "pixels": 35,
+        "detected": true
+      },
+      "outputHeight": 218,
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_3.png",
+        "targetBackgroundPixels": 90021,
+        "targetDetachedAlphaGt32Pixels": 6,
+        "targetDeletedPixels": 90027,
+        "observedChangedPixels": 90027,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      }
+    }
+  },
+  "rigidConsistency": {
+    "walk": {
+      "frames": [
+        "walk_right_1",
+        "walk_right_2",
+        "walk_right_3"
+      ],
+      "expectedContinuousWidths": [
+        7.898366606170598,
+        7.898366606170598,
+        7.898366606170598
+      ],
+      "expectedContinuousRangePct": 0.0,
+      "expectedContinuousPass": true,
+      "outputRasterWidths": [
+        9,
+        7,
+        7
+      ],
+      "outputRasterRangePct": 28.57142857142857,
+      "outputRasterPass": false,
+      "method": "green crown predicate; alpha>32; 4-neighbor connected component",
+      "rasterQuantizationWarning": true
+    },
+    "atk": {
+      "frames": [
+        "atk_right_1",
+        "atk_right_2",
+        "atk_right_3",
+        "atk_right_4"
+      ],
+      "expectedContinuousWidths": [
+        7.8983666061705975,
+        7.8983666061705975,
+        7.8983666061705975,
+        7.8983666061705975
+      ],
+      "expectedContinuousRangePct": 0.0,
+      "expectedContinuousPass": true,
+      "outputRasterWidths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "outputRasterRangePct": 0.0,
+      "outputRasterPass": true,
+      "method": "green crown predicate; alpha>32; 4-neighbor connected component",
+      "rasterQuantizationWarning": true
+    },
+    "jump": {
+      "frames": [
+        "jump_right_1",
+        "jump_right_2",
+        "jump_right_3"
+      ],
+      "expectedContinuousWidths": [
+        7.898366606170598,
+        7.898366606170598,
+        7.898366606170598
+      ],
+      "expectedContinuousRangePct": 0.0,
+      "expectedContinuousPass": true,
+      "outputRasterWidths": [
+        8,
+        7,
+        7
+      ],
+      "outputRasterRangePct": 14.285714285714285,
+      "outputRasterPass": false,
+      "method": "green crown predicate; alpha>32; 4-neighbor connected component",
+      "rasterQuantizationWarning": true
+    }
+  },
+  "v2Comparison": {
+    "walk_right_1": {
+      "pilotHeight": 224,
+      "v2Height": 246,
+      "deltaPct": -8.943089430894313,
+      "pass": false
+    },
+    "walk_right_2": {
+      "pilotHeight": 205,
+      "v2Height": 255,
+      "deltaPct": -19.6078431372549,
+      "pass": false
+    },
+    "walk_right_3": {
+      "pilotHeight": 209,
+      "v2Height": 248,
+      "deltaPct": -15.7258064516129,
+      "pass": false
+    },
+    "atk_right_1": {
+      "pilotHeight": 241,
+      "v2Height": 246,
+      "deltaPct": -2.0325203252032575,
+      "pass": true
+    },
+    "atk_right_2": {
+      "pilotHeight": 241,
+      "v2Height": 238,
+      "deltaPct": 1.2605042016806678,
+      "pass": true
+    },
+    "atk_right_3": {
+      "pilotHeight": 241,
+      "v2Height": 234,
+      "deltaPct": 2.991452991452981,
+      "pass": true
+    },
+    "jump_right_1": {
+      "pilotHeight": 168,
+      "v2Height": 212,
+      "deltaPct": -20.75471698113207,
+      "pass": false
+    },
+    "jump_right_2": {
+      "pilotHeight": 208,
+      "v2Height": 225,
+      "deltaPct": -7.55555555555556,
+      "pass": false
+    },
+    "jump_right_3": {
+      "pilotHeight": 218,
+      "v2Height": 229,
+      "deltaPct": -4.8034934497816595,
+      "pass": true
+    }
+  },
+  "contacts": {
+    "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/contact/right_legacy_renorm_pilot_vs_baseline.png",
+    "v2": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/contact/right_legacy_renorm_pilot_vs_v2.png"
+  }
+}

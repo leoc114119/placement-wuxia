@@ -1,0 +1,1107 @@
+{
+  "task": "T45",
+  "seq": "342",
+  "revision": "legacy-rigid-renorm-right10",
+  "stage": "right10_pilot",
+  "artifactStage": "candidate",
+  "visualReview": "codex_reviewed_pending_Leo",
+  "specGate": "needs_PM2_ruling",
+  "processing": "checkerboard edge flood-fill + exact alpha>32 largest-component retention; raw sources preserved",
+  "anchor": {
+    "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260905/t45_batch0_codex_native/raw/idle_right_attempt1.png",
+    "sha256": "f696e25efe78ccb5eb634a3f5e0bd3eb12be0e7de86fa3ff105f47a559e194de",
+    "cleanup": {
+      "componentsBefore": 1,
+      "mainComponentPixels": 396559,
+      "removedAlphaGt32Pixels": 0
+    },
+    "processingSafety": {
+      "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260905/t45_batch0_codex_native/raw/idle_right_attempt1.png",
+      "targetBackgroundPixels": 1175969,
+      "targetDetachedAlphaGt32Pixels": 0,
+      "targetDeletedPixels": 1175969,
+      "observedChangedPixels": 1175969,
+      "subjectDomainDeletedPixels": 0,
+      "rgbChangedPixels": 0,
+      "pass": true
+    },
+    "crownWidth": 34,
+    "crownBBox": [
+      502,
+      237,
+      536,
+      281
+    ],
+    "crownPixels": 763,
+    "sourceBBox": [
+      205,
+      171,
+      819,
+      1273
+    ],
+    "sourceBBoxHeight": 1102
+  },
+  "formula": "(anchor crown width / frame crown width) * (256 / anchor source bbox height)",
+  "frames": {
+    "walk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
+      "sourceSha256": "d98cf8bb6d96f3efce30e36636418f3376738ad76515409f5e5a66ddd17ba650",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/walk_right_1.png",
+      "cleanup": {
+        "componentsBefore": 6,
+        "mainComponentPixels": 40136,
+        "removedAlphaGt32Pixels": 6
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
+        "targetBackgroundPixels": 90902,
+        "targetDetachedAlphaGt32Pixels": 6,
+        "targetDeletedPixels": 90908,
+        "observedChangedPixels": 90908,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 11,
+      "rigidCrownBBox": [
+        237,
+        64,
+        248,
+        76
+      ],
+      "rigidCrownPixels": 82,
+      "sourceBBoxAlphaGt32": [
+        78,
+        41,
+        328,
+        353
+      ],
+      "sourceBBoxHeight": 312,
+      "coefficient": 0.7180333278336908,
+      "expectedScaledSize": [
+        180,
+        224
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/walk_right_1.png",
+      "outputSha256": "5480ae2ce0dc4c69114c66f24ebbeb156f5abe150cd6d586c6301783c8909802",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          27,
+          76,
+          207,
+          300
+        ],
+        "bboxWidth": 180,
+        "bboxHeight": 224,
+        "feetY": 300,
+        "centroidX": 119.79250017649515,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 9,
+        "bbox": [
+          141,
+          93,
+          150,
+          101
+        ],
+        "pixels": 44,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "v2ComparableHeight": 246,
+      "v2HeightDeltaPct": -8.943089430894313,
+      "v2CrossCheckPass": false,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_2": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
+      "sourceSha256": "d032b05594e9ea3eb270581b7aa78af74097f0dcba6e136b2b6c6a13fac2230f",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/walk_right_2.png",
+      "cleanup": {
+        "componentsBefore": 15,
+        "mainComponentPixels": 42920,
+        "removedAlphaGt32Pixels": 20
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
+        "targetBackgroundPixels": 88104,
+        "targetDetachedAlphaGt32Pixels": 20,
+        "targetDeletedPixels": 88124,
+        "observedChangedPixels": 88124,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 12,
+      "rigidCrownBBox": [
+        217,
+        62,
+        229,
+        73
+      ],
+      "rigidCrownPixels": 77,
+      "sourceBBoxAlphaGt32": [
+        63,
+        38,
+        310,
+        349
+      ],
+      "sourceBBoxHeight": 311,
+      "coefficient": 0.6581972171808832,
+      "expectedScaledSize": [
+        163,
+        205
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/walk_right_2.png",
+      "outputSha256": "7a8c05efb3f021cfc708f9239efa927bafe2fc366fa41a1b983a4fb1d59f0f77",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          31,
+          95,
+          194,
+          300
+        ],
+        "bboxWidth": 163,
+        "bboxHeight": 205,
+        "feetY": 300,
+        "centroidX": 119.66796747878546,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 7,
+        "bbox": [
+          133,
+          111,
+          140,
+          118
+        ],
+        "pixels": 33,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "v2ComparableHeight": 255,
+      "v2HeightDeltaPct": -19.6078431372549,
+      "v2CrossCheckPass": false,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_3": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
+      "sourceSha256": "6d37049e58d8a68b89cce095a17135062522fce41c979d1f1bafba649c9a76ed",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/walk_right_3.png",
+      "cleanup": {
+        "componentsBefore": 9,
+        "mainComponentPixels": 40657,
+        "removedAlphaGt32Pixels": 8
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
+        "targetBackgroundPixels": 90379,
+        "targetDetachedAlphaGt32Pixels": 8,
+        "targetDeletedPixels": 90387,
+        "observedChangedPixels": 90387,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 12,
+      "rigidCrownBBox": [
+        191,
+        63,
+        203,
+        75
+      ],
+      "rigidCrownPixels": 83,
+      "sourceBBoxAlphaGt32": [
+        45,
+        39,
+        283,
+        356
+      ],
+      "sourceBBoxHeight": 317,
+      "coefficient": 0.6581972171808832,
+      "expectedScaledSize": [
+        157,
+        209
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/walk_right_3.png",
+      "outputSha256": "161950096756facc0f003152760504864c156421c942124256dda8f41f62faa0",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          37,
+          91,
+          194,
+          300
+        ],
+        "bboxWidth": 157,
+        "bboxHeight": 209,
+        "feetY": 300,
+        "centroidX": 120.05016644327623,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 7,
+        "bbox": [
+          134,
+          107,
+          141,
+          115
+        ],
+        "pixels": 35,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "v2ComparableHeight": 248,
+      "v2HeightDeltaPct": -15.7258064516129,
+      "v2CrossCheckPass": false,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_1.png",
+      "sourceSha256": "4d81984301ca3ec4b2b003630e6442523102b5eda29023b39057f3bd3c005b30",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/atk_right_1.png",
+      "cleanup": {
+        "componentsBefore": 3,
+        "mainComponentPixels": 15643,
+        "removedAlphaGt32Pixels": 4
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_1.png",
+        "targetBackgroundPixels": 17506,
+        "targetDetachedAlphaGt32Pixels": 4,
+        "targetDeletedPixels": 17510,
+        "observedChangedPixels": 17510,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 7,
+      "rigidCrownBBox": [
+        60,
+        35,
+        67,
+        42
+      ],
+      "rigidCrownPixels": 27,
+      "sourceBBoxAlphaGt32": [
+        1,
+        21,
+        121,
+        235
+      ],
+      "sourceBBoxHeight": 214,
+      "coefficient": 1.1283380865957997,
+      "expectedScaledSize": [
+        135,
+        241
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/atk_right_1.png",
+      "outputSha256": "163befdc7dfcc48b10429531e1d2a875feb674770e28b5f604b6bceb3e126559",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          53,
+          59,
+          188,
+          300
+        ],
+        "bboxWidth": 135,
+        "bboxHeight": 241,
+        "feetY": 300,
+        "centroidX": 120.39653168284474,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          119,
+          75,
+          127,
+          82
+        ],
+        "pixels": 30,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.8983666061705975,
+      "v2ComparableHeight": 246,
+      "v2HeightDeltaPct": -2.0325203252032575,
+      "v2CrossCheckPass": true,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_2": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_2.png",
+      "sourceSha256": "015416f37d5a0f9c40f95be935fd5cddd42690ee121f3481d474c0d0ee4d54fc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/atk_right_2.png",
+      "cleanup": {
+        "componentsBefore": 4,
+        "mainComponentPixels": 14667,
+        "removedAlphaGt32Pixels": 140
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_2.png",
+        "targetBackgroundPixels": 18603,
+        "targetDetachedAlphaGt32Pixels": 140,
+        "targetDeletedPixels": 18743,
+        "observedChangedPixels": 18743,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 7,
+      "rigidCrownBBox": [
+        59,
+        35,
+        66,
+        42
+      ],
+      "rigidCrownPixels": 28,
+      "sourceBBoxAlphaGt32": [
+        0,
+        21,
+        120,
+        235
+      ],
+      "sourceBBoxHeight": 214,
+      "coefficient": 1.1283380865957997,
+      "expectedScaledSize": [
+        135,
+        241
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/atk_right_2.png",
+      "outputSha256": "2886f5a68987d262760a65490145e005e96e3d0ffc645541116a053d2cb367b3",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          51,
+          59,
+          186,
+          300
+        ],
+        "bboxWidth": 135,
+        "bboxHeight": 241,
+        "feetY": 300,
+        "centroidX": 119.68308983055182,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          117,
+          75,
+          125,
+          82
+        ],
+        "pixels": 31,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.8983666061705975,
+      "v2ComparableHeight": 238,
+      "v2HeightDeltaPct": 1.2605042016806678,
+      "v2CrossCheckPass": true,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_3": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_3.png",
+      "sourceSha256": "9c6ec014b3b543c26fee657d74fcc83cb576370ba311abbfb04402e9668dcffc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/atk_right_3.png",
+      "cleanup": {
+        "componentsBefore": 1,
+        "mainComponentPixels": 15308,
+        "removedAlphaGt32Pixels": 0
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_3.png",
+        "targetBackgroundPixels": 17845,
+        "targetDetachedAlphaGt32Pixels": 0,
+        "targetDeletedPixels": 17845,
+        "observedChangedPixels": 17845,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 7,
+      "rigidCrownBBox": [
+        56,
+        35,
+        63,
+        42
+      ],
+      "rigidCrownPixels": 26,
+      "sourceBBoxAlphaGt32": [
+        0,
+        21,
+        129,
+        235
+      ],
+      "sourceBBoxHeight": 214,
+      "coefficient": 1.1283380865957997,
+      "expectedScaledSize": [
+        146,
+        241
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/atk_right_3.png",
+      "outputSha256": "770a40e053fb2962669409409a41ed06af5cec6aba6ace67c06990313523a77e",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          52,
+          59,
+          198,
+          300
+        ],
+        "bboxWidth": 146,
+        "bboxHeight": 241,
+        "feetY": 300,
+        "centroidX": 120.11251846659142,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          115,
+          75,
+          123,
+          82
+        ],
+        "pixels": 32,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.8983666061705975,
+      "v2ComparableHeight": 234,
+      "v2HeightDeltaPct": 2.991452991452981,
+      "v2CrossCheckPass": true,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_4": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_4.png",
+      "sourceSha256": "8aade595178249bc668960f0ff0e0491b9c29bc1315d26e7e1d562162ec8e303",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/atk_right_4.png",
+      "cleanup": {
+        "componentsBefore": 1,
+        "mainComponentPixels": 15700,
+        "removedAlphaGt32Pixels": 0
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_4.png",
+        "targetBackgroundPixels": 17710,
+        "targetDetachedAlphaGt32Pixels": 0,
+        "targetDeletedPixels": 17710,
+        "observedChangedPixels": 17710,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 7,
+      "rigidCrownBBox": [
+        60,
+        35,
+        67,
+        42
+      ],
+      "rigidCrownPixels": 27,
+      "sourceBBoxAlphaGt32": [
+        0,
+        20,
+        123,
+        235
+      ],
+      "sourceBBoxHeight": 215,
+      "coefficient": 1.1283380865957997,
+      "expectedScaledSize": [
+        139,
+        243
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/atk_right_4.png",
+      "outputSha256": "e605476b4fb8d7bbd51795abd020a4e3c7175e5ed40a82bc942b8ec5b502ae84",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          49,
+          57,
+          188,
+          300
+        ],
+        "bboxWidth": 139,
+        "bboxHeight": 243,
+        "feetY": 300,
+        "centroidX": 120.31855106181989,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          117,
+          74,
+          125,
+          82
+        ],
+        "pixels": 32,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.8983666061705975,
+      "v2ComparableHeight": null,
+      "v2HeightDeltaPct": null,
+      "v2CrossCheckPass": true,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_1.png",
+      "sourceSha256": "0369e6256c16777f6f0aeccb7a2372d02f42cb2696ec0164f7700a96a6e74bcc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/jump_right_1.png",
+      "cleanup": {
+        "componentsBefore": 7,
+        "mainComponentPixels": 37875,
+        "removedAlphaGt32Pixels": 10
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_1.png",
+        "targetBackgroundPixels": 93159,
+        "targetDetachedAlphaGt32Pixels": 10,
+        "targetDeletedPixels": 93169,
+        "observedChangedPixels": 93169,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 12,
+      "rigidCrownBBox": [
+        221,
+        92,
+        233,
+        103
+      ],
+      "rigidCrownPixels": 80,
+      "sourceBBoxAlphaGt32": [
+        75,
+        66,
+        309,
+        322
+      ],
+      "sourceBBoxHeight": 256,
+      "coefficient": 0.6581972171808832,
+      "expectedScaledSize": [
+        154,
+        168
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/jump_right_1.png",
+      "outputSha256": "5c3da70ca7f961d51dd92d9a729cf6ce31284037c4da7a908f415d76e886971b",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          38,
+          132,
+          192,
+          300
+        ],
+        "bboxWidth": 154,
+        "bboxHeight": 168,
+        "feetY": 300,
+        "centroidX": 120.49333232520712,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 8,
+        "bbox": [
+          134,
+          149,
+          142,
+          156
+        ],
+        "pixels": 34,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "v2ComparableHeight": 212,
+      "v2HeightDeltaPct": -20.75471698113207,
+      "v2CrossCheckPass": false,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_2": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_2.png",
+      "sourceSha256": "8a97dd5d3d3fa8c9f93215b17c4621fb0a4e771ad035e259e6fe3cc7b6388ba7",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/jump_right_2.png",
+      "cleanup": {
+        "componentsBefore": 5,
+        "mainComponentPixels": 35521,
+        "removedAlphaGt32Pixels": 5
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_2.png",
+        "targetBackgroundPixels": 95518,
+        "targetDetachedAlphaGt32Pixels": 5,
+        "targetDeletedPixels": 95523,
+        "observedChangedPixels": 95523,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 11,
+      "rigidCrownBBox": [
+        202,
+        28,
+        213,
+        39
+      ],
+      "rigidCrownPixels": 73,
+      "sourceBBoxAlphaGt32": [
+        65,
+        2,
+        296,
+        292
+      ],
+      "sourceBBoxHeight": 290,
+      "coefficient": 0.7180333278336908,
+      "expectedScaledSize": [
+        166,
+        208
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/jump_right_2.png",
+      "outputSha256": "9b6f7378182395a67c8377fb398d8244585909dfdd1a4ce37e1cf3ea1602d2bd",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          33,
+          92,
+          199,
+          300
+        ],
+        "bboxWidth": 166,
+        "bboxHeight": 208,
+        "feetY": 300,
+        "centroidX": 120.27704755138186,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 7,
+        "bbox": [
+          132,
+          111,
+          139,
+          118
+        ],
+        "pixels": 36,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "v2ComparableHeight": 225,
+      "v2HeightDeltaPct": -7.55555555555556,
+      "v2CrossCheckPass": false,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_3": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_3.png",
+      "sourceSha256": "bcb3b840c79cba8c2c3410153e6accf6f7509a0d9dad9fe3bf8e4811b541148c",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/raw_sources/jump_right_3.png",
+      "cleanup": {
+        "componentsBefore": 6,
+        "mainComponentPixels": 41017,
+        "removedAlphaGt32Pixels": 6
+      },
+      "processingSafety": {
+        "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_3.png",
+        "targetBackgroundPixels": 90021,
+        "targetDetachedAlphaGt32Pixels": 6,
+        "targetDeletedPixels": 90027,
+        "observedChangedPixels": 90027,
+        "subjectDomainDeletedPixels": 0,
+        "rgbChangedPixels": 0,
+        "pass": true
+      },
+      "rigidCrownWidth": 11,
+      "rigidCrownBBox": [
+        202,
+        24,
+        213,
+        35
+      ],
+      "rigidCrownPixels": 71,
+      "sourceBBoxAlphaGt32": [
+        31,
+        2,
+        330,
+        305
+      ],
+      "sourceBBoxHeight": 303,
+      "coefficient": 0.7180333278336908,
+      "expectedScaledSize": [
+        215,
+        218
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/normalized/right/jump_right_3.png",
+      "outputSha256": "fc120af2a026db3dbb26c6ee8f9cff1e11b883c2f8d7e75ffdf0126ad48b338c",
+      "outputMetrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          17,
+          82,
+          232,
+          300
+        ],
+        "bboxWidth": 215,
+        "bboxHeight": 218,
+        "feetY": 300,
+        "centroidX": 120.09389520984233,
+        "borderNonzero": 0,
+        "components": 1
+      },
+      "outputRigidProbe": {
+        "width": 7,
+        "bbox": [
+          140,
+          98,
+          147,
+          106
+        ],
+        "pixels": 35,
+        "detected": true
+      },
+      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "v2ComparableHeight": 229,
+      "v2HeightDeltaPct": -4.8034934497816595,
+      "v2CrossCheckPass": true,
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "feetY300": true,
+        "centroidXWithin20": true,
+        "borderTransparent": true,
+        "alphaGt32SingleComponent": true,
+        "width238": true,
+        "noCropWithin1": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "rigidConsistency": {
+    "walk": {
+      "frames": [
+        "walk_right_1",
+        "walk_right_2",
+        "walk_right_3"
+      ],
+      "expectedContinuousWidths": [
+        7.898366606170598,
+        7.898366606170598,
+        7.898366606170598
+      ],
+      "expectedContinuousRangePct": 0.0,
+      "expectedContinuousPass": true,
+      "outputRasterWidths": [
+        9,
+        7,
+        7
+      ],
+      "outputRasterRangePct": 28.57142857142857,
+      "outputRasterPass": false,
+      "method": "green crown predicate; alpha>32; 4-neighbor connected component",
+      "rasterQuantizationWarning": true
+    },
+    "atk": {
+      "frames": [
+        "atk_right_1",
+        "atk_right_2",
+        "atk_right_3",
+        "atk_right_4"
+      ],
+      "expectedContinuousWidths": [
+        7.8983666061705975,
+        7.8983666061705975,
+        7.8983666061705975,
+        7.8983666061705975
+      ],
+      "expectedContinuousRangePct": 0.0,
+      "expectedContinuousPass": true,
+      "outputRasterWidths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "outputRasterRangePct": 0.0,
+      "outputRasterPass": true,
+      "method": "green crown predicate; alpha>32; 4-neighbor connected component",
+      "rasterQuantizationWarning": true
+    },
+    "jump": {
+      "frames": [
+        "jump_right_1",
+        "jump_right_2",
+        "jump_right_3"
+      ],
+      "expectedContinuousWidths": [
+        7.898366606170598,
+        7.898366606170598,
+        7.898366606170598
+      ],
+      "expectedContinuousRangePct": 0.0,
+      "expectedContinuousPass": true,
+      "outputRasterWidths": [
+        8,
+        7,
+        7
+      ],
+      "outputRasterRangePct": 14.285714285714285,
+      "outputRasterPass": false,
+      "method": "green crown predicate; alpha>32; 4-neighbor connected component",
+      "rasterQuantizationWarning": true
+    }
+  },
+  "v2Comparison": {
+    "walk_right_1": {
+      "pilotHeight": 224,
+      "v2Height": 246,
+      "deltaPct": -8.943089430894313,
+      "pass": false
+    },
+    "walk_right_2": {
+      "pilotHeight": 205,
+      "v2Height": 255,
+      "deltaPct": -19.6078431372549,
+      "pass": false
+    },
+    "walk_right_3": {
+      "pilotHeight": 209,
+      "v2Height": 248,
+      "deltaPct": -15.7258064516129,
+      "pass": false
+    },
+    "atk_right_1": {
+      "pilotHeight": 241,
+      "v2Height": 246,
+      "deltaPct": -2.0325203252032575,
+      "pass": true
+    },
+    "atk_right_2": {
+      "pilotHeight": 241,
+      "v2Height": 238,
+      "deltaPct": 1.2605042016806678,
+      "pass": true
+    },
+    "atk_right_3": {
+      "pilotHeight": 241,
+      "v2Height": 234,
+      "deltaPct": 2.991452991452981,
+      "pass": true
+    },
+    "jump_right_1": {
+      "pilotHeight": 168,
+      "v2Height": 212,
+      "deltaPct": -20.75471698113207,
+      "pass": false
+    },
+    "jump_right_2": {
+      "pilotHeight": 208,
+      "v2Height": 225,
+      "deltaPct": -7.55555555555556,
+      "pass": false
+    },
+    "jump_right_3": {
+      "pilotHeight": 218,
+      "v2Height": 229,
+      "deltaPct": -4.8034934497816595,
+      "pass": true
+    }
+  },
+  "v2CrossCheckPass": false,
+  "visualReviewDescription": "Both contact sheets were reviewed. In the BASE|PILOT strip, BASE is 256px tall; attack frames are approximately 241–243px, walk frames 205–224px, and jump frames 168–218px. In the BASE|PILOT|V2 strip, pilot walk_right_1/2/3 and jump_right_1/2 are visibly shorter than their v2 columns, while the attack rows are close; poses remain recognizable and all feet share y=300. No runtime asset was changed.",
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/contact/right_legacy_renorm_pilot_vs_baseline.png",
+  "v2Contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_legacy_renorm_right_pilot_seq342/contact/right_legacy_renorm_pilot_vs_v2.png",
+  "runtimeTouched": false,
+  "frameHardGatesPass": true,
+  "rigidRasterHardGatePass": false,
+  "shaDistinct": true,
+  "allHardGatesPass": false,
+  "blockingReason": "v2 same-pose cross-check exceeds the prescribed ±5% threshold for walk_right_1/2/3 and jump_right_1/2; the prescribed green-crown raster probe also quantizes below 12px on output and reports >5% group spread for walk/jump. Stop before expanding beyond the pilot."
+}
