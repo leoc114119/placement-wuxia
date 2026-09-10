@@ -223,9 +223,11 @@ def _drive(a, st, thread, wm, wakes):
     if len(wakes) >= MAX_WAKES_PER_HOUR:
         log("rate limit reached; skip")
         return 0
+    # 注意：不再因"在跑"而跳过——`codex queue` 本身是队列语义（不打断当前回合），
+    # 跳过只会让消息更晚到达。改为照常入队（水位线保证同一条只投一次）。
+    # 真要立刻打断，只能由人在 Codex 窗口按停止（CLI 无 interrupt）。
     if turn_in_progress(thread):
-        log("turn in progress; skip")
-        return 0
+        log("turn in progress -> still queue (queue semantics are non-intrusive)")
 
     fresh = unread_after(st["role"], wm)
     if not fresh:
