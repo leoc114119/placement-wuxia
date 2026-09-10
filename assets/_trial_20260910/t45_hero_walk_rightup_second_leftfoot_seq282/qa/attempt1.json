@@ -1,0 +1,24 @@
+{
+  "task": "T45",
+  "seq": "282",
+  "attempt": 1,
+  "artifactStage": "rejected",
+  "visualReview": "rejected_provisional",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "path": "assets/_trial_20260910/t45_hero_walk_rightup_second_leftfoot_seq282/raw/attempt1.png",
+  "sha256": "c17ce738def2ef25986231135042ecda65b673ca88c4f9d50302e5dc3460d911",
+  "dimensions": [
+    1832,
+    858
+  ],
+  "mode": "RGB",
+  "alpha": {
+    "hasAlpha": false,
+    "extrema": null
+  },
+  "observedIssue": "tiny 190x89 source caused severe blur and the edit was not suitable for production review",
+  "source": "refs/source_three_walk.png",
+  "generatedBy": "Codex ImageGen",
+  "generationAttempts": 1
+}

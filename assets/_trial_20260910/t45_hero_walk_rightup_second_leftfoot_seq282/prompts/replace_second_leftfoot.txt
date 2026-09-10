@@ -1,0 +1,3 @@
+Edit the supplied three-cell rightup walk strip. Keep cell 1 and cell 3 pixel-identical in character identity, pose, scale, costume, direction, and background. Modify ONLY cell 2.
+
+In cell 2, make the LEFT FOOT the clear forward, weight-bearing leg and make the RIGHT FOOT visibly lifted/back. The knee bend, heel lift, and foot placement must unmistakably oppose the support pattern in cells 1 and 3. Keep the character in the same 45-degree rightup back-oblique direction, same Q-version boy, ponytail, costume, palette, proportions, and full-body scale. Do not alter cells 1 or 3. No weapon, text, shadow, extra character, or additional panel. Preserve exactly three equal cells.

@@ -1,0 +1,28 @@
+{
+  "task": "T45",
+  "seq": "282",
+  "attempt": 2,
+  "artifactStage": "rejected",
+  "visualReview": "rejected_provisional",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "path": "assets/_trial_20260910/t45_hero_walk_rightup_second_leftfoot_seq282/raw/attempt2.png",
+  "sha256": "c3a4866c75ccad86f6ec9be94e16906b6b58619b01d65286b32581260d32c2d4",
+  "dimensions": [
+    1833,
+    858
+  ],
+  "mode": "RGB",
+  "alpha": {
+    "hasAlpha": false,
+    "extrema": null
+  },
+  "observedIssue": "second cell did not visibly switch to the opposite left-foot support; strip remained effectively one repeated walk pose and became pixelated",
+  "source": [
+    "refs/source_three_walk_upscaled4x.png",
+    "refs/rightward_walk_phase_B.png"
+  ],
+  "generatedBy": "Codex ImageGen",
+  "generationAttempts": 2,
+  "note": "Two native attempts exhausted for this focused edit; no further native retry in this job."
+}
