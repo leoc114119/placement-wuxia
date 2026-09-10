@@ -1,0 +1,9 @@
+{
+  "channel": "Codex native ImageGen edit",
+  "costCapPoints": 6,
+  "generatedCount": 2,
+  "assumedCostPerImagePoints": 2,
+  "costUsedPoints": 4,
+  "fallbackUsed": false,
+  "status": "closed_on_step1_file_failure"
+}

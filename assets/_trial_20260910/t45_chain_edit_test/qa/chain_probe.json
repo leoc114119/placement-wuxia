@@ -1,0 +1,107 @@
+{
+  "task": "T45",
+  "seq": "336",
+  "stage": "chain_edit_verification",
+  "chainDefinition": "idle_right -> walk_right_1 -> walk_right_2 -> walk_right_3",
+  "costCapPoints": 6,
+  "costUsedPoints": 4,
+  "base": {
+    "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_edit_test/chain/idle_right.png",
+    "size": [
+      240,
+      320
+    ],
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "alphaBBox": [
+      47,
+      44,
+      193,
+      300
+    ],
+    "sha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "target": "walk_right_1",
+      "attempts": [
+        {
+          "attempt": 1,
+          "mode": "edit",
+          "inputMechanism": "num_last_images_to_include=1",
+          "referencedImagePaths": [],
+          "visibleInputPath": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_edit_test/chain/idle_right.png",
+          "visibleInputSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+          "promptPath": "prompts/walk_right_1_edit.txt",
+          "outputPath": "raw/walk_right_1_chain.png",
+          "fileGate": "FAIL: alphaExtrema=[255,255], checkerboard baked into opaque canvas",
+          "size": [
+            1086,
+            1448
+          ],
+          "alphaExtrema": [
+            255,
+            255
+          ],
+          "alphaBBox": [
+            0,
+            0,
+            1086,
+            1448
+          ],
+          "sha256": "407fce4bc64ca1783c527d90d38df97c58575be73b6220120883c517eb73d3cb"
+        },
+        {
+          "attempt": 2,
+          "mode": "edit",
+          "inputMechanism": "num_last_images_to_include=1",
+          "referencedImagePaths": [],
+          "visibleInputPath": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_edit_test/chain/idle_right.png",
+          "visibleInputSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+          "promptPath": "prompts/walk_right_1_edit_attempt2.txt",
+          "outputPath": "raw/walk_right_1_chain_attempt2.png",
+          "fileGate": "FAIL: alphaExtrema=[255,255], checkerboard baked into opaque canvas",
+          "size": [
+            1086,
+            1448
+          ],
+          "alphaExtrema": [
+            255,
+            255
+          ],
+          "alphaBBox": [
+            0,
+            0,
+            1086,
+            1448
+          ],
+          "sha256": "7ee7c14eec3b8fe2fffa4aad49c0c7f828937894023be965c6dcf20e37b43bc7"
+        }
+      ],
+      "status": "closed_after_two_attempts"
+    }
+  ],
+  "chainAuthenticity": {
+    "step1VisibleInputWasPreviousProduct": true,
+    "step1VisibleInputPath": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_edit_test/chain/idle_right.png",
+    "step1ReferenceCount": 1,
+    "step2": "not_run",
+    "step3": "not_run"
+  },
+  "probe": {
+    "criterion": "four-frame crown width + face width range <=5%",
+    "status": "not_run_due_step1_file_failure",
+    "conclusion": "chain_edit_route_not_validated; close verification without step2/step3"
+  },
+  "parallelBaseline": [
+    "assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/walk_right_1.png",
+    "assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/walk_right_2.png",
+    "assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/walk_right_3.png"
+  ],
+  "runtimeTouched": false,
+  "formalAssetsTouched": false,
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_edit_test/contact/chain_vs_parallel.png"
+}
