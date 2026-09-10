@@ -1039,3 +1039,4 @@
 | 2026-09-10 | Codex（art） | 🧪 seq=284 单参考中间 walk 方向互换完成 | rightup←rightdown 中间帧、rightdown←rightup 中间帧，各一次方向-only img2img；raw/QA 已归档，待 Leo 目验，runtime 未改。 |
 | 2026-09-10 | Leo → Codex（art） | 🧩 seq=285 右上 walk_2 替换对照请求 | Leo 提供单帧作为右上 walk_2，要求与现有 walk_1/3 合并看连续性；仅确定性拼接。 |
 | 2026-09-10 | Codex（art） | 🧪 seq=285 右上 walk 替换对照完成 | 用户帧已置中，左右沿用现有右上 walk_1/3，330×440 对照；未生成/未改 runtime。 |
+| 2026-09-10 | Codex（art） | 🛠️ seq=285 右上 walk 背景处理与水平居中完成 | 三帧执行棋盘底连通抠除、256px 高度归一、脚底 y=300、全像素质心 x=120；3/3 帧 240×320 RGBA 机械门全过，contact=`assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/contact/rightup_walk_aligned_240x320.png`，runtime 未改。 |

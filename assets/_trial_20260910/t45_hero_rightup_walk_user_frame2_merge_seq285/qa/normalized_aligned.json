@@ -1,0 +1,180 @@
+{
+  "task": "T45",
+  "seq": "285",
+  "processing": "deterministic checkerboard edge-connected cut + 256px height normalization + feet baseline y=300 + alpha centroid x=120",
+  "frames": {
+    "rightup_walk_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/raw/rightup_walk_1_merged.png",
+      "sourceSha256": "85e767edaa1a63e0b3ecb84ea95509551614a1edb374bd0cad4dbc7ffa707394",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/normalized/rightup_walk_1.png",
+      "outputSha256": "5dfb1e62d3427900b6a630d9fd534ed724985f1352662f90acedb7e61673d593",
+      "processing": {
+        "removedBgPixels": 103979,
+        "cutBBox": [
+          57,
+          81,
+          306,
+          402
+        ],
+        "scale": 0.7975077881619937,
+        "scaledSize": [
+          199,
+          256
+        ],
+        "alphaCentroidXLocal": 107.8076057176482,
+        "paste": [
+          12,
+          44
+        ]
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          12,
+          44,
+          211,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 119.8076057176482,
+        "alpha32CentroidY": 162.2857144776372,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "visualHeight256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_walk_2": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/raw/rightup_walk_2_user.png",
+      "sourceSha256": "4d7782e38b77f0f8fe431d92ec28b63879802be1189b0b5c14751c0d3cb4e93f",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/normalized/rightup_walk_2.png",
+      "outputSha256": "d9f69303237324997db7d39231ac83cc2d5dccc804162e145a325242f58839cb",
+      "processing": {
+        "removedBgPixels": 101987,
+        "cutBBox": [
+          56,
+          59,
+          290,
+          396
+        ],
+        "scale": 0.7596439169139466,
+        "scaledSize": [
+          178,
+          256
+        ],
+        "alphaCentroidXLocal": 94.81107012403194,
+        "paste": [
+          25,
+          44
+        ]
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          25,
+          44,
+          203,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 119.81107012403194,
+        "alpha32CentroidY": 163.63251265804394,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "visualHeight256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_walk_3": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/raw/rightup_walk_3_merged.png",
+      "sourceSha256": "9e6a5934b630563b2024cc6e08889c204469a2b58bd8cf45f713d6a5e27a41ef",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/normalized/rightup_walk_3.png",
+      "outputSha256": "ce919967cdf2f7de14bbaaa33bba2369da4a07bb161eb3527ac5dca54fd5ec4e",
+      "processing": {
+        "removedBgPixels": 103617,
+        "cutBBox": [
+          49,
+          81,
+          288,
+          404
+        ],
+        "scale": 0.7925696594427245,
+        "scaledSize": [
+          189,
+          256
+        ],
+        "alphaCentroidXLocal": 99.99910505781534,
+        "paste": [
+          20,
+          44
+        ]
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          20,
+          44,
+          209,
+          300
+        ],
+        "visualHeight": 256,
+        "feetYExclusive": 300,
+        "alpha32CentroidX": 119.99910505781534,
+        "alpha32CentroidY": 161.4357182607031,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "visualHeight256": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/contact/rightup_walk_aligned_240x320.png",
+  "allHardGatesPass": true
+}
