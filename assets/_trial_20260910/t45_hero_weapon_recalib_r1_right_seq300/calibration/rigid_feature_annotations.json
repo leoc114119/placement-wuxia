@@ -1,0 +1,119 @@
+{
+  "task": "T45",
+  "seq": "300",
+  "method": "manual two-point head crown-to-jaw annotation for fixed source-group calibration",
+  "benchmark": {
+    "frame": "assets/characters/hero/battle45/battle_idle_right.png",
+    "feature": "head crown top → lower cheek/jaw anchor",
+    "topPx": 53,
+    "bottomPx": 139,
+    "spanPx": 86,
+    "note": "manual two-point annotation; used as the scale reference, not a per-frame bbox fit"
+  },
+  "groups": {
+    "seq278_walk_jump": {
+      "feature": "head crown top → lower cheek/jaw anchor",
+      "sourceFrames": {
+        "walk_right_1": {
+          "topPx": 55,
+          "bottomPx": 160,
+          "spanPx": 105
+        },
+        "walk_right_2": {
+          "topPx": 52,
+          "bottomPx": 157,
+          "spanPx": 105
+        },
+        "walk_right_3": {
+          "topPx": 53,
+          "bottomPx": 157,
+          "spanPx": 104
+        },
+        "jump_right_1": {
+          "topPx": 82,
+          "bottomPx": 187,
+          "spanPx": 105
+        },
+        "jump_right_2": {
+          "topPx": 19,
+          "bottomPx": 124,
+          "spanPx": 105
+        },
+        "jump_right_3": {
+          "topPx": 15,
+          "bottomPx": 120,
+          "spanPx": 105
+        }
+      },
+      "coefficientBasis": "fixed coefficient anchored by the standing walk source median span; jump frames reuse it",
+      "sourceStandingSpanMedianPx": 105,
+      "benchmarkSpanPx": 86,
+      "fixedScale": 0.8205128205128205
+    },
+    "seq279_atk": {
+      "feature": "head crown top → lower cheek/jaw anchor",
+      "sourceFrames": {
+        "atk_right_1": {
+          "topPx": 29,
+          "bottomPx": 101,
+          "spanPx": 72
+        },
+        "atk_right_2": {
+          "topPx": 29,
+          "bottomPx": 101,
+          "spanPx": 72
+        },
+        "atk_right_3": {
+          "topPx": 29,
+          "bottomPx": 101,
+          "spanPx": 72
+        },
+        "atk_right_4": {
+          "topPx": 29,
+          "bottomPx": 101,
+          "spanPx": 72
+        }
+      },
+      "coefficientBasis": "fixed coefficient anchored by the seq279 standing source median span",
+      "sourceStandingSpanMedianPx": 72,
+      "benchmarkSpanPx": 86,
+      "fixedScale": 1.1962616822429906
+    }
+  },
+  "automaticPreflight": {
+    "method": "dark head silhouette probe, read-only validation only",
+    "retainedSet": [
+      "assets/characters/hero/battle45/battle_idle_right.png",
+      "assets/characters/hero/battle45/battle_idle_rightup.png",
+      "assets/characters/hero/battle45/battle_idle_rightdown.png",
+      "assets/characters/hero/battle45/cast_right_1.png",
+      "assets/characters/hero/battle45/cast_right_2.png",
+      "assets/characters/hero/battle45/cast_right_3.png",
+      "assets/characters/hero/battle45/cast_rightup_1.png",
+      "assets/characters/hero/battle45/cast_rightup_2.png",
+      "assets/characters/hero/battle45/cast_rightup_3.png",
+      "assets/characters/hero/battle45/cast_rightdown_1.png",
+      "assets/characters/hero/battle45/cast_rightdown_2.png",
+      "assets/characters/hero/battle45/cast_rightdown_3.png"
+    ],
+    "valuesPx": {
+      "assets/characters/hero/battle45/battle_idle_right.png": 87,
+      "assets/characters/hero/battle45/battle_idle_rightup.png": 87,
+      "assets/characters/hero/battle45/battle_idle_rightdown.png": 87,
+      "assets/characters/hero/battle45/cast_right_1.png": 87,
+      "assets/characters/hero/battle45/cast_right_2.png": 87,
+      "assets/characters/hero/battle45/cast_right_3.png": 87,
+      "assets/characters/hero/battle45/cast_rightup_1.png": 87,
+      "assets/characters/hero/battle45/cast_rightup_2.png": 87,
+      "assets/characters/hero/battle45/cast_rightup_3.png": 87,
+      "assets/characters/hero/battle45/cast_rightdown_1.png": 87,
+      "assets/characters/hero/battle45/cast_rightdown_2.png": 87,
+      "assets/characters/hero/battle45/cast_rightdown_3.png": 87
+    },
+    "medianPx": 87.0,
+    "variationPct": 0.0,
+    "maxAllowedPct": 5,
+    "validForCalibrationSet": true,
+    "coefficientUse": "not used for per-frame fitting; coefficients are fixed by the manual source-group calibration table"
+  }
+}

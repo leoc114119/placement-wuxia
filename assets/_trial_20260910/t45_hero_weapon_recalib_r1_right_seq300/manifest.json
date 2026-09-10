@@ -1,0 +1,31 @@
+{
+  "task": "T45",
+  "seq": "300",
+  "revision": "R1",
+  "phase": "right_side_fixed_scale_rework",
+  "status": "candidate-only",
+  "frameCount": 10,
+  "frames": [
+    "walk_right_1",
+    "walk_right_2",
+    "walk_right_3",
+    "jump_right_1",
+    "jump_right_2",
+    "jump_right_3",
+    "atk_right_1",
+    "atk_right_2",
+    "atk_right_3",
+    "atk_right_4"
+  ],
+  "qa": "qa/r1_right_seq300.json",
+  "contact": "contact/right_r1_seq300_with_benchmark.png",
+  "runtimeRelease": false,
+  "runtimeTouched": false,
+  "phaseBStarted": false,
+  "shaDistinct": true,
+  "allHardGatesPass": false,
+  "failedFrames": [
+    "jump_right_3"
+  ],
+  "stopReason": "right_jump_3 touches the right canvas border after the fixed seq278 coefficient; do not crop, shrink per-frame, or erase subject pixels"
+}
