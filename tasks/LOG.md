@@ -1015,3 +1015,11 @@
 | 2026-09-10 | Codex（art） | 🧪 seq=273 单手攻击/挥动纠正版完成 | 仅输入单张 `battle_idle_right.png`；直刺第二帧锁右手单手，挥动首帧改为右手先举起再向左/中/右连续挥动；7 帧原图未切/未归一/未接 runtime，等待 Leo 目验。 |
 | 2026-09-10 | Codex（art） | 🧪 seq=274 两姿势单参考试产完成 | 仅输入一张 `battle_idle_right.png`；生成两个独立全身姿势：右手持剑直刺、右手持剑左→右挥动；原图已归档，等待 Leo 目验。 |
 | 2026-09-10 | Codex（art） | 🧪 seq=275 8 帧空手单手动作试产完成 | 仅输入单张 `battle_idle_right.png`；生成右手持剑式直刺×4、右手先举再左→右挥动×4，双手空手供后续独立剑模合成；未切帧/未归一/未接 runtime，等待 Leo 目验。 |
+| 2026-09-10 | Codex（art） | 🧪 seq=276 右手挥剑空手四帧试产原图归档 | 单参考 `battle_idle_right.png`；4 格横条；raw=`assets/_trial_20260910/t45_hero_swing_trial_seq276/raw/hero_right_hand_swing_4frames.png`；SHA=`78f2ded8b4a62d8398d412f626f002c39c19ea6812ec2536aec12efde0424129`；未切帧/未归一/未接 runtime，待 Leo 目验。 |
+| 2026-09-10 | Codex（art） | 🧪 seq=276 attempt2 右手归属强化原图归档 | 原图 `assets/_trial_20260910/t45_hero_swing_trial_seq276/raw/hero_right_hand_swing_4frames_attempt2.png`；SHA=`324118a0bbef1e6e4c618b97aae921fe740645e7818d8e87b8b095c9cacc6671`；提示词锁定参考图画面右侧角色右手、左侧拳放松；已达普通原生两次上限，待 Leo 目验，未切帧/未归一/未接 runtime。 |
+| 2026-09-10 | Leo → Codex（art） | ⏸️ T45 施法/挥剑优化冻结 | seq=276 最后一帧仍误用左手且动作不连续；后续只优化行走、`atk`、轻功，施法不再调整。 |
+| 2026-09-10 | Codex（art） | 🗃️ seq=276 attempt3 rejected 留档 | 第三次原生结果保留 raw/QA，按 Leo 结论 rejected；不再继续施法帧返工。 |
+| 2026-09-10 | Codex（art） | 🧪 seq=277 行走/atk/轻功六格优化试产 | 单参考 `battle_idle_right.png`；右向 2×3 竖表（walk×2/atk×2/jump×2），raw=`assets/_trial_20260910/t45_hero_walk_atk_jump_trial_seq277/raw/hero_walk_atk_jump_right_2x3.png`；未切帧/未归一/未接 runtime，待 Leo 目验。 |
+| 2026-09-10 | Leo → Codex（art） | ❌ seq=277 右向重复试产作废 | 右向 `walk / atk / jump` 已确定；该六格试产不纳入后续优化，现有右向定稿继续沿用。 |
+| 2026-09-10 | Leo → Codex（art） | ✅ 右向 walk / jump 视觉定稿确认 | 附件第一行 3 格 walk 与最后一行 3 格 jump 定稿保存；右向 atk/施法不纳入本次保存。 |
+| 2026-09-10 | Codex（art） | 📦 seq=278 右向 walk/jump 六格候选保存 | `assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/`：原图+6 个逐格 PNG+两行条带+QA；`selected_by_Leo`、PM 规格门待办、runtime 未改。 |

@@ -1,0 +1,105 @@
+{
+  "task": "T45",
+  "seq": "278",
+  "artifactStage": "candidate",
+  "visualReview": "selected_by_Leo",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "source": {
+    "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/source_right_action_sheet_3x4.png",
+    "sha256": "414f95c7428d5057322bafff40be1c31b8974bd58c568232bb71db4ce923dfda",
+    "mode": "RGB",
+    "dimensions": [
+      1086,
+      1448
+    ]
+  },
+  "selection": {
+    "walk": "source row 1, all 3 cells",
+    "jump": "source row 4, all 3 cells",
+    "excluded": "atk row 2 and swing/cast row 3"
+  },
+  "processing": "deterministic exact 3x4 grid crop only; no redraw, no resize, no runtime write",
+  "frames": [
+    {
+      "action": "walk",
+      "index": 1,
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
+      "sha256": "d98cf8bb6d96f3efce30e36636418f3376738ad76515409f5e5a66ddd17ba650",
+      "dimensions": [
+        362,
+        362
+      ]
+    },
+    {
+      "action": "walk",
+      "index": 2,
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
+      "sha256": "d032b05594e9ea3eb270581b7aa78af74097f0dcba6e136b2b6c6a13fac2230f",
+      "dimensions": [
+        362,
+        362
+      ]
+    },
+    {
+      "action": "walk",
+      "index": 3,
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
+      "sha256": "6d37049e58d8a68b89cce095a17135062522fce41c979d1f1bafba649c9a76ed",
+      "dimensions": [
+        362,
+        362
+      ]
+    },
+    {
+      "action": "jump",
+      "index": 1,
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_1.png",
+      "sha256": "0369e6256c16777f6f0aeccb7a2372d02f42cb2696ec0164f7700a96a6e74bcc",
+      "dimensions": [
+        362,
+        362
+      ]
+    },
+    {
+      "action": "jump",
+      "index": 2,
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_2.png",
+      "sha256": "8a97dd5d3d3fa8c9f93215b17c4621fb0a4e771ad035e259e6fe3cc7b6388ba7",
+      "dimensions": [
+        362,
+        362
+      ]
+    },
+    {
+      "action": "jump",
+      "index": 3,
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_3.png",
+      "sha256": "bcb3b840c79cba8c2c3410153e6accf6f7509a0d9dad9fe3bf8e4811b541148c",
+      "dimensions": [
+        362,
+        362
+      ]
+    }
+  ],
+  "rowStrips": [
+    {
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/right_walk_selected_row.png",
+      "sha256": "65a11c2f97ad4f3104ddad2035526323b32e4198c12f0a32c3ed8041a643c57b",
+      "dimensions": [
+        1086,
+        362
+      ]
+    },
+    {
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/right_jump_selected_row.png",
+      "sha256": "08961984203d2a1df8a53a462bc82a22a6e74ab803ed080db9bdb60c3956011b",
+      "dimensions": [
+        1086,
+        362
+      ]
+    }
+  ],
+  "contact": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/contact/right_walk_jump_selected_rows.png",
+  "note": "Leo visual selection recorded; RGB checkerboard source retained as candidate. Formal RGBA cutout/240x320 normalization remains PM/spec gate work."
+}
