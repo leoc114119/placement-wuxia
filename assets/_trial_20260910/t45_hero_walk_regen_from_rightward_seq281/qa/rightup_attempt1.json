@@ -1,0 +1,35 @@
+{
+  "task": "T45",
+  "seq": "281",
+  "direction": "rightup",
+  "attempt": 1,
+  "artifactStage": "rejected",
+  "visualReview": "rejected_provisional",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "path": "assets/_trial_20260910/t45_hero_walk_regen_from_rightward_seq281/raw/rightup_attempt1.png",
+  "sha256": "78f52e93d67b5f6485446112700103ca26392e8fb33a75471f8c39a0cec8ae08",
+  "dimensions": [
+    2172,
+    724
+  ],
+  "mode": "RGB",
+  "alpha": {
+    "hasAlpha": false,
+    "extrema": null
+  },
+  "layout": {
+    "cells": 3,
+    "order": [
+      "walk_1",
+      "walk_2",
+      "walk_3"
+    ]
+  },
+  "source": "assets/_trial_20260910/t45_hero_walk_regen_from_rightward_seq281/refs/rightward_walk_3_source.png",
+  "sourceMeaning": "new selected right-facing walk triplet seq278",
+  "observedIssue": "three output poses visually repeat the same leg support; alternating walk phase not achieved",
+  "generatedBy": "Codex ImageGen",
+  "generationAttempts": 1,
+  "note": "Retained for audit; not eligible for delivery."
+}

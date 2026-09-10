@@ -1,0 +1,40 @@
+{
+  "task": "T45",
+  "seq": "281",
+  "direction": "rightup",
+  "attempt": 3,
+  "artifactStage": "rejected",
+  "visualReview": "rejected_provisional",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "path": "assets/_trial_20260910/t45_hero_walk_regen_from_rightward_seq281/raw/rightup_attempt3.png",
+  "sha256": "64c7b4e63797934dd5117e2c456ee30c30f41d4e6e56ac63cdba3e9735e7fa9c",
+  "dimensions": [
+    2172,
+    724
+  ],
+  "mode": "RGB",
+  "alpha": {
+    "hasAlpha": false,
+    "extrema": null
+  },
+  "layout": {
+    "cells": 3,
+    "order": [
+      "walk_1",
+      "walk_2",
+      "walk_3"
+    ]
+  },
+  "source": [
+    "assets/_trial_20260910/t45_hero_walk_regen_from_rightward_seq281/refs/walk_right_1.png",
+    "assets/_trial_20260910/t45_hero_walk_regen_from_rightward_seq281/refs/walk_right_2.png",
+    "assets/_trial_20260910/t45_hero_walk_regen_from_rightward_seq281/refs/walk_right_3.png"
+  ],
+  "sourceMeaning": "new selected right-facing walk frames seq278",
+  "observedIssue": "all three poses still visually reuse one leg support; A/B/A alternating walk phase not achieved",
+  "generatedBy": "Codex ImageGen",
+  "generationAttempts": 3,
+  "fallbackEligible": "conditional single-image fallback only; no further native retry",
+  "note": "Retained for audit; not eligible for delivery."
+}

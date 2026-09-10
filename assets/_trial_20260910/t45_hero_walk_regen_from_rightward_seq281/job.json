@@ -1,0 +1,7 @@
+{
+  "task":"T45","seq":"281","scope":"walk-only rightup/rightdown","frameCountPerDirection":3,
+  "source":"new selected right-facing walk triplet seq278",
+  "generation":{"provider":"Codex native ImageGen","mode":"same-direction img2img","attempts":{"rightup":0,"rightdown":0}},
+  "frozen":["seq272 accepted rightdown atk","seq272 accepted rightup/rightdown jump","idle","cast","runtime"],
+  "visualReview":"unreviewed","specGate":"pending_pm_scan","integrationGate":"not_handed_off"
+}

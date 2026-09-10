@@ -1032,3 +1032,5 @@
 | 09-10 | Leo → PM2 | ✅ 三档身高规格定稿（§1.1 转正式） | 矮 2.2头身/215px/宽比0.55~0.62 禁肥胖｜中 2.5头身/256px 现役不变｜高 3.2头身/295px/宽比0.45~0.52 禁大长腿匀称；数字按 v3 对比图实测校准（Leo 目验通过）；两版否决教训（v2 矮胖/大长腿）成文为生成硬条款；约束范围=未来新 NPC/敌人生成 |
 | 2026-09-10 | Leo → Codex（art） | ❌ seq=272 旧参考链作废并纠正 | 右上/右下重生成必须以 seq278+279 已定稿右向 `walk / atk / jump` 为唯一动作参考；旧右上/右下参考链结果不采用。 |
 | 2026-09-10 | Codex（art） | 🧪 seq=272 corrected rightup/rightdown 生成完成 | 右向定稿动作源=`refs/rightward_selected/rightward_walk_atk_jump_2x5_source.png`；右上/右下各一次 img2img，2×5 十格（walk3+atk4+jump3）；候选待 Leo 目验，runtime 未改。 |
+| 2026-09-10 | Leo → Codex（art） | ✅/❌ seq=272 分项验收结论 | 右下 atk + 右上/右下 jump 通过；右上/右下 walk 退回（右上全左右、右下全右脚）；右上 atk 暂不定稿。后续只重做 walk。 |
+| 2026-09-10 | Codex（art） | ❌ seq=281 右上 walk 三次原生失败 | 以 seq278 右向 walk 单帧作参考并要求 45°右上 A→B→A，三次仍重复同一支撑脚；按管线停止继续原生重试，raw/QA 全保留。右下 walk 暂停，未生成。 |
