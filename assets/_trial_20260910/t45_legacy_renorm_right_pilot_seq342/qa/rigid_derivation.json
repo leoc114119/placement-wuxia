@@ -1,5 +1,5 @@
 {
-  "formula": "(anchor crown width / frame crown width) * (256 / anchor source bbox height)",
+  "formula": "(anchor crown width / source-table group mean crown width) * (256 / anchor source bbox height); one coefficient per source table group",
   "anchor": {
     "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260905/t45_batch0_codex_native/raw/idle_right_attempt1.png",
     "sha256": "f696e25efe78ccb5eb634a3f5e0bd3eb12be0e7de86fa3ff105f47a559e194de",
@@ -34,24 +34,275 @@
     ],
     "sourceBBoxHeight": 1102
   },
+  "groupDerivation": {
+    "walk_jump": {
+      "sourceTable": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/source_right_action_sheet_3x4.png",
+      "sourceTableSha256": "414f95c7428d5057322bafff40be1c31b8974bd58c568232bb71db4ce923dfda",
+      "rows": 4,
+      "columns": 3,
+      "sampleCount": 12,
+      "sampleCrownWidths": [
+        11,
+        12,
+        12,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        12,
+        11,
+        11
+      ],
+      "meanCrownWidth": 11.25,
+      "cells": [
+        {
+          "row": 1,
+          "column": 1,
+          "crownWidth": 11,
+          "crownBBox": [
+            237,
+            64,
+            248,
+            76
+          ],
+          "crownPixels": 82
+        },
+        {
+          "row": 1,
+          "column": 2,
+          "crownWidth": 12,
+          "crownBBox": [
+            217,
+            62,
+            229,
+            73
+          ],
+          "crownPixels": 77
+        },
+        {
+          "row": 1,
+          "column": 3,
+          "crownWidth": 12,
+          "crownBBox": [
+            191,
+            63,
+            203,
+            75
+          ],
+          "crownPixels": 83
+        },
+        {
+          "row": 2,
+          "column": 1,
+          "crownWidth": 11,
+          "crownBBox": [
+            185,
+            37,
+            196,
+            49
+          ],
+          "crownPixels": 76
+        },
+        {
+          "row": 2,
+          "column": 2,
+          "crownWidth": 11,
+          "crownBBox": [
+            192,
+            41,
+            203,
+            53
+          ],
+          "crownPixels": 79
+        },
+        {
+          "row": 2,
+          "column": 3,
+          "crownWidth": 11,
+          "crownBBox": [
+            172,
+            38,
+            183,
+            49
+          ],
+          "crownPixels": 78
+        },
+        {
+          "row": 3,
+          "column": 1,
+          "crownWidth": 11,
+          "crownBBox": [
+            201,
+            50,
+            212,
+            61
+          ],
+          "crownPixels": 69
+        },
+        {
+          "row": 3,
+          "column": 2,
+          "crownWidth": 11,
+          "crownBBox": [
+            192,
+            36,
+            203,
+            48
+          ],
+          "crownPixels": 82
+        },
+        {
+          "row": 3,
+          "column": 3,
+          "crownWidth": 11,
+          "crownBBox": [
+            188,
+            37,
+            199,
+            49
+          ],
+          "crownPixels": 75
+        },
+        {
+          "row": 4,
+          "column": 1,
+          "crownWidth": 12,
+          "crownBBox": [
+            221,
+            92,
+            233,
+            103
+          ],
+          "crownPixels": 80
+        },
+        {
+          "row": 4,
+          "column": 2,
+          "crownWidth": 11,
+          "crownBBox": [
+            202,
+            28,
+            213,
+            39
+          ],
+          "crownPixels": 73
+        },
+        {
+          "row": 4,
+          "column": 3,
+          "crownWidth": 11,
+          "crownBBox": [
+            202,
+            24,
+            213,
+            35
+          ],
+          "crownPixels": 71
+        }
+      ],
+      "coefficient": 0.7020770316596088,
+      "frames": [
+        "walk_right_1",
+        "walk_right_2",
+        "walk_right_3",
+        "jump_right_1",
+        "jump_right_2",
+        "jump_right_3"
+      ]
+    },
+    "atk": {
+      "sourceTable": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/source_atk_right_4frame.png",
+      "sourceTableSha256": "7f0388b86118a92f5701913b6ebee5a8feedd5605702e27e924f9c7f52965deb",
+      "rows": 1,
+      "columns": 4,
+      "sampleCount": 4,
+      "sampleCrownWidths": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "meanCrownWidth": 7,
+      "cells": [
+        {
+          "row": 1,
+          "column": 1,
+          "crownWidth": 7,
+          "crownBBox": [
+            60,
+            35,
+            67,
+            42
+          ],
+          "crownPixels": 27
+        },
+        {
+          "row": 1,
+          "column": 2,
+          "crownWidth": 7,
+          "crownBBox": [
+            58,
+            35,
+            65,
+            42
+          ],
+          "crownPixels": 28
+        },
+        {
+          "row": 1,
+          "column": 3,
+          "crownWidth": 7,
+          "crownBBox": [
+            56,
+            35,
+            63,
+            42
+          ],
+          "crownPixels": 26
+        },
+        {
+          "row": 1,
+          "column": 4,
+          "crownWidth": 7,
+          "crownBBox": [
+            60,
+            35,
+            67,
+            42
+          ],
+          "crownPixels": 27
+        }
+      ],
+      "coefficient": 1.1283380865957997,
+      "frames": [
+        "atk_right_1",
+        "atk_right_2",
+        "atk_right_3",
+        "atk_right_4"
+      ]
+    }
+  },
   "frames": {
     "walk_right_1": {
+      "group": "walk_jump",
       "crownWidth": 11,
       "sourceBBoxHeight": 312,
-      "coefficient": 0.7180333278336908,
-      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "coefficient": 0.7020770316596088,
+      "expectedOutputRigidWidthContinuous": 7.722847348255696,
       "outputRigidProbe": {
-        "width": 9,
+        "width": 8,
         "bbox": [
           141,
-          93,
-          150,
-          101
+          97,
+          149,
+          105
         ],
-        "pixels": 44,
+        "pixels": 40,
         "detected": true
       },
-      "outputHeight": 224,
+      "outputHeight": 219,
       "processingSafety": {
         "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
         "targetBackgroundPixels": 90902,
@@ -64,22 +315,23 @@
       }
     },
     "walk_right_2": {
+      "group": "walk_jump",
       "crownWidth": 12,
       "sourceBBoxHeight": 311,
-      "coefficient": 0.6581972171808832,
-      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "coefficient": 0.7020770316596088,
+      "expectedOutputRigidWidthContinuous": 8.424924379915305,
       "outputRigidProbe": {
-        "width": 7,
+        "width": 8,
         "bbox": [
-          133,
-          111,
-          140,
-          118
+          134,
+          99,
+          142,
+          107
         ],
-        "pixels": 33,
+        "pixels": 39,
         "detected": true
       },
-      "outputHeight": 205,
+      "outputHeight": 218,
       "processingSafety": {
         "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
         "targetBackgroundPixels": 88104,
@@ -92,22 +344,23 @@
       }
     },
     "walk_right_3": {
+      "group": "walk_jump",
       "crownWidth": 12,
       "sourceBBoxHeight": 317,
-      "coefficient": 0.6581972171808832,
-      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "coefficient": 0.7020770316596088,
+      "expectedOutputRigidWidthContinuous": 8.424924379915305,
       "outputRigidProbe": {
-        "width": 7,
+        "width": 8,
         "bbox": [
-          134,
-          107,
-          141,
-          115
+          135,
+          94,
+          143,
+          102
         ],
-        "pixels": 35,
+        "pixels": 39,
         "detected": true
       },
-      "outputHeight": 209,
+      "outputHeight": 223,
       "processingSafety": {
         "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
         "targetBackgroundPixels": 90379,
@@ -120,6 +373,7 @@
       }
     },
     "atk_right_1": {
+      "group": "atk",
       "crownWidth": 7,
       "sourceBBoxHeight": 214,
       "coefficient": 1.1283380865957997,
@@ -148,6 +402,7 @@
       }
     },
     "atk_right_2": {
+      "group": "atk",
       "crownWidth": 7,
       "sourceBBoxHeight": 214,
       "coefficient": 1.1283380865957997,
@@ -176,6 +431,7 @@
       }
     },
     "atk_right_3": {
+      "group": "atk",
       "crownWidth": 7,
       "sourceBBoxHeight": 214,
       "coefficient": 1.1283380865957997,
@@ -204,6 +460,7 @@
       }
     },
     "atk_right_4": {
+      "group": "atk",
       "crownWidth": 7,
       "sourceBBoxHeight": 215,
       "coefficient": 1.1283380865957997,
@@ -232,22 +489,23 @@
       }
     },
     "jump_right_1": {
+      "group": "walk_jump",
       "crownWidth": 12,
       "sourceBBoxHeight": 256,
-      "coefficient": 0.6581972171808832,
-      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "coefficient": 0.7020770316596088,
+      "expectedOutputRigidWidthContinuous": 8.424924379915305,
       "outputRigidProbe": {
         "width": 8,
         "bbox": [
-          134,
-          149,
-          142,
-          156
+          135,
+          138,
+          143,
+          146
         ],
-        "pixels": 34,
+        "pixels": 40,
         "detected": true
       },
-      "outputHeight": 168,
+      "outputHeight": 180,
       "processingSafety": {
         "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_1.png",
         "targetBackgroundPixels": 93159,
@@ -260,22 +518,23 @@
       }
     },
     "jump_right_2": {
+      "group": "walk_jump",
       "crownWidth": 11,
       "sourceBBoxHeight": 290,
-      "coefficient": 0.7180333278336908,
-      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "coefficient": 0.7020770316596088,
+      "expectedOutputRigidWidthContinuous": 7.722847348255696,
       "outputRigidProbe": {
-        "width": 7,
+        "width": 8,
         "bbox": [
-          132,
-          111,
+          131,
+          114,
           139,
-          118
+          122
         ],
         "pixels": 36,
         "detected": true
       },
-      "outputHeight": 208,
+      "outputHeight": 204,
       "processingSafety": {
         "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_2.png",
         "targetBackgroundPixels": 95518,
@@ -288,22 +547,23 @@
       }
     },
     "jump_right_3": {
+      "group": "walk_jump",
       "crownWidth": 11,
       "sourceBBoxHeight": 303,
-      "coefficient": 0.7180333278336908,
-      "expectedOutputRigidWidthContinuous": 7.898366606170598,
+      "coefficient": 0.7020770316596088,
+      "expectedOutputRigidWidthContinuous": 7.722847348255696,
       "outputRigidProbe": {
         "width": 7,
         "bbox": [
-          140,
-          98,
-          147,
-          106
+          139,
+          102,
+          146,
+          110
         ],
         "pixels": 35,
         "detected": true
       },
-      "outputHeight": 218,
+      "outputHeight": 213,
       "processingSafety": {
         "baseline": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_3.png",
         "targetBackgroundPixels": 90021,
@@ -317,26 +577,55 @@
     }
   },
   "rigidConsistency": {
-    "walk": {
+    "walk_jump": {
       "frames": [
         "walk_right_1",
         "walk_right_2",
-        "walk_right_3"
+        "walk_right_3",
+        "jump_right_1",
+        "jump_right_2",
+        "jump_right_3"
       ],
+      "sourceTable": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/source_right_action_sheet_3x4.png",
+      "sourceTableSha256": "414f95c7428d5057322bafff40be1c31b8974bd58c568232bb71db4ce923dfda",
+      "sourceCrownWidthsAllTableCells": [
+        11,
+        12,
+        12,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        12,
+        11,
+        11
+      ],
+      "sourceCrownMeanWidth": 11.25,
+      "sourceSampleCount": 12,
+      "groupCoefficient": 0.7020770316596088,
       "expectedContinuousWidths": [
-        7.898366606170598,
-        7.898366606170598,
-        7.898366606170598
+        7.722847348255696,
+        8.424924379915305,
+        8.424924379915305,
+        8.424924379915305,
+        7.722847348255696,
+        7.722847348255696
       ],
-      "expectedContinuousRangePct": 0.0,
-      "expectedContinuousPass": true,
+      "expectedContinuousRangePct": 9.090909090909097,
       "outputRasterWidths": [
-        9,
-        7,
+        8,
+        8,
+        8,
+        8,
+        8,
         7
       ],
-      "outputRasterRangePct": 28.57142857142857,
-      "outputRasterPass": false,
+      "outputRasterRangePct": 14.285714285714285,
+      "outputRasterRangePx": 1,
+      "outputRasterThresholdPx": 1,
+      "outputRasterPass": true,
       "method": "green crown predicate; alpha>32; 4-neighbor connected component",
       "rasterQuantizationWarning": true
     },
@@ -347,6 +636,17 @@
         "atk_right_3",
         "atk_right_4"
       ],
+      "sourceTable": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/source_atk_right_4frame.png",
+      "sourceTableSha256": "7f0388b86118a92f5701913b6ebee5a8feedd5605702e27e924f9c7f52965deb",
+      "sourceCrownWidthsAllTableCells": [
+        7,
+        7,
+        7,
+        7
+      ],
+      "sourceCrownMeanWidth": 7,
+      "sourceSampleCount": 4,
+      "groupCoefficient": 1.1283380865957997,
       "expectedContinuousWidths": [
         7.8983666061705975,
         7.8983666061705975,
@@ -354,7 +654,6 @@
         7.8983666061705975
       ],
       "expectedContinuousRangePct": 0.0,
-      "expectedContinuousPass": true,
       "outputRasterWidths": [
         8,
         8,
@@ -362,52 +661,31 @@
         8
       ],
       "outputRasterRangePct": 0.0,
+      "outputRasterRangePx": 0,
+      "outputRasterThresholdPx": 1,
       "outputRasterPass": true,
-      "method": "green crown predicate; alpha>32; 4-neighbor connected component",
-      "rasterQuantizationWarning": true
-    },
-    "jump": {
-      "frames": [
-        "jump_right_1",
-        "jump_right_2",
-        "jump_right_3"
-      ],
-      "expectedContinuousWidths": [
-        7.898366606170598,
-        7.898366606170598,
-        7.898366606170598
-      ],
-      "expectedContinuousRangePct": 0.0,
-      "expectedContinuousPass": true,
-      "outputRasterWidths": [
-        8,
-        7,
-        7
-      ],
-      "outputRasterRangePct": 14.285714285714285,
-      "outputRasterPass": false,
       "method": "green crown predicate; alpha>32; 4-neighbor connected component",
       "rasterQuantizationWarning": true
     }
   },
   "v2Comparison": {
     "walk_right_1": {
-      "pilotHeight": 224,
+      "pilotHeight": 219,
       "v2Height": 246,
-      "deltaPct": -8.943089430894313,
-      "pass": false
+      "deltaPct": -10.97560975609756,
+      "pass": true
     },
     "walk_right_2": {
-      "pilotHeight": 205,
+      "pilotHeight": 218,
       "v2Height": 255,
-      "deltaPct": -19.6078431372549,
-      "pass": false
+      "deltaPct": -14.509803921568631,
+      "pass": true
     },
     "walk_right_3": {
-      "pilotHeight": 209,
+      "pilotHeight": 223,
       "v2Height": 248,
-      "deltaPct": -15.7258064516129,
-      "pass": false
+      "deltaPct": -10.080645161290324,
+      "pass": true
     },
     "atk_right_1": {
       "pilotHeight": 241,
@@ -428,21 +706,21 @@
       "pass": true
     },
     "jump_right_1": {
-      "pilotHeight": 168,
+      "pilotHeight": 180,
       "v2Height": 212,
-      "deltaPct": -20.75471698113207,
+      "deltaPct": -15.094339622641506,
       "pass": false
     },
     "jump_right_2": {
-      "pilotHeight": 208,
+      "pilotHeight": 204,
       "v2Height": 225,
-      "deltaPct": -7.55555555555556,
-      "pass": false
+      "deltaPct": -9.333333333333337,
+      "pass": true
     },
     "jump_right_3": {
-      "pilotHeight": 218,
+      "pilotHeight": 213,
       "v2Height": 229,
-      "deltaPct": -4.8034934497816595,
+      "deltaPct": -6.986899563318783,
       "pass": true
     }
   },

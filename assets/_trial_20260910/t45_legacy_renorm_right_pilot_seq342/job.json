@@ -1,11 +1,13 @@
 {
   "task": "T45",
   "seq": "342",
-  "revision": "legacy-rigid-renorm-right10",
+  "revision": "legacy-group-rigid-renorm-right10-r2",
   "artifactStage": "candidate",
   "visualReview": "codex_reviewed_pending_Leo",
-  "specGate": "needs_PM2_ruling",
+  "specGate": "needs_PM2_ruling_after_r2",
   "integrationGate": "not_handed_off",
+  "handoff": "tasks/handoff/T45-legacy-renorm-right-pilot-result-r2-20260910.md",
+  "openQuestion": "tasks/questions/Q10-T45-legacy-renorm-jump1-reference-boundary.md",
   "generation": {
     "provider": "none",
     "cost": 0,

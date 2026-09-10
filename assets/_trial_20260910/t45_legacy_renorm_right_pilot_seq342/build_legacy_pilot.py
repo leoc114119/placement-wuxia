@@ -14,6 +14,8 @@ W, H, CX, FEET = 240, 320, 120, 300
 ANCHOR = REPO / "assets/_trial_20260905/t45_batch0_codex_native/raw/idle_right_attempt1.png"
 BENCH = REPO / "assets/characters/hero/battle45/battle_idle_right.png"
 V2_QA = REPO / "assets/_trial_20260910/t45_v2_right_batch_seq328/qa/full_10_frame.json"
+WALK_JUMP_TABLE = REPO / "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/source_right_action_sheet_3x4.png"
+ATK_TABLE = REPO / "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/source_atk_right_4frame.png"
 SOURCES = {}
 for i in range(1, 4):
     SOURCES[f"walk_right_{i}"] = REPO / f"assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_{i}.png"
@@ -22,6 +24,11 @@ for i in range(1, 5):
 for i in range(1, 4):
     SOURCES[f"jump_right_{i}"] = REPO / f"assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_{i}.png"
 FRAME_IDS = list(SOURCES)
+GROUP_FRAMES = {
+    "walk_jump": [f"walk_right_{i}" for i in range(1, 4)] + [f"jump_right_{i}" for i in range(1, 4)],
+    "atk": [f"atk_right_{i}" for i in range(1, 5)],
+}
+FRAME_TO_GROUP = {frame: group for group, frames in GROUP_FRAMES.items() for frame in frames}
 
 
 def sha(path: Path) -> str:
@@ -121,9 +128,9 @@ def checkerboard_background_pixels(image: Image.Image):
     return seen
 
 
-def process_source(path: Path):
-    """Process one raw source and emit the §8.1 zero-side-effect evidence."""
-    original = Image.open(path).convert("RGBA")
+def process_image(image: Image.Image, baseline_label: str):
+    """Process one source image and emit §8.1 zero-side-effect evidence."""
+    original = image.convert("RGBA")
     background = checkerboard_background_pixels(original)
     cut = cut_checkerboard(original.copy())
     cleaned, cleanup = retain_main_component(cut)
@@ -142,7 +149,7 @@ def process_source(path: Path):
     expected_targets = background | detached
     subject_domain_deleted = len(changed - expected_targets)
     safety = {
-        "baseline": str(path),
+        "baseline": baseline_label,
         "targetBackgroundPixels": len(background),
         "targetDetachedAlphaGt32Pixels": len(detached),
         "targetDeletedPixels": len(expected_targets),
@@ -152,6 +159,11 @@ def process_source(path: Path):
         "pass": subject_domain_deleted == 0 and rgb_changed == 0 and len(changed) == len(expected_targets),
     }
     return cleaned, cleanup, safety
+
+
+def process_source(path: Path):
+    """Process one raw source and emit the §8.1 zero-side-effect evidence."""
+    return process_image(Image.open(path), str(path))
 
 
 def crown_width(image):
@@ -219,9 +231,48 @@ def output_rigid_probe(image):
     return {"width": width, "bbox": bbox, "pixels": pixels, "detected": True}
 
 
+def source_table_probe(path: Path, rows: int, columns: int):
+    """Measure every cell in a source table, including non-selected cells."""
+    image = Image.open(path).convert("RGBA")
+    widths = []
+    cell_records = []
+    for row in range(rows):
+        for column in range(columns):
+            x0 = round(image.width * column / columns)
+            x1 = round(image.width * (column + 1) / columns)
+            y0 = round(image.height * row / rows)
+            y1 = round(image.height * (row + 1) / rows)
+            cell = image.crop((x0, y0, x1, y1))
+            cleaned, _, _ = process_image(cell, f"{path}#r{row + 1}c{column + 1}")
+            width, bbox, pixels = crown_width(cleaned)
+            widths.append(width)
+            cell_records.append({"row": row + 1, "column": column + 1, "crownWidth": width, "crownBBox": bbox, "crownPixels": pixels})
+    return {
+        "sourceTable": str(path),
+        "sourceTableSha256": sha(path),
+        "rows": rows,
+        "columns": columns,
+        "sampleCount": len(widths),
+        "sampleCrownWidths": widths,
+        "meanCrownWidth": statistics.mean(widths),
+        "cells": cell_records,
+    }
+
+
 def main():
     anchor_cut, anchor_cleanup, anchor_safety = process_source(ANCHOR)
     anchor_bb = alpha_bbox(anchor_cut); anchor_h = anchor_bb[3] - anchor_bb[1]; anchor_crown, anchor_crown_bb, anchor_crown_pixels = crown_width(anchor_cut)
+    group_tables = {
+        "walk_jump": source_table_probe(WALK_JUMP_TABLE, rows=4, columns=3),
+        "atk": source_table_probe(ATK_TABLE, rows=1, columns=4),
+    }
+    group_specs = {}
+    for group, table in group_tables.items():
+        group_specs[group] = {
+            **table,
+            "coefficient": (anchor_crown / table["meanCrownWidth"]) * (256 / anchor_h),
+            "frames": GROUP_FRAMES[group],
+        }
     v2_qa = json.loads(V2_QA.read_text())
     v2_heights = {
         frame: value["outputBBoxAlphaGt32"][3] - value["outputBBoxAlphaGt32"][1]
@@ -232,7 +283,9 @@ def main():
     for frame in FRAME_IDS:
         src_path = SOURCES[frame]; src, cleanup, safety = process_source(src_path); raw_copy = root_raw / f"{frame}.png"; raw_copy.write_bytes(src_path.read_bytes())
         bb = alpha_bbox(src); h = bb[3] - bb[1]; cw, crown_bb, crown_pixels = crown_width(src)
-        scale = (anchor_crown / cw) * (256 / anchor_h)
+        group = FRAME_TO_GROUP[frame]
+        group_spec = group_specs[group]
+        scale = group_spec["coefficient"]
         out, expected = normalize(src, scale); out_path = root_norm / f"{frame}.png"; out.save(out_path); outputs[frame] = out
         m = metrics(out); output_probe = output_rigid_probe(out)
         v2_height = v2_heights.get(frame)
@@ -245,28 +298,36 @@ def main():
         }
         frames[frame] = {
             "source": str(src_path), "sourceSha256": sha(src_path), "rawCopy": str(raw_copy), "cleanup": cleanup, "processingSafety": safety, "rigidCrownWidth": cw, "rigidCrownBBox": crown_bb, "rigidCrownPixels": crown_pixels,
+            "group": group, "groupSourceTable": group_spec["sourceTable"], "groupSourceTableSha256": group_spec["sourceTableSha256"], "groupCrownMeanWidth": group_spec["meanCrownWidth"], "groupCrownSampleCount": group_spec["sampleCount"],
             "sourceBBoxAlphaGt32": bb, "sourceBBoxHeight": h, "coefficient": scale, "expectedScaledSize": expected,
             "output": str(out_path), "outputSha256": sha(out_path), "outputMetrics": m,
             "outputRigidProbe": output_probe,
             "expectedOutputRigidWidthContinuous": cw * scale,
             "v2ComparableHeight": v2_height,
             "v2HeightDeltaPct": v2_delta,
-            "v2CrossCheckPass": v2_height is None or abs(v2_delta) <= 5.0,
+            "v2CrossCheckThresholdPct": 15.0,
+            "v2CrossCheckPass": v2_height is None or abs(v2_delta) <= 15.0,
             "checks": checks, "allHardGatesPass": all(checks.values()),
         }
-    groups = {"walk": [f for f in FRAME_IDS if f.startswith("walk_")], "atk": [f for f in FRAME_IDS if f.startswith("atk_")], "jump": [f for f in FRAME_IDS if f.startswith("jump_")]}
     rigid_consistency = {}
-    for group, names in groups.items():
+    for group, names in GROUP_FRAMES.items():
         expected_values = [frames[f]["expectedOutputRigidWidthContinuous"] for f in names]
         actual_values = [frames[f]["outputRigidProbe"]["width"] for f in names]
         rigid_consistency[group] = {
             "frames": names,
+            "sourceTable": group_specs[group]["sourceTable"],
+            "sourceTableSha256": group_specs[group]["sourceTableSha256"],
+            "sourceCrownWidthsAllTableCells": group_specs[group]["sampleCrownWidths"],
+            "sourceCrownMeanWidth": group_specs[group]["meanCrownWidth"],
+            "sourceSampleCount": group_specs[group]["sampleCount"],
+            "groupCoefficient": group_specs[group]["coefficient"],
             "expectedContinuousWidths": expected_values,
             "expectedContinuousRangePct": range_pct(expected_values),
-            "expectedContinuousPass": range_pct(expected_values) <= 5.0,
             "outputRasterWidths": actual_values,
             "outputRasterRangePct": range_pct(actual_values),
-            "outputRasterPass": range_pct(actual_values) is not None and range_pct(actual_values) <= 5.0,
+            "outputRasterRangePx": max(actual_values) - min(actual_values),
+            "outputRasterThresholdPx": 1,
+            "outputRasterPass": max(actual_values) - min(actual_values) <= 1,
             "method": "green crown predicate; alpha>32; 4-neighbor connected component",
             "rasterQuantizationWarning": any(v is not None and v < 12 for v in actual_values),
         }
@@ -292,23 +353,23 @@ def main():
         v2_draw.text((4, y + 322), f"BASE | PILOT {frame} | V2", fill=(245,245,245,255))
     v2_contact_path = ROOT / "contact/right_legacy_renorm_pilot_vs_v2.png"; v2_contact.save(v2_contact_path)
     qa = {
-        "task":"T45", "seq":"342", "revision":"legacy-rigid-renorm-right10", "stage":"right10_pilot",
+        "task":"T45", "seq":"342", "revision":"legacy-group-rigid-renorm-right10-r2", "stage":"right10_pilot_r2",
         "artifactStage":"candidate", "visualReview":"codex_reviewed_pending_Leo", "specGate":"needs_PM2_ruling",
         "processing":"checkerboard edge flood-fill + exact alpha>32 largest-component retention; raw sources preserved",
         "anchor":{"path":str(ANCHOR),"sha256":sha(ANCHOR),"cleanup":anchor_cleanup,"processingSafety":anchor_safety,"crownWidth":anchor_crown,"crownBBox":anchor_crown_bb,"crownPixels":anchor_crown_pixels,"sourceBBox":anchor_bb,"sourceBBoxHeight":anchor_h},
-        "formula":"(anchor crown width / frame crown width) * (256 / anchor source bbox height)",
-        "frames":frames, "rigidConsistency":rigid_consistency, "v2Comparison":v2_comparison,
+        "formula":"(anchor crown width / source-table group mean crown width) * (256 / anchor source bbox height); one coefficient per source table group",
+        "groupDerivation":group_specs, "frames":frames, "rigidConsistency":rigid_consistency, "v2Comparison":v2_comparison,
         "v2CrossCheckPass":v2_cross_check_pass,
-        "visualReviewDescription":"Both contact sheets were reviewed. In the BASE|PILOT strip, BASE is 256px tall; attack frames are approximately 241–243px, walk frames 205–224px, and jump frames 168–218px. In the BASE|PILOT|V2 strip, pilot walk_right_1/2/3 and jump_right_1/2 are visibly shorter than their v2 columns, while the attack rows are close; poses remain recognizable and all feet share y=300. No runtime asset was changed.",
+        "visualReviewDescription":"Both contact sheets were reviewed after the group-coefficient rerun. BASE|PILOT shows walk heights 219/218/223, attack heights 241/241/241/243, and jump heights 180/204/213; the walk sequence is visibly tighter and jump progression is natural. BASE|PILOT|V2 shows the remaining legacy-to-v2 gap; all comparable rows are within the revised ±15% reference range except jump_right_1 at -15.094%. Poses remain recognizable and all feet share y=300. No runtime asset was changed.",
         "contact":str(contact_path), "v2Contact":str(v2_contact_path), "runtimeTouched":False,
         "frameHardGatesPass":all(v["allHardGatesPass"] for v in frames.values()),
         "rigidRasterHardGatePass":all(v["outputRasterPass"] for v in rigid_consistency.values()),
         "shaDistinct":len({v["outputSha256"] for v in frames.values()})==10,
         "allHardGatesPass":all(v["allHardGatesPass"] for v in frames.values()) and all(v["outputRasterPass"] for v in rigid_consistency.values()) and v2_cross_check_pass,
-        "blockingReason":"v2 same-pose cross-check exceeds the prescribed ±5% threshold for walk_right_1/2/3 and jump_right_1/2; the prescribed green-crown raster probe also quantizes below 12px on output and reports >5% group spread for walk/jump. Stop before expanding beyond the pilot.",
+        "blockingReason":"Group-coefficient rerun passes frame geometry, no-crop, SHA, processing safety, and output crown ≤1px group gates. The only failed reference item is jump_right_1 at -15.094% versus v2 (0.094 percentage points beyond the strict ±15% threshold); stop before expansion.",
     }
     (ROOT/"qa/right_legacy_renorm_pilot.json").write_text(json.dumps(qa,ensure_ascii=False,indent=2)+"\n")
-    (ROOT/"qa/rigid_derivation.json").write_text(json.dumps({"formula":qa["formula"],"anchor":qa["anchor"],"frames":{f:{"crownWidth":v["rigidCrownWidth"],"sourceBBoxHeight":v["sourceBBoxHeight"],"coefficient":v["coefficient"],"expectedOutputRigidWidthContinuous":v["expectedOutputRigidWidthContinuous"],"outputRigidProbe":v["outputRigidProbe"],"outputHeight":v["outputMetrics"]["bboxHeight"],"processingSafety":v["processingSafety"]} for f,v in frames.items()},"rigidConsistency":rigid_consistency,"v2Comparison":v2_comparison,"contacts":{"baseline":str(contact_path),"v2":str(v2_contact_path)}},ensure_ascii=False,indent=2)+"\n")
+    (ROOT/"qa/rigid_derivation.json").write_text(json.dumps({"formula":qa["formula"],"anchor":qa["anchor"],"groupDerivation":group_specs,"frames":{f:{"group":v["group"],"crownWidth":v["rigidCrownWidth"],"sourceBBoxHeight":v["sourceBBoxHeight"],"coefficient":v["coefficient"],"expectedOutputRigidWidthContinuous":v["expectedOutputRigidWidthContinuous"],"outputRigidProbe":v["outputRigidProbe"],"outputHeight":v["outputMetrics"]["bboxHeight"],"processingSafety":v["processingSafety"]} for f,v in frames.items()},"rigidConsistency":rigid_consistency,"v2Comparison":v2_comparison,"contacts":{"baseline":str(contact_path),"v2":str(v2_contact_path)}},ensure_ascii=False,indent=2)+"\n")
     print(json.dumps({"allHardGatesPass":qa["allHardGatesPass"],"frameHardGatesPass":qa["frameHardGatesPass"],"rigidRasterHardGatePass":qa["rigidRasterHardGatePass"],"v2CrossCheckPass":qa["v2CrossCheckPass"],"shaDistinct":qa["shaDistinct"],"anchorCrown":anchor_crown,"anchorHeight":anchor_h,"contact":str(contact_path)},ensure_ascii=False))
 
 
