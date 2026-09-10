@@ -2,7 +2,7 @@
 
 ## 执行范围
 
-按 Leo 批准的 6 分上限验证单，只尝试链式 `idle_right → walk_right_1 → walk_right_2 → walk_right_3` 的第 1 步；idle 使用现有 V2 产物，不重生成。
+按 Leo 批准的最多 3 张原生 ImageGen 验证单，只尝试链式 `idle_right → walk_right_1 → walk_right_2 → walk_right_3` 的第 1 步；idle 使用现有 V2 产物，不重生成。原生通道 cost=0，受 image_gen 张数/轮次限制。
 
 ## 链式真实性
 
@@ -14,7 +14,7 @@
 
 - attempt 1：输出 `raw/walk_right_1_chain.png`，alpha extrema=`[255,255]`，checkerboard 已烘进不透明画布，FAIL。
 - attempt 2：输出 `raw/walk_right_1_chain_attempt2.png`，alpha extrema=`[255,255]`，仍为不透明 checkerboard，FAIL。
-- 生成次数 2，假定成本 4 分，低于 6 分上限；剩余 2 分不再使用。
+- 原生生成次数 2/3，cost=0（订阅内）；按规则不再继续第 2/3 步。
 
 ## 结论
 

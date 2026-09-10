@@ -1,9 +1,10 @@
 {
+  "provider": "codex-native",
   "channel": "Codex native ImageGen edit",
-  "costCapPoints": 6,
+  "costCapImages": 3,
   "generatedCount": 2,
-  "assumedCostPerImagePoints": 2,
-  "costUsedPoints": 4,
+  "cost": 0,
+  "costUnit": "subscription-included",
   "fallbackUsed": false,
   "status": "closed_on_step1_file_failure"
 }

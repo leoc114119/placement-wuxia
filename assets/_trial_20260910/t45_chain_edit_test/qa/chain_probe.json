@@ -3,8 +3,10 @@
   "seq": "336",
   "stage": "chain_edit_verification",
   "chainDefinition": "idle_right -> walk_right_1 -> walk_right_2 -> walk_right_3",
-  "costCapPoints": 6,
-  "costUsedPoints": 4,
+  "costCapImages": 3,
+  "generatedImageCount": 2,
+  "cost": 0,
+  "costUnit": "subscription-included",
   "base": {
     "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_chain_edit_test/chain/idle_right.png",
     "size": [
