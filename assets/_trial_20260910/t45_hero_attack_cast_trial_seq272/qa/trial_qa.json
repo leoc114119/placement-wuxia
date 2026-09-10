@@ -1,0 +1,20 @@
+{
+  "task": "T45",
+  "seq": "272",
+  "mode": "single-reference partial action trial",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "output": "assets/_trial_20260910/t45_hero_attack_cast_trial_seq272/raw/generated_7frame_singlehand_trial.png",
+  "layout": "2 rows with 3/4 cells",
+  "rows": {
+    "1": "single-hand right-hand sword-thrust pose, 3 poses",
+    "2": "single-hand right-hand left-to-right swing gesture, 4 poses"
+  },
+  "outputDimensions": [1536,1024],
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "artifactStage": "raw",
+  "runtimeRelease": false,
+  "generationCredits": "built-in image_gen",
+  "runtimeTouched": false,
+  "note": "Walk and lightness-jump frames remain preserved from seq270; this trial regenerates only attack and cast gestures. Weapons intentionally absent."
+}

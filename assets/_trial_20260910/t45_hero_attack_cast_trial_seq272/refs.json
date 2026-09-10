@@ -1,0 +1,19 @@
+{
+  "task": "T45",
+  "seq": "272",
+  "mode": "single-reference partial action trial",
+  "references": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_right.png",
+      "role": "sole identity/style/scale reference",
+      "responsibility": "character identity, palette, proportions, 240x320 frame scale",
+      "forbidden": "do not use prior action sheets as generation input"
+    }
+  ],
+  "preservedFromPrior": {
+    "source": "assets/_trial_20260910/t45_hero_action_trial_seq270/raw/generated_free_action_exploration_single_ref.png",
+    "use": "walk and lightness-jump exploration remains saved for later comparison; not an image input for this generation"
+  },
+  "generationPlan": "7 frames: one-hand right-hand sword-thrust pose x3, one-hand right-hand left-to-right swing gesture x4",
+  "constraints": "same proportions and scale; no rendered weapons; left hand relaxed"
+}

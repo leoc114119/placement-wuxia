@@ -1011,3 +1011,4 @@
 | 2026-09-10 | Codex（art） | 🧪 seq=269 freeform trial 原图已归档 | 原始输出 `1536×1024`，约 15 个姿态、Image 2.5 自选 3×5 布局；仅单张 `battle_idle_right.png` 作为输入，未切帧/未归一/未进入 runtime，供 Leo 比较表现力。 |
 | 2026-09-10 | Codex（art） | 🧪 seq=270 constrained 12-frame trial 原图完成 | 仅输入单张 `battle_idle_right.png`；生成 4×3 共 12 格：右移×3、拳脚基础攻击×3、空手挥武器动作×3、轻功跳跃×3。未切帧/未归一/未接 runtime，等待 Leo 目验。 |
 | 2026-09-10 | Codex（art） | 🧪 seq=271 13-frame thrust/swing trial 原图完成 | 仅输入单张 `battle_idle_right.png`；生成 4 行 3/3/4/3：右移×3、空手持剑式前刺×3、单手先左后右挥动×4、轻功跳跃×3。未切帧/未归一/未接 runtime，等待 Leo 目验。 |
+| 2026-09-10 | Codex（art） | 🧪 seq=272 单手攻击/挥动 7 帧试产完成 | 仅输入单张 `battle_idle_right.png`；生成单手右手持剑式直刺×3与只用右手先左后右挥动×4，左手放松、无武器；行走/轻功沿用 seq=270 保存结果。未切帧/未归一/未接 runtime，等待 Leo 目验。 |
