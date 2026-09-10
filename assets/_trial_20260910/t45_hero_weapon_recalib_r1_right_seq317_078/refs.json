@@ -1,0 +1,32 @@
+{
+  "task": "T45",
+  "seq": "304",
+  "referencePolicy": "deterministic normalization only; no ImageGen call",
+  "sources": [
+    {
+      "path": "assets/characters/hero/battle45/battle_idle_right.png",
+      "role": "R1 scale benchmark and visual baseline",
+      "inspection": "240x320 RGBA, retained standing frame, alpha>32 visual height 256, feet baseline y=300",
+      "allowed": "scale comparison and contact-sheet baseline only",
+      "forbidden": "do not replace any new action pose or identity"
+    },
+    {
+      "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/",
+      "role": "accepted raw source for walk_right_1..3 and jump_right_1..3",
+      "inspection": "direct per-frame source files; no sheet recut",
+      "allowed": "fixed source-group scale, edge background isolation, exact secondary-component cleanup",
+      "forbidden": "no action redraw, no per-frame adaptive scaling, no crop to repair width"
+    },
+    {
+      "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/",
+      "role": "accepted raw source for atk_right_1..4",
+      "inspection": "direct per-frame RGBA source files; right-edge adjacent-sheet remnants are treated as detached secondary components",
+      "allowed": "fixed source-group scale and exact component cleanup",
+      "forbidden": "no pose change, no sheet reconstruction, no runtime replacement"
+    }
+  ],
+  "downstream": {
+    "phaseB": "frozen until this right-side segment passes PM2 and Leo",
+    "runtime": "untouched"
+  }
+}

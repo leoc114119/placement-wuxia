@@ -1,0 +1,23 @@
+{
+  "task": "T45",
+  "seq": "317",
+  "revision": "R1.7",
+  "phase": "right_side_frozen_0780_rerender",
+  "status": "candidate-only",
+  "frameCount": 10,
+  "qa": "qa/r1_right_seq317_078.json",
+  "contact": "contact/right_r1_seq317_078.png",
+  "runtimeRelease": false,
+  "runtimeTouched": false,
+  "phaseBStarted": false,
+  "coefficientSource": "Leo-circled frozen coefficient / projbus seq=317",
+  "frozenCoefficients": {
+    "seq278_walk_jump": 0.78,
+    "seq279_atk": 1.1944444444444444
+  },
+  "shaDistinct": true,
+  "allHardGatesPass": false,
+  "failedFrames": [
+    "jump_right_3"
+  ]
+}
