@@ -1,0 +1,1108 @@
+{
+  "task": "T45",
+  "seq": "325",
+  "revision": "R1.10",
+  "phase": "right_side_rotinv_walk_atk_first_segment",
+  "status": "candidate-only",
+  "scope": [
+    "walk_right_1",
+    "walk_right_2",
+    "walk_right_3",
+    "atk_right_1",
+    "atk_right_2",
+    "atk_right_3",
+    "atk_right_4"
+  ],
+  "coefficientSource": "rotation-invariant crown→jaw Euclidean distance; seq=323 root-cause correction",
+  "benchmarkDistancePx": 89.84430978086482,
+  "retainedDistancesPx": [
+    89.56003573022959,
+    89.28605714219886,
+    89.49301648732153,
+    90.44335243676011,
+    91.39474820797965,
+    90.44335243676011,
+    89.56003573022959,
+    90.52071586106685,
+    89.84430978086482,
+    90.13878188659972,
+    88.88756943465154,
+    89.84430978086482
+  ],
+  "retainedVariationPct": 2.7905815954769455,
+  "anchorScales": {
+    "seq278_walk_jump": 0.7765713942515635,
+    "seq279_atk": 1.1886622339962558
+  },
+  "runtimeTouched": false,
+  "phaseBStarted": false,
+  "frames": {
+    "walk_right_1": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
+      "sourceSha256": "d98cf8bb6d96f3efce30e36636418f3376738ad76515409f5e5a66ddd17ba650",
+      "group": "seq278_walk_jump",
+      "actualCoefficient": 0.7765713942515635,
+      "sourceMapping": {
+        "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
+        "sheet": null,
+        "crop": null
+      },
+      "sourceAlphaGt32BBox": [
+        78,
+        41,
+        328,
+        353
+      ],
+      "expectedScaledSize": [
+        194,
+        242
+      ],
+      "observedOutputAlphaGt32Size": [
+        194,
+        242
+      ],
+      "rotationInvariantFeature": {
+        "sourceEuclideanDistancePx": 114.4901742508937,
+        "outputExpectedPx": 88.90979424612098,
+        "deltaPct": -1.040149940517293
+      },
+      "cleanup": {
+        "componentsBefore": 6,
+        "mainComponentPixels": 40136,
+        "removedComponents": [
+          {
+            "pixels": 2,
+            "bbox": [
+              123,
+              263,
+              124,
+              265
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              96,
+              110,
+              97,
+              111
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              259,
+              196,
+              260,
+              197
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              86,
+              300,
+              87,
+              301
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              216,
+              326,
+              217,
+              327
+            ]
+          }
+        ],
+        "removedPixelCount": 6,
+        "subjectDomainDeletedPixels": 0,
+        "subjectDomainRgbChangedPixels": 0,
+        "cleanupSafe": true
+      },
+      "edgeBackgroundPixelsCleared": 90902,
+      "processing": {
+        "sourceAlphaCropBox": [
+          78,
+          41,
+          328,
+          353
+        ],
+        "scaledSize": [
+          194,
+          242
+        ],
+        "localAlphaGt32WeightedCentroidX": 100.04121126498673,
+        "placedAt": [
+          19,
+          58
+        ],
+        "placementAdjustedForBorder": true,
+        "borderBeforePostprocess": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        },
+        "edgePixelsDeleted": 0
+      },
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_right_seq325_rotinv_walk_atk/normalized/right/walk_right_1.png",
+      "outputSha256": "f4c2980e47dda0c4f51ceeb420ae8658de6d256f2ba0db9cc62bb875bf53ec14",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxAlphaGt32": [
+          19,
+          58,
+          213,
+          300
+        ],
+        "visualHeightAlphaGt32": 242,
+        "visualWidthAlphaGt32": 194,
+        "feetYExclusiveAlphaGt32": 300,
+        "alphaGt32Components4Connected": 1,
+        "alphaCentroidXGt32Weighted": 119.04121126498673,
+        "border": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        }
+      },
+      "checks": {
+        "coefficientKnown": true,
+        "noCropAssertion": true,
+        "size240x320": true,
+        "rgba": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "actionCentroidWithin20": true,
+        "rotationInvariantFeatureWithin5pct": true,
+        "cleanupSafe": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_2": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
+      "sourceSha256": "d032b05594e9ea3eb270581b7aa78af74097f0dcba6e136b2b6c6a13fac2230f",
+      "group": "seq278_walk_jump",
+      "actualCoefficient": 0.7765713942515635,
+      "sourceMapping": {
+        "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
+        "sheet": null,
+        "crop": null
+      },
+      "sourceAlphaGt32BBox": [
+        63,
+        38,
+        310,
+        349
+      ],
+      "expectedScaledSize": [
+        192,
+        242
+      ],
+      "observedOutputAlphaGt32Size": [
+        192,
+        242
+      ],
+      "rotationInvariantFeature": {
+        "sourceEuclideanDistancePx": 117.78370006074695,
+        "outputExpectedPx": 91.46745217628222,
+        "deltaPct": 1.8066168011934607
+      },
+      "cleanup": {
+        "componentsBefore": 15,
+        "mainComponentPixels": 42920,
+        "removedComponents": [
+          {
+            "pixels": 3,
+            "bbox": [
+              164,
+              212,
+              166,
+              214
+            ]
+          },
+          {
+            "pixels": 2,
+            "bbox": [
+              189,
+              169,
+              190,
+              171
+            ]
+          },
+          {
+            "pixels": 2,
+            "bbox": [
+              160,
+              214,
+              162,
+              215
+            ]
+          },
+          {
+            "pixels": 2,
+            "bbox": [
+              111,
+              260,
+              112,
+              262
+            ]
+          },
+          {
+            "pixels": 2,
+            "bbox": [
+              179,
+              297,
+              181,
+              298
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              220,
+              47,
+              221,
+              48
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              263,
+              75,
+              264,
+              76
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              165,
+              210,
+              166,
+              211
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              109,
+              223,
+              110,
+              224
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              231,
+              232,
+              232,
+              233
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              254,
+              253,
+              255,
+              254
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              78,
+              263,
+              79,
+              264
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              198,
+              297,
+              199,
+              298
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              278,
+              310,
+              279,
+              311
+            ]
+          }
+        ],
+        "removedPixelCount": 20,
+        "subjectDomainDeletedPixels": 0,
+        "subjectDomainRgbChangedPixels": 0,
+        "cleanupSafe": true
+      },
+      "edgeBackgroundPixelsCleared": 88104,
+      "processing": {
+        "sourceAlphaCropBox": [
+          63,
+          38,
+          310,
+          349
+        ],
+        "scaledSize": [
+          192,
+          242
+        ],
+        "localAlphaGt32WeightedCentroidX": 104.53612687214115,
+        "placedAt": [
+          16,
+          58
+        ],
+        "placementAdjustedForBorder": true,
+        "borderBeforePostprocess": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        },
+        "edgePixelsDeleted": 0
+      },
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_right_seq325_rotinv_walk_atk/normalized/right/walk_right_2.png",
+      "outputSha256": "a59fd824a28a89e543b633d89f2e084a3c32d336de46aeb52d39b380e774104f",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxAlphaGt32": [
+          16,
+          58,
+          208,
+          300
+        ],
+        "visualHeightAlphaGt32": 242,
+        "visualWidthAlphaGt32": 192,
+        "feetYExclusiveAlphaGt32": 300,
+        "alphaGt32Components4Connected": 1,
+        "alphaCentroidXGt32Weighted": 120.53612687214115,
+        "border": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        }
+      },
+      "checks": {
+        "coefficientKnown": true,
+        "noCropAssertion": true,
+        "size240x320": true,
+        "rgba": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "actionCentroidWithin20": true,
+        "rotationInvariantFeatureWithin5pct": true,
+        "cleanupSafe": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_3": {
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
+      "sourceSha256": "6d37049e58d8a68b89cce095a17135062522fce41c979d1f1bafba649c9a76ed",
+      "group": "seq278_walk_jump",
+      "actualCoefficient": 0.7765713942515635,
+      "sourceMapping": {
+        "path": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
+        "sheet": null,
+        "crop": null
+      },
+      "sourceAlphaGt32BBox": [
+        45,
+        39,
+        283,
+        356
+      ],
+      "expectedScaledSize": [
+        185,
+        246
+      ],
+      "observedOutputAlphaGt32Size": [
+        185,
+        246
+      ],
+      "rotationInvariantFeature": {
+        "sourceEuclideanDistancePx": 115.6935607542615,
+        "outputExpectedPx": 89.84430978086482,
+        "deltaPct": 0.0
+      },
+      "cleanup": {
+        "componentsBefore": 9,
+        "mainComponentPixels": 40657,
+        "removedComponents": [
+          {
+            "pixels": 1,
+            "bbox": [
+              160,
+              38,
+              161,
+              39
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              151,
+              111,
+              152,
+              112
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              71,
+              176,
+              72,
+              177
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              240,
+              194,
+              241,
+              195
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              260,
+              244,
+              261,
+              245
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              216,
+              250,
+              217,
+              251
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              253,
+              250,
+              254,
+              251
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              222,
+              281,
+              223,
+              282
+            ]
+          }
+        ],
+        "removedPixelCount": 8,
+        "subjectDomainDeletedPixels": 0,
+        "subjectDomainRgbChangedPixels": 0,
+        "cleanupSafe": true
+      },
+      "edgeBackgroundPixelsCleared": 90379,
+      "processing": {
+        "sourceAlphaCropBox": [
+          45,
+          39,
+          283,
+          356
+        ],
+        "scaledSize": [
+          185,
+          246
+        ],
+        "localAlphaGt32WeightedCentroidX": 97.95285040816205,
+        "placedAt": [
+          23,
+          54
+        ],
+        "placementAdjustedForBorder": true,
+        "borderBeforePostprocess": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        },
+        "edgePixelsDeleted": 0
+      },
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_right_seq325_rotinv_walk_atk/normalized/right/walk_right_3.png",
+      "outputSha256": "8de2f1c9876397c945333e05170244bb341b2edc7748a00ac893fba039c862f3",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxAlphaGt32": [
+          23,
+          54,
+          208,
+          300
+        ],
+        "visualHeightAlphaGt32": 246,
+        "visualWidthAlphaGt32": 185,
+        "feetYExclusiveAlphaGt32": 300,
+        "alphaGt32Components4Connected": 1,
+        "alphaCentroidXGt32Weighted": 120.95285040816205,
+        "border": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        }
+      },
+      "checks": {
+        "coefficientKnown": true,
+        "noCropAssertion": true,
+        "size240x320": true,
+        "rgba": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "actionCentroidWithin20": true,
+        "rotationInvariantFeatureWithin5pct": true,
+        "cleanupSafe": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_1": {
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_1.png",
+      "sourceSha256": "4d81984301ca3ec4b2b003630e6442523102b5eda29023b39057f3bd3c005b30",
+      "group": "seq279_atk",
+      "actualCoefficient": 1.1886622339962558,
+      "sourceMapping": {
+        "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_1.png",
+        "sheet": null,
+        "crop": null
+      },
+      "sourceAlphaGt32BBox": [
+        1,
+        21,
+        121,
+        235
+      ],
+      "expectedScaledSize": [
+        143,
+        254
+      ],
+      "observedOutputAlphaGt32Size": [
+        143,
+        254
+      ],
+      "rotationInvariantFeature": {
+        "sourceEuclideanDistancePx": 75.58438992278762,
+        "outputExpectedPx": 89.84430978086482,
+        "deltaPct": 0.0
+      },
+      "cleanup": {
+        "componentsBefore": 3,
+        "mainComponentPixels": 15643,
+        "removedComponents": [
+          {
+            "pixels": 3,
+            "bbox": [
+              128,
+              100,
+              129,
+              103
+            ]
+          },
+          {
+            "pixels": 1,
+            "bbox": [
+              128,
+              84,
+              129,
+              85
+            ]
+          }
+        ],
+        "removedPixelCount": 4,
+        "subjectDomainDeletedPixels": 0,
+        "subjectDomainRgbChangedPixels": 0,
+        "cleanupSafe": true
+      },
+      "edgeBackgroundPixelsCleared": 17506,
+      "processing": {
+        "sourceAlphaCropBox": [
+          1,
+          21,
+          121,
+          235
+        ],
+        "scaledSize": [
+          143,
+          254
+        ],
+        "localAlphaGt32WeightedCentroidX": 71.41769275116114,
+        "placedAt": [
+          48,
+          46
+        ],
+        "placementAdjustedForBorder": true,
+        "borderBeforePostprocess": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        },
+        "edgePixelsDeleted": 0
+      },
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_right_seq325_rotinv_walk_atk/normalized/right/atk_right_1.png",
+      "outputSha256": "c770e183f2d4915ed2a84aa1701bcd742c82819c1224992330fc75cc29ea1b6e",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxAlphaGt32": [
+          48,
+          46,
+          191,
+          300
+        ],
+        "visualHeightAlphaGt32": 254,
+        "visualWidthAlphaGt32": 143,
+        "feetYExclusiveAlphaGt32": 300,
+        "alphaGt32Components4Connected": 1,
+        "alphaCentroidXGt32Weighted": 119.41769275116114,
+        "border": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        }
+      },
+      "checks": {
+        "coefficientKnown": true,
+        "noCropAssertion": true,
+        "size240x320": true,
+        "rgba": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "actionCentroidWithin20": true,
+        "rotationInvariantFeatureWithin5pct": true,
+        "cleanupSafe": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_2": {
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_2.png",
+      "sourceSha256": "015416f37d5a0f9c40f95be935fd5cddd42690ee121f3481d474c0d0ee4d54fc",
+      "group": "seq279_atk",
+      "actualCoefficient": 1.1886622339962558,
+      "sourceMapping": {
+        "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_2.png",
+        "sheet": null,
+        "crop": null
+      },
+      "sourceAlphaGt32BBox": [
+        0,
+        21,
+        120,
+        235
+      ],
+      "expectedScaledSize": [
+        143,
+        254
+      ],
+      "observedOutputAlphaGt32Size": [
+        143,
+        254
+      ],
+      "rotationInvariantFeature": {
+        "sourceEuclideanDistancePx": 75.58438992278762,
+        "outputExpectedPx": 89.84430978086482,
+        "deltaPct": 0.0
+      },
+      "cleanup": {
+        "componentsBefore": 4,
+        "mainComponentPixels": 14667,
+        "removedComponents": [
+          {
+            "pixels": 88,
+            "bbox": [
+              124,
+              89,
+              130,
+              112
+            ]
+          },
+          {
+            "pixels": 30,
+            "bbox": [
+              125,
+              120,
+              130,
+              132
+            ]
+          },
+          {
+            "pixels": 22,
+            "bbox": [
+              124,
+              83,
+              130,
+              88
+            ]
+          }
+        ],
+        "removedPixelCount": 140,
+        "subjectDomainDeletedPixels": 0,
+        "subjectDomainRgbChangedPixels": 0,
+        "cleanupSafe": true
+      },
+      "edgeBackgroundPixelsCleared": 18603,
+      "processing": {
+        "sourceAlphaCropBox": [
+          0,
+          21,
+          120,
+          235
+        ],
+        "scaledSize": [
+          143,
+          254
+        ],
+        "localAlphaGt32WeightedCentroidX": 72.7811294283372,
+        "placedAt": [
+          48,
+          46
+        ],
+        "placementAdjustedForBorder": true,
+        "borderBeforePostprocess": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        },
+        "edgePixelsDeleted": 0
+      },
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_right_seq325_rotinv_walk_atk/normalized/right/atk_right_2.png",
+      "outputSha256": "e5ccfb88561516a734a772288d8fee9147d5a1c69e64b721b2603e1a74bc88cd",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxAlphaGt32": [
+          48,
+          46,
+          191,
+          300
+        ],
+        "visualHeightAlphaGt32": 254,
+        "visualWidthAlphaGt32": 143,
+        "feetYExclusiveAlphaGt32": 300,
+        "alphaGt32Components4Connected": 1,
+        "alphaCentroidXGt32Weighted": 120.7811294283372,
+        "border": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        }
+      },
+      "checks": {
+        "coefficientKnown": true,
+        "noCropAssertion": true,
+        "size240x320": true,
+        "rgba": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "actionCentroidWithin20": true,
+        "rotationInvariantFeatureWithin5pct": true,
+        "cleanupSafe": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_3": {
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_3.png",
+      "sourceSha256": "9c6ec014b3b543c26fee657d74fcc83cb576370ba311abbfb04402e9668dcffc",
+      "group": "seq279_atk",
+      "actualCoefficient": 1.1886622339962558,
+      "sourceMapping": {
+        "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_3.png",
+        "sheet": null,
+        "crop": null
+      },
+      "sourceAlphaGt32BBox": [
+        0,
+        21,
+        129,
+        235
+      ],
+      "expectedScaledSize": [
+        153,
+        254
+      ],
+      "observedOutputAlphaGt32Size": [
+        153,
+        254
+      ],
+      "rotationInvariantFeature": {
+        "sourceEuclideanDistancePx": 75.58438992278762,
+        "outputExpectedPx": 89.84430978086482,
+        "deltaPct": 0.0
+      },
+      "cleanup": {
+        "componentsBefore": 1,
+        "mainComponentPixels": 15308,
+        "removedComponents": [],
+        "removedPixelCount": 0,
+        "subjectDomainDeletedPixels": 0,
+        "subjectDomainRgbChangedPixels": 0,
+        "cleanupSafe": true
+      },
+      "edgeBackgroundPixelsCleared": 17845,
+      "processing": {
+        "sourceAlphaCropBox": [
+          0,
+          21,
+          129,
+          235
+        ],
+        "scaledSize": [
+          153,
+          254
+        ],
+        "localAlphaGt32WeightedCentroidX": 71.40332446718806,
+        "placedAt": [
+          48,
+          46
+        ],
+        "placementAdjustedForBorder": true,
+        "borderBeforePostprocess": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        },
+        "edgePixelsDeleted": 0
+      },
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_right_seq325_rotinv_walk_atk/normalized/right/atk_right_3.png",
+      "outputSha256": "b20ee2efc818c212afad48c452949a03ea1943313c26eba21af1de599a3a683e",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxAlphaGt32": [
+          48,
+          46,
+          201,
+          300
+        ],
+        "visualHeightAlphaGt32": 254,
+        "visualWidthAlphaGt32": 153,
+        "feetYExclusiveAlphaGt32": 300,
+        "alphaGt32Components4Connected": 1,
+        "alphaCentroidXGt32Weighted": 119.40332446718806,
+        "border": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        }
+      },
+      "checks": {
+        "coefficientKnown": true,
+        "noCropAssertion": true,
+        "size240x320": true,
+        "rgba": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "actionCentroidWithin20": true,
+        "rotationInvariantFeatureWithin5pct": true,
+        "cleanupSafe": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_4": {
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_4.png",
+      "sourceSha256": "8aade595178249bc668960f0ff0e0491b9c29bc1315d26e7e1d562162ec8e303",
+      "group": "seq279_atk",
+      "actualCoefficient": 1.1886622339962558,
+      "sourceMapping": {
+        "path": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_4.png",
+        "sheet": null,
+        "crop": null
+      },
+      "sourceAlphaGt32BBox": [
+        0,
+        20,
+        123,
+        235
+      ],
+      "expectedScaledSize": [
+        146,
+        256
+      ],
+      "observedOutputAlphaGt32Size": [
+        146,
+        256
+      ],
+      "rotationInvariantFeature": {
+        "sourceEuclideanDistancePx": 76.53757247260982,
+        "outputExpectedPx": 90.97732187994272,
+        "deltaPct": 1.2610838703545952
+      },
+      "cleanup": {
+        "componentsBefore": 1,
+        "mainComponentPixels": 15700,
+        "removedComponents": [],
+        "removedPixelCount": 0,
+        "subjectDomainDeletedPixels": 0,
+        "subjectDomainRgbChangedPixels": 0,
+        "cleanupSafe": true
+      },
+      "edgeBackgroundPixelsCleared": 17710,
+      "processing": {
+        "sourceAlphaCropBox": [
+          0,
+          20,
+          123,
+          235
+        ],
+        "scaledSize": [
+          146,
+          256
+        ],
+        "localAlphaGt32WeightedCentroidX": 74.938013718821,
+        "placedAt": [
+          46,
+          44
+        ],
+        "placementAdjustedForBorder": true,
+        "borderBeforePostprocess": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        },
+        "edgePixelsDeleted": 0
+      },
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_right_seq325_rotinv_walk_atk/normalized/right/atk_right_4.png",
+      "outputSha256": "1799dc14e37fe3ac9be2cbfbb985877108e37fd6d2ec87efa6ff270b5a53322a",
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bboxAlphaGt32": [
+          46,
+          44,
+          192,
+          300
+        ],
+        "visualHeightAlphaGt32": 256,
+        "visualWidthAlphaGt32": 146,
+        "feetYExclusiveAlphaGt32": 300,
+        "alphaGt32Components4Connected": 1,
+        "alphaCentroidXGt32Weighted": 120.938013718821,
+        "border": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "total": 0
+        }
+      },
+      "checks": {
+        "coefficientKnown": true,
+        "noCropAssertion": true,
+        "size240x320": true,
+        "rgba": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "actionCentroidWithin20": true,
+        "rotationInvariantFeatureWithin5pct": true,
+        "cleanupSafe": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_right_seq325_rotinv_walk_atk/contact/right_seq325_rotinv_walk_atk.png",
+  "shaDistinct": true,
+  "allHardGatesPass": true,
+  "failedFrames": []
+}

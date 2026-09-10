@@ -1,0 +1,27 @@
+{
+  "task": "T45",
+  "seq": "325",
+  "revision": "R1.10",
+  "phase": "right_side_rotinv_walk_atk_first_segment",
+  "status": "candidate-only",
+  "scope": [
+    "walk_right_1",
+    "walk_right_2",
+    "walk_right_3",
+    "atk_right_1",
+    "atk_right_2",
+    "atk_right_3",
+    "atk_right_4"
+  ],
+  "qa": "qa/r1_seq325_rotinv.json",
+  "contact": "contact/right_seq325_rotinv_walk_atk.png",
+  "coefficientSource": "rotation-invariant crown→jaw Euclidean distance; seq=323 root-cause correction",
+  "anchorScales": {
+    "seq278_walk_jump": 0.7765713942515635,
+    "seq279_atk": 1.1886622339962558
+  },
+  "runtimeTouched": false,
+  "phaseBStarted": false,
+  "allHardGatesPass": true,
+  "failedFrames": []
+}
