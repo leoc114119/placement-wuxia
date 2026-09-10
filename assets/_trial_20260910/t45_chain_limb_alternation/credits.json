@@ -1,0 +1,10 @@
+{
+  "provider": "codex-native",
+  "model": "built-in image_gen",
+  "cost": 0,
+  "generationCount": 6,
+  "chains": {
+    "legs": 3,
+    "fists": 3
+  }
+}

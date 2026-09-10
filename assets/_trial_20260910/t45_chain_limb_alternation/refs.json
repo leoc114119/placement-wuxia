@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "seq": "349",
+  "chainA": {
+    "idle": "assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/idle_right.png",
+    "editRole": "previous chain output is the only image input for each next step"
+  },
+  "chainB": {
+    "idle": "assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/idle_right.png",
+    "editRole": "previous chain output is the only image input for each next step"
+  },
+  "parallelBaselines": {
+    "legs": "assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/walk_right_{1,2,3}.png",
+    "fists": "assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/atk_right_{1,2,3}.png"
+  },
+  "forbidden": ["contact-sheet-as-input", "runtime-write", "batch-expansion"]
+}
