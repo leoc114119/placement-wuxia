@@ -267,7 +267,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
           "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_1.png",
-          "outputSha256": "179c3b31ea90f1bce0056cfa89634561373afae59b122fb0bc8929cdd2b32634",
+          "outputSha256": "0abb030b70111b769b8b1e2c78b23dd81093e0544f15e9c952d09a50b5bc2034",
           "metrics": {
             "size": [
               240,
@@ -341,7 +341,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightup_source_2x5.png",
           "sourceSha256": "5461cd0342bd336bc6cef94cee7503e4c6b578c7a480c6aca7b50eb296abc901",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_3.png",
-          "outputSha256": "3fb006e56b4efa4c80464a7efdde8737fcdf6ce5f96f3c567b24bb4cd777704f",
+          "outputSha256": "32379e1f869d330c9d949ae8f392434be5a0b1a514d72388741f7e3309bcca86",
           "metrics": {
             "size": [
               240,
@@ -559,7 +559,7 @@
           "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/raw_sources/rightdown_source_2x5.png",
           "sourceSha256": "22bdf1f6f2c585fff72c75d635dff064bf20fb225e4b0ad70a56ff141f8862c5",
           "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_3.png",
-          "outputSha256": "b514137c8a299d3a25e784b1a5f790cdc922bdbc91dc1734211afbbd02cf5e67",
+          "outputSha256": "59629841311418dc192f31bcba5e1c795b38b546fd66882e64e8090d1141bda4",
           "metrics": {
             "size": [
               240,
@@ -740,7 +740,7 @@
     }
   },
   "allMachineChecksPass": true,
-  "candidateStatus": "ready_for_pm2_recheck_after_alpha32_cleanup",
+  "candidateStatus": "ready_for_pm2_recheck_after_precise_cleanup",
   "runtimeRelease": false,
   "frozenPolicy": {
     "idle": "unchanged original three direction idle frames",
@@ -748,7 +748,7 @@
     "runtime": "untouched"
   },
   "pm275Cleanup": {
-    "status": "completed",
+    "status": "superseded_by_precise_cleanup",
     "method": "alpha>32 4-connectivity; clear only PM2-located secondary-component ROIs; no redraw or renormalization",
     "targets": [
       {
@@ -890,6 +890,15 @@
     "recheck": "all three target files now single alpha>0 connected component",
     "verification": "qa/pm275_cleanup_alpha32_verification.json",
     "allTargetsSingleComponent": true,
-    "alphaGt32SingleComponent": true
+    "alphaGt32SingleComponent": true,
+    "supersededReason": "prior bbox-expanded cleanup removed body pixels"
+  },
+  "pm275PreciseCleanup": {
+    "status": "completed",
+    "method": "restore 1164fd2 baseline; clear only exact secondary alpha>32 4-connected pixels",
+    "verification": "qa/pm275_precise_cleanup_verification.json",
+    "allTargetsSingleAlphaGt32Component": true,
+    "allRgbUnchanged": true,
+    "allMainBodyUnchanged": true
   }
 }

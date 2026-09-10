@@ -27,7 +27,9 @@
     "runtime": "untouched"
   },
   "qa": "qa/manifest_seq287.json",
-  "cleanup": "PM275 alpha>32 4-connectivity residual-point cleanup complete",
-  "cleanupEvidence": "qa/pm275_cleanup_alpha32_verification.json",
-  "renormalizedAfterSeq278": false
+  "cleanup": "PM275 precise alpha>32 secondary-component cleanup (bbox-expanded cleanup superseded)",
+  "cleanupEvidence": "qa/pm275_precise_cleanup_verification.json",
+  "renormalizedAfterSeq278": false,
+  "rgbPreserved": true,
+  "mainBodyPreserved": true
 }

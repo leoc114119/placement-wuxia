@@ -1,0 +1,207 @@
+{
+  "task": "T45",
+  "seq": "287",
+  "check": "PM2 precise alpha>32 4-connectivity cleanup",
+  "method": "restore 1164fd2 baseline; clear only exact pixels in secondary alpha>32 4-connected components; no bbox expansion, no renormalization",
+  "targets": [
+    {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightdown/atk_rightdown_3.png",
+      "baselineCommit": "1164fd2ce375cf80c375075b1b67249187fd2ae0",
+      "beforeSha256": "5e131d4cf850947f27de0759c485b198faf4bec60e5edf08309c0b30d55ad218",
+      "afterSha256": "59629841311418dc192f31bcba5e1c795b38b546fd66882e64e8090d1141bda4",
+      "componentsBeforeAlphaGt32": [
+        {
+          "pixels": 25227,
+          "bbox": [
+            30,
+            44,
+            210,
+            300
+          ]
+        },
+        {
+          "pixels": 1,
+          "bbox": [
+            167,
+            221,
+            168,
+            222
+          ]
+        }
+      ],
+      "removedSecondaryPixels": 1,
+      "diffPixels": 1,
+      "rgbChangedPixels": 0,
+      "mainBodyChangedPixels": 0,
+      "diff": [
+        {
+          "xy": [
+            167,
+            221
+          ],
+          "before": [
+            181,
+            179,
+            179,
+            118
+          ],
+          "after": [
+            181,
+            179,
+            179,
+            0
+          ]
+        }
+      ],
+      "componentsAfterAlphaGt32": [
+        25227
+      ]
+    },
+    {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_1.png",
+      "baselineCommit": "1164fd2ce375cf80c375075b1b67249187fd2ae0",
+      "beforeSha256": "51080f33c5e622ca34b128dcca533bd424f053c6502faf2a54bcb5db36241f99",
+      "afterSha256": "0abb030b70111b769b8b1e2c78b23dd81093e0544f15e9c952d09a50b5bc2034",
+      "componentsBeforeAlphaGt32": [
+        {
+          "pixels": 36388,
+          "bbox": [
+            1,
+            48,
+            231,
+            300
+          ]
+        },
+        {
+          "pixels": 2,
+          "bbox": [
+            222,
+            166,
+            224,
+            167
+          ]
+        }
+      ],
+      "removedSecondaryPixels": 2,
+      "diffPixels": 2,
+      "rgbChangedPixels": 0,
+      "mainBodyChangedPixels": 0,
+      "diff": [
+        {
+          "xy": [
+            222,
+            166
+          ],
+          "before": [
+            180,
+            180,
+            179,
+            151
+          ],
+          "after": [
+            180,
+            180,
+            179,
+            0
+          ]
+        },
+        {
+          "xy": [
+            223,
+            166
+          ],
+          "before": [
+            185,
+            185,
+            183,
+            132
+          ],
+          "after": [
+            185,
+            185,
+            183,
+            0
+          ]
+        }
+      ],
+      "componentsAfterAlphaGt32": [
+        36388
+      ]
+    },
+    {
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_rightup_rightdown_pm2_review_seq287/normalized/rightup/jump_rightup_3.png",
+      "baselineCommit": "1164fd2ce375cf80c375075b1b67249187fd2ae0",
+      "beforeSha256": "5b9692df1afe93b90ae7270a6e74fbcfb47b737ebb5762c42f437c4f73cd95bd",
+      "afterSha256": "32379e1f869d330c9d949ae8f392434be5a0b1a514d72388741f7e3309bcca86",
+      "componentsBeforeAlphaGt32": [
+        {
+          "pixels": 26697,
+          "bbox": [
+            16,
+            44,
+            239,
+            300
+          ]
+        },
+        {
+          "pixels": 2,
+          "bbox": [
+            208,
+            130,
+            209,
+            132
+          ]
+        }
+      ],
+      "removedSecondaryPixels": 2,
+      "diffPixels": 2,
+      "rgbChangedPixels": 0,
+      "mainBodyChangedPixels": 0,
+      "diff": [
+        {
+          "xy": [
+            208,
+            130
+          ],
+          "before": [
+            180,
+            180,
+            180,
+            92
+          ],
+          "after": [
+            180,
+            180,
+            180,
+            0
+          ]
+        },
+        {
+          "xy": [
+            208,
+            131
+          ],
+          "before": [
+            183,
+            183,
+            180,
+            93
+          ],
+          "after": [
+            183,
+            183,
+            180,
+            0
+          ]
+        }
+      ],
+      "componentsAfterAlphaGt32": [
+        26697
+      ]
+    }
+  ],
+  "allTargetsSingleAlphaGt32Component": true,
+  "allRgbUnchanged": true,
+  "allMainBodyUnchanged": true,
+  "runtimeTouched": false
+}
