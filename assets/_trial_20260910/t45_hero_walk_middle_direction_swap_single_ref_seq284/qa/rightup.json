@@ -1,0 +1,30 @@
+{
+  "task": "T45",
+  "seq": "284",
+  "direction": "rightup",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending_pm_scan",
+  "integrationGate": "not_handed_off",
+  "path": "assets/_trial_20260910/t45_hero_walk_middle_direction_swap_single_ref_seq284/raw/rightup_single_ref.png",
+  "sha256": "736f02a28e6b2108fee3e5696df66bc4fb7014ad97b1b274d082dc94ec93c9d9",
+  "dimensions": [
+    1087,
+    1447
+  ],
+  "mode": "RGB",
+  "alpha": {
+    "hasAlpha": false,
+    "extrema": null
+  },
+  "source": "single reference only",
+  "sourcePath": "assets/_trial_20260910/t45_hero_walk_middle_direction_swap_single_ref_seq284/refs/rightdown_walk_middle_only.png",
+  "processing": "single-reference direction-only edit; no compositing or resizing",
+  "contentCheck": {
+    "actionLockedByPrompt": true,
+    "directionTarget": "rightup",
+    "weaponRendered": false,
+    "textRendered": false
+  },
+  "note": "Candidate requires Leo confirmation that action/foot support stayed unchanged and only direction swapped."
+}

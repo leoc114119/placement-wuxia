@@ -1,0 +1,8 @@
+{
+  "task":"T45",
+  "seq":"284",
+  "mode":"single-reference direction-only middle-walk swap",
+  "rightupInput":"refs/rightdown_walk_middle_only.png (sole reference; action source)",
+  "rightdownInput":"refs/rightup_walk_middle_only.png (sole reference; action source)",
+  "rule":"Each output uses exactly one source frame. Preserve action, foot support, canvas, scale, and pose; change direction only. No second reference image."
+}

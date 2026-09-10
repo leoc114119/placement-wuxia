@@ -1035,3 +1035,5 @@
 | 2026-09-10 | Leo → Codex（art） | ✅/❌ seq=272 分项验收结论 | 右下 atk + 右上/右下 jump 通过；右上/右下 walk 退回（右上全左右、右下全右脚）；右上 atk 暂不定稿。后续只重做 walk。 |
 | 2026-09-10 | Codex（art） | ❌ seq=281 右上 walk 三次原生失败 | 以 seq278 右向 walk 单帧作参考并要求 45°右上 A→B→A，三次仍重复同一支撑脚；按管线停止继续原生重试，raw/QA 全保留。右下 walk 暂停，未生成。 |
 | 2026-09-10 | Codex（art） | ❌ seq=282 右上 walk 第二格左脚修正失败 | 参考 Leo 三格图并辅助右向 walk_2，两次原生编辑仍未形成明确 A/B/A 支撑脚；按两次上限停止，raw/QA 留档。 |
+| 2026-09-10 | Leo → Codex（art） | 🔧 seq=284 单参考规则 | 方向互换每次只上传一张参考图；双参考方案作废，动作/脚步/画面规格必须保持。 |
+| 2026-09-10 | Codex（art） | 🧪 seq=284 单参考中间 walk 方向互换完成 | rightup←rightdown 中间帧、rightdown←rightup 中间帧，各一次方向-only img2img；raw/QA 已归档，待 Leo 目验，runtime 未改。 |

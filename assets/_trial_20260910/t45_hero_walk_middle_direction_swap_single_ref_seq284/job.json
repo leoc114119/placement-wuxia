@@ -1,0 +1,5 @@
+{
+  "task":"T45","seq":"284","scope":"single-reference middle-walk direction swap",
+  "rule":"rightup output uses only rightdown middle frame; rightdown output uses only rightup middle frame; preserve action/canvas/spec and change direction only",
+  "attempts":{"rightup":1,"rightdown":1},"visualReview":"unreviewed","specGate":"pending_pm_scan","integrationGate":"not_handed_off","runtimeRelease":false
+}
