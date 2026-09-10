@@ -1,0 +1,4 @@
+Use Image 1 only as the character identity and style reference. Generate one clean image containing exactly two separate full-body pose studies side by side on a transparent background, with no grid or action-sheet template.
+Pose 1: the character clearly grips a sword with the RIGHT HAND and thrusts it straight forward; make the right hand, wrist, forearm and sword grip unmistakable.
+Pose 2: the character clearly grips a sword with the RIGHT HAND and performs a broad swing from screen-left through center toward screen-right; the left hand is relaxed and does not hold the sword.
+Keep the same Q-version Chinese wuxia boy, black high ponytail, teal-green hanfu, white inner shirt, dark pants and black boots, matching the reference's proportions and rendering. Keep both poses full-body and similarly scaled. Use a simple plain sword only to make right-hand ownership visually unambiguous. No extra characters, text, watermark, background objects, or alternate costume.

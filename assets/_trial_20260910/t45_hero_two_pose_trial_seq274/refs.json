@@ -1,0 +1,8 @@
+{
+  "task": "T45",
+  "seq": "274",
+  "mode": "single-reference two-pose trial",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "poses": ["right-hand sword thrust forward", "right-hand sword swing left-to-right"],
+  "constraints": "same character identity and approximate scale; no action-sheet template; no extra frame-count constraints"
+}
