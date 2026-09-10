@@ -1071,3 +1071,4 @@
 | 2026-09-10 | Codex（art） | 🛠️ seq=288 Phase A 右向新帧归一交付 | 新右向 10 帧（walk3/jump3/atk4）归一完成，240×320 RGBA/脚底 y=300/质心 x=120±1/边缘透明/alpha>32 单连通全过；零生成，runtime 未改，handoff 已交 PM2。 |
 | 2026-09-10 | PM2/rd seq=289 | 🔒 T45 强制顺序补正 | R1 固定缩放 30 帧→PM2+Leo 定稿→Phase B 逐帧锚/遮罩→Phase C 左系镜像；旧归一版禁止先标锚。 |
 | 2026-09-10 | Codex（art） | ✅ seq=289 已接收 | Phase B 未开工，无返工投入；旧 Phase A 不作锚点基线。 |
+| 2026-09-10 | Codex（art） | ❌ seq=290 R1 归一卡点 | 30 帧固定缩放中 29 帧通过；`right_jump_3` 宽 238px>236px 且触边 22px。按 R1 停止，不缩放/不裁切，Q3-T45 等 PM2 裁定；Phase B 未启动。 |

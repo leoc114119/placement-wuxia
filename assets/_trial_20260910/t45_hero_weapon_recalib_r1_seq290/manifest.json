@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "seq": "290",
+  "revision": "R1",
+  "phase": "fixed_scale_normalization",
+  "status": "blocked_on_right_jump_3_width",
+  "frameCount": 30,
+  "passedFrames": 29,
+  "failedFrames": [
+    "right_jump_3"
+  ],
+  "qa": "qa/r1_normalize.json",
+  "runtimeRelease": false,
+  "runtimeTouched": false,
+  "phaseBStarted": false,
+  "stopReason": "right_jump_3 fixed-scale output visual width 238px > 236px hard limit; cannot adaptively shrink/crop"
+}

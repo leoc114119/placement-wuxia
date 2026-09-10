@@ -1,0 +1,1845 @@
+{
+  "task": "T45",
+  "seq": "290",
+  "revision": "R1",
+  "phase": "fixed_scale_normalization",
+  "benchmark": {
+    "path": "assets/characters/hero/battle45/battle_idle_right.png",
+    "rigidHeadSpan": 141,
+    "standingHeight": 256
+  },
+  "batchScales": {
+    "right": 0.8197674418604651,
+    "rightup": 0.7704918032786885,
+    "rightdown": 0.7157360406091371
+  },
+  "frames": {
+    "right_walk_1": {
+      "direction": "right",
+      "action": "walk",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_1.png",
+      "sourceCrop": null,
+      "sourceSha256": "d98cf8bb6d96f3efce30e36636418f3376738ad76515409f5e5a66ddd17ba650",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_walk_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/walk_right_1.png",
+      "outputSha256": "41a3241cafa5cc1949b80525379d1754cdc51bfb44d74f54f3a90fdc97885b8d",
+      "processing": {
+        "sourceBBox": [
+          78,
+          41,
+          328,
+          353
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          205,
+          256
+        ],
+        "sourceHeadSpan": 172,
+        "targetHeadSpan": 141.0
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          14,
+          44,
+          219,
+          300
+        ],
+        "visualHeight": 256,
+        "visualWidth": 205,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.71956469021679,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "right_walk_2": {
+      "direction": "right",
+      "action": "walk",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_2.png",
+      "sourceCrop": null,
+      "sourceSha256": "d032b05594e9ea3eb270581b7aa78af74097f0dcba6e136b2b6c6a13fac2230f",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_walk_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/walk_right_2.png",
+      "outputSha256": "6ff9a85cae4e8f472c3f35d8ddae736cf48e61108d9f4984880f45393b31da96",
+      "processing": {
+        "sourceBBox": [
+          63,
+          38,
+          310,
+          349
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          202,
+          255
+        ],
+        "sourceHeadSpan": 170,
+        "targetHeadSpan": 139.36
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          10,
+          45,
+          212,
+          300
+        ],
+        "visualHeight": 255,
+        "visualWidth": 202,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.97687732932432,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "right_walk_3": {
+      "direction": "right",
+      "action": "walk",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/walk_right_3.png",
+      "sourceCrop": null,
+      "sourceSha256": "6d37049e58d8a68b89cce095a17135062522fce41c979d1f1bafba649c9a76ed",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_walk_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/walk_right_3.png",
+      "outputSha256": "c3629d6f17e6f1b7d3726ffad69b555883f37bcd260d2bb4ccbf5c6df3fcba3f",
+      "processing": {
+        "sourceBBox": [
+          45,
+          38,
+          283,
+          356
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          195,
+          261
+        ],
+        "sourceHeadSpan": 174,
+        "targetHeadSpan": 142.64
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          17,
+          39,
+          212,
+          300
+        ],
+        "visualHeight": 261,
+        "visualWidth": 195,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.25971182981172,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "right_jump_1": {
+      "direction": "right",
+      "action": "jump",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_1.png",
+      "sourceCrop": null,
+      "sourceSha256": "0369e6256c16777f6f0aeccb7a2372d02f42cb2696ec0164f7700a96a6e74bcc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_jump_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/jump_right_1.png",
+      "outputSha256": "0009ab7d0e909c6c168f4682a3eb5396e3b7c1e5203c1d3ac4c25ebb5312b0ed",
+      "processing": {
+        "sourceBBox": [
+          75,
+          66,
+          309,
+          322
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          192,
+          210
+        ],
+        "sourceHeadSpan": 141,
+        "targetHeadSpan": 115.59
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          17,
+          90,
+          209,
+          300
+        ],
+        "visualHeight": 210,
+        "visualWidth": 192,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.93939644677015,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "right_jump_2": {
+      "direction": "right",
+      "action": "jump",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_2.png",
+      "sourceCrop": null,
+      "sourceSha256": "8a97dd5d3d3fa8c9f93215b17c4621fb0a4e771ad035e259e6fe3cc7b6388ba7",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_jump_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/jump_right_2.png",
+      "outputSha256": "a1ce99633559110108becb7edeebbf170209e78b9878410c463b629c9cde9911",
+      "processing": {
+        "sourceBBox": [
+          65,
+          2,
+          296,
+          292
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          189,
+          238
+        ],
+        "sourceHeadSpan": 159,
+        "targetHeadSpan": 130.34
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          21,
+          62,
+          210,
+          300
+        ],
+        "visualHeight": 238,
+        "visualWidth": 189,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.40896275877762,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "right_jump_3": {
+      "direction": "right",
+      "action": "jump",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_right_walk_jump_selected_seq278/raw/jump_right_3.png",
+      "sourceCrop": null,
+      "sourceSha256": "bcb3b840c79cba8c2c3410153e6accf6f7509a0d9dad9fe3bf8e4811b541148c",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_jump_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/jump_right_3.png",
+      "outputSha256": "614af3b5825a2f6be36908ea485e9995c38f0e2faa4b63bdc8f8c7cc6f651156",
+      "processing": {
+        "sourceBBox": [
+          31,
+          2,
+          330,
+          305
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          245,
+          248
+        ],
+        "sourceHeadSpan": 167,
+        "targetHeadSpan": 136.9
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          2,
+          52,
+          240,
+          300
+        ],
+        "visualHeight": 248,
+        "visualWidth": 238,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.1470362260327,
+        "borderNonzero": 22
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": false,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": false
+      },
+      "allHardGatesPass": false
+    },
+    "right_atk_1": {
+      "direction": "right",
+      "action": "atk",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_1.png",
+      "sourceCrop": null,
+      "sourceSha256": "4d81984301ca3ec4b2b003630e6442523102b5eda29023b39057f3bd3c005b30",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_atk_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/atk_right_1.png",
+      "outputSha256": "6e2d12e9213cbf1a79411363ac8749f8961e3e1a91c8e609a463c09d94cb70e9",
+      "processing": {
+        "sourceBBox": [
+          1,
+          21,
+          129,
+          235
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          105,
+          175
+        ],
+        "sourceHeadSpan": 118,
+        "targetHeadSpan": 96.73
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          71,
+          125,
+          176,
+          300
+        ],
+        "visualHeight": 175,
+        "visualWidth": 105,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.02646916396017,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "right_atk_2": {
+      "direction": "right",
+      "action": "atk",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_2.png",
+      "sourceCrop": null,
+      "sourceSha256": "015416f37d5a0f9c40f95be935fd5cddd42690ee121f3481d474c0d0ee4d54fc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_atk_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/atk_right_2.png",
+      "outputSha256": "c6d090e0426f29172363d4e633ea5a1346949aa23beb73a3823ee9ebb223976f",
+      "processing": {
+        "sourceBBox": [
+          0,
+          21,
+          130,
+          235
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          107,
+          175
+        ],
+        "sourceHeadSpan": 118,
+        "targetHeadSpan": 96.73
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          69,
+          125,
+          176,
+          300
+        ],
+        "visualHeight": 175,
+        "visualWidth": 107,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.62681063313816,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "right_atk_3": {
+      "direction": "right",
+      "action": "atk",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_3.png",
+      "sourceCrop": null,
+      "sourceSha256": "9c6ec014b3b543c26fee657d74fcc83cb576370ba311abbfb04402e9668dcffc",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_atk_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/atk_right_3.png",
+      "outputSha256": "c81918686d3cb5db4c7ae6f7618e2e98b877b12bbea8b7b0a61feee4e54f94c0",
+      "processing": {
+        "sourceBBox": [
+          0,
+          21,
+          129,
+          235
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          106,
+          175
+        ],
+        "sourceHeadSpan": 118,
+        "targetHeadSpan": 96.73
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          71,
+          125,
+          177,
+          300
+        ],
+        "visualHeight": 175,
+        "visualWidth": 106,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.31934378316579,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "right_atk_4": {
+      "direction": "right",
+      "action": "atk",
+      "index": 4,
+      "source": "assets/_trial_20260910/t45_hero_atk_selected_seq279/raw/atk_right_4.png",
+      "sourceCrop": null,
+      "sourceSha256": "8aade595178249bc668960f0ff0e0491b9c29bc1315d26e7e1d562162ec8e303",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/right_atk_4.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/right/atk_right_4.png",
+      "outputSha256": "b976331abb9e31e13685e4f7fbac0aeddabdb5f00b34e161b1c4919caf233b7d",
+      "processing": {
+        "sourceBBox": [
+          0,
+          20,
+          123,
+          235
+        ],
+        "scale": 0.8197674418604651,
+        "scaledSize": [
+          101,
+          176
+        ],
+        "sourceHeadSpan": 117,
+        "targetHeadSpan": 95.91
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          68,
+          124,
+          169,
+          300
+        ],
+        "visualHeight": 176,
+        "visualWidth": 101,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.67966199846714,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_walk_1": {
+      "direction": "rightup",
+      "action": "walk",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        0
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_walk_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/walk_rightup_1.png",
+      "outputSha256": "60b4036f89e2a5cb037df8413a23d780e6b10f3a336d41f5561532ff1c1ac7ed",
+      "processing": {
+        "sourceBBox": [
+          59,
+          85,
+          318,
+          418
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          200,
+          257
+        ],
+        "sourceHeadSpan": 183,
+        "targetHeadSpan": 141.0
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          12,
+          43,
+          212,
+          300
+        ],
+        "visualHeight": 257,
+        "visualWidth": 200,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.46385173463354,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_walk_2": {
+      "direction": "rightup",
+      "action": "walk",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_rightup_walk_user_frame2_merge_seq285/raw/rightup_walk_2_user.png",
+      "sourceCrop": null,
+      "sourceSha256": "4d7782e38b77f0f8fe431d92ec28b63879802be1189b0b5c14751c0d3cb4e93f",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_walk_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/walk_rightup_2.png",
+      "outputSha256": "1b1f533d2dbefef4135358347e498fefd1588fec9cad37c5ce76862b00d20c09",
+      "processing": {
+        "sourceBBox": [
+          56,
+          59,
+          290,
+          396
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          180,
+          260
+        ],
+        "sourceHeadSpan": 185,
+        "targetHeadSpan": 142.54
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          24,
+          40,
+          204,
+          300
+        ],
+        "visualHeight": 260,
+        "visualWidth": 180,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.88055897671002,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_walk_3": {
+      "direction": "rightup",
+      "action": "walk",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        2
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_walk_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/walk_rightup_3.png",
+      "outputSha256": "739f0b3fc08c72d0d3aa13c7f4c9d476e12ca574a64514ea8878f2691d48decb",
+      "processing": {
+        "sourceBBox": [
+          50,
+          85,
+          299,
+          420
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          192,
+          258
+        ],
+        "sourceHeadSpan": 184,
+        "targetHeadSpan": 141.77
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          18,
+          42,
+          210,
+          300
+        ],
+        "visualHeight": 258,
+        "visualWidth": 192,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.08710655974927,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_atk_1": {
+      "direction": "rightup",
+      "action": "atk",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        3
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_atk_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/atk_rightup_1.png",
+      "outputSha256": "3cc1eb93bb3d749aff7cece5ebb6affec5a06480d20f6e96f3f2e62c0e6c1c32",
+      "processing": {
+        "sourceBBox": [
+          54,
+          63,
+          284,
+          429
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          177,
+          282
+        ],
+        "sourceHeadSpan": 200,
+        "targetHeadSpan": 154.1
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          23,
+          18,
+          200,
+          300
+        ],
+        "visualHeight": 282,
+        "visualWidth": 177,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.977784123467,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_atk_2": {
+      "direction": "rightup",
+      "action": "atk",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        4
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_atk_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/atk_rightup_2.png",
+      "outputSha256": "76c0ff59a8334c835bfbfc7723b12672a8d3bec9895e50cd0c7c2a2faa09c420",
+      "processing": {
+        "sourceBBox": [
+          57,
+          64,
+          298,
+          424
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          186,
+          277
+        ],
+        "sourceHeadSpan": 198,
+        "targetHeadSpan": 152.56
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          29,
+          23,
+          215,
+          300
+        ],
+        "visualHeight": 277,
+        "visualWidth": 186,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.03930310920842,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_atk_3": {
+      "direction": "rightup",
+      "action": "atk",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        1,
+        0
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_atk_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/atk_rightup_3.png",
+      "outputSha256": "ee9f9e2106ef9fa8d93a1489c40e75ecf732429d03d326f835453a34fe863492",
+      "processing": {
+        "sourceBBox": [
+          54,
+          48,
+          318,
+          408
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          203,
+          277
+        ],
+        "sourceHeadSpan": 198,
+        "targetHeadSpan": 152.56
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          23,
+          23,
+          226,
+          300
+        ],
+        "visualHeight": 277,
+        "visualWidth": 203,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.84166587059214,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_atk_4": {
+      "direction": "rightup",
+      "action": "atk",
+      "index": 4,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        1,
+        1
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_atk_4.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/atk_rightup_4.png",
+      "outputSha256": "962424623e3d73f926c3415fcb7b2d14df28172c2ed151bbee415367f34b0729",
+      "processing": {
+        "sourceBBox": [
+          60,
+          45,
+          288,
+          402
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          176,
+          275
+        ],
+        "sourceHeadSpan": 195,
+        "targetHeadSpan": 150.25
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          26,
+          25,
+          202,
+          300
+        ],
+        "visualHeight": 275,
+        "visualWidth": 176,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.67913709017064,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_jump_1": {
+      "direction": "rightup",
+      "action": "jump",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        2
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_jump_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/jump_rightup_1.png",
+      "outputSha256": "739f0b3fc08c72d0d3aa13c7f4c9d476e12ca574a64514ea8878f2691d48decb",
+      "processing": {
+        "sourceBBox": [
+          50,
+          85,
+          299,
+          420
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          192,
+          258
+        ],
+        "sourceHeadSpan": 184,
+        "targetHeadSpan": 141.77
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          18,
+          42,
+          210,
+          300
+        ],
+        "visualHeight": 258,
+        "visualWidth": 192,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.08710655974927,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_jump_2": {
+      "direction": "rightup",
+      "action": "jump",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        3
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_jump_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/jump_rightup_2.png",
+      "outputSha256": "3cc1eb93bb3d749aff7cece5ebb6affec5a06480d20f6e96f3f2e62c0e6c1c32",
+      "processing": {
+        "sourceBBox": [
+          54,
+          63,
+          284,
+          429
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          177,
+          282
+        ],
+        "sourceHeadSpan": 200,
+        "targetHeadSpan": 154.1
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          23,
+          18,
+          200,
+          300
+        ],
+        "visualHeight": 282,
+        "visualWidth": 177,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.977784123467,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightup_jump_3": {
+      "direction": "rightup",
+      "action": "jump",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightup_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        4
+      ],
+      "sourceSha256": "298ab0dbe714f50c5249615d4e8f86f95b465b979d72984caceb954f474ae657",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightup_jump_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightup/jump_rightup_3.png",
+      "outputSha256": "76c0ff59a8334c835bfbfc7723b12672a8d3bec9895e50cd0c7c2a2faa09c420",
+      "processing": {
+        "sourceBBox": [
+          57,
+          64,
+          298,
+          424
+        ],
+        "scale": 0.7704918032786885,
+        "scaledSize": [
+          186,
+          277
+        ],
+        "sourceHeadSpan": 198,
+        "targetHeadSpan": 152.56
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          29,
+          23,
+          215,
+          300
+        ],
+        "visualHeight": 277,
+        "visualWidth": 186,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.03930310920842,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_walk_1": {
+      "direction": "rightdown",
+      "action": "walk",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        0
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_walk_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/walk_rightdown_1.png",
+      "outputSha256": "aff003e5c2eef3e19804d12b9afddc655da776e0e1f3df34108b5369d7d76a91",
+      "processing": {
+        "sourceBBox": [
+          65,
+          79,
+          302,
+          443
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          170,
+          261
+        ],
+        "sourceHeadSpan": 199,
+        "targetHeadSpan": 142.43
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          32,
+          39,
+          202,
+          300
+        ],
+        "visualHeight": 261,
+        "visualWidth": 170,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.3761595723878,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_walk_2": {
+      "direction": "rightdown",
+      "action": "walk",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_rightdown_walk_user_frame2_merge_seq286/raw/rightdown_walk_2_user.png",
+      "sourceCrop": null,
+      "sourceSha256": "0f9168b76ddcd0fc0991e0afc0a812662d05d0fa54429170c08de1ec26018507",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_walk_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/walk_rightdown_2.png",
+      "outputSha256": "f58fe1bc176529997fc8662bccb1da9049ff9bff22c5900d106e37aae6543148",
+      "processing": {
+        "sourceBBox": [
+          47,
+          75,
+          289,
+          402
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          173,
+          234
+        ],
+        "sourceHeadSpan": 179,
+        "targetHeadSpan": 128.12
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          25,
+          66,
+          198,
+          300
+        ],
+        "visualHeight": 234,
+        "visualWidth": 173,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.52309141357374,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_walk_3": {
+      "direction": "rightdown",
+      "action": "walk",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        2
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_walk_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/walk_rightdown_3.png",
+      "outputSha256": "c666884e7870411bf522fbfceeca8075f9fbffe8401975f97236cae692e6cfeb",
+      "processing": {
+        "sourceBBox": [
+          41,
+          85,
+          283,
+          443
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          173,
+          256
+        ],
+        "sourceHeadSpan": 197,
+        "targetHeadSpan": 141.0
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          29,
+          44,
+          202,
+          300
+        ],
+        "visualHeight": 256,
+        "visualWidth": 173,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.66064223396813,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_atk_1": {
+      "direction": "rightdown",
+      "action": "atk",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        3
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_atk_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/atk_rightdown_1.png",
+      "outputSha256": "d9eea6d624361602d94e7261ec788957e39eec8df2c3de9608fb202983a5002d",
+      "processing": {
+        "sourceBBox": [
+          49,
+          72,
+          295,
+          451
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          176,
+          271
+        ],
+        "sourceHeadSpan": 208,
+        "targetHeadSpan": 148.87
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          32,
+          29,
+          208,
+          300
+        ],
+        "visualHeight": 271,
+        "visualWidth": 176,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.46278265407543,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_atk_2": {
+      "direction": "rightdown",
+      "action": "atk",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        4
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_atk_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/atk_rightdown_2.png",
+      "outputSha256": "54245988a8e2c162959580af5c83e7295dcb89305a277730df518c53076bbabb",
+      "processing": {
+        "sourceBBox": [
+          29,
+          70,
+          297,
+          451
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          192,
+          273
+        ],
+        "sourceHeadSpan": 209,
+        "targetHeadSpan": 149.59
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          27,
+          27,
+          219,
+          300
+        ],
+        "visualHeight": 273,
+        "visualWidth": 192,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.68797955612975,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_atk_3": {
+      "direction": "rightdown",
+      "action": "atk",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        1,
+        0
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_atk_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/atk_rightdown_3.png",
+      "outputSha256": "bf1da586d91fd86e2e09887e1ff6e2543439696b1fb70947ae38fc6a5a3ed96e",
+      "processing": {
+        "sourceBBox": [
+          52,
+          39,
+          317,
+          416
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          190,
+          270
+        ],
+        "sourceHeadSpan": 206,
+        "targetHeadSpan": 147.44
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          25,
+          30,
+          215,
+          300
+        ],
+        "visualHeight": 270,
+        "visualWidth": 190,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.81914661064768,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_atk_4": {
+      "direction": "rightdown",
+      "action": "atk",
+      "index": 4,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        1,
+        1
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_atk_4.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/atk_rightdown_4.png",
+      "outputSha256": "b18cfb0fe5f6469a3bbbc5c6194a74bebfd6af710fdf546076526b7be01474f6",
+      "processing": {
+        "sourceBBox": [
+          60,
+          38,
+          312,
+          416
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          180,
+          271
+        ],
+        "sourceHeadSpan": 208,
+        "targetHeadSpan": 148.87
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          30,
+          29,
+          210,
+          300
+        ],
+        "visualHeight": 271,
+        "visualWidth": 180,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.8379017068254,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_jump_1": {
+      "direction": "rightdown",
+      "action": "jump",
+      "index": 1,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        2
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_jump_1.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/jump_rightdown_1.png",
+      "outputSha256": "c666884e7870411bf522fbfceeca8075f9fbffe8401975f97236cae692e6cfeb",
+      "processing": {
+        "sourceBBox": [
+          41,
+          85,
+          283,
+          443
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          173,
+          256
+        ],
+        "sourceHeadSpan": 197,
+        "targetHeadSpan": 141.0
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          29,
+          44,
+          202,
+          300
+        ],
+        "visualHeight": 256,
+        "visualWidth": 173,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.66064223396813,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_jump_2": {
+      "direction": "rightdown",
+      "action": "jump",
+      "index": 2,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        3
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_jump_2.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/jump_rightdown_2.png",
+      "outputSha256": "d9eea6d624361602d94e7261ec788957e39eec8df2c3de9608fb202983a5002d",
+      "processing": {
+        "sourceBBox": [
+          49,
+          72,
+          295,
+          451
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          176,
+          271
+        ],
+        "sourceHeadSpan": 208,
+        "targetHeadSpan": 148.87
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          32,
+          29,
+          208,
+          300
+        ],
+        "visualHeight": 271,
+        "visualWidth": 176,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 120.46278265407543,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    },
+    "rightdown_jump_3": {
+      "direction": "rightdown",
+      "action": "jump",
+      "index": 3,
+      "source": "assets/_trial_20260910/t45_hero_rightup_rightdown_regen_seq272/raw/rightdown_from_rightward_selected_2x5.png",
+      "sourceCrop": [
+        "sheet",
+        0,
+        4
+      ],
+      "sourceSha256": "1c8a0f4718c56d0b1e1740e8423f5310736e3d9495552b4d314da24b92b7660e",
+      "rawCopy": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/raw_sources/rightdown_jump_3.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/normalized/rightdown/jump_rightdown_3.png",
+      "outputSha256": "54245988a8e2c162959580af5c83e7295dcb89305a277730df518c53076bbabb",
+      "processing": {
+        "sourceBBox": [
+          29,
+          70,
+          297,
+          451
+        ],
+        "scale": 0.7157360406091371,
+        "scaledSize": [
+          192,
+          273
+        ],
+        "sourceHeadSpan": 209,
+        "targetHeadSpan": 149.59
+      },
+      "metrics": {
+        "size": [
+          240,
+          320
+        ],
+        "mode": "RGBA",
+        "alphaExtrema": [
+          0,
+          255
+        ],
+        "bbox": [
+          27,
+          27,
+          219,
+          300
+        ],
+        "visualHeight": 273,
+        "visualWidth": 192,
+        "feetYExclusive": 300,
+        "alphaCentroidX": 119.68797955612975,
+        "borderNonzero": 0
+      },
+      "checks": {
+        "size240x320": true,
+        "rgba": true,
+        "alphaHas0And255": true,
+        "widthLe236": true,
+        "feetY300": true,
+        "centroidXWithin1": true,
+        "borderTransparent": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "runtimeTouched": false,
+  "allHardGatesPass": false,
+  "contacts": {
+    "right": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/contact/right_r1_10frame.png",
+    "rightup": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/contact/rightup_r1_10frame.png",
+    "rightdown": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_hero_weapon_recalib_r1_seq290/contact/rightdown_r1_10frame.png"
+  },
+  "status": "blocked_on_right_jump_3_width",
+  "stopReason": {
+    "frame": "right_jump_3",
+    "measuredVisualWidth": 238,
+    "hardLimit": 236,
+    "borderNonzero": 22,
+    "rule": "R1 fixed scale; no per-frame shrink or crop; report width exceed and stop"
+  }
+}
