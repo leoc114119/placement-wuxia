@@ -1,0 +1,8 @@
+Use case: precise-object-edit. Asset type: constrained 12-frame action trial for a Chinese wuxia game character.
+Use Image 1 only as the identity, rendering, proportion, and size reference. Do not use an existing action sheet.
+Generate a new 4-row x 3-column action sheet with exactly 12 equal cells, narrow gutters, transparent background, and the same 240x320 character scale in every cell. Keep the same single Q-version Chinese wuxia boy: 2.5-head proportion, black high ponytail, teal-green hanfu outer robe, white inner shirt and bracers, dark pants and black cloth boots, same palette, line weight, lighting direction, and foot baseline. Character proportions, visible height, body scale, head size, limb ratios, and frame specification must not change between cells.
+Row 1, fast movement toward screen-right, three sequential frames: push-off, full stride, recovery stride.
+Row 2, basic unarmed attack, three sequential frames using fist and foot: guard, direct punch/kick extension, recovery; hands remain closed grip-friendly fists and no weapon is drawn.
+Row 3, empty-handed weapon-swing gesture, three sequential frames: wind-up, broad swing, follow-through; the hands stay empty and no sword, blade, staff, or weapon may be rendered—the pose only suggests a future weapon layer.
+Row 4, lightness jump, three sequential frames: crouched takeoff, compact airborne phase, extended airborne phase; clear readable silhouette.
+Keep every cell full-body, centered, and inside its cell. No change to identity, costume, hair, palette, camera, proportions, or cell size. No text, labels, watermark, extra characters, weapons, particles, or background objects. This is a visual trial only; output the sheet for review and do not create right-up/right-down variants.

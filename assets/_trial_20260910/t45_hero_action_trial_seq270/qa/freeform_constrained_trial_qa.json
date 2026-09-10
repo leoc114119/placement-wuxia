@@ -1,0 +1,25 @@
+{
+  "task": "T45",
+  "seq": "270",
+  "mode": "single-reference constrained action trial",
+  "sourceReference": "assets/characters/hero/battle45/battle_idle_right.png",
+  "output": "assets/_trial_20260910/t45_hero_action_trial_seq270/raw/generated_12frame_constrained_trial.png",
+  "layout": "4 rows x 3 columns, exactly 12 cells",
+  "rows": {
+    "1": "fast movement toward screen-right, 3 poses",
+    "2": "basic unarmed fist/foot attack, 3 poses",
+    "3": "empty-handed weapon-swing gesture, 3 poses",
+    "4": "lightness jump, 3 poses"
+  },
+  "outputDimensions": [
+    1086,
+    1448
+  ],
+  "visualReview": "pending_Leo",
+  "specGate": "pending_pm_scan",
+  "artifactStage": "raw",
+  "runtimeRelease": false,
+  "generationCredits": "built-in image_gen",
+  "runtimeTouched": false,
+  "note": "Trial only; no slicing or normalization performed. Character scale/proportion was requested frozen; visual acceptance pending Leo."
+}
