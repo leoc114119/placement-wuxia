@@ -1,39 +1,43 @@
 {
   "task": "T45",
-  "seq": "328",
-  "revision": "V2-R2",
-  "stage": "four_frame_sample_gate",
+  "seq": "333",
+  "revision": "V2-R3-full10",
+  "stage": "full_10_frame_gate",
   "frames": [
     "idle_right",
     "walk_right_1",
+    "walk_right_2",
+    "walk_right_3",
     "atk_right_1",
-    "jump_right_1"
+    "atk_right_2",
+    "atk_right_3",
+    "jump_right_1",
+    "jump_right_2",
+    "jump_right_3"
   ],
   "sourceSelection": {
     "idle_right": "idle_right_native.png",
     "walk_right_1": "walk_right_1_native.png",
+    "walk_right_2": "walk_right_2_native.png",
+    "walk_right_3": "walk_right_3_native_attempt2.png",
     "atk_right_1": "atk_right_1_native_attempt2.png",
-    "jump_right_1": "jump_right_1_native.png"
+    "atk_right_2": "atk_right_2_native_attempt2.png",
+    "atk_right_3": "atk_right_3_native_attempt2.png",
+    "jump_right_1": "jump_right_1_native.png",
+    "jump_right_2": "jump_right_2_native.png",
+    "jump_right_3": "jump_right_3_native.png"
   },
   "rejectedCandidates": {
-    "atk_right_1": {
-      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_1_native.png",
-      "reason": "same coefficient produced alpha>32 bbox height 248px; standing-frame gate requires 256±1px"
-    }
-  },
-  "failedCandidate": {
-    "atk_right_1": {
-      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_1_native_attempt2.png",
-      "reason": "same coefficient produced alpha>32 bbox height 246px; standing-frame gate requires 256±1px"
-    }
+    "walk_right_3": "initial native output had checkerboard rendered into opaque canvas; replaced by native attempt2",
+    "atk_right_2": "initial native output had checkerboard rendered into opaque canvas; replaced by native attempt2",
+    "atk_right_3": "initial native output had checkerboard rendered into opaque canvas; replaced by native attempt2",
+    "jump_right_3": "wrong copied atk attempt was quarantined as jump_right_3_native_wrong_copied_atk.png; not used"
   },
   "coefficient": 0.22241529105125976,
-  "qa": "qa/four_frame_sample.json",
-  "contact": "contact/four_frame_sample_vs_baseline.png",
+  "qa": "qa/full_10_frame.json",
+  "contact": "contact/full_10frame_vs_baseline.png",
   "status": "candidate-only",
   "runtimeRelease": false,
-  "allHardGatesPass": false,
-  "failedFrames": [
-    "atk_right_1"
-  ]
+  "allHardGatesPass": true,
+  "failedFrames": []
 }

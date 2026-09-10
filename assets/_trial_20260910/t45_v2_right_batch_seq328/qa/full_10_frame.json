@@ -1,0 +1,403 @@
+{
+  "task": "T45",
+  "seq": "333",
+  "revision": "V2-R3-full10",
+  "stage": "full_10_frame_gate",
+  "coefficientSource": "single coefficient derived from idle_right alpha>32 bbox height = 256 / source idle bbox height",
+  "coefficient": 0.22241529105125976,
+  "frames": {
+    "idle_right": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/idle_right_native.png",
+      "sourceSha256": "f179980d80f3cb708b216cc972e260ef6af563be3820ee04108971f31334ae05",
+      "sourceBBoxAlphaGt32": [
+        213,
+        202,
+        869,
+        1353
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        146,
+        256
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/idle_right.png",
+      "outputSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "outputBBoxAlphaGt32": [
+        47,
+        44,
+        193,
+        300
+      ],
+      "outputCentroidX": 120.35584895603994,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/walk_right_1_native.png",
+      "sourceSha256": "7035f8824dca4330d158cc313a0c6f15c3dc930b47216811acf5072863da96e9",
+      "sourceBBoxAlphaGt32": [
+        235,
+        214,
+        906,
+        1319
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        149,
+        246
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/walk_right_1.png",
+      "outputSha256": "902519ce54a6884e33429780a5415a4d0abd135ba275987a65f8e24c85f2fda0",
+      "outputBBoxAlphaGt32": [
+        43,
+        54,
+        192,
+        300
+      ],
+      "outputCentroidX": 119.91910760891388,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_2": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/walk_right_2_native.png",
+      "sourceSha256": "106241e5eebd9049a71f1aee696c0732c8f8f7c326d26aef7236349a00bb62eb",
+      "sourceBBoxAlphaGt32": [
+        203,
+        194,
+        866,
+        1340
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        147,
+        255
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/walk_right_2.png",
+      "outputSha256": "fcc8d48d6f092c9d2e6f287a94675ee1941fd7d81d6e1e2e6f0afe670987bec8",
+      "outputBBoxAlphaGt32": [
+        46,
+        45,
+        193,
+        300
+      ],
+      "outputCentroidX": 120.29176632210303,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "walk_right_3": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/walk_right_3_native_attempt2.png",
+      "sourceSha256": "2f554c974ea838f88d9f1e3941f60236b83ee3a67138f80889fa57bd38cf325b",
+      "sourceBBoxAlphaGt32": [
+        209,
+        213,
+        856,
+        1330
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        144,
+        248
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/walk_right_3.png",
+      "outputSha256": "7504a65227ad96cbff122d1aa0dbd54c6cf7c95fa5d5ac8720b70802e38bbf47",
+      "outputBBoxAlphaGt32": [
+        43,
+        52,
+        187,
+        300
+      ],
+      "outputCentroidX": 119.93222542268057,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_1_native_attempt2.png",
+      "sourceSha256": "05a22bd95eb93f43687f202fd6d776733785b7542fe33c68caaa02c67174e65f",
+      "sourceBBoxAlphaGt32": [
+        169,
+        202,
+        982,
+        1310
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        181,
+        246
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/atk_right_1.png",
+      "outputSha256": "3f30c5a02c5d89150573062ef0280d2555f83fa4b95addf5197cda58ef8aa29c",
+      "outputBBoxAlphaGt32": [
+        38,
+        54,
+        219,
+        300
+      ],
+      "outputCentroidX": 120.38923076187879,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_2": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_2_native_attempt2.png",
+      "sourceSha256": "7562c8671ce52438f2492e668fae75541b2e0c74cfc36fbf864bd2b788cf2590",
+      "sourceBBoxAlphaGt32": [
+        216,
+        267,
+        1047,
+        1339
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        185,
+        238
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/atk_right_2.png",
+      "outputSha256": "abc59fdf9b172e8408174d196b19f06a79b3da3ba7ec252587a9ad0250c4b718",
+      "outputBBoxAlphaGt32": [
+        37,
+        62,
+        222,
+        300
+      ],
+      "outputCentroidX": 119.81945542431784,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "atk_right_3": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/atk_right_3_native_attempt2.png",
+      "sourceSha256": "83bdc247c38d969431999a331a0b73a466e002f665402137dcba1dc209ec74a6",
+      "sourceBBoxAlphaGt32": [
+        205,
+        262,
+        881,
+        1316
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        150,
+        234
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/atk_right_3.png",
+      "outputSha256": "d22d6f6a5f1686fa3dce630b1f918ff8e182e39b61dcb85ac69b6a3a499a482c",
+      "outputBBoxAlphaGt32": [
+        39,
+        66,
+        189,
+        300
+      ],
+      "outputCentroidX": 120.0811969087094,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_1": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/jump_right_1_native.png",
+      "sourceSha256": "7f8817f47849cbce5e398fbfb601e93021f3e7d7c78013f8fa04fcdb5616a005",
+      "sourceBBoxAlphaGt32": [
+        224,
+        324,
+        910,
+        1275
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        153,
+        212
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/jump_right_1.png",
+      "outputSha256": "54d0789b6b23faca39363b9fb12db0f587e42e65ccafb5c228460df406691e8f",
+      "outputBBoxAlphaGt32": [
+        44,
+        88,
+        197,
+        300
+      ],
+      "outputCentroidX": 119.98855711586907,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_2": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/jump_right_2_native.png",
+      "sourceSha256": "d479a6038287b50ef496d73dca238df249d64917a7f74545cdaab281f83f8fe6",
+      "sourceBBoxAlphaGt32": [
+        121,
+        206,
+        929,
+        1216
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        180,
+        225
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/jump_right_2.png",
+      "outputSha256": "63e4b1106996424337c02399ff5de5b9979b50fa3cfaf0f4518e04fdf37b907e",
+      "outputBBoxAlphaGt32": [
+        23,
+        75,
+        203,
+        300
+      ],
+      "outputCentroidX": 119.96603006286539,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    },
+    "jump_right_3": {
+      "source": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/raw/jump_right_3_native.png",
+      "sourceSha256": "4f5e828bcce16cefc633840cbb579797e0447947ff2ea9e2a1b9e5d52193cdf5",
+      "sourceBBoxAlphaGt32": [
+        212,
+        297,
+        876,
+        1326
+      ],
+      "actualCoefficient": 0.22241529105125976,
+      "expectedScaledSize": [
+        148,
+        229
+      ],
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/normalized/jump_right_3.png",
+      "outputSha256": "9556b9b59c661107949688de011a1e05420348d24672fdbffe50489cc039b9b2",
+      "outputBBoxAlphaGt32": [
+        44,
+        71,
+        192,
+        300
+      ],
+      "outputCentroidX": 120.32985822750683,
+      "checks": {
+        "coefficientExact": true,
+        "size240x320": true,
+        "rgba": true,
+        "noCropWithin1": true,
+        "fourBorderZeroAlpha": true,
+        "feetY300": true,
+        "alphaGt32SingleComponent": true,
+        "centroidXWithinGate": true,
+        "width238": true,
+        "idleBBox256": true
+      },
+      "allHardGatesPass": true
+    }
+  },
+  "sourceSelection": {
+    "idle_right": "idle_right_native.png",
+    "walk_right_1": "walk_right_1_native.png",
+    "walk_right_2": "walk_right_2_native.png",
+    "walk_right_3": "walk_right_3_native_attempt2.png",
+    "atk_right_1": "atk_right_1_native_attempt2.png",
+    "atk_right_2": "atk_right_2_native_attempt2.png",
+    "atk_right_3": "atk_right_3_native_attempt2.png",
+    "jump_right_1": "jump_right_1_native.png",
+    "jump_right_2": "jump_right_2_native.png",
+    "jump_right_3": "jump_right_3_native.png"
+  },
+  "rejectedCandidates": {
+    "walk_right_3": "initial native output had checkerboard rendered into opaque canvas; replaced by native attempt2",
+    "atk_right_2": "initial native output had checkerboard rendered into opaque canvas; replaced by native attempt2",
+    "atk_right_3": "initial native output had checkerboard rendered into opaque canvas; replaced by native attempt2",
+    "jump_right_3": "wrong copied atk attempt was quarantined as jump_right_3_native_wrong_copied_atk.png; not used"
+  },
+  "runtimeTouched": false,
+  "shaDistinct": true,
+  "allHardGatesPass": true,
+  "failedFrames": [],
+  "contact": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260910/t45_v2_right_batch_seq328/contact/full_10frame_vs_baseline.png"
+}
