@@ -1,0 +1,9 @@
+{
+  "provider": "codex-native",
+  "model": "built-in image_gen",
+  "cost": 0,
+  "generationCount": 3,
+  "pathA": "one two-panel source image",
+  "pathB": "two independent single-frame images",
+  "runtimeTouched": false
+}

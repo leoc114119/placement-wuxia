@@ -1,0 +1,13 @@
+{
+  "task": "T45",
+  "seq": "358",
+  "revision": "fist-v5-twopanel-and-independent",
+  "artifactStage": "candidate",
+  "visualReview": "codex_reviewed_pending_Leo",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "transparentJudged": false,
+  "ratioJudged": false,
+  "result": "mechanical_fail_A_D1_D2_B_D2_D3"
+}

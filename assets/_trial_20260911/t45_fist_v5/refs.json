@@ -1,0 +1,24 @@
+{
+  "task": "T45",
+  "seq": "358",
+  "referenceRoles": {
+    "image1": "idle_right: identity, style, costume, camera, facing, and position vocabulary",
+    "pathA": "one idle reference only; the prompt defines both panels",
+    "pathB": "one idle reference only for each independent single-frame generation; frames do not reference each other"
+  },
+  "positionVocabulary": {
+    "fistAlpha": "the fist nearer image-right in idle_right, approximately (183,193) on a 240x320 canvas",
+    "fistBeta": "the fist nearer image-left and lower in idle_right, approximately (101,205) on a 240x320 canvas",
+    "forbidden": "anatomical left/right hand naming"
+  },
+  "references": [
+    {
+      "path": "idle_right.png",
+      "sha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "visualCheck": "single right-facing idle hero; alpha is nearer image-right, beta is nearer image-left and lower",
+      "allowed": ["identity", "costume", "camera", "facing", "idle fist positions"],
+      "forbidden": ["new labels", "anatomical hand naming", "contact-sheet use"]
+    }
+  ],
+  "forbidden": ["chain-input", "contact-sheet-as-input", "runtime-write", "batch-expansion", "new-pose-diagram"]
+}

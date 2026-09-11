@@ -1,0 +1,328 @@
+{
+  "task": "T45",
+  "seq": "358",
+  "route": "twopanel_A_plus_independent_B",
+  "runtimeTouched": false,
+  "transparentJudged": false,
+  "ratioJudged": false,
+  "generationBudget": {
+    "pathA": 1,
+    "pathB": 2,
+    "total": 3,
+    "cost": 0
+  },
+  "source": {
+    "idle": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/idle_right.png",
+    "idleSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f"
+  },
+  "pathA": {
+    "sheet": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathA/sheet_2panel.png",
+    "sheetSha256": "63c6a7a8672687de4f0734bf09343f188b8d56be69670ab757541f5fac068a85",
+    "cutMethod": "equal half-width crops, no interpolation",
+    "frames": [
+      {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathA/atk_alpha.png",
+        "sha256": "4370cb5fcdc1e1ad2e0b8c8109a81c5bbb13ac1b465ad03346a068ad9bf2545d"
+      },
+      {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathA/atk_beta.png",
+        "sha256": "015772f90fd128a361260814623701e2c45dde4f20ccde677de9455035219b8e"
+      }
+    ],
+    "evaluation": {
+      "frames": [
+        {
+          "name": "alpha",
+          "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathA/atk_alpha.png",
+          "hands": [
+            {
+              "pixels": 1888,
+              "bboxRaw": [
+                277,
+                564,
+                330,
+                619
+              ],
+              "centerRaw": [
+                300.708686440678,
+                589.7669491525423
+              ],
+              "centerNormalized": [
+                93.97146451271186,
+                184.30217161016947
+              ]
+            },
+            {
+              "pixels": 2146,
+              "bboxRaw": [
+                635,
+                434,
+                692,
+                487
+              ],
+              "centerRaw": [
+                662.1351351351351,
+                457.5936626281454
+              ],
+              "centerNormalized": [
+                206.9172297297297,
+                142.99801957129543
+              ]
+            }
+          ]
+        },
+        {
+          "name": "beta",
+          "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathA/atk_beta.png",
+          "hands": [
+            {
+              "pixels": 1879,
+              "bboxRaw": [
+                278,
+                565,
+                332,
+                620
+              ],
+              "centerRaw": [
+                302.607237892496,
+                590.4917509313465
+              ],
+              "centerNormalized": [
+                94.564761841405,
+                184.52867216604577
+              ]
+            },
+            {
+              "pixels": 2074,
+              "bboxRaw": [
+                638,
+                434,
+                694,
+                487
+              ],
+              "centerRaw": [
+                664.8432979749276,
+                457.6311475409836
+              ],
+              "centerNormalized": [
+                207.7635306171649,
+                143.00973360655738
+              ]
+            }
+          ]
+        }
+      ],
+      "normalizedHands": {
+        "alpha": [
+          {
+            "x": 93.97146451271186,
+            "y": 184.30217161016947
+          },
+          {
+            "x": 206.9172297297297,
+            "y": 142.99801957129543
+          }
+        ],
+        "beta": [
+          {
+            "x": 94.564761841405,
+            "y": 184.52867216604577
+          },
+          {
+            "x": 207.7635306171649,
+            "y": 143.00973360655738
+          }
+        ]
+      },
+      "frontZonePass": {
+        "alpha": false,
+        "beta": false
+      },
+      "waistZonePass": {
+        "alpha": false,
+        "beta": false
+      },
+      "waistFistCentersX": {
+        "alpha": 93.97146451271186,
+        "beta": 94.564761841405
+      },
+      "D1_poseCorrect": false,
+      "D2_waistFistSwap": false,
+      "D3_nonArmDiffPercent": {
+        "observed": 3.5700901077055938,
+        "threshold": 8,
+        "pass": true
+      },
+      "D4_fistCounts": {
+        "observed": {
+          "alpha": 2,
+          "beta": 2
+        },
+        "pass": true
+      },
+      "D5_singleCharacter": {
+        "observed": true,
+        "pass": true,
+        "method": "contact-sheet visual review"
+      },
+      "overallPass": false
+    }
+  },
+  "pathB": {
+    "frames": [
+      {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathB/atk_alpha.png",
+        "sha256": "f4747f5cab8ff840fedf3cb80119a3978e34a88585687dab0751e0b5b1e91bc8"
+      },
+      {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathB/atk_beta.png",
+        "sha256": "d6ad8be10108a2ffd1da9685cd3aa39730eff76d83de98a0c869b40a40af7e85"
+      }
+    ],
+    "independentInputs": true,
+    "evaluation": {
+      "frames": [
+        {
+          "name": "alpha",
+          "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathB/atk_alpha.png",
+          "hands": [
+            {
+              "pixels": 2268,
+              "bboxRaw": [
+                387,
+                860,
+                464,
+                940
+              ],
+              "centerRaw": [
+                423.3910934744268,
+                902.944885361552
+              ],
+              "centerNormalized": [
+                93.5670924805363,
+                199.54583101912752
+              ]
+            },
+            {
+              "pixels": 2080,
+              "bboxRaw": [
+                945,
+                682,
+                1021,
+                758
+              ],
+              "centerRaw": [
+                982.1490384615385,
+                725.2591346153846
+              ],
+              "centerNormalized": [
+                217.04951126221843,
+                160.27826179345516
+              ]
+            }
+          ]
+        },
+        {
+          "name": "beta",
+          "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_fist_v5/pathB/atk_beta.png",
+          "hands": [
+            {
+              "pixels": 3208,
+              "bboxRaw": [
+                412,
+                865,
+                483,
+                940
+              ],
+              "centerRaw": [
+                443.286783042394,
+                902.1945137157107
+              ],
+              "centerNormalized": [
+                97.96392995412023,
+                199.3800030310963
+              ]
+            },
+            {
+              "pixels": 4323,
+              "bboxRaw": [
+                933,
+                692,
+                1024,
+                767
+              ],
+              "centerRaw": [
+                977.9720101781171,
+                725.5949572056443
+              ],
+              "centerNormalized": [
+                216.12641108908664,
+                160.35247673052913
+              ]
+            }
+          ]
+        }
+      ],
+      "normalizedHands": {
+        "alpha": [
+          {
+            "x": 93.5670924805363,
+            "y": 199.54583101912752
+          },
+          {
+            "x": 217.04951126221843,
+            "y": 160.27826179345516
+          }
+        ],
+        "beta": [
+          {
+            "x": 97.96392995412023,
+            "y": 199.3800030310963
+          },
+          {
+            "x": 216.12641108908664,
+            "y": 160.35247673052913
+          }
+        ]
+      },
+      "frontZonePass": {
+        "alpha": true,
+        "beta": true
+      },
+      "waistZonePass": {
+        "alpha": true,
+        "beta": true
+      },
+      "waistFistCentersX": {
+        "alpha": 93.5670924805363,
+        "beta": 97.96392995412023
+      },
+      "D1_poseCorrect": true,
+      "D2_waistFistSwap": false,
+      "D3_nonArmDiffPercent": {
+        "observed": 22.282511283831123,
+        "threshold": 8,
+        "pass": false
+      },
+      "D4_fistCounts": {
+        "observed": {
+          "alpha": 2,
+          "beta": 2
+        },
+        "pass": true
+      },
+      "D5_singleCharacter": {
+        "observed": true,
+        "pass": true,
+        "method": "contact-sheet visual review"
+      },
+      "overallPass": false
+    }
+  },
+  "contactSheet": "contact/fist_v5_compare.png",
+  "contactReview": {
+    "status": "codex_reviewed_pending_Leo",
+    "description": "Contact sheet reviewed: path A contains one character per panel and two visually present fists per panel, but its active fist sits above the required D1 shoulder-height zone; path B has one character and two fists in each frame but both independent frames keep the same waist-fist position."
+  },
+  "conclusion": "FAIL: path A fails D1/D2; path B fails D2 and D3. Neither route produces a compliant alpha/beta exchange; stop after the authorized three generations and report to PM2/Leo."
+}
