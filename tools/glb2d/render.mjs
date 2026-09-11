@@ -216,10 +216,18 @@ for (let f = 0; f < tri; f++) {
     const vv= w1*P[0].uv[1] + w2*P[1].uv[1] + w0*P[2].uv[1];
     let r=1,g=1,b=1;
     if (TEX) {
-      let tx=Math.min(TW-1,Math.max(0,Math.floor(u*TW)));
-      let ty=Math.min(TH-1,Math.max(0,Math.floor(vv*TH)));       // glTF UV origin = top-left
-      const ti=(ty*TW+tx)*4;
-      r=TEX[ti]/255; g=TEX[ti+1]/255; b=TEX[ti+2]/255;
+      // 双线性采样：最近邻在缩小时会严重走样（2048² 贴图渲到 256px 人物，
+      // 每个输出像素对应 8x8 纹素却只取一个）→ 噪点/花斑。用双线性显著改善。
+      const fx = u*TW - 0.5, fy = vv*TH - 0.5;         // glTF UV origin = top-left
+      const x0 = Math.floor(fx), y0 = Math.floor(fy);
+      const ax = fx - x0, ay = fy - y0;
+      const cx0 = Math.min(TW-1, Math.max(0, x0)), cx1 = Math.min(TW-1, Math.max(0, x0+1));
+      const cy0 = Math.min(TH-1, Math.max(0, y0)), cy1 = Math.min(TH-1, Math.max(0, y0+1));
+      const w00=(1-ax)*(1-ay), w10=ax*(1-ay), w01=(1-ax)*ay, w11=ax*ay;
+      const i00=(cy0*TW+cx0)*4, i10=(cy0*TW+cx1)*4, i01=(cy1*TW+cx0)*4, i11=(cy1*TW+cx1)*4;
+      r=(TEX[i00]*w00+TEX[i10]*w10+TEX[i01]*w01+TEX[i11]*w11)/255;
+      g=(TEX[i00+1]*w00+TEX[i10+1]*w10+TEX[i01+1]*w01+TEX[i11+1]*w11)/255;
+      b=(TEX[i00+2]*w00+TEX[i10+2]*w10+TEX[i01+2]*w01+TEX[i11+2]*w11)/255;
     }
     // normal is always computed: lighting needs it, and the outline post-process reads it
     const n = [ w1*P[0].n[0]+w2*P[1].n[0]+w0*P[2].n[0],
