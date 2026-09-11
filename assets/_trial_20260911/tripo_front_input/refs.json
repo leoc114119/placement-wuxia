@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "seq": "360",
+  "referenceRoles": {
+    "image1": "shape/style/identity reference only; source is a 3/4 side-view idle stand",
+    "target": "new full-front standing reference for manual Tripo upload"
+  },
+  "reference": {
+    "path": "ref_style_idle_stand_900x1200.png",
+    "sha256": "27ba5f8ea14770b82a8cfd1ebfe21d7bcf1a69b94c047006af180c550cdcd0ca",
+    "size": [900, 1200],
+    "visualCheck": "single chibi wuxia hero on white background; 3/4 facing image-right; used only for identity and rendering style"
+  },
+  "forbidden": ["side-view-output", "three-quarter-output", "weapon", "text", "watermark", "shadow", "second-character", "runtime-write"]
+}

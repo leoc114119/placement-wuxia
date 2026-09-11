@@ -1,0 +1,8 @@
+{
+  "provider": "codex-native",
+  "model": "built-in image_gen",
+  "cost": 0,
+  "generationCount": 1,
+  "runtimeTouched": false,
+  "downstream": "Leo manual upload to Tripo web UI"
+}

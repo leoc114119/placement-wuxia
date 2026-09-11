@@ -1,0 +1,103 @@
+{
+  "task": "T45",
+  "seq": "360",
+  "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/tripo_front_input/hero_front_standing_final.png",
+  "sha256": "1d3e166f45787d5948fa89ab44e475ef7273d457d89be85cce2311073fdfafa5",
+  "size": [
+    1086,
+    1448
+  ],
+  "mode": "RGB",
+  "ratio": 0.75,
+  "criteria": {
+    "sizeLongEdgeAtLeast1024": {
+      "observed": 1448,
+      "threshold": 1024,
+      "pass": true
+    },
+    "ratio3to4Within2Percent": {
+      "observed": 0.75,
+      "target": 0.75,
+      "tolerance": 0.02,
+      "pass": true
+    },
+    "pureWhiteCornersAndEdges": {
+      "corners": [
+        [
+          253,
+          255,
+          255
+        ],
+        [
+          254,
+          255,
+          255
+        ],
+        [
+          254,
+          253,
+          253
+        ],
+        [
+          253,
+          253,
+          253
+        ]
+      ],
+      "edgeMinChannel": 253,
+      "threshold": 250,
+      "pass": true
+    },
+    "singleNonWhiteSubjectComponent": {
+      "threshold": 200,
+      "connectivity": 8,
+      "count": 2,
+      "componentSizes": [
+        368729,
+        2030
+      ],
+      "componentBboxes": [
+        [
+          245,
+          130,
+          785,
+          1348
+        ],
+        [
+          503,
+          199,
+          566,
+          251
+        ]
+      ],
+      "pass": false
+    },
+    "fullBodyMarginAtLeast8Percent": {
+      "bbox": [
+        245,
+        130,
+        785,
+        1348
+      ],
+      "margins": {
+        "left": 0.22559852670349909,
+        "right": 0.27716390423572745,
+        "top": 0.08977900552486189,
+        "bottom": 0.06906077348066299
+      },
+      "threshold": 0.08,
+      "pass": false
+    },
+    "noTextVisual": {
+      "observed": true,
+      "method": "Codex single-image visual review",
+      "pass": true
+    }
+  },
+  "overallPass": false,
+  "visualReview": {
+    "description": "Single full-front character, level eyes, upright head, arms separated at sides, legs straight and feet forward; no visible text, weapon, shadow, or second character.",
+    "status": "codex_reviewed_pending_Leo"
+  },
+  "conclusion": "FAIL: output has two thresholded non-white components and bottom margin below 8%; per handoff stop rule, no retry or crop was performed."
+}
