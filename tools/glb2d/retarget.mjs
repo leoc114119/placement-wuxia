@@ -309,4 +309,6 @@ function main() {
 
 let __depthCache = {};
 
-main();
+
+// 仅在被直接执行时跑 main()；被 import 时只导出函数（供其它脚本与校验复用）
+if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) main();
