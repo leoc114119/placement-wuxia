@@ -79,7 +79,46 @@ function worldMats(locals) {
 let sampledTRS = nodeTRS.map(x => ({ t: [...x.t], q: [...x.q], s: [...x.s] }));
 let animDur = 0;
 let animName = null;
-if (animArg !== 'none' && json.animations && json.animations.length) {
+
+// 外部重定向动画（retarget.mjs 产出的 JSON）：argv[14] = 路径
+const animJsonPath = process.argv[14];
+if (animJsonPath && animJsonPath !== 'none' && fs.existsSync(animJsonPath)) {
+  const RT = JSON.parse(fs.readFileSync(animJsonPath, 'utf8'));
+  const fps = RT.fps || 30, nf = RT.nFrames;
+  animDur = RT.duration || (nf / fps);
+  animName = 'retargeted:' + String(RT.source || '').split('/').pop();
+  let t = timeArg === 'auto' ? 0 : timeArg === 'mid' ? animDur / 2 : +timeArg;
+  t = Math.min(Math.max(t, 0), animDur);
+  const fi = t * fps;
+  const i0 = Math.min(nf - 1, Math.floor(fi)), i1 = Math.min(nf - 1, i0 + 1);
+  const a = fi - i0;
+  const nlerp = (q0, q1, k) => {
+    const d = q0[0]*q1[0] + q0[1]*q1[1] + q0[2]*q1[2] + q0[3]*q1[3];
+    const s = d < 0 ? -1 : 1;
+    const o = [0,1,2,3].map(i => q0[i]*k + q1[i]*(1-k)*s);
+    const L = Math.hypot(o[0],o[1],o[2],o[3]) || 1;
+    return o.map(v => v / L);
+  };
+  const nameIdx = {};
+  json.nodes.forEach((n, i) => { if (n.name) nameIdx[n.name] = i; });
+  let applied = 0;
+  for (const [bn, track] of Object.entries(RT.boneTracks || {})) {
+    const ni = nameIdx[bn];
+    if (ni === undefined || !track[i0] || !track[i1]) continue;
+    sampledTRS[ni].q = nlerp(track[i0], track[i1], a);
+    applied++;
+  }
+  if (RT.rootTrack && RT.rootTrack[i0]) {
+    const r0 = RT.rootTrack[i0], r1 = RT.rootTrack[i1] || r0;
+    const rootIdx = nameIdx['Root'];
+    if (rootIdx !== undefined) {
+      const rb = nodeTRS[rootIdx].t;
+      const d = [0,1,2].map(k => r0[k]*(1-a) + r1[k]*a);
+      sampledTRS[rootIdx].t = [rb[0]+d[0], rb[1]+d[1], rb[2]+d[2]];
+    }
+  }
+  console.error(`[retarget] ${animName} frames=${nf} dur=${animDur.toFixed(2)}s applied=${applied} bones t=${t.toFixed(3)}`);
+} else if (animArg !== 'none' && json.animations && json.animations.length) {
   const ai = animArg === 'auto' ? 0 : +animArg;
   const anim = json.animations[ai];
   animName = anim.name;
