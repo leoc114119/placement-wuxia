@@ -1,0 +1,218 @@
+{
+  "task": "T45",
+  "seq": "354",
+  "chain": "B_fist_direction_v3",
+  "runtimeTouched": false,
+  "transparentJudged": false,
+  "ratioJudged": false,
+  "chainIntegrity": [
+    {
+      "frame": "atk_right_1",
+      "input": "assets/_trial_20260910/t45_chain_limb_alternation_v2/chain/idle_right.png",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v3/anchor/atk_right_1.png",
+      "outputSha256": "a5dd353d5e0f277f664329b24e1a98437bf6547d592a21aeb4534d40f5be25e0",
+      "sourceReuse": "v2 confirmed atk_right_1_chain",
+      "inputMatchesPreviousOutput": true
+    },
+    {
+      "frame": "atk_right_2",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v3/anchor/atk_right_1.png",
+      "inputSha256": "a5dd353d5e0f277f664329b24e1a98437bf6547d592a21aeb4534d40f5be25e0",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v3/raw/atk_right_2.png",
+      "outputSha256": "5d6842e5b95c9838802db7187ddf3a588f190bc9ed67bdb9c6f19fc364886e50",
+      "inputMatchesPreviousOutput": true
+    },
+    {
+      "frame": "atk_right_3",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v3/raw/atk_right_2.png",
+      "inputSha256": "5d6842e5b95c9838802db7187ddf3a588f190bc9ed67bdb9c6f19fc364886e50",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v3/raw/atk_right_3.png",
+      "outputSha256": "8fc7ee560a62a1dc4d6b29007f93b3063385392e3ea6baeb0c460f83046790b1",
+      "inputMatchesPreviousOutput": true
+    }
+  ],
+  "chainIntegrityPass": true,
+  "canvas": {
+    "raw": [
+      1086,
+      1448
+    ],
+    "comparison": [
+      240,
+      320
+    ]
+  },
+  "centerlineMethod": "freeze the v3 absolute line from the PM2-measured atk_1 endpoint: anchor right-fist center x minus +398px; apply that raw-x line to all three frames",
+  "torsoCenterlineRaw": 576.1537722248919,
+  "frames": [
+    {
+      "frame": "atk_right_1",
+      "hands": [
+        {
+          "pixels": 3448,
+          "bboxRaw": [
+            419,
+            859,
+            494,
+            932
+          ],
+          "centerRaw": [
+            453.834686774942,
+            894.8723897911833
+          ]
+        },
+        {
+          "pixels": 4162,
+          "bboxRaw": [
+            932,
+            720,
+            1021,
+            790
+          ],
+          "centerRaw": [
+            974.1537722248919,
+            752.1950985103316
+          ]
+        }
+      ]
+    },
+    {
+      "frame": "atk_right_2",
+      "hands": [
+        {
+          "pixels": 3468,
+          "bboxRaw": [
+            420,
+            858,
+            495,
+            932
+          ],
+          "centerRaw": [
+            454.3134371395617,
+            894.2070357554786
+          ]
+        },
+        {
+          "pixels": 4200,
+          "bboxRaw": [
+            952,
+            697,
+            1042,
+            766
+          ],
+          "centerRaw": [
+            995.2619047619048,
+            728.8054761904762
+          ]
+        }
+      ]
+    },
+    {
+      "frame": "atk_right_3",
+      "hands": [
+        {
+          "pixels": 3590,
+          "bboxRaw": [
+            419,
+            857,
+            494,
+            932
+          ],
+          "centerRaw": [
+            454.2428969359332,
+            893.4259052924791
+          ]
+        },
+        {
+          "pixels": 4303,
+          "bboxRaw": [
+            953,
+            697,
+            1042,
+            766
+          ],
+          "centerRaw": [
+            996.0392749244713,
+            728.4610736695329
+          ]
+        }
+      ]
+    }
+  ],
+  "activeRightFistCentersRaw": [
+    {
+      "x": 974.1537722248919,
+      "y": 752.1950985103316
+    },
+    {
+      "x": 995.2619047619048,
+      "y": 728.8054761904762
+    },
+    {
+      "x": 996.0392749244713,
+      "y": 728.4610736695329
+    }
+  ],
+  "distanceFromCenterlineRaw": [
+    398.0,
+    419.1081325370129,
+    419.88550269957943
+  ],
+  "fistCenterYRaw": [
+    752.1950985103316,
+    728.8054761904762,
+    728.4610736695329
+  ],
+  "fistCounts": [
+    2,
+    2,
+    2
+  ],
+  "criteria": {
+    "C1_directionRightAndRangeLe60": {
+      "observed": [
+        398.0,
+        419.1081325370129,
+        419.88550269957943
+      ],
+      "thresholdRange": 60,
+      "pass": true
+    },
+    "C2_heightRangeLe60AndAllLe820": {
+      "observed": [
+        752.1950985103316,
+        728.8054761904762,
+        728.4610736695329
+      ],
+      "thresholdRange": 60,
+      "maximum": 820,
+      "pass": true
+    },
+    "C3_extensionEachGe350": {
+      "observed": [
+        398.0,
+        419.1081325370129,
+        419.88550269957943
+      ],
+      "threshold": 350,
+      "pass": true
+    },
+    "C4_exactlyTwoFistsEachFrame": {
+      "observed": [
+        2,
+        2,
+        2
+      ],
+      "pass": true
+    },
+    "C5_sequentialChainSha": {
+      "pass": true
+    }
+  },
+  "overallPass": true,
+  "visualReview": {
+    "contactSheet": "contact/fist_v3_3up.png",
+    "description": "All three action frames use the image-right fist for a horizontal rightward punch; the image-left fist remains retracted. The action arm is visually straight and the fist stays in the shoulder-height band; baseline idle is included in the contact sheet.",
+    "status": "codex_reviewed_pending_Leo"
+  }
+}

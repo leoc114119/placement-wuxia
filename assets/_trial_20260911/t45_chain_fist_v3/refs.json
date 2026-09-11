@@ -1,0 +1,26 @@
+{
+  "task": "T45",
+  "seq": "354",
+  "referenceRoles": {
+    "image1": "previous sequential chain output: identity, style, continuity, and current pose",
+    "image2": "PM2-provided fist_A_right_out pose diagram: right arm is the action limb; blue=action, gray=retracted",
+    "image3": "v2 atk_right_1 finished frame: absolute right-punch endpoint, shoulder-height and fully-extended position anchor"
+  },
+  "references": [
+    {
+      "path": "anchor/atk_right_1.png",
+      "sha256": "a5dd353d5e0f277f664329b24e1a98437bf6547d592a21aeb4534d40f5be25e0",
+      "visualCheck": "right-facing hero with image-right fist fully extended at shoulder height; image-left fist retracted",
+      "allowed": ["absolute right-fist endpoint", "height", "extension", "identity continuity"],
+      "forbidden": ["new design", "left-hand punch", "text", "watermark"]
+    },
+    {
+      "path": "pose_diagrams/fist_A_right_out.png",
+      "sha256": "1815620ae898a73b94941fecd5e9b77f3fe39e1f184c22ad7598b7ef5994d41f",
+      "visualCheck": "PM2 diagram shows blue image-right arm extended horizontally and gray image-left arm retracted",
+      "allowed": ["right-arm action phase"],
+      "forbidden": ["identity", "style", "camera", "scale"]
+    }
+  ],
+  "forbidden": ["contact-sheet-as-input", "runtime-write", "batch-expansion", "left-hand-alternation"]
+}

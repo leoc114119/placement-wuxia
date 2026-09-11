@@ -1,0 +1,9 @@
+{
+  "provider": "codex-native",
+  "model": "built-in image_gen",
+  "cost": 0,
+  "generationCount": 2,
+  "poseDiagramProvider": "PM2",
+  "anchorSource": "T45 seq=352 v2 atk_right_1_chain",
+  "runtimeTouched": false
+}
