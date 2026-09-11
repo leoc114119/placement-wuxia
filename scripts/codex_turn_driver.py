@@ -77,10 +77,24 @@ def log(msg):
 
 
 def load_state():
+    """读取多角色状态。
+
+    结构：{"roles": {"art": {role,thread,watermark_seq,wakes}, "arch": {...}}}
+    兼容旧的单角色扁平结构（自动迁移为 roles.<role>）。
+    """
     try:
-        return json.loads(STATE.read_text(encoding="utf-8"))
+        raw = json.loads(STATE.read_text(encoding="utf-8"))
     except Exception:
-        return {}
+        raw = {}
+    if "roles" in raw and isinstance(raw["roles"], dict):
+        return raw
+    if "role" in raw:                       # 旧扁平结构 → 迁移
+        r = raw.get("role", "art")
+        return {"roles": {r: {"role": r,
+                              "thread": raw.get("thread"),
+                              "watermark_seq": raw.get("watermark_seq", 0),
+                              "wakes": raw.get("wakes", [])}}}
+    return {"roles": {}}
 
 
 def save_state(st):
@@ -88,6 +102,12 @@ def save_state(st):
         STATE.write_text(json.dumps(st, ensure_ascii=False, indent=1), encoding="utf-8")
     except Exception as e:
         log(f"state write failed: {e}")
+
+
+def role_state(st, role):
+    """取（必要时创建）指定角色的状态槽。每个角色独立 thread/水位线/限频。"""
+    return st.setdefault("roles", {}).setdefault(
+        role, {"role": role, "thread": None, "watermark_seq": 0, "wakes": []})
 
 
 def newest_rollout_thread():
@@ -181,29 +201,36 @@ def main():
     a = ap.parse_args()
 
     st = load_state()
-    st.setdefault("role", a.role)
-    thread = st.get("thread") or newest_rollout_thread()
-    wm = int(st.get("watermark_seq", 0))
-    wakes = [t for t in st.get("wakes", []) if time.time() - t < 3600]
+    rs = role_state(st, a.role)                 # ← 每个角色独立状态槽
+    # ⚠️ 不可用 newest_rollout_thread() 兜底：那是「全局最新」线程，
+    #    会让新角色（如 arch）错误地指向别的角色的线程。
+    #    未显式配线程时置空，由 --set-thread 显式指定。
+    thread = rs.get("thread")
+    wm = int(rs.get("watermark_seq", 0))
+    wakes = [t for t in rs.get("wakes", []) if time.time() - t < 3600]
 
     if a.set_thread:
-        st["thread"] = a.set_thread
+        rs["thread"] = a.set_thread
         save_state(st)
-        print(f"目标线程已设为 {a.set_thread}")
+        print(f"[{a.role}] 目标线程已设为 {a.set_thread}")
         return 0
     if a.reset_watermark:
-        st["watermark_seq"] = 0
+        rs["watermark_seq"] = 0
         save_state(st)
-        print("水位线已归零")
+        print(f"[{a.role}] 水位线已归零")
         return 0
     if a.status:
-        fresh = unread_after(st["role"], wm)
-        print(f"role={st['role']} thread={thread}")
+        if a.role != (st.get('roles') and next(iter(st['roles'])) or a.role) or True:
+            pass
+        fresh = unread_after(a.role, wm)
+        print(f"role={a.role} thread={thread}")
         print(f"watermark={wm} 近一小时唤醒次数={len(wakes)}/{MAX_WAKES_PER_HOUR}")
         print(f"水位线之后的新消息={len(fresh)}")
         for m in fresh[-6:]:
             print(f"  seq={m.get('seq')} [{m.get('kind')}] {str(m.get('payload',{}).get('subject',''))[:80]}")
         print(f"是否在跑={turn_in_progress(thread) if thread else 'n/a'}")
+        if not thread:
+            print(f"⚠️ [{a.role}] 未配线程 —— 请用 --role {a.role} --set-thread <UUID> 指定")
         return 0
 
     log(f"invoked role={a.role} thread={thread} wm={wm} wakes1h={len(wakes)} event={a.event!r} payload={a.payload[:300]!r}")
@@ -211,12 +238,12 @@ def main():
     if not acquire_lock():
         return 0
     try:
-        return _drive(a, st, thread, wm, wakes)
+        return _drive(a, st, rs, thread, wm, wakes)
     finally:
         release_lock()
 
 
-def _drive(a, st, thread, wm, wakes):
+def _drive(a, st, rs, thread, wm, wakes):
 
     if not thread:
         log("no target thread; skip")
@@ -230,7 +257,7 @@ def _drive(a, st, thread, wm, wakes):
     if turn_in_progress(thread):
         log("turn in progress -> still queue (queue semantics are non-intrusive)")
 
-    fresh = unread_after(st["role"], wm)
+    fresh = unread_after(a.role, wm)
     if not fresh:
         log("no new messages after watermark; skip")
         return 0
@@ -254,13 +281,13 @@ def _drive(a, st, thread, wm, wakes):
         log(f"queue failed: {e}")
 
     if ok:
-        st["watermark_seq"] = max(int(m.get("seq") or 0) for m in fresh)
+        rs["watermark_seq"] = max(int(m.get("seq") or 0) for m in fresh)
         wakes.append(time.time())
-        st["wakes"] = wakes[-20:]
-        st["thread"] = thread
-        st["role"] = a.role
+        rs["wakes"] = wakes[-20:]
+        rs["thread"] = thread
+        rs["role"] = a.role
         save_state(st)
-        log(f"woke thread, watermark -> {st['watermark_seq']}")
+        log(f"woke thread, watermark -> {rs['watermark_seq']}")
     return 0
 
 
