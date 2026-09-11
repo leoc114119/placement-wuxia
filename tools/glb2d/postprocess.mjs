@@ -27,7 +27,10 @@ const LEVELS   = +flag('levels', 8);        // 每通道量化级数
 const OUTLINE  = +flag('outline', 1);       // 描边宽度（像素）
 const DTHRESH  = +flag('depth-thresh', 0.012);
 const NTHRESH  = +flag('normal-thresh', 0.35);  // 1-dot(n1,n2) 阈值，越大越少边
-const PALETTE  = +flag('palette', 0);       // >0 时改用 k-means 调色板量化
+const PALETTE  = +flag('palette', 0);
+// 描边会额外占用调色板色位（墨色 + 可能多档），故量化目标色数应预留余量：
+// 目标 256 色 PNG-8 时，量化用 248 色、其余留给描边与抗锯齿边，避免超 256。
+const PALETTE_RESERVE = +flag('palette-reserve', 8);       // >0 时改用 k-means 调色板量化
 const NO_OUTLINE = !!flag('no-outline', false);
 const OUTLINE_RGB = [26, 24, 28];           // 墨色，不纯黑
 
@@ -110,24 +113,25 @@ function clamp255(v) { return v < 0 ? 0 : v > 255 ? 255 : Math.round(v); }
 let qr = new Uint8Array(N), qg = new Uint8Array(N), qb = new Uint8Array(N);
 
 if (PALETTE > 0) {
+  const KQ = Math.max(2, PALETTE - PALETTE_RESERVE);
   // k-means 调色板（只在人物像素上跑）
   const px = [];
   for (let i = 0; i < N; i++) if (alpha[i]) px.push([color[i*4], color[i*4+1], color[i*4+2]]);
   // 初始化：均匀抽样
   let cent = [];
-  for (let k = 0; k < PALETTE; k++) cent.push(px[Math.floor(px.length * (k + 0.5) / PALETTE)].slice());
+  for (let k = 0; k < KQ; k++) cent.push(px[Math.floor(px.length * (k + 0.5) / KQ)].slice());
   for (let it = 0; it < 12; it++) {
     const sum = cent.map(() => [0, 0, 0, 0]);
     for (const p of px) {
       let bi = 0, bd = Infinity;
-      for (let k = 0; k < PALETTE; k++) {
+      for (let k = 0; k < KQ; k++) {
         const dr = p[0]-cent[k][0], dg = p[1]-cent[k][1], db = p[2]-cent[k][2];
         const d = dr*dr + dg*dg + db*db;
         if (d < bd) { bd = d; bi = k; }
       }
       sum[bi][0]+=p[0]; sum[bi][1]+=p[1]; sum[bi][2]+=p[2]; sum[bi][3]++;
     }
-    for (let k = 0; k < PALETTE; k++) if (sum[k][3]) {
+    for (let k = 0; k < KQ; k++) if (sum[k][3]) {
       cent[k] = [sum[k][0]/sum[k][3], sum[k][1]/sum[k][3], sum[k][2]/sum[k][3]];
     }
   }
@@ -135,7 +139,7 @@ if (PALETTE > 0) {
     if (!alpha[i]) continue;
     const p = [color[i*4], color[i*4+1], color[i*4+2]];
     let bi = 0, bd = Infinity;
-    for (let k = 0; k < PALETTE; k++) {
+    for (let k = 0; k < KQ; k++) {
       const dr = p[0]-cent[k][0], dg = p[1]-cent[k][1], db = p[2]-cent[k][2];
       const d = dr*dr + dg*dg + db*db;
       if (d < bd) { bd = d; bi = k; }

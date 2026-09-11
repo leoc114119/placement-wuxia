@@ -21,7 +21,7 @@ W=$(( 240 * SS )); H=$(( 320 * SS ))
 # 后处理参数（数组形式，保证正确拆分）
 # 阈值标定：法线阈值 0.95（高）—— 避免把头发分缕、衣褶等"细纹理"也描出来，
 # 否则头发会呈"铁丝网"观感；深度阈值 0.08 —— 只描真正的前后层交界。
-PP=(--palette 16 --outline 1 --depth-thresh 0.08 --normal-thresh 0.95 --chroma-blur 0 --speckle 1)
+PP=(--palette 256 --outline 1 --depth-thresh 0.08 --normal-thresh 0.95 --chroma-blur 0 --speckle 1)
 
 for yaw in "${YAWS[@]}"; do
   for (( i=0; i<NF; i++ )); do
