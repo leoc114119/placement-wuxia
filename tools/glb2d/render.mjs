@@ -201,12 +201,38 @@ for (let v = 0; v < nVerts; v++) {
   if (q[0]<mn[0]) mn[0]=q[0]; if (q[0]>mx[0]) mx[0]=q[0];
   if (q[1]<mn[1]) mn[1]=q[1]; if (q[1]>mx[1]) mx[1]=q[1];
 }
-// fit so the character height maps to 0.80*H (leave margin), centred
-const charH = mx[1]-mn[1], charW = mx[0]-mn[0];
+// ————— 相机拟合 —————
+// ⚠️ 关键：动画必须用「固定机位」。若每帧各自拟合包围盒，会把角色的上下位移
+//    整个抵消掉（实测：跳跃 12 帧脚底 y 全为 308 → 完全看不出起跳/落地）。
+//    故取「模型静止姿态」的包围盒作为唯一的拟合基准。
+const FIXCAM = !(process.argv[15] === 'perframe');
+let fitSrc = null;
+if (FIXCAM) {
+  // 用静止姿态（nodeTRS，不带动画）重算一次蒙皮，取包围盒
+  const restWorld2 = worldMats(localMats(nodeTRS));
+  const jm2 = skin.joints.map((ni, ji) => {
+    const ibm = new Float64Array(16);
+    for (let k = 0; k < 16; k++) ibm[k] = IBM[ji*16+k];
+    return mul(restWorld2[ni], ibm);
+  });
+  let a=1e9,b=-1e9;
+  for (let v = 0; v < nVerts; v++) {
+    const p=[POS[v*3],POS[v*3+1],POS[v*3+2]];
+    let x=0,y=0,oz=0;
+    for (let k=0;k<4;k++){ const w=WE[v*4+k]; if(!w)continue; const m=jm2[JO[v*4+k]];
+      const q=xformPoint(m,p); x+=q[0]*w; y+=q[1]*w; oz+=q[2]*w; }
+    const q=xformPoint(rot,[x,y,oz]);
+    if(q[1]<a)a=q[1]; if(q[1]>b)b=q[1];
+  }
+  fitSrc = { minY: a, maxY: b };
+}
+const charH = FIXCAM ? (fitSrc.maxY - fitSrc.minY) : (mx[1]-mn[1]);
+const charW = mx[0]-mn[0];
 const scale = Math.min((H*0.80)/charH, (W*0.92)/charW);
-const cxModel = (mn[0]+mx[0])/2, cyModel = (mn[1]+mx[1])/2;
+const cxModel = (mn[0]+mx[0])/2;
+const minYRef = FIXCAM ? fitSrc.minY : mn[1];
 const baselineY = H * 0.96;
-const toScreen = (q) => [ W/2 + (q[0]-cxModel)*scale, baselineY - (q[1]-mn[1])*scale ];
+const toScreen = (q) => [ W/2 + (q[0]-cxModel)*scale, baselineY - (q[1]-minYRef)*scale ];
 
 // ---------- texture ----------
 let TEX=null, TW=+texWs, TH=+texHs;
