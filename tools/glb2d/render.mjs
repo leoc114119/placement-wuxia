@@ -176,6 +176,7 @@ if (texPath && texPath !== 'none') TEX = fs.readFileSync(texPath);
 // ---------- raster ----------
 const color = new Float32Array(W*H*3);
 const depth = new Float32Array(W*H).fill(Infinity);
+const nbuf  = new Float32Array(W*H*3);   // view-space normal, for outline post-process
 const alpha = new Uint8Array(W*H);
 color.fill(1);
 
@@ -220,13 +221,35 @@ for (let f = 0; f < tri; f++) {
       const ti=(ty*TW+tx)*4;
       r=TEX[ti]/255; g=TEX[ti+1]/255; b=TEX[ti+2]/255;
     }
-    if (mode === 'lit') {
-      const n = [ w1*P[0].n[0]+w2*P[1].n[0]+w0*P[2].n[0],
-                  w1*P[0].n[1]+w2*P[1].n[1]+w0*P[2].n[1],
-                  w1*P[0].n[2]+w2*P[1].n[2]+w0*P[2].n[2] ];
-      const nl = Math.hypot(n[0],n[1],n[2])||1;
-      let d = (n[0]*L[0]+n[1]*L[1]+n[2]*L[2])/nl;
-      d = 0.34 + 0.66*Math.max(0,d);
+    // normal is always computed: lighting needs it, and the outline post-process reads it
+    const n = [ w1*P[0].n[0]+w2*P[1].n[0]+w0*P[2].n[0],
+                w1*P[0].n[1]+w2*P[1].n[1]+w0*P[2].n[1],
+                w1*P[0].n[2]+w2*P[1].n[2]+w0*P[2].n[2] ];
+    const nl = Math.hypot(n[0],n[1],n[2])||1;
+    const nx=n[0]/nl, ny=n[1]/nl, nz=n[2]/nl;
+    nbuf[o*3]=nx; nbuf[o*3+1]=ny; nbuf[o*3+2]=nz;
+    if (mode === 'lit' || mode === 'relief' || mode === 'cel' || mode === 'flatcel') {
+      const kd = Math.max(0, nx*L[0]+ny*L[1]+nz*L[2]);          // key
+      const fd = Math.max(0, nx*(-L[0]) + ny*0.2 + nz*(-L[2])); // fill
+      const rd = Math.max(0, ny*0.7 + nz*0.55 - nx*0.3);        // rim
+      let d;
+      if (mode === 'relief') {
+        d = 0.10 + 0.95*Math.pow(kd,0.6) + 0.55*Math.pow(rd,2.0);
+      } else if (mode === 'cel') {
+        // hard-banded diffuse (cel look) + separate rim
+        const STEPS = 4;
+        const band = Math.ceil(kd*STEPS)/STEPS;
+        d = 0.34 + 0.66*Math.max(0.25, band) + 0.30*Math.pow(rd,3.0);
+      } else if (mode === 'flatcel') {
+        // 接近我们 2D 画风的「平涂」：光照压到极窄区间，只留很轻的形体提示，
+        // 让色彩量化后趋近平涂块面；描边交给后处理。
+        const STEPS = 3;
+        const band = Math.ceil(kd*STEPS)/STEPS;
+        d = 0.86 + 0.14*band;                 // 亮度区间 0.86~1.00，几乎平涂
+        d += 0.06*Math.pow(rd,4.0);           // 极轻的边缘光
+      } else {
+        d = 0.22 + 0.62*Math.pow(kd,0.8) + 0.20*fd + 0.42*Math.pow(rd,2.2);
+      }
       r*=d; g*=d; b*=d;
     }
     color[o*3]=r; color[o*3+1]=g; color[o*3+2]=b;
@@ -241,6 +264,18 @@ for (let i=0;i<W*H;i++) {
   out[i*4+3]=alpha[i];
 }
 fs.writeFileSync(outRaw, out);
+
+// optional aux buffers for the outline post-process (12th arg = prefix)
+const auxPrefix = process.argv[13];  // argv[2..12] 是位置参数（含 yaw），aux 在最后
+if (auxPrefix) {
+  const dp = Buffer.alloc(W*H*4);
+  for (let i=0;i<W*H;i++) dp.writeFloatLE(Number.isFinite(depth[i]) ? depth[i] : 1e9, i*4);
+  fs.writeFileSync(auxPrefix + '.depth', dp);
+  const np = Buffer.alloc(W*H*4*3);
+  for (let i=0;i<W*H*3;i++) np.writeFloatLE(nbuf[i], i*4);
+  fs.writeFileSync(auxPrefix + '.normal', np);
+}
+
 console.log(JSON.stringify({ anim: animName, t: timeArg, mode, yaw: yawDeg,
   charH: +charH.toFixed(4), charW: +charW.toFixed(4), scale: +scale.toFixed(1),
   pxHeight: Math.round(charH*scale), pxWidth: Math.round(charW*scale),
