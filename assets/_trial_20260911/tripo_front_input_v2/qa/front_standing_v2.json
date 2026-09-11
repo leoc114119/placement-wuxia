@@ -1,0 +1,82 @@
+{
+  "task": "T45",
+  "seq": "362",
+  "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/tripo_front_input_v2/hero_front_standing_v2.png",
+  "sha256": "84af5f8aebfcb0b18ec0f946614272b4b477376ccfa63d4905e28cf26c39bb90",
+  "size": [
+    1086,
+    1448
+  ],
+  "mode": "RGB",
+  "ratio": 0.75,
+  "criteria": {
+    "sizeLongEdgeAtLeast1024": {
+      "observed": 1448,
+      "threshold": 1024,
+      "pass": true
+    },
+    "ratio3to4Within2Percent": {
+      "observed": 0.75,
+      "target": 0.75,
+      "tolerance": 0.02,
+      "pass": true
+    },
+    "pureWhiteCornersAndEdges": {
+      "edgeMinChannel": 253,
+      "threshold": 250,
+      "pass": true
+    },
+    "singleSubjectByBackgroundFlood": {
+      "threshold": 240,
+      "backgroundConnectivity": 4,
+      "subjectConnectivity": 8,
+      "count": 7,
+      "componentSizes": [
+        387043,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "pass": false
+    },
+    "armTorsoGap": {
+      "method": "background threshold 240; rows in subject bbox 35%..75%; require >=3 foreground runs",
+      "passRate": 0.41020408163265304,
+      "threshold": 0.9,
+      "pass": false
+    },
+    "bodyMarginAtLeast5Percent": {
+      "bbox": [
+        216,
+        112,
+        870,
+        1337
+      ],
+      "margins": {
+        "left": 0.19889502762430938,
+        "right": 0.19889502762430938,
+        "top": 0.07734806629834254,
+        "bottom": 0.07665745856353591
+      },
+      "threshold": 0.05,
+      "pass": true
+    },
+    "noTextVisual": {
+      "observed": true,
+      "method": "Codex single-image visual review",
+      "pass": true
+    }
+  },
+  "manualPoseReview": {
+    "frontFacing": true,
+    "aPoseNotTPose": true,
+    "headSimplified": true,
+    "armsVisiblySeparate": true,
+    "legsAndFeetStable": true
+  },
+  "overallPass": false,
+  "conclusion": "mechanical_gate_failed_stop"
+}

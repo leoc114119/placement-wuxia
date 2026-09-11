@@ -1,0 +1,18 @@
+{
+  "task": "T45",
+  "seq": "362",
+  "revision": "front-standing-v2-a-pose-head-simplified",
+  "artifactStage": "candidate",
+  "visualReview": "manual_reviewed",
+  "specGate": "failed",
+  "integrationGate": "candidate-only",
+  "runtimeTouched": false,
+  "transparentJudged": false,
+  "ratioJudged": true,
+  "result": "mechanical_gate_failed_stop",
+  "qa": "qa/front_standing_v2.json",
+  "failureReasons": [
+    "background-flood subject component count=7, required=1",
+    "arm-torso gap pass rate=0.4102040816, required>=0.90"
+  ]
+}

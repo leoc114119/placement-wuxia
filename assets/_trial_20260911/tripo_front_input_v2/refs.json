@@ -1,0 +1,15 @@
+{
+  "task": "T45",
+  "seq": "362",
+  "referenceRoles": {
+    "image1": "identity and rendering-style anchor only; pose may be changed to the specified front A-pose",
+    "target": "single full-front A-pose standing reference for manual Tripo upload"
+  },
+  "reference": {
+    "path": "ref_style_900x1200.png",
+    "sha256": "27ba5f8ea14770b82a8cfd1ebfe21d7bcf1a69b94c047006af180c550cdcd0ca",
+    "size": [900, 1200],
+    "visualCheck": "single chibi wuxia hero on white background; used for face, hair family, costume, palette, linework, and chibi proportions"
+  },
+  "forbidden": ["vertical arms touching torso", "T-pose", "three-quarter", "weapon", "text", "watermark", "shadow", "second character", "runtime-write"]
+}
