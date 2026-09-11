@@ -1,0 +1,30 @@
+{
+  "task": "T45",
+  "seq": "356",
+  "referenceRoles": {
+    "image1": "previous sequential chain output: identity, style, camera, continuity, and current fist phase",
+    "image2": "v2 atk_right_1 finished frame: only the rightward forward-punch shape, shoulder-height band, and endpoint position"
+  },
+  "positionVocabulary": {
+    "fistAlpha": "the fist nearer image-right in idle_right, approximately (183,193) on 240x320",
+    "fistBeta": "the fist nearer image-left and lower in idle_right, approximately (101,205) on 240x320",
+    "forbidden": "left/right hand anatomical naming"
+  },
+  "references": [
+    {
+      "path": "chain/idle_right.png",
+      "sha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "visualCheck": "right-facing idle hero with alpha at image-right and beta nearer image-left/lower waist",
+      "allowed": ["identity", "starting fist positions", "camera", "costume"],
+      "forbidden": ["new action design", "anatomical left/right hand naming"]
+    },
+    {
+      "path": "assets/_trial_20260910/t45_chain_limb_alternation_v2/raw/atk_right_1_chain.png",
+      "sha256": "a5dd353d5e0f277f664329b24e1a98437bf6547d592a21aeb4534d40f5be25e0",
+      "visualCheck": "finished rightward forward punch at shoulder height with the action arm fully extended",
+      "allowed": ["rightward punch direction", "forward fist shape", "shoulder height", "endpoint extent"],
+      "forbidden": ["identity replacement", "new costume", "opposite direction", "text", "watermark"]
+    }
+  ],
+  "forbidden": ["pose-diagram-generation", "contact-sheet-as-input", "runtime-write", "batch-expansion"]
+}

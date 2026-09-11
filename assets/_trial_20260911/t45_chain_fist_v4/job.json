@@ -1,0 +1,13 @@
+{
+  "task": "T45",
+  "seq": "356",
+  "revision": "fist-alternation-v4",
+  "artifactStage": "candidate",
+  "visualReview": "codex_reviewed_pending_Leo",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "transparentJudged": false,
+  "ratioJudged": false,
+  "result": "mechanical_fail_c3_same_hand"
+}

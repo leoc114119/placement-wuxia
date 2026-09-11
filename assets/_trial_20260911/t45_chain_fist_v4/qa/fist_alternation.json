@@ -1,0 +1,278 @@
+{
+  "task": "T45",
+  "seq": "356",
+  "chain": "B_fist_alternation_v4",
+  "runtimeTouched": false,
+  "transparentJudged": false,
+  "ratioJudged": false,
+  "chainIntegrity": [
+    {
+      "frame": "atk_right_1",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v4/chain/idle_right.png",
+      "inputSha256": "5f417df27ecfdd4ae5c73280068296d61a703fb13f24ad9bdc60b472f5a29e7f",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v4/raw/atk_right_1.png",
+      "outputSha256": "ae753ecece8adaac56783c0ab0cc8876256788e2553d026781b781b3260f0f29",
+      "inputMatchesPreviousOutput": true
+    },
+    {
+      "frame": "atk_right_2",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v4/raw/atk_right_1.png",
+      "inputSha256": "ae753ecece8adaac56783c0ab0cc8876256788e2553d026781b781b3260f0f29",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v4/raw/atk_right_2.png",
+      "outputSha256": "e5628e1d8c63630561fb3b2643cd79e71dff4ca0da9cd2f2c06e130935a7fbf5",
+      "inputMatchesPreviousOutput": true
+    },
+    {
+      "frame": "atk_right_3",
+      "input": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v4/raw/atk_right_2.png",
+      "inputSha256": "e5628e1d8c63630561fb3b2643cd79e71dff4ca0da9cd2f2c06e130935a7fbf5",
+      "output": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260911/t45_chain_fist_v4/raw/atk_right_3.png",
+      "outputSha256": "3dd5e70b59a0aa3395a01a113dd7f968aefc0df41a116061425ffc41b6eddf48",
+      "inputMatchesPreviousOutput": true
+    }
+  ],
+  "chainIntegrityPass": true,
+  "normalization": {
+    "rawCanvas": [
+      1086,
+      1448
+    ],
+    "comparisonCanvas": [
+      240,
+      320
+    ],
+    "scaleX": 0.22099447513812154,
+    "scaleY": 0.22099447513812154
+  },
+  "frames": [
+    {
+      "frame": "atk_right_1",
+      "hands": [
+        {
+          "pixels": 3489,
+          "bboxRaw": [
+            421,
+            856,
+            497,
+            931
+          ],
+          "centerRaw": [
+            455.60160504442536,
+            892.9532817426197
+          ],
+          "centerNormalized": [
+            100.68543757887852,
+            197.3377418215734
+          ]
+        },
+        {
+          "pixels": 4232,
+          "bboxRaw": [
+            959,
+            685,
+            1049,
+            758
+          ],
+          "centerRaw": [
+            1001.4284026465028,
+            719.3846880907372
+          ],
+          "centerNormalized": [
+            221.31014423127132,
+            158.98004156701373
+          ]
+        }
+      ]
+    },
+    {
+      "frame": "atk_right_2",
+      "hands": [
+        {
+          "pixels": 3728,
+          "bboxRaw": [
+            409,
+            849,
+            485,
+            925
+          ],
+          "centerRaw": [
+            444.64511802575106,
+            885.4479613733905
+          ],
+          "centerNormalized": [
+            98.26411448082897,
+            195.67910748583216
+          ]
+        },
+        {
+          "pixels": 4535,
+          "bboxRaw": [
+            969,
+            682,
+            1059,
+            756
+          ],
+          "centerRaw": [
+            1011.6487320837928,
+            715.8339581036383
+          ],
+          "centerNormalized": [
+            223.5687805710039,
+            158.19534985715762
+          ]
+        }
+      ]
+    },
+    {
+      "frame": "atk_right_3",
+      "hands": [
+        {
+          "pixels": 3672,
+          "bboxRaw": [
+            403,
+            842,
+            478,
+            917
+          ],
+          "centerRaw": [
+            438.53839869281046,
+            877.906862745098
+          ],
+          "centerNormalized": [
+            96.91456324702993,
+            194.01256635250783
+          ]
+        },
+        {
+          "pixels": 4527,
+          "bboxRaw": [
+            969,
+            681,
+            1059,
+            756
+          ],
+          "centerRaw": [
+            1011.8009719461012,
+            715.2728075988514
+          ],
+          "centerNormalized": [
+            223.60242473946985,
+            158.07133869587875
+          ]
+        }
+      ]
+    }
+  ],
+  "normalizedHands": [
+    [
+      {
+        "x": 100.68543757887852,
+        "y": 197.3377418215734
+      },
+      {
+        "x": 221.31014423127132,
+        "y": 158.98004156701373
+      }
+    ],
+    [
+      {
+        "x": 98.26411448082897,
+        "y": 195.67910748583216
+      },
+      {
+        "x": 223.5687805710039,
+        "y": 158.19534985715762
+      }
+    ],
+    [
+      {
+        "x": 96.91456324702993,
+        "y": 194.01256635250783
+      },
+      {
+        "x": 223.60242473946985,
+        "y": 158.07133869587875
+      }
+    ]
+  ],
+  "frontZone": {
+    "xMin": 190,
+    "yMin": 150,
+    "yMax": 180,
+    "observed": [
+      true,
+      true,
+      true
+    ]
+  },
+  "waistZone": {
+    "xMin": 85,
+    "xMax": 135,
+    "yMin": 185,
+    "yMax": 215,
+    "observed": [
+      true,
+      true,
+      true
+    ]
+  },
+  "torsoBandDiffPercent": [
+    14.560868736902266,
+    10.226921530026884
+  ],
+  "observedPhaseByPositionReview": [
+    "alpha",
+    "alpha",
+    "alpha"
+  ],
+  "criteria": {
+    "C1_oneFrontFistAndOneWaistFistEachFrame": {
+      "observedFrontZone": [
+        true,
+        true,
+        true
+      ],
+      "observedWaistZone": [
+        true,
+        true,
+        true
+      ],
+      "pass": true
+    },
+    "C2_adjacentTorsoDiffAtLeast6Percent": {
+      "observed": [
+        14.560868736902266,
+        10.226921530026884
+      ],
+      "threshold": 6,
+      "pass": true
+    },
+    "C3_manualHandAlternation": {
+      "observed": [
+        "alpha",
+        "alpha",
+        "alpha"
+      ],
+      "required": "alpha→beta→alpha or beta→alpha→beta",
+      "pass": false
+    },
+    "C4_exactlyTwoFistsEachFrame": {
+      "observed": [
+        2,
+        2,
+        2
+      ],
+      "pass": true
+    },
+    "C5_sequentialChainSha": {
+      "pass": true
+    }
+  },
+  "overallPass": false,
+  "visualReview": {
+    "contactSheet": "contact/fist_v4_4up.png",
+    "description": "All three generated action frames show the same alpha-position fist remaining in the front zone toward image-right; beta remains at the waist. Direction is constant, but the required alpha→beta→alpha hand alternation is not visible.",
+    "status": "codex_reviewed_pending_Leo"
+  },
+  "conclusion": "FAIL: v4 did not produce hand alternation; per handoff red line, stop without extra generation and report to PM2/Leo."
+}
