@@ -46,8 +46,8 @@ from datetime import datetime, timezone
 
 # ---------------------------------------------------------------- 常量（注册表/限额）
 
-SCHEMA_VERSION = 1
-SERVER_VERSION = "1.1.1"
+SCHEMA_VERSION = 2
+SERVER_VERSION = "1.2.0"
 
 ROLES = ("rd", "art", "arch")                     # SPEC §2.1 角色注册表（固定）
 PROJECTS = ("placement-wuxia",)                   # SPEC §2.1 project_id 现仅此一个
@@ -145,6 +145,11 @@ _SCHEMA_SQL = (
      " ack_note TEXT,"
      " ack_observed_sha TEXT,"
      " acked_at TEXT,"
+     # v2：delivered_at = 消息被「真正投进某个 agent 上下文」的时刻。
+     # 与 ack 的区别：ack 是「处置完毕」（语义层，要干活）；
+     # delivered 是「已送达」（运输层，投递即打）。**记账型轮询不打标**
+     # ——定时器只统计未读数、不构成送达，否则每 2 分钟的机器人会把整箱标成已读。
+     " delivered_at TEXT,"
      " reconciled INTEGER NOT NULL DEFAULT 0,"          # SPEC §2.3 代发标记
      " created_at TEXT NOT NULL,"
      " UNIQUE (project_id, recipient, idempotency_key)"  # D2 幂等作用域
@@ -223,8 +228,20 @@ def _init_schema(conn: sqlite3.Connection) -> None:
 
 
 def _migrate(conn: sqlite3.Connection, from_ver: int) -> None:
-    """版本迁移入口。v1 为首个版本，无更老版本；后续版本在此追加分步迁移。"""
-    raise ProjbusError("schema 迁移保护：v%d 无迁移路径（本工具 v%d）" % (from_ver, SCHEMA_VERSION))
+    """版本迁移入口。逐版本分步升级，每步可重入（IF NOT EXISTS / 容错）。
+
+    ⚠️ 本函数在 connect() 的 `BEGIN IMMEDIATE` 事务内被调用，
+    故**不得自行 commit**（内部 commit 会撞「no transaction is active」），
+    改库版本号也只 UPDATE、由调用方统一提交。
+    """
+    ver = from_ver
+    if ver < 2:
+        # v2：新增 delivered_at（运输层「已送达」时刻，与语义层 ack_state 分离）
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(messages)")}
+        if "delivered_at" not in cols:
+            conn.execute("ALTER TABLE messages ADD COLUMN delivered_at TEXT")
+        ver = 2
+    conn.execute("UPDATE projbus_meta SET value=? WHERE key='schema_version'", (str(ver),))
 
 
 def _now() -> str:
@@ -400,6 +417,72 @@ def get_message(db_path=None, message_id: str = ""):
         row = conn.execute("SELECT %s FROM messages WHERE message_id=?" % _MSG_COLS,
                            (message_id,)).fetchone()
         return _row_to_msg(row) if row else None
+    finally:
+        conn.close()
+
+
+def mark_delivered(db_path=None, *, recipient: str, message_ids=None, up_to_seq=None) -> int:
+    """标记「已送达」＝消息已被真正投进某个 agent 的上下文（运输层，v2）。
+
+    与 ack 的区别（这是本字段存在的全部理由）：
+      - **ack** = 处置完毕（语义层）：accepted 要 fetch 验 SHA、needs_info 要提问，都必须先干活。
+      - **delivered** = 送达到了（运输层）：投递那一刻即可打标，不需要任何判断。
+    两者不可合并——ack 永远不可能自动，而「未读数」若只认 ack，
+    就会把「没人看过」和「看完了没回执」混成一个数（2026-09-11 rd 箱积压 104 条即此因）。
+
+    ⚠️ 只有**真投递路径**才能调用本函数（codex_turn_driver 塞线程、
+    SessionStart 钩子注入上下文）。**记账型轮询一律不打标**——定时器每 2 分钟
+    统计未读数，若也打标，整箱会被机器人标成已读、真人再也看不到。
+
+    up_to_seq：把该收件箱 seq ≤ N 的全部未送达消息一次打标（投递时常用）。
+    """
+    _check_role(recipient, "recipient")
+    ids = list(message_ids or [])
+    if not ids and up_to_seq is None:
+        raise ProjbusError("mark_delivered 需要 message_ids 或 up_to_seq")
+    conn = connect(db_path)
+    try:
+        now = _now()
+        # 只标「未 ack」的消息：已处置的不在未读池，标了没有意义，
+        # 也让 delivered_at 的语义保持纯净（= 尚未处置但已送达）。
+        if ids:
+            ph = ",".join("?" for _ in ids)
+            cur = conn.execute(
+                "UPDATE messages SET delivered_at=? "
+                "WHERE recipient=? AND ack_state IS NULL AND delivered_at IS NULL "
+                "AND message_id IN (%s)" % ph,
+                [now, recipient, *ids])
+        else:
+            cur = conn.execute(
+                "UPDATE messages SET delivered_at=? "
+                "WHERE recipient=? AND ack_state IS NULL AND delivered_at IS NULL AND seq<=?",
+                (now, recipient, int(up_to_seq)))
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()
+
+
+def unread_summary(db_path=None, *, recipient: str) -> dict:
+    """三态未读分解（v2）——把过去混在一起的「未读数」拆开：
+        undelivered : 从未送达（没人真正看过）
+        delivered   : 已送达但未 ack（看过了，活还没干完）
+        pending     : undelivered + delivered（对外沿用旧口径「未读」）
+    看板与通知判据都用本函数，避免把「没看过」和「看了没回执」混为一谈。
+    """
+    _check_role(recipient, "recipient")
+    conn = connect(db_path)
+    try:
+        r = conn.execute(
+            "SELECT"
+            " SUM(CASE WHEN ack_state IS NULL AND delivered_at IS NULL THEN 1 ELSE 0 END),"
+            " SUM(CASE WHEN ack_state IS NULL AND delivered_at IS NOT NULL THEN 1 ELSE 0 END),"
+            " SUM(CASE WHEN ack_state IS NULL THEN 1 ELSE 0 END)"
+            " FROM messages WHERE recipient=?", (recipient,)).fetchone()
+        return {"recipient": recipient,
+                "undelivered": int(r[0] or 0),
+                "delivered": int(r[1] or 0),
+                "pending": int(r[2] or 0)}
     finally:
         conn.close()
 

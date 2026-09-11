@@ -73,6 +73,26 @@ def cmd_ack(a) -> int:
     return 0
 
 
+def cmd_mark_delivered(a) -> int:
+    to = core.resolve_actor(a.to, "to")
+    n = core.mark_delivered(db_path=a.db, recipient=to,
+                            message_ids=a.message_id, up_to_seq=a.up_to_seq)
+    _dump({"to": to, "marked": n})
+    return 0
+
+
+def cmd_unread(a) -> int:
+    roles = list(core.ROLES) if a.all else [core.resolve_actor(a.to, "to")]
+    rows = [core.unread_summary(db_path=a.db, recipient=r) for r in roles]
+    if a.json:
+        _dump(rows if a.all else rows[0])
+        return 0
+    for r in rows:
+        print("role=%s 未读合计=%d（未送达=%d 已送达待处置=%d）"
+              % (r["recipient"], r["pending"], r["undelivered"], r["delivered"]))
+    return 0
+
+
 def cmd_poll_context(a) -> int:
     """输出格式（SPEC §2.6）：未读按 `[seq] from→to kind 主题 (sha)` 单行摘要 + 条数总计；空箱明确 `0 未读`。"""
     to = core.resolve_actor(a.to, "to")
@@ -157,6 +177,26 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--repo", default=os.getcwd(), help="仓库根（git 门禁用，默认当前目录）")
     _add_db(p)
     p.set_defaults(fn=cmd_ack)
+
+    p = sub.add_parser("mark-delivered",
+                       help="标记「已送达」（运输层，v2）：仅真投递路径可调，记账型轮询禁调")
+    p.add_argument("--to", default=None,
+                   help="收件人角色（rd/art/arch；缺省读环境变量 PROJBUS_ACTOR）")
+    p.add_argument("--message-id", action="append", default=None,
+                   help="可重复；指定要标的消息 id")
+    p.add_argument("--up-to-seq", type=int, default=None,
+                   help="把该箱 seq ≤ N 的全部未送达消息一次打标（投递时常用）")
+    _add_db(p)
+    p.set_defaults(fn=cmd_mark_delivered)
+
+    p = sub.add_parser("unread",
+                       help="三态未读分解：undelivered(没看过) / delivered(看了没回执) / pending(合计)")
+    p.add_argument("--to", default=None,
+                   help="收件人角色（rd/art/arch；缺省读环境变量 PROJBUS_ACTOR）")
+    p.add_argument("--all", action="store_true", help="三个角色都看")
+    p.add_argument("--json", action="store_true")
+    _add_db(p)
+    p.set_defaults(fn=cmd_unread)
 
     p = sub.add_parser("poll-context", help="未读消息单行摘要（宿主 Hook 注入上下文用）")
     p.add_argument("--to", default=None,

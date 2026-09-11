@@ -858,5 +858,55 @@ class TestCliSmoke(BusTestBase):
         self.assertIn("handoff: smoke", out.stdout)
 
 
+class TestDeliveredState(BusTestBase):
+    """v1.2.0：delivered_at 运输层三态（Leo 2026-09-11 批准）。"""
+
+    def _send(self, sender="rd", to="art", key="k1"):
+        msg, _created = core.send(db_path=self.db, sender=sender, to=to, kind="question",
+                                  payload={"subject": "s"}, idempotency_key=key)
+        return msg
+
+    def test_three_states(self):
+        self._send()
+        s = core.unread_summary(db_path=self.db, recipient="art")
+        self.assertEqual((s["undelivered"], s["delivered"], s["pending"]), (1, 0, 1),
+                         "新消息应记为 undelivered 且 pending=1")
+        n = core.mark_delivered(db_path=self.db, recipient="art", up_to_seq=10**9)
+        self.assertEqual(n, 1)
+        s = core.unread_summary(db_path=self.db, recipient="art")
+        self.assertEqual((s["undelivered"], s["delivered"], s["pending"]), (0, 1, 1),
+                         "标记后应转为 delivered，pending 不变")
+        m = core.poll(db_path=self.db, recipient="art", unack_only=True)[0]
+        core.ack(db_path=self.db, message_id=m["message_id"], state="received", note="t")
+        s = core.unread_summary(db_path=self.db, recipient="art")
+        self.assertEqual((s["undelivered"], s["delivered"], s["pending"]), (0, 0, 0),
+                         "ack 后应从未读池移除")
+
+    def test_mark_delivered_skips_acked(self):
+        """已 ack 的消息不应被标 delivered（保持语义纯净）。"""
+        msg = self._send()
+        core.ack(db_path=self.db, message_id=msg["message_id"], state="received", note="t")
+        n = core.mark_delivered(db_path=self.db, recipient="art", up_to_seq=10**9)
+        self.assertEqual(n, 0, "已 ack 的不该被标记")
+
+    def test_mark_delivered_requires_target(self):
+        with self.assertRaises(core.ProjbusError):
+            core.mark_delivered(db_path=self.db, recipient="art")
+
+    def test_delivered_is_idempotent(self):
+        self._send()
+        self.assertEqual(core.mark_delivered(db_path=self.db, recipient="art", up_to_seq=10**9), 1)
+        self.assertEqual(core.mark_delivered(db_path=self.db, recipient="art", up_to_seq=10**9), 0,
+                         "重复标记应为 0（delivered_at IS NULL 条件）")
+
+    def test_delivered_scoped_by_recipient(self):
+        self._send(to="art", key="a")
+        self._send(to="arch", key="b")
+        core.mark_delivered(db_path=self.db, recipient="art", up_to_seq=10**9)
+        self.assertEqual(core.unread_summary(db_path=self.db, recipient="art")["delivered"], 1)
+        self.assertEqual(core.unread_summary(db_path=self.db, recipient="arch")["delivered"], 0,
+                         "标记必须按收件人隔离")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

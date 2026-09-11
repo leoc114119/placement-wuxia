@@ -126,3 +126,12 @@ project_id 现仅 `placement-wuxia`。未注册收件人 send 报错。
 - **v1.1.1（2026-09-05 · 来源=Codex 验收审查）**
   1. **P1 ack accepted 门禁缺陷修复（正确性）**：§一"仅在 git fetch 后、确认 SHA 与文件存在时，才允许 accepted"中 **fetch 成功是前置条件**。原实现仓库有 remote 时 fetch 失败仅记录不拦截，本地 `git cat-file` 找到 SHA 即放行——修复为：仓库**存在 remote** 且 `git fetch --all --prune --quiet` 返回非 0 → **立即报错拒绝 accepted**（即便本地已有该 commit 对象）。无 remote 的裸仓库场景按 SPEC 语境不可能出现（两宿主均为正常 clone），维持跳过 fetch 并如实记录。回归测试：remote 指向不存在的本地路径制造确定性 fetch 失败（无网络依赖）+ 本地已有该 commit 对象 → 断言 accepted 被拒、错误信息含 fetch 失败语义；另设 fetch 成功（本地 bare remote）放行对照例。
   2. **P2 project_id 完整性**：CLI `turn-completed`、`reconcile-outbox` 补齐 `--project-id` 参数，与 `send` 同规解析：**显式参数 > `PROJBUS_PROJECT_ID` env > 默认 placement-wuxia**；env 值仍过 §2.1 注册表校验。测试补两子命令显式生效 + env 回退各一例。
+
+- **v1.2.0（2026-09-11 · 来源=PM2，Leo 批准「按你的建议做」）**
+  **新增运输层字段 `delivered_at`（schema v1→v2，自动迁移）——把「未读数」拆成三态。**
+  - **问题**：原 `ack_state` 只有「处置完毕」一档，而 ack 是**语义层**动作（`accepted` 要 fetch 验 SHA、`needs_info` 要提问），**永远不可能自动**。于是「未读数」把三件事混成一个数字：① 真未读（没人看过）② 已读未处置 ③ **处置了但没回执**。2026-09-11 实测 rd 箱积压 104 条即由此产生——**逐条核验后确认全部已闭环**（LOG 有记录、文件有产出、回复消息已发），纯记账滞后。
+  - **设计**：新增 `delivered_at` = 消息被**真正投进某个 agent 上下文**的时刻。**运输层**（投递即打），与 **语义层** `ack_state` 分离。
+  - **铁律（本字段存在的理由）**：**只有真投递路径可打标**——`codex_turn_driver` 投进 Codex 线程、ZCode `SessionStart` 钩子注入上下文。**记账型轮询一律禁打**（`projbus-notify.sh` 每 120s、`projbus_autodispatch.sh` 每 10min 只统计未读数）——否则机器人会把整箱标成已读，真人再也看不到未读。
+  - **新增 CLI**：`mark-delivered`（--message-id 可重复 / --up-to-seq）、`unread`（三态分解，--all 看三箱）。
+  - **迁移**：`_migrate` 逐版本分步（本函数在 `BEGIN IMMEDIATE` 事务内被调用，**不得自行 commit**）；老消息 `delivered_at` 留空（向后兼容，历史已 ack 的不受影响）。
+  - **未做**：`poll-context` 的人读输出仍报旧口径「共 N 条未读」（=pending），避免影响既有钩子解析；三态信息由 `unread` 子命令提供。

@@ -287,6 +287,16 @@ def _drive(a, st, rs, thread, wm, wakes):
         rs["thread"] = thread
         rs["role"] = a.role
         save_state(st)
+        # v2：真投递成功 → 标「已送达」（运输层）。
+        # 这是「真投递路径」，与记账型轮询不同：轮询只统计、不打标，
+        # 否则每 2 分钟的定时器会把整箱标成已读、真人再也看不到未读。
+        try:
+            subprocess.run(
+                [sys.executable, str(PROJBUS), "mark-delivered", "--to", a.role,
+                 "--up-to-seq", str(rs["watermark_seq"])],
+                capture_output=True, text=True, timeout=20)
+        except Exception as e:
+            log(f"mark-delivered failed: {e}")
         log(f"woke thread, watermark -> {rs['watermark_seq']}")
     return 0
 
