@@ -206,6 +206,74 @@ function main() {
   const order = [...nodes.keys()].sort((a,b)=>depthOf[a]-depthOf[b]);
   const restLocal = nodes.map(n => fromTRS(n.translation||[0,0,0], n.rotation||[0,0,0,1], n.scale||[1,1,1]));
 
+  // ——— aim（方向匹配）模式所需的预计算 ———
+  // 为什么需要：源骨架 rest 手臂朝下(10.2,-25.7,-3.1)，本模型 rest 手臂朝侧面
+  // (0.08,-0.02,0.01)，两者相差约 85°，且每根骨骼局部轴朝向都不同。
+  // 因此任何「矩阵相对量」公式都无法对齐；必须按「骨骼指向」重定向。
+  const MIN = (a,b)=>{ // 4x4 旋转（世界系），把向量 a 转到向量 b 的最小旋转
+    const na=Math.hypot(...a)||1, nb=Math.hypot(...b)||1;
+    const A=a.map(v=>v/na), B=b.map(v=>v/nb);
+    const d=Math.max(-1,Math.min(1,A[0]*B[0]+A[1]*B[1]+A[2]*B[2]));
+    if (d > 0.999999) return I4();
+    let ax=[A[1]*B[2]-A[2]*B[1], A[2]*B[0]-A[0]*B[2], A[0]*B[1]-A[1]*B[0]];
+    if (d < -0.999999) { // 反向：取任一垂直轴转 180°
+      ax = Math.abs(A[0])<0.9 ? [0,-A[2],A[1]] : [-A[2],0,A[0]];
+    }
+    const L=Math.hypot(...ax)||1; const x=ax[0]/L,y=ax[1]/L,z=ax[2]/L;
+    const th=Math.acos(d), c=Math.cos(th), s=Math.sin(th), t=1-c;
+    return new Float64Array([
+      t*x*x+c,   t*x*y+s*z, t*x*z-s*y, 0,
+      t*x*y-s*z, t*y*y+c,   t*y*z+s*x, 0,
+      t*x*z+s*y, t*y*z-s*x, t*z*z+c,   0,
+      0,0,0,1]);
+  };
+  const headOf = m => [m[12], m[13], m[14]];
+  const sub3 = (a,b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
+  // 源骨骼链（用于取「指向」）：每根映射骨骼的「子骨骼」
+  const SRC_CHILD = {Hips:'Spine',Spine:'Spine1',Spine1:'Spine2',Spine2:'Neck',Neck:'Head',
+    LeftShoulder:'LeftArm',LeftArm:'LeftForeArm',LeftForeArm:'LeftHand',
+    RightShoulder:'RightArm',RightArm:'RightForeArm',RightForeArm:'RightHand',
+    LeftUpLeg:'LeftLeg',LeftLeg:'LeftFoot',LeftFoot:'LeftToeBase',
+    RightUpLeg:'RightLeg',RightLeg:'RightFoot',RightFoot:'RightToeBase'};
+  const TGT_CHILD = {Hip:'Waist',Waist:'Spine01',Spine01:'Spine02',Spine02:'NeckTwist01',NeckTwist01:'Head',
+    L_Clavicle:'L_Upperarm',L_Upperarm:'L_Forearm',L_Forearm:'L_Hand',
+    R_Clavicle:'R_Upperarm',R_Upperarm:'R_Forearm',R_Forearm:'R_Hand',
+    L_Thigh:'L_Calf',L_Calf:'L_Foot',L_Foot:'L_ToeBase',
+    R_Thigh:'R_Calf',R_Calf:'R_Foot',R_Foot:'R_ToeBase'};
+  const srcJoint = {}; C.joints.forEach(j=>{ srcJoint[j.clean]=j; });
+  // 源 rest 世界矩阵
+  const SRW = new Map();
+  { const go=j=>{ if(SRW.has(j))return SRW.get(j); const w=j.parent?mul(go(j.parent),j.rest):j.rest; SRW.set(j,w); return w; };
+    C.joints.forEach(go); }
+  // 源骨骼「指向」：到子骨骼；叶子骨用「父→自身」
+  const srcDirOf = (j, cache) => {
+    const a = j.children && j.children[0];
+    const pa = headOf(cache.get(j));
+    if (a) { const pb = headOf(cache.get(a)); return sub3(pb, pa); }
+    if (j.parent) { const pb = headOf(cache.get(j.parent)); return sub3(pa, pb); }
+    return null;
+  };
+  const rotVec = (m, v) => [ m[0]*v[0]+m[4]*v[1]+m[8]*v[2],
+                             m[1]*v[0]+m[5]*v[1]+m[9]*v[2],
+                             m[2]*v[0]+m[6]*v[1]+m[10]*v[2] ];
+  // 本地映射（此处 srcOfModel 尚未定义，故就地构建）
+  const AIM_MAP = {}; C.joints.forEach(j=>{ const m=nameToIdx[MIXAMO_TO_MODEL[j.clean]]; if(m!==undefined) AIM_MAP[m]=j; });
+  // 目标骨骼 rest 世界（用于取 rest 指向）
+  const TRW = new Array(nodes.length);
+  { const calc=i=>{ if(TRW[i])return TRW[i]; TRW[i]=parentOf[i]>=0?mul(calc(parentOf[i]),restLocal[i]):restLocal[i]; return TRW[i]; };
+    for(let i=0;i<nodes.length;i++)calc(i); }
+  // 本模型 rest 指向（世界系）
+  const tgtDirRest = {};
+  for (const [mi, j] of Object.entries(AIM_MAP)) {
+    const tn = nodes[+mi].name; const cn = TGT_CHILD[tn];
+    const a = headOf(TRW[+mi]);
+    const b = cn && nameToIdx[cn] !== undefined ? headOf(TRW[nameToIdx[cn]]) : headOf(TRW[parentOf[+mi]]);
+    const d = cn ? sub3(b,a) : sub3(a,b);   // 叶子骨（Hand/ToeBase）：用「父→自身」方向
+    tgtDirRest[+mi] = d;
+  }
+
+
+
   const srcOfModel = {};
   for (const j of C.joints) { const mi = nameToIdx[MIXAMO_TO_MODEL[j.clean]]; if (mi !== undefined) srcOfModel[mi] = j; }
 
@@ -242,9 +310,14 @@ function main() {
     const L = sampleMat(j, t);
     return rotPart(mul(invRot(rotPart(new Float64Array(j.rest))), L));
   };
-  // 第 0 帧基准
+  // 基准模式：
+  //   frame0 = 以「动画第 0 帧」为增量基准（帧0 精确落在本模型 rest）
+  //   rest   = 以「源骨架 rest（T-pose）」为基准（帧0 复现源动作的绝对姿态）
+  const MODE = flag('mode', 'aim2');
   const R0 = {};
-  for (const [mi, j] of Object.entries(srcOfModel)) R0[mi] = Rof(j, 0);
+  for (const [mi, j] of Object.entries(srcOfModel)) {
+    R0[mi] = MODE === 'frame0' ? Rof(j, 0) : I4();
+  }
 
   const boneTracks = {};
   const emit = new Set();
@@ -271,20 +344,103 @@ function main() {
   const perFrame = [];
   for (let f = 0; f < nFrames; f++) {
     const t = f / fps;
+    // 源动画世界矩阵（本帧算一次，供各模式复用）
+    const srcAnimWorldCache = (() => {
+      const W = new Map();
+      const go = j => { if (W.has(j)) return W.get(j); const L2 = sampleMat(j, +t);
+        const w = j.parent ? mul(go(j.parent), L2) : L2; W.set(j, w); return w; };
+      C.joints.forEach(go); return W;
+    })();
     const L = new Array(nodes.length);
+    if (MODE === 'aim') {
+      // 方向匹配：让「本模型骨骼的世界指向」等于「源骨骼的世界指向」。
+      // 这是唯一能同时吸收「rest 差异」与「局部轴差异」的做法。
+      const Wt = new Array(nodes.length);
+      for (const i of order) {
+        const j = srcOfModel[i];
+        if (j !== undefined) {
+          // 源的动画指向
+          const cn = SRC_CHILD[j.clean];
+          const cj = cn ? srcJoint[cn] : null;
+          const SWx = srcAnimWorldCache;
+          const a = headOf(SWx.get(j));
+          const b = cj ? headOf(SWx.get(cj)) : headOf(SWx.get(j.parent));
+          const sdir = cj ? sub3(b,a) : sub3(a,b);
+          const R = MIN(tgtDirRest[i], sdir);
+          const WtgtDesired = mul(R, TRW[i]);
+          const pw = parentOf[i] >= 0 ? Wt[parentOf[i]] : I4();
+          const rel = mul(invRot(rotPart(pw)), rotPart(WtgtDesired));
+          L[i] = fromTRS(restLocal[i].slice(12,15), matToQuat(rel), [1,1,1]);
+          L[i].set(restLocal[i].slice(12,15), 12);
+        } else {
+          L[i] = restLocal[i];
+        }
+        Wt[i] = parentOf[i] >= 0 ? mul(Wt[parentOf[i]], L[i]) : L[i];
+      }
+    } else if (MODE === 'aim2') {
+      // 两段式：① 先用「源的完整世界旋转增量」得到带正确扭转的朝向
+      //         ② 再做最小旋转把「目标骨骼指向」拧到「源骨骼指向」
+      // 为什么：纯 aim 只约束指向，绕骨骼自身轴的旋转是任意的 →
+      //        头部朝向 / 脚尖朝向会在帧间乱跳（视觉上像"帧序错乱"）。
+      const Wt = new Array(nodes.length);
+      for (const i of order) {
+        const j = srcOfModel[i];
+        if (j !== undefined) {
+          const Sa = rotPart(srcAnimWorldCache.get(j));
+          const Sr = rotPart(SRW.get(j));
+          const Tr = rotPart(TRW[i]);
+          const delta = mul(Sa, invRot(Sr));           // 源：rest → 当前
+          const Ta0 = mul(delta, Tr);                  // 施加到目标 rest
+          const dSrc = srcDirOf(j, srcAnimWorldCache);  // 源骨骼指向（动画，世界）
+          const restDirT = tgtDirRest[i];              // 目标骨骼指向（rest，世界）
+          let Wt_i = Ta0;
+          if (dSrc && restDirT) {
+            const curDir = rotVec(delta, restDirT);    // Ta0 作用后的指向
+            if (Math.hypot(curDir[0],curDir[1],curDir[2]) > 1e-9 &&
+                Math.hypot(dSrc[0],dSrc[1],dSrc[2]) > 1e-9) {
+              Wt_i = mul(MIN(curDir, dSrc), Ta0);      // 方向校正
+            }
+          }
+          Wt[i] = Wt_i;
+          const pw = parentOf[i] >= 0 ? Wt[parentOf[i]] : I4();
+          const rel = mul(invRot(rotPart(pw)), rotPart(Wt_i));
+          L[i] = fromTRS(restLocal[i].slice(12,15), matToQuat(rel), [1,1,1]);
+          L[i].set(restLocal[i].slice(12,15), 12);
+        } else {
+          L[i] = restLocal[i];
+        }
+        Wt[i] = parentOf[i] >= 0 ? mul(Wt[parentOf[i]], L[i]) : L[i];
+      }
+    } else if (MODE === 'worldcopy') {
+      // 世界朝向复制：自上而下算局部矩阵，使「目标骨骼的世界朝向 == 源骨骼的世界朝向」。
+      // 这是唯一能让帧 0 复现源动作绝对姿态的写法——源骨架的 rest 本身就是「手臂朝下」，
+      // 而本模型 rest 是「手臂弯着朝外」，锚在自身 rest 上就必然对不上。
+      const Wt = new Array(nodes.length);
+      for (const i of order) {
+        const j = srcOfModel[i];
+        if (j !== undefined) {
+          const pw = parentOf[i] >= 0 ? Wt[parentOf[i]] : I4();
+          const rel = mul(invRot(rotPart(pw)), rotPart(sampleMat(j, +t)));
+          L[i] = mul(fromTRS(restLocal[i].slice(12, 15), matToQuat(rel), [1, 1, 1]), I4());
+          L[i].set(restLocal[i].slice(12, 15), 12);
+        } else {
+          L[i] = restLocal[i];
+        }
+        Wt[i] = parentOf[i] >= 0 ? mul(Wt[parentOf[i]], L[i]) : L[i];
+      }
+    } else {
     for (const [mi, j] of Object.entries(srcOfModel)) {
       const R = Rof(j, +t);
       const E = mul(invRot(R0[mi]), R);
       L[mi] = mul(restLocal[mi], E);
     }
     // 未映射骨骼（Root/扭转骨/手指）：局部旋转保持自身 rest。
-    // 父级的动画会通过层级自然传导，无需在此重复施加。
-    // ⚠️ 此处 L[] 存的是「局部矩阵」——早先误按「世界矩阵」写法
-    //    （L[parent] × restLocal）会把父级旋转叠加两次，导致 Pelvis 偏 53.7°、
-    //    各 Twist 骨偏 ~175°。两种语义不可混用。
+    // ⚠️ 此处 L[] 存的是「局部矩阵」——误按「世界矩阵」写法会把父级旋转叠加两次，
+    //    导致 Pelvis 偏 53.7°、各 Twist 骨偏 ~175°。两种语义不可混用。
     for (const i of order) {
       if (srcOfModel[i] !== undefined) continue;
       L[i] = restLocal[i];
+    }
     }
     const q = {};
     for (const i of emit) q[nodes[i].name] = matToQuat(rotPart(L[i]));
@@ -316,4 +472,6 @@ function main() {
     bones: Object.keys(boneTracks).length, rootScale: +rootScale.toFixed(4) }));
 }
 
-main();
+
+// 仅在被直接执行时跑 main()；被 import 时只导出函数（供其它脚本与校验复用）
+if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) main();
