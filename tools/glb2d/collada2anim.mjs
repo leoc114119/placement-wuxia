@@ -16,7 +16,14 @@
 import fs from 'fs';
 import { parseGLB } from './glb.mjs';
 
-export const MIXAMO_TO_MODEL = {
+// ⚠️ 2026-09-12：**本模型的 L_/R_ 命名与角色真实左右是反的**，故映射做左右互换（见下）。
+//    证据（`--no-swap-lr` 可复现旧行为）：
+//      ① 只改我们的 `R_Upperarm` 一个骨、渲染正面视图（yaw=180）→ 动的是**画面右侧**那条手臂；
+//         正面视图里「画面左＝角色右」⇒ 我们的 `R_Upperarm` 实为**角色左臂**。
+//      ② 源 Mixamo 的 `RightHand` 位移幅度 Y 138 / X 96，`LeftHand` 仅 Y 62 / X 52
+//         ⇒ 源是**右手**挥砍（Leo 目视一致）。
+//      两者叠加 ⇒ 不换的话，源的右手动作会落到角色的左手上（Leo 09-12 发现「为什么用左手砍」）。
+export const MIXAMO_TO_MODEL_RAW = {
   Hips: 'Hip', Spine: 'Waist', Spine1: 'Spine01', Spine2: 'Spine02',
   Neck: 'NeckTwist01', Head: 'Head',
   LeftShoulder: 'L_Clavicle', LeftArm: 'L_Upperarm', LeftForeArm: 'L_Forearm', LeftHand: 'L_Hand',
@@ -24,6 +31,16 @@ export const MIXAMO_TO_MODEL = {
   RightShoulder: 'R_Clavicle', RightArm: 'R_Upperarm', RightForeArm: 'R_Forearm', RightHand: 'R_Hand',
   RightUpLeg: 'R_Thigh', RightLeg: 'R_Calf', RightFoot: 'R_Foot', RightToeBase: 'R_ToeBase',
 };
+/** 把模型侧名字里的 L_/R_ 前缀互换（`L_Hand` → `R_Hand`）。 */
+const flipLR = n => n.startsWith('L_') ? 'R_' + n.slice(2)
+                    : n.startsWith('R_') ? 'L_' + n.slice(2) : n;
+/** 生效映射：默认做左右互换（`--no-swap-lr` 关掉，仅用于复现 09-12 之前的旧产物）。 */
+export const MIXAMO_TO_MODEL = (() => {
+  const swap = !process.argv.includes('--no-swap-lr');
+  const o = {};
+  for (const [k, v] of Object.entries(MIXAMO_TO_MODEL_RAW)) o[k] = swap ? flipLR(v) : v;
+  return o;
+})();
 
 // ————— 极简 XML 解析（只取我们要的结构）—————
 function parseXML(src) {

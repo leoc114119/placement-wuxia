@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>攻击预览 · Sword And Shield Slash · 2026-09-12</title>
+<style>
+  body { margin:0; background:#141418; color:#e8e0d0; font:13px/1.5 -apple-system,"PingFang SC",sans-serif; }
+  h1 { font-size:15px; font-weight:600; margin:16px 18px 4px; color:#ffe08a; }
+  .meta { margin:0 18px 12px; color:#9a9384; }
+  .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; padding:0 18px 16px; }
+  .cell { background:#1d1d22; border-radius:8px; padding:8px; text-align:center; }
+  .cell b { display:block; font-size:12px; color:#8fd4ff; margin-bottom:6px; font-weight:600; }
+  img { width:100%; image-rendering:pixelated; background:#181820; border-radius:4px; }
+  .note { margin:0 18px 20px; color:#9a9384; font-size:12px; }
+  .row { display:flex; gap:8px; align-items:flex-end; margin:0 18px 18px; }
+  .row .cell { width:150px; }
+  .badge { display:inline-block; background:#2c4a2c; color:#a8e6a8; border-radius:4px; padding:1px 7px; font-size:11px; margin-left:6px; }
+  .warn { display:inline-block; background:#4a3c22; color:#ffd98a; border-radius:4px; padding:1px 7px; font-size:11px; margin-left:6px; }
+</style>
+</head>
+<body>
+  <h1>攻击 六向 · 源 = Mixamo「Sword And Shield Slash」<span class="badge">aim4</span><span class="badge">地面锁定</span></h1>
+  <p class="meta">
+    30 张 / 357 KB / PNG-8 无损　·　源 45 帧 → 贪心最远点采样取 5 帧（源帧 0/8/19/30/44）　·　GIF 按 <b>200ms/帧</b>（＝普攻演出时长 1s ÷ 5 帧）<br>
+    脚底已锁定到游戏地面线 <b>299</b>（与 idle / run / jump 同一基准）
+  </p>
+
+  <div class="grid">
+    <div class="cell"><b>left</b><img src="atk_left.gif"></div>
+    <div class="cell"><b>leftdown</b><img src="atk_leftdown.gif"></div>
+    <div class="cell"><b>leftup</b><img src="atk_leftup.gif"></div>
+    <div class="cell"><b>right</b><img src="atk_right.gif"></div>
+    <div class="cell"><b>rightdown</b><img src="atk_rightdown.gif"></div>
+    <div class="cell"><b>rightup</b><img src="atk_rightup.gif"></div>
+  </div>
+
+  <h1 style="margin-top:0">left 向 5 帧（起手 → 挥砍 → 收势）</h1>
+  <div class="row">
+    <div class="cell"><b>f1 起手</b><img src="atk_left_1.png"></div>
+    <div class="cell"><b>f2</b><img src="atk_left_2.png"></div>
+    <div class="cell"><b>f3 挥砍</b><img src="atk_left_3.png"></div>
+    <div class="cell"><b>f4 最低点</b><img src="atk_left_4.png"></div>
+    <div class="cell"><b>f5 收势</b><img src="atk_left_5.png"></div>
+  </div>
+
+  <h1 style="margin-top:0">站高对照（同一地面线）<span class="warn">站直帧 247px vs idle 252px</span></h1>
+  <div class="row">
+    <div class="cell"><b>idle 最直帧</b><img src="../glb2d_idle/idle_6dir/idle_left_1.png"></div>
+    <div class="cell"><b>atk f1 起手</b><img src="atk_left_1.png"></div>
+    <div class="cell"><b>atk f3 弓步</b><img src="atk_left_3.png"></div>
+    <div class="cell"><b>run 最直帧</b><img src="../../_trial_20260911/glb2d_v2/mixamo/run_6dir/run_left_1.png"></div>
+  </div>
+
+  <p class="note">
+    成品目录 <code>assets/_trial_20260912/glb2d_atk/atk_6dir/</code>　·　文件名 <code>atk_{facing}_{1..5}.png</code>　·　240×320 RGBA<br>
+    ⚠️ 接入时攻击要从现在的 <b>2 帧改成 5 帧</b>（同 jump 的改法：<code>clipCounts.atk 2→5</code> + 去掉文件名特例）
+  </p>
+</body>
+</html>
