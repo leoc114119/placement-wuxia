@@ -11,3 +11,6 @@ assets/ui/drafts/promo_tmp/
 # T13 抠图中间产物（raw+脚本可再生，不入库）
 assets/characters/hero/walk_v2/cut/
 wangjin_fx_raw/
+
+# 大体积中间产物：模型贴图裸 RGBA（可从 GLB 复现，见 export_cast_v2.sh 注释）
+assets/_trial_20260912/model_v2/tex/basecolor4096.raw
