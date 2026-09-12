@@ -276,6 +276,14 @@ for (let f = 0; f < tri; f++) {
   const A=P[0].s, B=P[1].s, C=P[2].s;
   const twice = (B[0]-A[0])*(C[1]-A[1]) - (B[1]-A[1])*(C[0]-A[0]);
   if (Math.abs(twice) < 1e-9) continue;   // degenerate
+  // ★ 背面剔除（试验）：新模型材质标了 doubleSided=true，袍子**内表面**也会被画出来，
+  //   腿一摆内壁就露出来、纹理拉伸成灰绿拖影。
+  //   CULL_BACK=1 剔除 twice<0 的三角；CULL_BACK=2 剔除 twice>0（屏幕 y 翻转，符号要实测）
+  {
+    const cb = process.env.CULL_BACK;
+    if (cb === '1' && twice < 0) continue;
+    if (cb === '2' && twice > 0) continue;
+  }
   let minx=Math.max(0,Math.floor(Math.min(A[0],B[0],C[0])));
   let maxx=Math.min(W-1,Math.ceil(Math.max(A[0],B[0],C[0])));
   let miny=Math.max(0,Math.floor(Math.min(A[1],B[1],C[1])));
