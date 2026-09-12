@@ -20,6 +20,7 @@ from PIL import Image, ImageChops, ImageFilter, ImageStat
 
 BG = (20, 20, 24)
 ERODE = 4
+NORM = (240, 320)      # ★ 统一归一到游戏帧尺寸再量；不归一则不同分辨率的图不可比
 RAW_SIZES = {(960, 1280), (240, 320), (480, 640)}      # 已知的裸 RGBA 缓冲尺寸
 
 
@@ -29,6 +30,15 @@ def load(path: str) -> Image.Image:
         w, h = (960, 1280) if p.stat().st_size == 960 * 1280 * 4 else (240, 320)
         return Image.frombytes("RGBA", (w, h), p.read_bytes())
     return Image.open(p).convert("RGBA")
+
+
+def normalize(im: Image.Image) -> Image.Image:
+    """★ 归一到游戏帧尺寸。先在原尺寸合成到不透明底、再缩，保证边缘处理一致。"""
+    if im.size == NORM:
+        return im
+    bg = Image.new("RGBA", im.size, BG + (255,))
+    bg.alpha_composite(im)
+    return bg.resize(NORM, Image.Resampling.LANCZOS)
 
 
 def subject_mask(im: Image.Image) -> Image.Image:
@@ -49,6 +59,7 @@ def subject_mask(im: Image.Image) -> Image.Image:
 
 
 def metric(im: Image.Image):
+    im = normalize(im)
     m = subject_mask(im).filter(ImageFilter.MinFilter(2 * ERODE + 1))
     g = im.convert("L")
     z = Image.new("L", im.size, 0)
@@ -60,7 +71,7 @@ def metric(im: Image.Image):
 
 
 if __name__ == "__main__":
-    print("口径：alpha 优先 / 腐 4px / 亮度 RGB→L / 锐度=相邻像素梯度均值")
+    print("口径：归一到 240×320 → alpha 优先 / 腐 4px / 亮度 RGB→L / 锐度=相邻像素梯度均值")
     print("%-44s %10s %11s" % ("", "锐度", "对比度"))
     for p in sys.argv[1:]:
         try:
