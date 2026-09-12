@@ -1,0 +1,27 @@
+{
+  "task": "T45",
+  "seq": 382,
+  "model": "built-in image_gen",
+  "provider": "codex-native",
+  "cost": 0,
+  "generationCount": 5,
+  "frameCount": 30,
+  "directions": ["left", "leftdown", "leftup", "right", "rightdown", "rightup"],
+  "framesPerDirection": 5,
+  "referenceRoles": {
+    "style": "风格_2D_<direction>.png",
+    "pose": "姿势_3D_<direction>_<frame>.png"
+  },
+  "artifactStage": "request",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "rawDirect": true,
+  "resize": false,
+  "alphaRestore": false,
+  "detailBlend": null,
+  "completed": ["idle_right_1", "idle_right_2", "idle_right_3", "idle_right_4", "idle_right_5"],
+  "remaining": 25,
+  "result": "in_progress_right_complete"
+}
