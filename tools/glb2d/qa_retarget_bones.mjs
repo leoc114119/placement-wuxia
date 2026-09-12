@@ -63,10 +63,12 @@ function srcWorldAt(j, t, cache) {
   if (cache.has(j.id)) return cache.get(j.id);
   let L = j.rest;
   if (j.anim) {
+    // ★ 索引映射必须与 collada2anim 的 sampleMat 完全一致（nearest + 归一化），
+    //   否则边界帧会落到相邻采样上 → 假报 1° 级残差（实测踩过：DAE 时间数组有
+    //   0.033333/0.033334 的舍入差，floor 查找会少取一帧）
     const T = j.anim.times;
-    let i = 0; while (i < T.length - 1 && T[i+1] <= t) i++;
-    i = Math.min(i, j.anim.matrices.length - 1);
-    L = j.anim.matrices[i];
+    const idx = Math.round(t * (T.length - 1) / (T[T.length - 1] || 1));
+    L = j.anim.matrices[Math.min(T.length - 1, Math.max(0, idx))];
   }
   const pw = j.parent ? srcWorldAt(j.parent, t, cache) : new Float64Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
   const w = mul(pw, L); cache.set(j.id, w); return w;
