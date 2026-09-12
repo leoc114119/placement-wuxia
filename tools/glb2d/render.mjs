@@ -274,10 +274,28 @@ color.fill(1);
 const L = [0.45, 0.72, -0.53]; // light dir (normalized-ish)
 const Ll = Math.hypot(...L); L[0]/=Ll; L[1]/=Ll; L[2]/=Ll;
 
+// ★ PART_BONES=<骨名,逗号分隔>：只渲染"主导骨落在该集合里"的三角面（用于逐部件渲染）。
+//   判定用 **任一顶点** 命中即算（不是全部命中）—— 这样关节处的过渡三角面会同时出现在相邻两个部件上，
+//   拼装时关节有重叠、不会露缝。相机/光照/缩放完全不变，所以各部件天然对齐。
+const PART_BONES = process.env.PART_BONES ? new Set(process.env.PART_BONES.split(',')) : null;
+let vbone = null;
+if (PART_BONES) {
+  const jn = skin.joints.map(ni => json.nodes[ni].name);   // 骨序号 → 骨名
+  const boneName = k => jn[k] || '';
+  vbone = new Array(nVerts);
+  for (let v = 0; v < nVerts; v++) {
+    let best = -1, bi = 0;
+    for (let k = 0; k < 4; k++) { const w = WE[v*4+k]; if (w > best) { best = w; bi = JO[v*4+k]; } }
+    if (best < 0) { vbone[v] = ''; continue; }
+    vbone[v] = boneName(JO[v*4 + (function(){ for(let k=0;k<4;k++) if (WE[v*4+k] === best) return k; return 0; })()]);
+  }
+}
+
 const tri = IDX.length/3;
-let drawn = 0;
+let drawn = 0, skippedByPart = 0;
 for (let f = 0; f < tri; f++) {
   const i0=IDX[f*3], i1=IDX[f*3+1], i2=IDX[f*3+2];
+  if (vbone && !(PART_BONES.has(vbone[i0]) || PART_BONES.has(vbone[i1]) || PART_BONES.has(vbone[i2]))) { skippedByPart++; continue; }
   const P = [0,1,2].map(k => {
     const vi = [i0,i1,i2][k];
     const q = xformPoint(rot, [sp[vi*3], sp[vi*3+1], sp[vi*3+2]]);
@@ -403,6 +421,24 @@ if (auxPrefix) {
   const np = Buffer.alloc(W*H*4*3);
   for (let i=0;i<W*H*3;i++) np.writeFloatLE(nbuf[i], i*4);
   fs.writeFileSync(auxPrefix + '.normal', np);
+}
+
+// JOINTS_OUT=<path>：写出所有骨骼在**画布像素坐标**下的位置（2D 骨骼绑定的关节锚点）。
+//   与渲染用同一套相机/投影，所以拼装时直接可用，不需要再对位。
+const JOINTS_OUT = process.env.JOINTS_OUT;
+if (JOINTS_OUT) {
+  const jn2 = skin.joints.map(ni => json.nodes[ni].name);
+  const out = {};
+  // ★ 关节点 = 骨骼**世界矩阵**的平移（不是 jmats —— 那是含逆绑定矩阵的蒙皮矩阵，原点全一样）
+  skin.joints.forEach((ni, ji) => {
+    const wp = [ world[ni][12], world[ni][13], world[ni][14] ];
+    const q = xformPoint(rot, wp);
+    const s2 = toScreen(q);
+    out[jn2[ji]] = [ +s2[0].toFixed(2), +s2[1].toFixed(2), +q[2].toFixed(4) ];
+  });
+  fs.writeFileSync(JOINTS_OUT, JSON.stringify({
+    canvas: [W, H], yaw: yawDeg, t: timeArg, scale: +scale.toFixed(4),
+    joints: out }, null, 1));
 }
 
 console.log(JSON.stringify({ anim: animName, t: timeArg, mode, yaw: yawDeg,
