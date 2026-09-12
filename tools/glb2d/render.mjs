@@ -278,16 +278,45 @@ const Ll = Math.hypot(...L); L[0]/=Ll; L[1]/=Ll; L[2]/=Ll;
 //   判定用 **任一顶点** 命中即算（不是全部命中）—— 这样关节处的过渡三角面会同时出现在相邻两个部件上，
 //   拼装时关节有重叠、不会露缝。相机/光照/缩放完全不变，所以各部件天然对齐。
 const PART_BONES = process.env.PART_BONES ? new Set(process.env.PART_BONES.split(',')) : null;
-let vbone = null;
+// PART_GROW=<n>：把部件向外"长" n 圈三角面（沿共享顶点做 BFS）。
+//   为什么需要：按骨齐根截断的部件在关节转动时会露洞（实测肩部转 15° 就翻出袖内壁成"甜甜圈"）。
+//   2D 剪纸绑定的标准做法就是**关节处留重叠**——这里用"多带几圈面"实现。
+const PART_GROW = +(process.env.PART_GROW || 0);
+let partTri = null;
 if (PART_BONES) {
-  const jn = skin.joints.map(ni => json.nodes[ni].name);   // 骨序号 → 骨名
-  const boneName = k => jn[k] || '';
-  vbone = new Array(nVerts);
+  const jn = skin.joints.map(ni => json.nodes[ni].name);
+  const vbone = new Array(nVerts);
   for (let v = 0; v < nVerts; v++) {
     let best = -1, bi = 0;
     for (let k = 0; k < 4; k++) { const w = WE[v*4+k]; if (w > best) { best = w; bi = JO[v*4+k]; } }
-    if (best < 0) { vbone[v] = ''; continue; }
-    vbone[v] = boneName(JO[v*4 + (function(){ for(let k=0;k<4;k++) if (WE[v*4+k] === best) return k; return 0; })()]);
+    vbone[v] = best < 0 ? '' : (jn[bi] || '');
+  }
+  const nTri = IDX.length / 3;
+  partTri = new Uint8Array(nTri);
+  const v2t = new Map();
+  for (let f = 0; f < nTri; f++) {
+    for (let k = 0; k < 3; k++) {
+      const v = IDX[f*3+k];
+      if (!v2t.has(v)) v2t.set(v, []);
+      v2t.get(v).push(f);
+    }
+  }
+  let frontier = [];
+  for (let f = 0; f < nTri; f++) {
+    const a = vbone[IDX[f*3]], b2 = vbone[IDX[f*3+1]], c = vbone[IDX[f*3+2]];
+    if (PART_BONES.has(a) || PART_BONES.has(b2) || PART_BONES.has(c)) { partTri[f] = 1; frontier.push(f); }
+  }
+  for (let g = 0; g < PART_GROW; g++) {
+    const next = [];
+    for (const f of frontier) {
+      for (let k = 0; k < 3; k++) {
+        for (const g2 of (v2t.get(IDX[f*3+k]) || [])) {
+          if (!partTri[g2]) { partTri[g2] = 1; next.push(g2); }
+        }
+      }
+    }
+    frontier = next;
+    if (!frontier.length) break;
   }
 }
 
@@ -295,7 +324,7 @@ const tri = IDX.length/3;
 let drawn = 0, skippedByPart = 0;
 for (let f = 0; f < tri; f++) {
   const i0=IDX[f*3], i1=IDX[f*3+1], i2=IDX[f*3+2];
-  if (vbone && !(PART_BONES.has(vbone[i0]) || PART_BONES.has(vbone[i1]) || PART_BONES.has(vbone[i2]))) { skippedByPart++; continue; }
+  if (partTri && !partTri[f]) { skippedByPart++; continue; }
   const P = [0,1,2].map(k => {
     const vi = [i0,i1,i2][k];
     const q = xformPoint(rot, [sp[vi*3], sp[vi*3+1], sp[vi*3+2]]);
