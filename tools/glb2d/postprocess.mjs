@@ -32,6 +32,12 @@ const PALETTE  = +flag('palette', 0);
 // 目标 256 色 PNG-8 时，量化用 248 色、其余留给描边与抗锯齿边，避免超 256。
 const PALETTE_RESERVE = +flag('palette-reserve', 8);       // >0 时改用 k-means 调色板量化
 const NO_OUTLINE = !!flag('no-outline', false);
+// --preserve-color：颜色**字节原样透传**，只叠描边。用于「观感已定稿、只补线条」的场合。
+//   为什么需要：即使 --levels 256（step=1）也仍走 q(v)=round(floor(v)+0.5)，会引入 ±1 取整；
+//   --speckle 也会改像素。要保证「除描边外零改动」就只能绕开整条量化链路。
+const PRESERVE = !!flag('preserve-color', false);
+// --outward：外轮廓描边画在**背景一侧**（不啃本体轮廓）。默认向内（描边落在人物最外圈像素上）。
+const OUTWARD = !!flag('outward', false);
 const OUTLINE_RGB = [26, 24, 28];           // 墨色，不纯黑
 
 const color = fs.readFileSync(inRaw);            // RGBA
@@ -115,7 +121,14 @@ function dilate(mask, r) {
   }
   return grown;
 }
-const silGrown = NO_OUTLINE ? new Uint8Array(N) : dilate(silMask, R);
+let silGrown;
+if (NO_OUTLINE) silGrown = new Uint8Array(N);
+else if (OUTWARD) {
+  // 背景侧：alpha=0 且 2r+1 邻域内碰到人物
+  const src = dilate(silMask, R);
+  silGrown = new Uint8Array(N);
+  for (let i = 0; i < N; i++) if (!alpha[i] && src[i]) silGrown[i] = 1;
+} else silGrown = dilate(silMask, R);
 const intGrown = NO_OUTLINE ? new Uint8Array(N) : intMask;
 const outlineMask = new Uint8Array(N);
 for (let i = 0; i < N; i++) outlineMask[i] = (silGrown[i] || intGrown[i]) ? 1 : 0;
@@ -125,7 +138,9 @@ function clamp255(v) { return v < 0 ? 0 : v > 255 ? 255 : Math.round(v); }
 
 let qr = new Uint8Array(N), qg = new Uint8Array(N), qb = new Uint8Array(N);
 
-if (PALETTE > 0) {
+if (PRESERVE) {
+  for (let i = 0; i < N; i++) { qr[i] = color[i*4]; qg[i] = color[i*4+1]; qb[i] = color[i*4+2]; }
+} else if (PALETTE > 0) {
   const KQ = Math.max(2, PALETTE - PALETTE_RESERVE);
   // k-means 调色板（只在人物像素上跑）
   const px = [];
@@ -207,7 +222,7 @@ if (PALETTE > 0) {
 // 量化会把它们固定下来，成品能看到花点。做法：若某像素与 8 邻域多数
 // 颜色差异都很大，就替换为邻域亮度最接近者的颜色。
 const SPECKLE = flag('speckle', 1);
-if (SPECKLE) {
+if (SPECKLE && !PRESERVE) {
   const tr = Uint8Array.from(qr), tg = Uint8Array.from(qg), tb = Uint8Array.from(qb);
   for (let y = 1; y < H-1; y++) for (let x = 1; x < W-1; x++) {
     const i = y*W + x;
@@ -241,7 +256,12 @@ if (SPECKLE) {
 // ---------- 4. 合成 ----------
 const out = Buffer.alloc(N * 4);
 for (let i = 0; i < N; i++) {
-  if (!alpha[i]) { out[i*4+3] = 0; continue; }
+  if (!alpha[i]) {
+    if (!NO_OUTLINE && OUTWARD && outlineMask[i]) {
+      out[i*4]=OUTLINE_RGB[0]; out[i*4+1]=OUTLINE_RGB[1]; out[i*4+2]=OUTLINE_RGB[2]; out[i*4+3]=255;
+    } else out[i*4+3] = 0;
+    continue;
+  }
   let r = qr[i], g = qg[i], b = qb[i];
   if (!NO_OUTLINE && outlineMask[i]) { r = OUTLINE_RGB[0]; g = OUTLINE_RGB[1]; b = OUTLINE_RGB[2]; }
   out[i*4] = r; out[i*4+1] = g; out[i*4+2] = b; out[i*4+3] = 255;
@@ -255,5 +275,6 @@ console.log(JSON.stringify({
   W, H, levels: PALETTE > 0 ? `kmeans-${PALETTE}` : LEVELS,
   outlineWidth: NO_OUTLINE ? 0 : OUTLINE,
   depthThresh: DTHRESH, normalThresh: NTHRESH,
+  preserveColor: PRESERVE, outward: OUTWARD,
   outlinePx: edgeCount, outlinePctOfSubject: +(edgeCount / Math.max(1, [...alpha].filter(v=>v).length) * 100).toFixed(1),
 }));
