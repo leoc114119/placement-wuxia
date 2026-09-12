@@ -19,7 +19,10 @@ for entry in "${DIRS[@]}"; do
     t=$(python3 -c "print(round($sf/30,6))")
     node "$TOOLS/render.mjs" "$GLB" /tmp/_iv.raw $W $H none "$t" flatcel "$TEX" $TW $TH "$yaw" /tmp/_iv "$ANIM_JSON" >/dev/null
     node "$TOOLS/downsample.mjs" /tmp/_iv.raw /tmp/_iv.depth /tmp/_iv.normal /tmp/_iv1 $W $H $SS >/dev/null
-    node "$TOOLS/postprocess.mjs" /tmp/_iv1.raw /tmp/_iv1.depth /tmp/_iv1.normal /tmp/_iv2.raw 240 320 "${PP[@]}" >/dev/null
+    # ★ 影调（对比+50% / 饱和+25%，Leo 09-12 目视选定）——**必须在 postprocess 量化之前**，
+    #   否则新颜色放不下 → PNG-8 退化成有损
+    python3 "$TOOLS/tone_pass.py" /tmp/_iv1.raw /tmp/_iv1t.raw 240 320 --contrast 1.5 --saturation 1.25 >/dev/null
+    node "$TOOLS/postprocess.mjs" /tmp/_iv1t.raw /tmp/_iv1.depth /tmp/_iv1.normal /tmp/_iv2.raw 240 320 "${PP[@]}" >/dev/null
     python3 -c "
 from PIL import Image
 Image.frombytes('RGBA',(240,320),open('/tmp/_iv2.raw','rb').read()).save('$OUT/idle_${dir}_${i}.png')

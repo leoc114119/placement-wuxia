@@ -82,6 +82,13 @@ let animName = null;
 
 // 外部重定向动画（retarget.mjs 产出的 JSON）：argv[14] = 路径
 const animJsonPath = process.argv[14];
+// ★ 防呆（09-12 踩坑）：传了 animJsonPath 但文件不存在时**报错退出**，
+//   绝不静默回退到模型自带动画——实测后果是脚本里路径写错 → 交付的"idle"其实是模型自带的 walk。
+if (animJsonPath && animJsonPath !== 'none' && !fs.existsSync(animJsonPath)) {
+  console.error('FATAL: 重定向动画 json 不存在: ' + animJsonPath);
+  console.error('       （拒绝静默回退到模型自带动画——那会让交付内容张冠李戴）');
+  process.exit(1);
+}
 if (animJsonPath && animJsonPath !== 'none' && fs.existsSync(animJsonPath)) {
   const RT = JSON.parse(fs.readFileSync(animJsonPath, 'utf8'));
   const fps = RT.fps || 30, nf = RT.nFrames;
