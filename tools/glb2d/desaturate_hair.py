@@ -24,7 +24,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = ROOT / "assets/_trial_20260912/明暗贴图试产"
-VIEWS = BASE / "views"
+VIEWS = Path(os.environ.get("HAIR_VIEWS", str(BASE / "views")))
 TEX = BASE / "tex"
 LAYOUT = BASE / "六向拼图输入/layout.json"
 BG = (20, 20, 24)

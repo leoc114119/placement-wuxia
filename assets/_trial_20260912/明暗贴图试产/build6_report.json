@@ -1,0 +1,80 @@
+{
+ "left": {
+  "yaw": 90,
+  "cropBox": [
+   242,
+   200,
+   718,
+   1257
+  ],
+  "shadingSize": [
+   640,
+   1421
+  ]
+ },
+ "leftdown": {
+  "yaw": 135,
+  "cropBox": [
+   280,
+   200,
+   680,
+   1257
+  ],
+  "shadingSize": [
+   640,
+   1691
+  ]
+ },
+ "leftup": {
+  "yaw": 45,
+  "cropBox": [
+   208,
+   200,
+   752,
+   1257
+  ],
+  "shadingSize": [
+   640,
+   1243
+  ]
+ },
+ "right": {
+  "yaw": 270,
+  "cropBox": [
+   242,
+   200,
+   718,
+   1257
+  ],
+  "shadingSize": [
+   640,
+   1421
+  ]
+ },
+ "rightdown": {
+  "yaw": 225,
+  "cropBox": [
+   208,
+   200,
+   752,
+   1257
+  ],
+  "shadingSize": [
+   640,
+   1243
+  ]
+ },
+ "rightup": {
+  "yaw": 315,
+  "cropBox": [
+   280,
+   200,
+   680,
+   1257
+  ],
+  "shadingSize": [
+   640,
+   1691
+  ]
+ }
+}
