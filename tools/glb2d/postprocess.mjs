@@ -44,7 +44,20 @@ function readF32(path) {
 const depth = readF32(inDepth);
 const nrm   = readF32(inNormal);
 
+// ★ 防呆（09-12 踩过两次）：depth/normal 必须是**降采样后**的 1× 缓冲。
+//   传了 4× 渲染的 depth（尺寸差 16 倍）→ 边缘检测全命中 → 整幅被墨色涂黑，
+//   而且**完全无声**（只是画面对了却全黑）。这里按长度校验，不符即报错退出。
 const N = W * H;
+if (depth.length !== N) {
+  console.error(`FATAL: depth 缓冲长度 ${depth.length} ≠ 画布像素数 ${N}（${W}x${H}）`);
+  console.error('       多半是把 4× 渲染的 depth 传进来了——应传 downsample.mjs 输出的 <前缀>.depth');
+  process.exit(1);
+}
+if (nrm.length !== N * 3) {
+  console.error(`FATAL: normal 缓冲长度 ${nrm.length} ≠ 画布像素数*3 ${N*3}（${W}x${H}）`);
+  console.error('       同上：应传 downsample.mjs 输出的 <前缀>.normal');
+  process.exit(1);
+}
 const alpha = new Uint8Array(N);
 for (let i = 0; i < N; i++) alpha[i] = color[i * 4 + 3];
 
