@@ -74,7 +74,8 @@ function srcWorldAt(j, t, cache) {
   let w = mul(pw, L);
   // ★ 源朝向对齐 Q（与 collada2anim 同口径）：**只作用在根节点**
   //   （我们的模型朝 −Z、Mixamo 角色朝 +Z；不转 180° 则源的右手会落到角色左手）
-  if (!j.parent && !process.argv.includes('--no-src-yaw')) {
+  // 与 collada2anim 同步：Q 默认**关**（--src-yaw 才开）
+  if (!j.parent && process.argv.includes('--src-yaw')) {
     const o = new Float64Array(w);
     for (let c = 0; c < 4; c++) { o[c*4+0] = -w[c*4+0]; o[c*4+2] = -w[c*4+2]; }
     w = o;
