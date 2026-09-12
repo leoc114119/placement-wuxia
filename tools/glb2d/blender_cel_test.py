@@ -159,8 +159,31 @@ scene.world.use_nodes = True
 scene.world.node_tree.nodes["Background"].inputs[0].default_value = (0.5, 0.5, 0.6, 1)
 scene.world.node_tree.nodes["Background"].inputs[1].default_value = 0.35
 
+# ---------- 反壳描边（inverted hull）----------
+# 动漫风 3D 角色的标准描边做法：复制网格 → Solidify 外扩 → 翻法线 → 只画背面成黑。
+# 比 Freestyle 可控（粗细/颜色/断线），且不依赖边缘检测。
+if arg("outline-mode", "freestyle") == "hull":
+    hull_thick = float(arg("hull", "0.006"))
+    for obj in list(meshes):
+        h = obj.copy(); h.data = obj.data.copy(); h.name = obj.name + "_hull"
+        scene.collection.objects.link(h)
+        m = bpy.data.materials.new("hull"); m.use_nodes = True
+        nt2 = m.node_tree; nt2.nodes.clear()
+        o2 = nt2.nodes.new("ShaderNodeOutputMaterial")
+        e2 = nt2.nodes.new("ShaderNodeEmission")
+        e2.inputs["Color"].default_value = (0.04, 0.03, 0.05, 1)
+        nt2.links.new(e2.outputs["Emission"], o2.inputs["Surface"])
+        m.use_backface_culling = True
+        h.data.materials.clear(); h.data.materials.append(m)
+        sol = h.modifiers.new("sol", "SOLIDIFY")
+        sol.thickness = hull_thick
+        sol.offset = 1.0
+        sol.use_flip_normals = True
+        sol.use_rim = False
+        print("hull 描边：厚度 %.4f，材质仅画背面" % hull_thick)
+
 # ---------- Freestyle 描边 ----------
-scene.render.use_freestyle = True
+scene.render.use_freestyle = (arg("outline-mode", "freestyle") != "hull")
 vl = scene.view_layers[0]
 vl.use_freestyle = True
 fs = vl.freestyle_settings
