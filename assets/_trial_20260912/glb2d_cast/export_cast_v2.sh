@@ -19,11 +19,10 @@ for entry in "${DIRS[@]}"; do
     t=$(python3 -c "print(round($sf/30,6))")
     node "$TOOLS/render.mjs" "$GLB" /tmp/_cv.raw $W $H none "$t" flatcel "$TEX" $TW $TH "$yaw" /tmp/_cv "$ANIM_JSON" >/dev/null
     node "$TOOLS/downsample.mjs" /tmp/_cv.raw /tmp/_cv.depth /tmp/_cv.normal /tmp/_cv1 $W $H $SS >/dev/null
-    # ★ AO 必须在**量化之前**上：作用在 24 位降采样图上，后处理只量化一次
-    #   （顺序反了 → AO 的渐变让 256 色放不下 → PNG-8 变有损 → 画面发糊，实测踩过）
-    python3 "$TOOLS/ao_pass.py" /tmp/_cv1.raw /tmp/_cv1.depth /tmp/_cv1ao.raw 240 320 --strength 0.22 >/dev/null
-    node "$TOOLS/postprocess.mjs" /tmp/_cv1ao.raw /tmp/_cv1.depth /tmp/_cv1.normal /tmp/_cv2.raw 240 320 "${PP[@]}" >/dev/null
-    cp /tmp/_cv2.raw /tmp/_cv2ao.raw
+    # ★ 09-12 Leo 令：**先去 AO**（AO 会掉 ~8% 锐度，清晰度优先）
+    #   要加回时：把下面这行的注释去掉，并**必须在 postprocess 之前**上（顺序反了会让 PNG-8 变有损 → 画面糊）
+    # python3 "$TOOLS/ao_pass.py" /tmp/_cv1.raw /tmp/_cv1.depth /tmp/_cv1ao.raw 240 320 --strength 0.22 >/dev/null && cp /tmp/_cv1ao.raw /tmp/_cv1.raw
+    node "$TOOLS/postprocess.mjs" /tmp/_cv1.raw /tmp/_cv1.depth /tmp/_cv1.normal /tmp/_cv2.raw 240 320 "${PP[@]}" >/dev/null
     python3 -c "
 from PIL import Image
 Image.frombytes('RGBA',(240,320),open('/tmp/_cv2ao.raw','rb').read()).save('$OUT/cast_${dir}_${i}.png')
