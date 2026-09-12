@@ -199,7 +199,13 @@ for (let v = 0; v < nVerts; v++) {
 // rotate about Y by yaw, then front view looks down -Z (camera at +Z)
 const yaw = yawDeg * Math.PI / 180;
 const cy = Math.cos(yaw), sy = Math.sin(yaw);
-const rot = new Float64Array([cy,0,-sy,0, 0,1,0,0, sy,0,cy,0, 0,0,0,1]);
+const rotY = new Float64Array([cy,0,-sy,0, 0,1,0,0, sy,0,cy,0, 0,0,0,1]);
+// PITCH=<度>：叠加俯仰（绕 X 轴）。用于「贴图回填」多角度采集——水平一圈看不到头顶，
+// 而头发/帽子恰好是最需要细节的部位。默认 0 ⇒ 与既有渲染逐字节一致。
+const pitchDeg = +(process.env.PITCH || 0);
+const cp = Math.cos(pitchDeg * Math.PI / 180), sp2 = Math.sin(pitchDeg * Math.PI / 180);
+const rotX = new Float64Array([1,0,0,0, 0,cp,sp2,0, 0,-sp2,cp,0, 0,0,0,1]);
+const rot = pitchDeg ? mul(rotX, rotY) : rotY;
 let mn=[1e9,1e9], mx=[-1e9,-1e9];
 const rp = new Float64Array(nVerts*2);
 for (let v = 0; v < nVerts; v++) {
