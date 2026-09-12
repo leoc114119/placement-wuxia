@@ -1,0 +1,25 @@
+{
+  "task": "T45",
+  "seq": 390,
+  "layout": "top=leftdown,left,leftup; bottom=rightdown,right,rightup",
+  "raw": {
+    "sha256": "91b7df887dd6fe2836f6ba9918567cb101df6251b526a4cf83cbad302341a0f4",
+    "size": [
+      1254,
+      1254
+    ]
+  },
+  "output": {
+    "sha256": "b85731a56e860e0a51485d2278dab1d505a02c7b727a2d6c95ed59a39b7bfc05",
+    "size": [
+      916,
+      912
+    ],
+    "mode": "RGB"
+  },
+  "processing": {
+    "uniformResizeOnly": true,
+    "semanticRedraw": false
+  },
+  "selfGatePass": true
+}

@@ -1,0 +1,17 @@
+{
+  "task": "T45",
+  "seq": 389,
+  "model": "built-in image_gen",
+  "provider": "codex-native",
+  "cost": 0,
+  "generationCount": 0,
+  "directions": ["left", "leftdown", "leftup", "right", "rightup"],
+  "reference": "全身_明暗分块.png",
+  "artifactStage": "request",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "processing": "per-input uniform resize only; no semantic redraw or color correction",
+  "result": "pending"
+}

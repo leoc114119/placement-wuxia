@@ -1,0 +1,22 @@
+{
+  "task": "T45",
+  "seq": 390,
+  "model": "built-in image_gen",
+  "provider": "codex-native",
+  "cost": 0,
+  "generationCount": 1,
+  "input": "../六向拼图输入/六向_要上明暗的拼图.png",
+  "layout": "916x912; top=leftdown,left,leftup; bottom=rightdown,right,rightup",
+  "output": "六向_明暗分块拼图.png",
+  "size": [916, 912],
+  "artifactStage": "request",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "processing": "one-shot six-cell image_gen; no semantic postprocess",
+  "rawOutput": "raw_六向_shading_imagegen.png",
+  "rawSize": [1254, 1254],
+  "qa": "qa_6in1.json",
+  "result": "candidate_ready_pending_pm2_visual_review"
+}
