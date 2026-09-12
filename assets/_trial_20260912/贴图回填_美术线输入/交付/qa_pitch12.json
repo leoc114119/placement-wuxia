@@ -1,0 +1,164 @@
+{
+  "task": "T45",
+  "seq": 378,
+  "generationCount": 12,
+  "pitchAngles": [
+    "up25_yaw000",
+    "up25_yaw045",
+    "up25_yaw090",
+    "up25_yaw135",
+    "up25_yaw180",
+    "up25_yaw225",
+    "up25_yaw270",
+    "up25_yaw315",
+    "dn20_yaw045",
+    "dn20_yaw135",
+    "dn20_yaw225",
+    "dn20_yaw315"
+  ],
+  "enemyFramesProcessed": false,
+  "styleReference": "raw_view_yaw270_imagegen.png",
+  "processing": {
+    "rawDirect": true,
+    "detailBlend": null,
+    "alphaRestore": false,
+    "registration": false
+  },
+  "outputs": [
+    {
+      "name": "up25_yaw000",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_up25_yaw000_imagegen.png",
+      "sha256": "28a54069c3cda0f8b33a36b0f13d7e15a37100ce3366c39f020b7b0b89b74d7d",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "up25_yaw045",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_up25_yaw045_imagegen.png",
+      "sha256": "366abf6344695a4d66d9c9682eecd83dd74da0331e2caa8318c9a588c435bcd9",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "up25_yaw090",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_up25_yaw090_imagegen.png",
+      "sha256": "1b94339c8fa4026834999a4b60d7a604ab9a0bfc1ec77cfc9955bfb306b2f84c",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "up25_yaw135",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_up25_yaw135_imagegen.png",
+      "sha256": "7f25c1a94ceefc084815e5a5902bc3f4352804ae250ab9beb32876781774f328",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "up25_yaw180",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_up25_yaw180_imagegen.png",
+      "sha256": "ba60a203e53367c7f654c26b74a597c12b369f6c0ab1b0a97ea7cfcaf38104c6",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "up25_yaw225",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_up25_yaw225_imagegen.png",
+      "sha256": "f2e6d6f13f054a825f709956218e262a1ecf17a9d369c2ce44f685a103624cb9",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "up25_yaw270",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_up25_yaw270_imagegen.png",
+      "sha256": "20c5dac58215be65dcff61aab3335b2f3d723ee3c433640bdcfe76e01db1c7d1",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "up25_yaw315",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_up25_yaw315_imagegen.png",
+      "sha256": "2f5c98c0e82e70473d2f86ff1aee4b728ac460ec5b9a8ce504e45314bbbd14ac",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "dn20_yaw045",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_dn20_yaw045_imagegen.png",
+      "sha256": "836c93bfc461d208edc18b84b8ab86b60857c6dbd6dfad2f10b7cce9ecd36369",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "dn20_yaw135",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_dn20_yaw135_imagegen.png",
+      "sha256": "b5974e0fb0ee5e297a4a00093b846282da744e2ae13d94551c24671e5361300d",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "dn20_yaw225",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_dn20_yaw225_imagegen.png",
+      "sha256": "101ab087df0d717cb15a1d39904d4e86ed5badd9e0cfecb1ac95b51f686e72d4",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "dn20_yaw315",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_dn20_yaw315_imagegen.png",
+      "sha256": "4ffb7fb2c6553aa9b4580b0ce2d847d03172989bec4f26c5439b06fc674b52c6",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    }
+  ],
+  "allExpectedSizeAndMode": true,
+  "allUniqueSha256": true,
+  "selfGatePass": true
+}
