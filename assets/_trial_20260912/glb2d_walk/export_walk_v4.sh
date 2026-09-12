@@ -25,7 +25,7 @@ for entry in "${DIRS[@]}"; do
   for t in "${TS[@]}"; do
     node "$TOOLS/render.mjs" "$GLB" /tmp/_wk.raw $W $H $ANIM_IDX "$t" flatcel "$TEX" 4096 4096 "$yaw" /tmp/_wk >/dev/null
     node "$TOOLS/downsample.mjs" /tmp/_wk.raw /tmp/_wk.depth /tmp/_wk.normal /tmp/_wk1 $W $H $SS >/dev/null
-    python3 "$TOOLS/tone_pass.py" /tmp/_wk1.raw /tmp/_wk1t.raw 240 320 --contrast 1.5 --saturation 1.25 --brightness 22 --red 26 --red-scope warm >/dev/null
+    python3 "$TOOLS/tone_pass.py" /tmp/_wk1.raw /tmp/_wk1t.raw 240 320 --contrast 1.5 --saturation 1.25 --brightness 2 --red 26 --red-scope warm >/dev/null
     node "$TOOLS/postprocess.mjs" /tmp/_wk1t.raw /tmp/_wk1.depth /tmp/_wk1.normal /tmp/_wk2.raw 240 320 "${PP[@]}" >/dev/null
     python3 -c "
 from PIL import Image
