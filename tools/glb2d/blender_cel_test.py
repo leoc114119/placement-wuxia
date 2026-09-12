@@ -154,10 +154,22 @@ so.rotation_euler = (math.radians(55), 0, math.radians(-40))
 fill = bpy.data.lights.new("fill", type="SUN"); fill.energy = 1.0
 fo = bpy.data.objects.new("fill", fill); scene.collection.objects.link(fo)
 fo.rotation_euler = (math.radians(70), 0, math.radians(140))
+# 世界环境：LIGHT=world 时改成「纯环境光」（模拟 Leo 提的均匀环境照明），
+# LIGHT=sun（默认）保留现在这套双 SUN 定向光。
+mode_light = arg("light", "sun")
 scene.world = bpy.data.worlds.new("w")
 scene.world.use_nodes = True
-scene.world.node_tree.nodes["Background"].inputs[0].default_value = (0.5, 0.5, 0.6, 1)
-scene.world.node_tree.nodes["Background"].inputs[1].default_value = 0.35
+wbg = scene.world.node_tree.nodes["Background"]
+if mode_light == "world":
+    wbg.inputs[0].default_value = (0.85, 0.85, 0.9, 1)
+    wbg.inputs[1].default_value = float(arg("world-strength", "1.0"))
+    for o in (so, fo):
+        bpy.data.objects.remove(o, do_unlink=True)
+    print("光照模式：纯世界环境光（均匀、无方向），强度", wbg.inputs[1].default_value)
+else:
+    wbg.inputs[0].default_value = (0.5, 0.5, 0.6, 1)
+    wbg.inputs[1].default_value = 0.35
+    print("光照模式：双 SUN 定向光")
 
 # ---------- 反壳描边（inverted hull）----------
 # 动漫风 3D 角色的标准描边做法：复制网格 → Solidify 外扩 → 翻法线 → 只画背面成黑。
