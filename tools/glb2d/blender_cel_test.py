@@ -160,7 +160,17 @@ mode_light = arg("light", "sun")
 scene.world = bpy.data.worlds.new("w")
 scene.world.use_nodes = True
 wbg = scene.world.node_tree.nodes["Background"]
-if mode_light == "world":
+ENV_IMG = arg("env-image")
+if ENV_IMG and os.path.exists(ENV_IMG):
+    for o in (so, fo):
+        bpy.data.objects.remove(o, do_unlink=True)
+    nimg = scene.world.node_tree.nodes.new("ShaderNodeTexEnvironment")
+    nimg.image = bpy.data.images.load(ENV_IMG)
+    nt = scene.world.node_tree
+    nt.links.new(nimg.outputs["Color"], wbg.inputs[0])
+    wbg.inputs[1].default_value = float(arg("world-strength", "1.0"))
+    print("光照模式：环境贴图", ENV_IMG, "强度", wbg.inputs[1].default_value)
+elif mode_light == "world":
     wbg.inputs[0].default_value = (0.85, 0.85, 0.9, 1)
     wbg.inputs[1].default_value = float(arg("world-strength", "1.0"))
     for o in (so, fo):
