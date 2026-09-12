@@ -23,6 +23,8 @@ ap.add_argument('in_raw'); ap.add_argument('out_raw')
 ap.add_argument('W', type=int); ap.add_argument('H', type=int)
 ap.add_argument('--contrast', type=float, default=1.5,
                 help='对比倍数（Leo 09-12 选定 1.5 = +50%%；1.0 = 不动）')
+ap.add_argument('--temperature', type=float, default=0.0,
+                help='色温补偿：>0 变冷（R 减、B 加），用于压掉整体偏黄')
 ap.add_argument('--brightness', type=float, default=0.0,
                 help='亮度补偿（加性，0~40；对比会把中间调压暗，用它补回来）')
 ap.add_argument('--saturation', type=float, default=1.25,
@@ -31,7 +33,7 @@ a = ap.parse_args()
 
 im = Image.frombytes('RGBA', (a.W, a.H), open(a.in_raw, 'rb').read())
 px = im.load()
-k, s, br = a.contrast, a.saturation, a.brightness
+k, s, br, tp = a.contrast, a.saturation, a.brightness, a.temperature
 cl = lambda v: 0 if v < 0 else (255 if v > 255 else int(v + 0.5))
 
 for y in range(a.H):
@@ -46,8 +48,10 @@ for y in range(a.H):
             r, g, b = [cl(l + (v - l)*s) for v in (r, g, b)]
         if br != 0.0:                       # 亮度补偿：对比把中间调压暗了，这里补回来
             r, g, b = [cl(v + br) for v in (r, g, b)]
+        if tp != 0.0:                       # 色温：R 减 / B 加 = 变冷，压整体偏黄
+            r, b = cl(r - tp), cl(b + tp)
         px[x, y] = (r, g, b, al)
 
 open(a.out_raw, 'wb').write(im.tobytes())
 im.save(a.out_raw + '.png')
-print('影调完成 contrast=%.2f saturation=%.2f brightness=%.1f → %s' % (k, s, br, a.out_raw))
+print('影调完成 contrast=%.2f saturation=%.2f brightness=%.1f temperature=%.1f → %s' % (k, s, br, tp, a.out_raw))
