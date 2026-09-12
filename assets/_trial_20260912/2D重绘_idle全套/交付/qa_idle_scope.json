@@ -1,0 +1,96 @@
+{
+  "task": "T45",
+  "seq": 383,
+  "usableScope": "six directions × one idle frame",
+  "faces": [
+    "left",
+    "leftdown",
+    "leftup",
+    "right",
+    "rightdown",
+    "rightup"
+  ],
+  "generationCount": 10,
+  "usableFrameCount": 6,
+  "oldUnusedFramesRetained": [
+    "idle_right_2",
+    "idle_right_3",
+    "idle_right_4",
+    "idle_right_5"
+  ],
+  "processing": {
+    "rawDirect": true,
+    "resize": false,
+    "alphaRestore": false,
+    "detailBlend": null
+  },
+  "outputs": [
+    {
+      "facing": "left",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/2D重绘_idle全套/交付/idle_left_1.png",
+      "sha256": "764e977a31ff9630863c65dfefb69990b7859b18be7bb51ade8c4467cf7c5efa",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "facing": "leftdown",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/2D重绘_idle全套/交付/idle_leftdown_1.png",
+      "sha256": "032055c15e208e3ce5041ffa147ed08fd81c533c97d31d34801581d1f97886f0",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "facing": "leftup",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/2D重绘_idle全套/交付/idle_leftup_1.png",
+      "sha256": "dd27275378c076acb9ad0c34a2d10830d638e1fb5a12bbe95c4e0ed41b506758",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "facing": "right",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/2D重绘_idle全套/交付/idle_right_1.png",
+      "sha256": "5e3816b4515c23574e269643229eed9623dc904af62033bf21c8341e12aac806",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "facing": "rightdown",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/2D重绘_idle全套/交付/idle_rightdown_1.png",
+      "sha256": "5b398972c95926c9a1fd9874281bd575c16f1b3f7ca7a239137474518e8bdf7d",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "facing": "rightup",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/2D重绘_idle全套/交付/idle_rightup_1.png",
+      "sha256": "1a246d4aeb7ef37cece36299cc03358a28eaff5f773e1f22d0878d7680bbe012",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    }
+  ],
+  "selfGatePass": true
+}

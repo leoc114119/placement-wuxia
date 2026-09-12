@@ -4,10 +4,10 @@
   "model": "built-in image_gen",
   "provider": "codex-native",
   "cost": 0,
-  "generationCount": 5,
-  "frameCount": 30,
+  "generationCount": 10,
+  "frameCount": 6,
   "directions": ["left", "leftdown", "leftup", "right", "rightdown", "rightup"],
-  "framesPerDirection": 5,
+  "framesPerDirection": 1,
   "referenceRoles": {
     "style": "风格_2D_<direction>.png",
     "pose": "姿势_3D_<direction>_<frame>.png"
@@ -21,7 +21,10 @@
   "resize": false,
   "alphaRestore": false,
   "detailBlend": null,
-  "completed": ["idle_right_1", "idle_right_2", "idle_right_3", "idle_right_4", "idle_right_5"],
-  "remaining": 25,
-  "result": "in_progress_right_complete"
+  "completed": ["idle_left_1", "idle_leftdown_1", "idle_leftup_1", "idle_right_1", "idle_rightdown_1", "idle_rightup_1"],
+  "unusedRetained": ["idle_right_2", "idle_right_3", "idle_right_4", "idle_right_5"],
+  "remaining": 0,
+  "scopeRevision": "seq=383 idle one frame per direction",
+  "qa": "qa_idle_scope.json",
+  "result": "candidate_ready_pending_pm2_visual_review"
 }
