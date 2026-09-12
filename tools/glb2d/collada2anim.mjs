@@ -400,7 +400,10 @@ function main() {
     return W[i][13];
   })();
   const srcHipY = Math.abs(hipsRestT[1]) * C.unitScale;
-  const rootScale = srcHipY > 1e-6 ? (tgtHipY / srcHipY) : 1;
+  // ⚠️ 取绝对值：不同模型的原点位置不同（旧模型 Hip.y=+0.41，新模型 −0.49 ⇒ 比值会变负），
+  //    负的 rootScale 会让根位移的上下**反号**（该升的时候沉）。缩放量本身永远是正的。
+  const rootScale = (Math.abs(srcHipY) > 1e-6 && Math.abs(tgtHipY) > 1e-6)
+    ? (Math.abs(tgtHipY) / Math.abs(srcHipY)) : 1;
 
   const perFrame = [];
   for (let f = 0; f < nFrames; f++) {

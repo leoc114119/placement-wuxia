@@ -1,0 +1,19 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>新模型 cast v2 · 092600</title>
+<style>body{margin:0;background:#141418;color:#e8e0d0;font:13px/1.5 -apple-system,"PingFang SC",sans-serif}
+h1{font-size:15px;margin:16px 18px 4px;color:#ffe08a}.meta{margin:0 18px 12px;color:#9a9384}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:0 18px 16px}
+.cell{background:#1d1d22;border-radius:8px;padding:8px;text-align:center}
+.cell b{display:block;font-size:12px;color:#8fd4ff;margin-bottom:6px}
+img{width:100%;image-rendering:pixelated;background:#181820;border-radius:4px}
+.row{display:flex;gap:8px;align-items:flex-end;margin:0 18px 18px;flex-wrap:wrap}.row .cell{width:140px}
+.note{margin:0 18px 20px;color:#9a9384;font-size:12px}</style></head><body>
+<h1>施法 · 新模型 chibi+character + AO 0.22（版本 092600）</h1>
+<p class="meta">
+新模型：多 Pelvis + 一圈 Twist 骨 ｜ 骨名与旧模型完全兼容（映射表不用改）｜ 朝向/站立高度/脚底基线实测与旧模型一致<br>
+贴图：baseColor 4096×4096 原尺寸（basecolor4096.raw）｜ 重定向 aim4 ｜ 门检 22/22 = 0.000°<br>
+后处理额外走一步 <b>AO 通道</b>（strength 0.22，你看中的轻档）</p>
+<div class="grid"><div class="cell"><b>left</b><img src="cast_left.gif?v=092600"></div><div class="cell"><b>leftdown</b><img src="cast_leftdown.gif?v=092600"></div><div class="cell"><b>leftup</b><img src="cast_leftup.gif?v=092600"></div><div class="cell"><b>right</b><img src="cast_right.gif?v=092600"></div><div class="cell"><b>rightdown</b><img src="cast_rightdown.gif?v=092600"></div><div class="cell"><b>rightup</b><img src="cast_rightup.gif?v=092600"></div></div>
+<h1>单帧细看（left / leftdown）</h1><div class="row"><div class="cell"><b>left f1</b><img src="cast_left_1.png?v=092600"></div><div class="cell"><b>left f2</b><img src="cast_left_2.png?v=092600"></div><div class="cell"><b>left f3</b><img src="cast_left_3.png?v=092600"></div><div class="cell"><b>left f4</b><img src="cast_left_4.png?v=092600"></div><div class="cell"><b>left f5</b><img src="cast_left_5.png?v=092600"></div><div class="cell"><b>leftdown f1</b><img src="cast_leftdown_1.png?v=092600"></div><div class="cell"><b>leftdown f2</b><img src="cast_leftdown_2.png?v=092600"></div><div class="cell"><b>leftdown f3</b><img src="cast_leftdown_3.png?v=092600"></div><div class="cell"><b>leftdown f4</b><img src="cast_leftdown_4.png?v=092600"></div><div class="cell"><b>leftdown f5</b><img src="cast_leftdown_5.png?v=092600"></div></div>
+<p class="note">⚠️ 已知问题：AO 会引入渐变，256 色调色板放不下 → <b>PNG-8 变成有损</b>（编码方式显示 quantized）。
+需要决定：AO 档位量化 / 接受有损 / 改用 PNG-24（体积会涨）。</p>
+</body></html>
