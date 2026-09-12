@@ -1,0 +1,422 @@
+{
+  "task": "T45",
+  "seq": 392,
+  "processing": "uniform resize only",
+  "directions": {
+    "left": {
+      "raw": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/raw/left.png",
+        "sha256": "b028706a254cf1f23b02cdd70c2e9852d69e82148d81683169dc64aa1d041f2c",
+        "size": [
+          842,
+          1869
+        ],
+        "mode": "RGB"
+      },
+      "input": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_left_要上明暗的图.png",
+        "sha256": "aa469888ffa9605dbb49575678b40efd68b37b536f2012ec2b1c6b4061a33944",
+        "size": [
+          640,
+          1421
+        ],
+        "mode": "RGB"
+      },
+      "normalized": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/normalized/全身_left_明暗分块.png",
+        "sha256": "c18f865d84e701b355680c0c8967eca92a1b480f5f33fd739a45395e3f9a8c24",
+        "size": [
+          640,
+          1421
+        ],
+        "mode": "RGB"
+      },
+      "delivery": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/交付/全身_left_明暗分块.png",
+        "exists": true,
+        "sha256": "c18f865d84e701b355680c0c8967eca92a1b480f5f33fd739a45395e3f9a8c24",
+        "size": [
+          640,
+          1421
+        ]
+      },
+      "uniformScale": [
+        0.7600950118764845,
+        0.7602996254681648
+      ],
+      "backgroundCorners": [
+        [
+          20,
+          22,
+          24
+        ],
+        [
+          20,
+          22,
+          25
+        ],
+        [
+          21,
+          22,
+          26
+        ],
+        [
+          21,
+          22,
+          26
+        ]
+      ],
+      "inputApproxForegroundBBox": [
+        32,
+        32,
+        607,
+        1388
+      ],
+      "outputApproxForegroundBBox": [
+        34,
+        33,
+        604,
+        1373
+      ],
+      "inputOutputRgbDiffBBox": [
+        0,
+        0,
+        640,
+        1421
+      ],
+      "visualStatus": "candidate_pending_visual_review",
+      "selfGatePass": true
+    },
+    "leftdown": {
+      "raw": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/raw/leftdown.png",
+        "sha256": "522807d9f87f7a426eed48a7943990cb2f8b42929bf1f79c68bf9dcbd467fc10",
+        "size": [
+          771,
+          2038
+        ],
+        "mode": "RGB"
+      },
+      "input": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_leftdown_要上明暗的图.png",
+        "sha256": "b4bbba7884a5511d6c3b049ce62a7a9041699c3409f3eecfc1a9cda95dcae934",
+        "size": [
+          640,
+          1691
+        ],
+        "mode": "RGB"
+      },
+      "normalized": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/normalized/全身_leftdown_明暗分块.png",
+        "sha256": "bab703a4bc49793afc4c91ddf98a90a33ad0b102d968d437db830d30a794b0d8",
+        "size": [
+          640,
+          1691
+        ],
+        "mode": "RGB"
+      },
+      "delivery": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/交付/全身_leftdown_明暗分块.png",
+        "exists": true,
+        "sha256": "bab703a4bc49793afc4c91ddf98a90a33ad0b102d968d437db830d30a794b0d8",
+        "size": [
+          640,
+          1691
+        ]
+      },
+      "uniformScale": [
+        0.8300907911802854,
+        0.8297350343473994
+      ],
+      "backgroundCorners": [
+        [
+          21,
+          22,
+          25
+        ],
+        [
+          20,
+          21,
+          24
+        ],
+        [
+          19,
+          21,
+          24
+        ],
+        [
+          20,
+          22,
+          25
+        ]
+      ],
+      "inputApproxForegroundBBox": [
+        38,
+        38,
+        603,
+        1652
+      ],
+      "outputApproxForegroundBBox": [
+        40,
+        38,
+        601,
+        1643
+      ],
+      "inputOutputRgbDiffBBox": [
+        0,
+        0,
+        640,
+        1691
+      ],
+      "visualStatus": "candidate_pending_visual_review",
+      "selfGatePass": true
+    },
+    "leftup": {
+      "raw": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/raw/leftup.png",
+        "sha256": "9e7e3adf2235f8e356ccbca303f0e85a1664de7ba7d826f15c866728ae67845a",
+        "size": [
+          900,
+          1748
+        ],
+        "mode": "RGB"
+      },
+      "input": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_leftup_要上明暗的图.png",
+        "sha256": "68d45a605542e49bef5dca6f6f13bc2bc29ecff6b1c8b471201418c29f899a8e",
+        "size": [
+          640,
+          1243
+        ],
+        "mode": "RGB"
+      },
+      "normalized": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/normalized/全身_leftup_明暗分块.png",
+        "sha256": "792ab26eed9e53d66ad9e917f1ba713b35f3cecda4224227e305aac2ef3816be",
+        "size": [
+          640,
+          1243
+        ],
+        "mode": "RGB"
+      },
+      "delivery": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/交付/全身_leftup_明暗分块.png",
+        "exists": true,
+        "sha256": "792ab26eed9e53d66ad9e917f1ba713b35f3cecda4224227e305aac2ef3816be",
+        "size": [
+          640,
+          1243
+        ]
+      },
+      "uniformScale": [
+        0.7111111111111111,
+        0.7110983981693364
+      ],
+      "backgroundCorners": [
+        [
+          20,
+          20,
+          24
+        ],
+        [
+          20,
+          21,
+          24
+        ],
+        [
+          19,
+          19,
+          23
+        ],
+        [
+          20,
+          21,
+          25
+        ]
+      ],
+      "inputApproxForegroundBBox": [
+        28,
+        28,
+        611,
+        1214
+      ],
+      "outputApproxForegroundBBox": [
+        28,
+        28,
+        610,
+        1209
+      ],
+      "inputOutputRgbDiffBBox": [
+        0,
+        0,
+        640,
+        1243
+      ],
+      "visualStatus": "candidate_pending_visual_review",
+      "selfGatePass": true
+    },
+    "right": {
+      "raw": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/raw/right.png",
+        "sha256": "adc7e6a828223246786a628f5fee1b824c88f57a9457ca7e58aa23de76e93dec",
+        "size": [
+          842,
+          1869
+        ],
+        "mode": "RGB"
+      },
+      "input": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_right_要上明暗的图.png",
+        "sha256": "f0d66a9e898969b7dddc842765d82f41134b8084b1f146f9b6f53f0e6a688007",
+        "size": [
+          640,
+          1421
+        ],
+        "mode": "RGB"
+      },
+      "normalized": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/normalized/全身_right_明暗分块.png",
+        "sha256": "9ce4f001f686a3a424d718790fa1d73b7ec0d08d1d655b984001cd7dbff8c781",
+        "size": [
+          640,
+          1421
+        ],
+        "mode": "RGB"
+      },
+      "delivery": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/交付/全身_right_明暗分块.png",
+        "exists": true,
+        "sha256": "9ce4f001f686a3a424d718790fa1d73b7ec0d08d1d655b984001cd7dbff8c781",
+        "size": [
+          640,
+          1421
+        ]
+      },
+      "uniformScale": [
+        0.7600950118764845,
+        0.7602996254681648
+      ],
+      "backgroundCorners": [
+        [
+          20,
+          21,
+          25
+        ],
+        [
+          20,
+          21,
+          24
+        ],
+        [
+          21,
+          21,
+          25
+        ],
+        [
+          21,
+          21,
+          25
+        ]
+      ],
+      "inputApproxForegroundBBox": [
+        32,
+        32,
+        607,
+        1388
+      ],
+      "outputApproxForegroundBBox": [
+        32,
+        32,
+        607,
+        1382
+      ],
+      "inputOutputRgbDiffBBox": [
+        0,
+        0,
+        640,
+        1421
+      ],
+      "visualStatus": "candidate_pending_visual_review",
+      "selfGatePass": true
+    },
+    "rightup": {
+      "raw": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/raw/rightup.png",
+        "sha256": "761594bc411e2df04e917bb6dfcc416362f8cea35a6af330cae76417a7562d00",
+        "size": [
+          771,
+          2038
+        ],
+        "mode": "RGB"
+      },
+      "input": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_rightup_要上明暗的图.png",
+        "sha256": "3ab5c9131db98368f1000d74188733270f3be829cb6da5e85a7d940a52d4d123",
+        "size": [
+          640,
+          1691
+        ],
+        "mode": "RGB"
+      },
+      "normalized": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/seq392/normalized/全身_rightup_明暗分块.png",
+        "sha256": "f8ac34cc70c66ce9c1218a15bd3ff3c27738dac69e13a2a339a0ebf387cbd889",
+        "size": [
+          640,
+          1691
+        ],
+        "mode": "RGB"
+      },
+      "delivery": {
+        "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/交付/全身_rightup_明暗分块.png",
+        "exists": false
+      },
+      "uniformScale": [
+        0.8300907911802854,
+        0.8297350343473994
+      ],
+      "backgroundCorners": [
+        [
+          21,
+          22,
+          25
+        ],
+        [
+          21,
+          23,
+          25
+        ],
+        [
+          20,
+          21,
+          24
+        ],
+        [
+          20,
+          22,
+          25
+        ]
+      ],
+      "inputApproxForegroundBBox": [
+        36,
+        38,
+        601,
+        1652
+      ],
+      "outputApproxForegroundBBox": [
+        38,
+        38,
+        599,
+        1643
+      ],
+      "inputOutputRgbDiffBBox": [
+        0,
+        0,
+        640,
+        1691
+      ],
+      "visualStatus": "fail_attempt2_removed_existing_embroidery_and_attempt1_added_or_changed_embroidery",
+      "selfGatePass": false
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "task": "T45",
+  "seq": 392,
+  "model": "built-in image_gen",
+  "provider": "codex-native",
+  "cost": 0,
+  "generationCount": 6,
+  "directions": ["left", "leftdown", "leftup", "right", "rightup"],
+  "reference": "../交付/全身_明暗分块.png",
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "processing": "uniform resize only, one output per input; no semantic postprocess",
+  "result": "partial_candidate_rightup_failed_after_two_native_attempts",
+  "outputs": {
+    "left": {"input": "../其余五向输入/全身_left_要上明暗的图.png", "targetSize": [640, 1421], "raw": "raw/left.png", "normalized": "normalized/全身_left_明暗分块.png"},
+    "leftdown": {"input": "../其余五向输入/全身_leftdown_要上明暗的图.png", "targetSize": [640, 1691], "raw": "raw/leftdown.png", "normalized": "normalized/全身_leftdown_明暗分块.png"},
+    "leftup": {"input": "../其余五向输入/全身_leftup_要上明暗的图.png", "targetSize": [640, 1243], "raw": "raw/leftup.png", "normalized": "normalized/全身_leftup_明暗分块.png"},
+    "right": {"input": "../其余五向输入/全身_right_要上明暗的图.png", "targetSize": [640, 1421], "raw": "raw/right.png", "normalized": "normalized/全身_right_明暗分块.png"},
+    "rightup": {"input": "../其余五向输入/全身_rightup_要上明暗的图.png", "targetSize": [640, 1691], "raw": "raw/rightup.png", "rawAttempts": ["raw/rightup_attempt1.png", "raw/rightup_attempt2.png"], "normalized": "normalized/全身_rightup_明暗分块.png", "visualStatus": "fail_after_two_native_attempts"}
+  }
+}

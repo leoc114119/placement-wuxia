@@ -1,0 +1,59 @@
+{
+  "task": "T45",
+  "seq": 392,
+  "referenceReview": {
+    "method": "single contact sheet review plus file-fact verification; contact sheet is review-only and is not passed to ImageGen",
+    "contactSheet": "assets/_trial_20260912/明暗贴图试产/seq392/contact/seq392_reference_contact.png",
+    "confirmed": "Five target images show the same hero in the requested left/leftdown/leftup/right/rightup directions on dark backgrounds; the rightdown reference is the existing full-body three-tone shading candidate."
+  },
+  "references": [
+    {
+      "path": "assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_left_要上明暗的图.png",
+      "role": "target geometry/composition/color source for left",
+      "dimensions": [640, 1421],
+      "sha256": "aa469888ffa9605dbb49575678b40efd68b37b536f2012ec2b1c6b4061a33944",
+      "allowed": "only recolor existing soft lighting into three clean value bands",
+      "forbidden": "any geometry, facial-feature, sleeve, arm, silhouette, pose, palette, background or text change"
+    },
+    {
+      "path": "assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_leftdown_要上明暗的图.png",
+      "role": "target geometry/composition/color source for leftdown",
+      "dimensions": [640, 1691],
+      "sha256": "b4bbba7884a5511d6c3b049ce62a7a9041699c3409f3eecfc1a9cda95dcae934",
+      "allowed": "only recolor existing soft lighting into three clean value bands",
+      "forbidden": "any geometry, facial-feature, sleeve, arm, silhouette, pose, palette, background or text change"
+    },
+    {
+      "path": "assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_leftup_要上明暗的图.png",
+      "role": "target geometry/composition/color source for leftup",
+      "dimensions": [640, 1243],
+      "sha256": "68d45a605542e49bef5dca6f6f13bc2bc29ecff6b1c8b471201418c29f899a8e",
+      "allowed": "only recolor existing soft lighting into three clean value bands",
+      "forbidden": "any geometry, facial-feature, sleeve, arm, silhouette, pose, palette, background or text change"
+    },
+    {
+      "path": "assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_right_要上明暗的图.png",
+      "role": "target geometry/composition/color source for right",
+      "dimensions": [640, 1421],
+      "sha256": "f0d66a9e898969b7dddc842765d82f41134b8084b1f146f9b6f53f0e6a688007",
+      "allowed": "only recolor existing soft lighting into three clean value bands",
+      "forbidden": "any geometry, facial-feature, sleeve, arm, silhouette, pose, palette, background or text change"
+    },
+    {
+      "path": "assets/_trial_20260912/明暗贴图试产/其余五向输入/全身_rightup_要上明暗的图.png",
+      "role": "target geometry/composition/color source for rightup",
+      "dimensions": [640, 1691],
+      "sha256": "3ab5c9131db98368f1000d74188733270f3be829cb6da5e85a7d940a52d4d123",
+      "allowed": "only recolor existing soft lighting into three clean value bands",
+      "forbidden": "any geometry, facial-feature, sleeve, arm, silhouette, pose, palette, background or text change"
+    },
+    {
+      "path": "assets/_trial_20260912/明暗贴图试产/交付/全身_明暗分块.png",
+      "role": "single rightdown full-body lighting reference only",
+      "dimensions": [640, 1243],
+      "sha256": "bdd7c5cc432887cd2c4c50570a1490db572864ea4c959c5ffe451528dd537835",
+      "allowed": "same world-light direction and same three-value-band logic",
+      "forbidden": "copying its pose, direction, geometry, composition or colors onto any target"
+    }
+  ]
+}
