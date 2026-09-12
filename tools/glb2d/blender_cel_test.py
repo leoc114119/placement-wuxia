@@ -55,7 +55,7 @@ scene.render.resolution_x = RW
 scene.render.resolution_y = RH
 scene.render.resolution_percentage = 100
 scene.render.film_transparent = True          # 透明底，便于抠图
-scene.view_settings.view_transform = "Standard"  # 不要 Filmic，否则颜色发灰
+scene.view_settings.view_transform = arg("view-transform", "Standard")  # ★ 默认必须是 Standard；Blender 4/5 出厂默认是 AgX，会把颜色压得又灰又淡
 scene.render.image_settings.file_format = "PNG"
 scene.render.image_settings.color_mode = "RGBA"
 
@@ -77,8 +77,11 @@ if not meshes:
     print("FATAL: 没导入到网格"); sys.exit(1)
 
 # ---------- cel 材质 ----------
+NO_CEL = arg("no-cel") == "1"      # 保留导入的原始材质（用于对照"没套 cel"长什么样）
+if NO_CEL:
+    print("跳过 cel 材质，保留导入的原始材质")
 lo, mid, hi = (float(v) for v in BANDS.split(","))
-for obj in meshes:
+for obj in ([] if NO_CEL else meshes):
     mat = bpy.data.materials.new(name="cel_" + obj.name)
     mat.use_nodes = True
     nt = mat.node_tree
