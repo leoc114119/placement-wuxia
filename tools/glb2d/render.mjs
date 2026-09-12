@@ -383,7 +383,7 @@ for (let f = 0; f < tri; f++) {
     const nl = Math.hypot(n[0],n[1],n[2])||1;
     const nx=n[0]/nl, ny=n[1]/nl, nz=n[2]/nl;
     nbuf[o*3]=nx; nbuf[o*3+1]=ny; nbuf[o*3+2]=nz;
-    if (mode === 'lit' || mode === 'relief' || mode === 'cel' || mode === 'flatcel') {
+    if (mode === 'lit' || mode === 'relief' || mode === 'cel' || mode === 'flatcel' || mode === 'cel3') {
       const kd = Math.max(0, nx*L[0]+ny*L[1]+nz*L[2]);          // key
       const fd = Math.max(0, nx*(-L[0]) + ny*0.2 + nz*(-L[2])); // fill
       const rd = Math.max(0, ny*0.7 + nz*0.55 - nx*0.3);        // rim
@@ -395,6 +395,13 @@ for (let f = 0; f < tri; f++) {
         const STEPS = 4;
         const band = Math.ceil(kd*STEPS)/STEPS;
         d = 0.34 + 0.66*Math.max(0.25, band) + 0.30*Math.pow(rd,3.0);
+      } else if (mode === 'cel3') {
+        // ★ 真·cel 三阶：明确的「亮/中/暗」三段色，而不是把光照压成一条窄带。
+        //   为什么之前的 flatcel 不行：它把 d 压到 0.86~1.00，出来几乎平涂、没有结构，
+        //   观感上就是「3D 渲染磨平了」，跟手绘的「明确明暗块」是两回事。
+        //   cel 的做法是**量化成色阶**：kd 分三档 → 三个固定亮度；再叠一层很轻的边光。
+        const band = kd > 0.62 ? 1.0 : (kd > 0.28 ? 0.80 : 0.62);
+        d = band + 0.06*Math.pow(rd, 3.0);
       } else if (mode === 'flatcel') {
         // 接近我们 2D 画风的「平涂」：光照压到极窄区间，只留很轻的形体提示，
         // 让色彩量化后趋近平涂块面；描边交给后处理。
