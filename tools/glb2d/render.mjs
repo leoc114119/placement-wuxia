@@ -237,7 +237,10 @@ const baselineY = H * 0.96;
 //   相机右向量 = f×u = (0,0,1)×(0,1,0) = (−1,0,0) = −X。
 //   而原式 screen_x = W/2 + (q[0]-cx)*scale 用的是 **+X** ⇒ 屏幕右 = 相机的「左」
 //   ⇒ **整幅渲染是左右镜像**（后果：不对称动作的左右手会反，例如攻击"用左手砍"）。
-const toScreen = (q) => [ W/2 - (q[0]-cxModel)*scale, baselineY - (q[1]-minYRef)*scale ];
+// LEGACY_MIRROR=1 → 回到 09-12 修镜像之前的旧映射（屏幕 x 用 +X）。
+// 用途：A/B 对比「修镜像前 / 修镜像后」两版；**默认走修复版**。
+const LEGACY_MIRROR = process.env.LEGACY_MIRROR === '1';
+const toScreen = (q) => [ W/2 + (LEGACY_MIRROR ? 1 : -1)*(q[0]-cxModel)*scale, baselineY - (q[1]-minYRef)*scale ];
 
 // ---------- texture ----------
 let TEX=null, TW=+texWs, TH=+texHs;
