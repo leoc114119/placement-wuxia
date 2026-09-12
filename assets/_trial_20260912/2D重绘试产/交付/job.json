@@ -1,0 +1,40 @@
+{
+  "task": "T45",
+  "seq": 380,
+  "model": "built-in image_gen",
+  "provider": "codex-native",
+  "cost": 0,
+  "generationCount": 2,
+  "outputs": {
+    "right": {
+      "styleReference": "../参照/风格参照_2D_right.png",
+      "poseReference": "../参照/姿势参照_3D_right.png",
+      "output": "redraw_right.png"
+    },
+    "rightdown": {
+      "styleReference": "../参照/风格参照_2D_rightdown.png",
+      "poseReference": "../参照/姿势参照_3D_rightdown.png",
+      "output": "redraw_rightdown.png"
+    }
+  },
+  "artifactStage": "request",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "result": "candidate_ready_pending_pm2_visual_review",
+  "prompt": "prompt_used.txt",
+  "qa": "qa_2d_redraw.json",
+  "rawDirect": true,
+  "resize": false,
+  "alphaRestore": false,
+  "detailBlend": null,
+  "outputSha256": {
+    "right": "ccaf48efda6c2cab4240037d4de5d10c37e6692328f023fa16f36b941d1e4287",
+    "rightdown": "9df53dbf3ebf48471f428caab8f416d15d5787ac1f1ac563ac11cfa8f36570af"
+  },
+  "outputSizes": {
+    "right": [1086, 1448],
+    "rightdown": [1086, 1448]
+  }
+}

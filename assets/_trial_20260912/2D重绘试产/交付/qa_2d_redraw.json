@@ -1,0 +1,42 @@
+{
+  "task": "T45",
+  "seq": 380,
+  "generationCount": 2,
+  "referenceRoles": {
+    "style": "online 2D reference",
+    "pose": "our 3D render reference"
+  },
+  "processing": {
+    "rawDirect": true,
+    "resize": false,
+    "alphaRestore": false,
+    "detailBlend": null
+  },
+  "outputs": [
+    {
+      "name": "right",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/2D重绘试产/交付/redraw_right.png",
+      "sha256": "ccaf48efda6c2cab4240037d4de5d10c37e6692328f023fa16f36b941d1e4287",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    },
+    {
+      "name": "rightdown",
+      "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/2D重绘试产/交付/redraw_rightdown.png",
+      "sha256": "9df53dbf3ebf48471f428caab8f416d15d5787ac1f1ac563ac11cfa8f36570af",
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGB",
+      "pass": true
+    }
+  ],
+  "allFilesPresentAndRgb": true,
+  "allUniqueSha256": true,
+  "selfGatePass": true
+}
