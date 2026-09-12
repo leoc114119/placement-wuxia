@@ -1,0 +1,944 @@
+{
+  "task": "T45",
+  "seq": 372,
+  "action": "idle",
+  "candidateDir": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd",
+  "sourceDir": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4",
+  "frameCount": {
+    "expected": 30,
+    "observed": 30,
+    "pass": true
+  },
+  "fileGate": {
+    "size": [
+      240,
+      320
+    ],
+    "allSizePass": true,
+    "allModeP": true,
+    "alphaExact": true,
+    "alphaMismatches": [],
+    "badSize": [],
+    "badMode": [],
+    "alphaExtremaAllContain0And255": true,
+    "crossFrameAlphaLeak": false,
+    "crossFrameAlphaLeakReason": "every output alpha mask is byte-identical to its corresponding source frame"
+  },
+  "png8": {
+    "log": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd/qa/png8_encode.log",
+    "lossless": true,
+    "losslessFrameCount": 30,
+    "logExcerpt": "30 张: 357 KB → 357 KB  (100%)\n  编码方式: {'lossless': 30}"
+  },
+  "clarity": {
+    "method": "visible RGB comparison against source frame; subjective visual result is documented in contact sheet",
+    "changedVisiblePixels": 446704,
+    "visiblePixels": 446704,
+    "changedRate": 1.0,
+    "meanAbsRgbDelta": 71.85779621404778,
+    "visualEvidence": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd/contact/idle_hd_compare.png",
+    "internalVisualCheck": "pass: refined panel is visibly sharper while retaining the 3D shaded volume; Leo visual review remains pending"
+  },
+  "motion": {
+    "gifs": {
+      "left": {
+        "path": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd/gifs/idle_left.gif",
+        "sha256": "1e4865d0295809e3451265cee9269e27ab64e8d79ac47bd58dd6a2d06b9d73d5",
+        "frameCount": 5,
+        "durationsMs": [
+          1330,
+          1330,
+          1330,
+          1330,
+          1330
+        ],
+        "adjacentChangedPixels": [
+          10847,
+          11321,
+          13354,
+          12940
+        ],
+        "pass": true
+      },
+      "leftdown": {
+        "path": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd/gifs/idle_leftdown.gif",
+        "sha256": "cad4a0f0e3a1115d0405c7ba46f0ca99882b41cead6f5d01a4e40be7ddb62b86",
+        "frameCount": 5,
+        "durationsMs": [
+          1330,
+          1330,
+          1330,
+          1330,
+          1330
+        ],
+        "adjacentChangedPixels": [
+          14562,
+          13980,
+          12553,
+          11177
+        ],
+        "pass": true
+      },
+      "leftup": {
+        "path": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd/gifs/idle_leftup.gif",
+        "sha256": "07db52b256de2a027dfba573a8c26a8aecb132a5f73f262575b00565607a84de",
+        "frameCount": 5,
+        "durationsMs": [
+          1330,
+          1330,
+          1330,
+          1330,
+          1330
+        ],
+        "adjacentChangedPixels": [
+          12665,
+          16153,
+          15582,
+          12447
+        ],
+        "pass": true
+      },
+      "right": {
+        "path": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd/gifs/idle_right.gif",
+        "sha256": "ad2f433bbf3b1d98e8df38bce1570e5daa01c3e06bd314046ea33cc4fd462153",
+        "frameCount": 5,
+        "durationsMs": [
+          1330,
+          1330,
+          1330,
+          1330,
+          1330
+        ],
+        "adjacentChangedPixels": [
+          10606,
+          12278,
+          13606,
+          10324
+        ],
+        "pass": true
+      },
+      "rightdown": {
+        "path": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd/gifs/idle_rightdown.gif",
+        "sha256": "1f2f267eabf7f14e78e11d50eb55b4e5b8483483f50ce483a7e3f8a86eef471c",
+        "frameCount": 5,
+        "durationsMs": [
+          1330,
+          1330,
+          1330,
+          1330,
+          1330
+        ],
+        "adjacentChangedPixels": [
+          15300,
+          15187,
+          16383,
+          11804
+        ],
+        "pass": true
+      },
+      "rightup": {
+        "path": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_hd/gifs/idle_rightup.gif",
+        "sha256": "b12ebd3bde4a2aa33d362a5bbf0e9f7fc0ba0503cc9a31f25143a39a493c112a",
+        "frameCount": 5,
+        "durationsMs": [
+          1330,
+          1330,
+          1330,
+          1330,
+          1330
+        ],
+        "adjacentChangedPixels": [
+          11484,
+          11132,
+          10415,
+          10438
+        ],
+        "pass": true
+      }
+    },
+    "allDirectionsPass": true
+  },
+  "frameResults": [
+    {
+      "name": "idle_left_1.png",
+      "sha256": "4f305d4e82158b6b03fec7fec53824023a6953d076075c0aaad06945cd69d649",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        66,
+        47,
+        174,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13244,
+        "visiblePixels": 13244,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 70.68619752340683
+      }
+    },
+    {
+      "name": "idle_left_2.png",
+      "sha256": "e3d6f77fcbec0d2dfe3e33aec3c11e36dc081fc150b406ebca6f59f06c7c282d",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        64,
+        48,
+        176,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13277,
+        "visiblePixels": 13277,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 65.20938465014687
+      }
+    },
+    {
+      "name": "idle_left_3.png",
+      "sha256": "94c6414a01c4093dfded763c1fc947aa8a0246a6603e0beb36adb476f3f204d4",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        63,
+        49,
+        177,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13306,
+        "visiblePixels": 13306,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 58.16338493912521
+      }
+    },
+    {
+      "name": "idle_left_4.png",
+      "sha256": "19375e5d52c8d221aaaba9c5b31f120b68b6f1d8423357e75ca6a692fb918ce4",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        65,
+        46,
+        175,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13257,
+        "visiblePixels": 13257,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 69.95866334766538
+      }
+    },
+    {
+      "name": "idle_left_5.png",
+      "sha256": "390655a2339afc5837cd2c3d3d6787970d3ade65bebc6d90af188ba4b8576bb4",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        65,
+        46,
+        175,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13202,
+        "visiblePixels": 13202,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 80.75200727162552
+      }
+    },
+    {
+      "name": "idle_leftdown_1.png",
+      "sha256": "bdd4e4bc7c947f9872b6b0e846b66c55ada10f1630bb8bf4908c21d3f62866d1",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        76,
+        47,
+        164,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 14929,
+        "visiblePixels": 14929,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 82.80862750351665
+      }
+    },
+    {
+      "name": "idle_leftdown_2.png",
+      "sha256": "ddef77195e5df07a392c60fe127b378ae8fc3df1e4b90005f4d990d84a693bde",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        76,
+        48,
+        164,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 15014,
+        "visiblePixels": 15014,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 68.44924736912215
+      }
+    },
+    {
+      "name": "idle_leftdown_3.png",
+      "sha256": "5ab2517e85250f7a61cf1f1913a4c53dbce0f756bb3ec4ce052fe91d96e7008f",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        76,
+        49,
+        164,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 14747,
+        "visiblePixels": 14747,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 80.2481860717434
+      }
+    },
+    {
+      "name": "idle_leftdown_4.png",
+      "sha256": "e935e00a4aa66408d863c9c8c54c2b07449c3fdd730ca23c4cd718152340821b",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        76,
+        46,
+        164,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 15029,
+        "visiblePixels": 15029,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 103.33076052964269
+      }
+    },
+    {
+      "name": "idle_leftdown_5.png",
+      "sha256": "c54acea9d8eed12b1738e2b903dfcd0912f56450ecf17a3ba0f9b69712fb54d8",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        75,
+        46,
+        165,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 15023,
+        "visiblePixels": 15023,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 115.6867469879518
+      }
+    },
+    {
+      "name": "idle_leftup_1.png",
+      "sha256": "9b4db022781a20141b3fa7b11227dab7d959ed3bdc9d9c2b9a6013ae12e433bb",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        58,
+        47,
+        182,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16409,
+        "visiblePixels": 16409,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 55.76854165397038
+      }
+    },
+    {
+      "name": "idle_leftup_2.png",
+      "sha256": "c5c6419d181215f5aeb43fca40d2f4cc9146f8badc5f1222010d4413abd3a7a1",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        55,
+        48,
+        185,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16508,
+        "visiblePixels": 16508,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 53.88847831354495
+      }
+    },
+    {
+      "name": "idle_leftup_3.png",
+      "sha256": "16f943047bc9ff3c39935350860fb5f39be520fd8b51a92fc9485bc0c88db16b",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        55,
+        49,
+        185,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16299,
+        "visiblePixels": 16299,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 55.38131173691637
+      }
+    },
+    {
+      "name": "idle_leftup_4.png",
+      "sha256": "d8320bcf17c3840bc1f437fea491a7a55b1305a1aa39192db221263dddaf23c7",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        56,
+        46,
+        184,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16507,
+        "visiblePixels": 16507,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 59.51953716605077
+      }
+    },
+    {
+      "name": "idle_leftup_5.png",
+      "sha256": "14c5ecd1dc56dcebaabf03371e8820299888a14b2db3168aa32df781d4c346bc",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        57,
+        46,
+        183,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16601,
+        "visiblePixels": 16601,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 63.250286127341724
+      }
+    },
+    {
+      "name": "idle_right_1.png",
+      "sha256": "e9f98c1288786d7697a5d81a075f9f3e09574f6b7ea656ea0d303a78dbd5e63c",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        66,
+        47,
+        174,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13244,
+        "visiblePixels": 13244,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 58.48119903352462
+      }
+    },
+    {
+      "name": "idle_right_2.png",
+      "sha256": "bc4c836365cf6913520abe8a3a611b7b8b4b9ddf50288bea6f3c949864b35c6d",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        64,
+        48,
+        176,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13277,
+        "visiblePixels": 13277,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 55.80839044964977
+      }
+    },
+    {
+      "name": "idle_right_3.png",
+      "sha256": "7387bbc3783c9ca05df51f8725c9987ccde7d32b6f2a2f6f2af250e76cb00771",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        63,
+        49,
+        177,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13306,
+        "visiblePixels": 13306,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 64.85014279272508
+      }
+    },
+    {
+      "name": "idle_right_4.png",
+      "sha256": "8e9277257d5878757a0621f85efc1aabe8d261d100719c56168680fa246225d0",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        65,
+        46,
+        175,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13257,
+        "visiblePixels": 13257,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 77.79640944406728
+      }
+    },
+    {
+      "name": "idle_right_5.png",
+      "sha256": "dfebfdd437529c9daa7a05c496918d793714fc9258a3357df274940874cfac1c",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        65,
+        46,
+        175,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 13202,
+        "visiblePixels": 13202,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 83.51022572337524
+      }
+    },
+    {
+      "name": "idle_rightdown_1.png",
+      "sha256": "604b6526d96ac6c267d5d21b5820a443225903932155f2fc61f7b11c4a52ba08",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        58,
+        47,
+        182,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16409,
+        "visiblePixels": 16409,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 65.5471997074776
+      }
+    },
+    {
+      "name": "idle_rightdown_2.png",
+      "sha256": "1bf646a669fbe5da8c133f8a6c378f3383b29f0d6b84bd692f39dd48a2d91521",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        55,
+        48,
+        185,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16508,
+        "visiblePixels": 16508,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 63.48200872304337
+      }
+    },
+    {
+      "name": "idle_rightdown_3.png",
+      "sha256": "29314701b56444024bfda01cf56d98552dc336ecda25b7b4af21de21a6463019",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        55,
+        49,
+        185,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16299,
+        "visiblePixels": 16299,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 83.57512730842383
+      }
+    },
+    {
+      "name": "idle_rightdown_4.png",
+      "sha256": "00c9ff4d53129e3fa9f23f9363193eb539e5b5312ee486bbf73841bedca970dd",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        56,
+        46,
+        184,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16507,
+        "visiblePixels": 16507,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 98.26909795844188
+      }
+    },
+    {
+      "name": "idle_rightdown_5.png",
+      "sha256": "c6511205f30869cdb3be8fc58545defc1cd20bdd7d2f0817e6a61388368982d3",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        57,
+        46,
+        183,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 16601,
+        "visiblePixels": 16601,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 99.52581169809048
+      }
+    },
+    {
+      "name": "idle_rightup_1.png",
+      "sha256": "9f48429c9a33cda77ebb282a40fdb722b351fe533db1580d1396e02ce09eb7e8",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        76,
+        47,
+        164,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 14929,
+        "visiblePixels": 14929,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 62.966508138522336
+      }
+    },
+    {
+      "name": "idle_rightup_2.png",
+      "sha256": "e0e01496d19c497330fd4bb731ea2cfd0b2a2ccc9a7049325d43fa3935ae0f55",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        76,
+        48,
+        164,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 15014,
+        "visiblePixels": 15014,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 55.563474090848544
+      }
+    },
+    {
+      "name": "idle_rightup_3.png",
+      "sha256": "ee68e58a55fed9cc47d0a2cc023b094ab3335385346a020523912e790bae3c45",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        76,
+        49,
+        164,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 14747,
+        "visiblePixels": 14747,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 58.934291720349904
+      }
+    },
+    {
+      "name": "idle_rightup_4.png",
+      "sha256": "9ef781e4f87b8c2377a8bd5515cd15d138d68c8ee063096bf0aca4759db64146",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        76,
+        46,
+        164,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 15029,
+        "visiblePixels": 15029,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 68.01297491516402
+      }
+    },
+    {
+      "name": "idle_rightup_5.png",
+      "sha256": "9a578bcffe2bb00ec56353ae68a64349954b7fc44ac691e9503b565901565d5f",
+      "size": [
+        240,
+        320
+      ],
+      "mode": "P",
+      "alphaEqualToSource": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBBox": [
+        75,
+        46,
+        165,
+        300
+      ],
+      "clarityDiff": {
+        "changedPixels": 15023,
+        "visiblePixels": 15023,
+        "changedRate": 1.0,
+        "meanAbsRgbDelta": 74.13772215935566
+      }
+    }
+  ],
+  "selfGatePass": true
+}

@@ -1,0 +1,25 @@
+{
+  "task": "T45",
+  "seq": 372,
+  "inputSheet": {
+    "path": "assets/_trial_20260912/精灵图_精修输入/精灵图_idle.png",
+    "sha256": "48eea5d7676a8d766573e555ea65179a084c6d092327aca666fa26719015d813",
+    "size": [1224, 1948],
+    "mode": "RGB",
+    "layout": {
+      "rows": 6,
+      "columns": 5,
+      "cellSize": [240, 320],
+      "separatorPx": 4,
+      "outerMarginPx": 4
+    }
+  },
+  "sourceFrames": {
+    "path": "assets/_trial_20260912/glb2d_idle/idle_6dir_v4/",
+    "count": 30,
+    "naming": "idle_{facing}_{1..5}.png"
+  },
+  "referenceRoles": {
+    "image1": "idle six-direction five-frame sprite sheet to edit; layout and pose source of truth"
+  }
+}

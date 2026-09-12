@@ -1,0 +1,8 @@
+{
+  "method": "Pillow shared MEDIANCUT palette, no dithering",
+  "paletteColors": 248,
+  "frames": 30,
+  "alphaSource": "split frame alpha from assets/_trial_20260912/glb2d_idle/idle_6dir_v4/",
+  "alphaChanged": false,
+  "purpose": "ensure png8_encode.py uses lossless path while keeping one palette across idle frames"
+}
