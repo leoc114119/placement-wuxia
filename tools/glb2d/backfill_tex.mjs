@@ -26,6 +26,11 @@ const SPLAT = +opt('splat', 2);
 // 多角度合成方式：avg=加权平均（会把不同角度的画法差异平均成模糊）；best=每个纹素只取权重最大的那个角度
 const MODE = opt('mode', 'avg');
 const VW = +opt('w', 0), VH = +opt('h', 0);   // 视角图尺寸（必须显式给，不能靠面积开方推）
+// 两趟回填：第一趟（主环）用 --cover-out 导出覆盖掩膜；第二趟（补环）用 --fill-from 只写"上一趟没覆盖"的纹素。
+// 为什么：俯仰环的职责是**补空洞**，不是替换主环已经采到的好样本——直接混在一起会让俯仰角
+// （掠射、AI 增强质量参差）把更好的水平视角挤掉（实测 8 角度 +11.6% → 直接 20 角度 +8.0%）。
+const COVER_OUT = opt('cover-out', null);
+const FILL_FROM = opt('fill-from', null);
 
 const views = [];
 for (let i = 0; i < argv.length; i++) {
@@ -122,9 +127,12 @@ for (const v of views) {
 
 const orig = fs.readFileSync(TEX);
 const out = Buffer.from(orig);
+const prev = FILL_FROM ? fs.readFileSync(FILL_FROM) : null;
+if (prev && prev.length !== TW * TH) { console.error('FATAL: --fill-from 掩膜尺寸不符'); process.exit(1); }
 let painted = 0, total = TW * TH;
 for (let i = 0; i < total; i++) {
   if (!cover[i] || wsum[i] <= 0) continue;          // 没被覆盖的纹素保留原贴图
+  if (prev && prev[i]) continue;                    // 上一趟已覆盖 → 保留上一趟的结果
   const src = MODE === 'best' ? bestC : acc;
   const div = MODE === 'best' ? 1 : wsum[i];
   out[i * 4] = Math.round(Math.min(255, src[i * 3] / div));
@@ -133,5 +141,6 @@ for (let i = 0; i < total; i++) {
   painted++;
 }
 fs.writeFileSync(OUT, out);
+if (COVER_OUT) fs.writeFileSync(COVER_OUT, Buffer.from(cover));
 console.log(JSON.stringify({ mode: MODE, views: views.length, texels: total, painted,
   paintedPct: +(painted / total * 100).toFixed(2), samples: used, out: OUT }));

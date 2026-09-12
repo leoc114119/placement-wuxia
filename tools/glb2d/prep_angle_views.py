@@ -23,6 +23,10 @@ DELIV = BASE / "交付"
 OUT = BASE / "配准后"
 BG = (20, 20, 24)
 YAW = (0, 45, 90, 135, 180, 225, 270, 315)
+# 俯仰环：up25_* 俯视 25°（看头顶，水平环看不到）；dn20_* 仰视 20°（看下巴/腋下）
+PITCHED = tuple([f"up25_yaw{y:03d}" for y in YAW] + [f"dn20_yaw{y:03d}" for y in (45, 135, 225, 315)])
+SRC_P = BASE / "角度图_俯仰"
+ALPHA_P = BASE / "alpha_俯仰"
 
 
 def bgmask(im: Image.Image, thr: int = 20) -> Image.Image:
@@ -39,15 +43,15 @@ def bgmask(im: Image.Image, thr: int = 20) -> Image.Image:
     return o
 
 
-def report(yaw: int) -> dict:
-    src = Image.open(SRC / f"view_yaw{yaw:03d}.png").convert("RGB")
-    alpha = Image.open(ALPHA / f"view_yaw{yaw:03d}_alpha.png").convert("L")
-    ai = Image.open(DELIV / f"raw_view_yaw{yaw:03d}_imagegen.png").convert("RGB")
+def report(name: str, src_dir: Path, alpha_dir: Path) -> dict:
+    src = Image.open(src_dir / f"{name}.png").convert("RGB")
+    alpha = Image.open(alpha_dir / f"{name}_alpha.png").convert("L")
+    ai = Image.open(DELIV / f"raw_{name}_imagegen.png").convert("RGB")
 
     sb = bgmask(src).getbbox()
     rb = bgmask(ai).getbbox()
     if not sb or not rb:
-        raise SystemExit(f"yaw{yaw}: 掩膜为空")
+        raise SystemExit(f"{name}: 掩膜为空")
     k = ((sb[3] - sb[1]) / (rb[3] - rb[1]) + (sb[2] - sb[0]) / (rb[2] - rb[0])) / 2
     ai2 = ai.resize((round(ai.size[0] * k), round(ai.size[1] * k)), Image.Resampling.LANCZOS)
     rb2 = bgmask(ai2).getbbox()
@@ -59,7 +63,7 @@ def report(yaw: int) -> dict:
     out512 = out.convert("RGBA")
     out512.putalpha(alpha)
     OUT.mkdir(parents=True, exist_ok=True)
-    out512.save(OUT / f"view_yaw{yaw:03d}_reg.png")
+    out512.save(OUT / f"{name}_reg.png")
 
     # 几何：轮廓 IoU（用背景距离掩膜，不用亮度）
     m = ImageChops.multiply(bgmask(out), am)
@@ -80,7 +84,7 @@ def report(yaw: int) -> dict:
         return (ImageStat.Stat(Image.composite(dx, z, mm)).mean[0]
                 + ImageStat.Stat(Image.composite(dy, z, mm)).mean[0]) / 2
     gs, ga = grad(src), grad(out)
-    return {"yaw": yaw, "scale": round(k, 4), "iou": round(inter / u, 4),
+    return {"name": name, "scale": round(k, 4), "iou": round(inter / u, 4),
             "colorBlurDelta": round(sum(sel) / len(sel), 2),
             "detailSrc": round(gs, 4), "detailOut": round(ga, 4),
             "detailGainPct": round((ga / gs - 1) * 100, 1)}
@@ -88,11 +92,12 @@ def report(yaw: int) -> dict:
 
 if __name__ == "__main__":
     rows = []
-    for y in YAW:
-        r = report(y)
+    jobs = [(f"view_yaw{y:03d}", SRC, ALPHA) for y in YAW] + [(n, SRC_P, ALPHA_P) for n in PITCHED]
+    for name, sd, ad in jobs:
+        r = report(name, sd, ad)
         rows.append(r)
-        print("yaw%03d  配准缩放 %.4f  IoU %.4f  配色漂移 %5.2f/255  细节 %+.1f%%"
-              % (r["yaw"], r["scale"], r["iou"], r["colorBlurDelta"], r["detailGainPct"]))
+        print("%-16s 配准缩放 %.4f  IoU %.4f  配色漂移 %5.2f/255  细节 %+.1f%%"
+              % (r["name"], r["scale"], r["iou"], r["colorBlurDelta"], r["detailGainPct"]))
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "register_report.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2) + "\n")
     ok = all(r["iou"] >= 0.85 and r["colorBlurDelta"] <= 8 and r["detailGainPct"] > 0 for r in rows)
