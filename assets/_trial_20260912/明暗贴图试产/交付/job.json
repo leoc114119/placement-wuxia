@@ -1,0 +1,21 @@
+{
+  "task": "T45",
+  "seq": 385,
+  "model": "built-in image_gen",
+  "provider": "codex-native",
+  "cost": 0,
+  "generationCount": 1,
+  "source": "../输入/头部_要上明暗的图.png",
+  "styleExample": "../输入/样例_明暗分块长这样.png",
+  "rawOutput": "raw_head_shading_imagegen.png",
+  "output": "头部_明暗分块.png",
+  "rawSize": [1341, 1173],
+  "size": [512, 448],
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "processing": "uniform resize only; no semantic redraw or color/background correction",
+  "result": "candidate_ready_pending_pm2_visual_review"
+}

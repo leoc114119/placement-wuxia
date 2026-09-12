@@ -1,0 +1,48 @@
+{
+  "task": "T45",
+  "seq": 385,
+  "raw": {
+    "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/交付/raw_head_shading_imagegen.png",
+    "sha256": "f6a24bed1cb86dab93bc10a896262f295527e238bc096a0f5f8419da694708ea",
+    "size": [
+      1341,
+      1173
+    ]
+  },
+  "output": {
+    "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/明暗贴图试产/交付/头部_明暗分块.png",
+    "sha256": "0b0a49fa512fea0e8ee5463c167e59193fce28c650397049ba4c1867efdec47b",
+    "size": [
+      512,
+      448
+    ],
+    "mode": "RGB"
+  },
+  "processing": {
+    "uniformResizeOnly": true,
+    "semanticRedraw": false
+  },
+  "backgroundCorners": [
+    [
+      20,
+      20,
+      24
+    ],
+    [
+      21,
+      21,
+      24
+    ],
+    [
+      20,
+      20,
+      25
+    ],
+    [
+      20,
+      20,
+      23
+    ]
+  ],
+  "selfGatePass": true
+}
