@@ -14,3 +14,13 @@ wangjin_fx_raw/
 
 # 大体积中间产物：模型贴图裸 RGBA（可从 GLB 复现，见 export_cast_v2.sh 注释）
 assets/_trial_20260912/model_v2/tex/basecolor4096.raw
+
+# 国风明暗试产：大体积中间产物（贴图 67MB/张、uv/shade/对齐缓冲，均可由 guofeng_roundtrip.py 再生）
+assets/_trial_20260912/国风明暗试产/*.raw
+assets/_trial_20260912/国风明暗试产/*.shade
+assets/_trial_20260912/国风明暗试产/**/*.raw
+assets/_trial_20260912/国风明暗试产/**/*.shade
+assets/_trial_20260912/国风明暗试产/**/*.normal
+assets/_trial_20260912/国风明暗试产/**/*.depth
+assets/_trial_20260912/国风明暗试产/**/*.uv
+assets/_trial_20260912/国风明暗试产/**/*.uvprev
