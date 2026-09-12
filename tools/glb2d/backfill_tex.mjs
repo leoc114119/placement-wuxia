@@ -23,6 +23,8 @@ const TEX = opt('tex');
 const TW = +opt('tw'), TH = +opt('th');
 const OUT = opt('out');
 const SPLAT = +opt('splat', 2);
+// 多角度合成方式：avg=加权平均（会把不同角度的画法差异平均成模糊）；best=每个纹素只取权重最大的那个角度
+const MODE = opt('mode', 'avg');
 const VW = +opt('w', 0), VH = +opt('h', 0);   // 视角图尺寸（必须显式给，不能靠面积开方推）
 
 const views = [];
@@ -36,6 +38,8 @@ if (!TEX || !OUT || !views.length) {
 const acc = new Float64Array(TW * TH * 3);
 const wsum = new Float64Array(TW * TH);
 const cover = new Uint8Array(TW * TH);   // 本纹素是否被覆盖过（用于统计，不参与混合）
+const bestW = new Float64Array(TW * TH);  // best 模式：该纹素见过的最大权重
+const bestC = new Float64Array(TW * TH * 3);
 
 // 边缘权重：把背景像素标 0，做多轮膨胀，得到"离背景的粗略距离"
 function edgeWeight(W, H, uvBuf, colorBuf) {
@@ -102,10 +106,12 @@ for (const v of views) {
         if (sw <= 0) continue;
         const ti = ty * TW + tx;
         const sd = shF[i] > 0.05 ? shF[i] : 0.05;
-        acc[ti * 3] += (col[i * 4] / sd) * sw;
-        acc[ti * 3 + 1] += (col[i * 4 + 1] / sd) * sw;
-        acc[ti * 3 + 2] += (col[i * 4 + 2] / sd) * sw;
+        const rr = col[i * 4] / sd, gg = col[i * 4 + 1] / sd, bb = col[i * 4 + 2] / sd;
+        acc[ti * 3] += rr * sw;
+        acc[ti * 3 + 1] += gg * sw;
+        acc[ti * 3 + 2] += bb * sw;
         wsum[ti] += sw;
+        if (sw > bestW[ti]) { bestW[ti] = sw; bestC[ti * 3] = rr; bestC[ti * 3 + 1] = gg; bestC[ti * 3 + 2] = bb; }
         cover[ti] = 1;
       }
     }
@@ -119,11 +125,13 @@ const out = Buffer.from(orig);
 let painted = 0, total = TW * TH;
 for (let i = 0; i < total; i++) {
   if (!cover[i] || wsum[i] <= 0) continue;          // 没被覆盖的纹素保留原贴图
-  out[i * 4] = Math.round(Math.min(255, acc[i * 3] / wsum[i]));
-  out[i * 4 + 1] = Math.round(Math.min(255, acc[i * 3 + 1] / wsum[i]));
-  out[i * 4 + 2] = Math.round(Math.min(255, acc[i * 3 + 2] / wsum[i]));
+  const src = MODE === 'best' ? bestC : acc;
+  const div = MODE === 'best' ? 1 : wsum[i];
+  out[i * 4] = Math.round(Math.min(255, src[i * 3] / div));
+  out[i * 4 + 1] = Math.round(Math.min(255, src[i * 3 + 1] / div));
+  out[i * 4 + 2] = Math.round(Math.min(255, src[i * 3 + 2] / div));
   painted++;
 }
 fs.writeFileSync(OUT, out);
-console.log(JSON.stringify({ views: views.length, texels: total, painted,
+console.log(JSON.stringify({ mode: MODE, views: views.length, texels: total, painted,
   paintedPct: +(painted / total * 100).toFixed(2), samples: used, out: OUT }));
