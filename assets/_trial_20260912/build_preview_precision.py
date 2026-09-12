@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "assets/_trial_20260912/glb2d_idle/idle_6dir_v4"
 REF = ROOT / "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_A"
+RAW = ROOT / "assets/_trial_20260912/glb2d_idle/idle_6dir_v4_A/_raw_preview"
 OUT = ROOT / "assets/_trial_20260912/预览_细节精修A.html"
 FACINGS = [("left", "左"), ("leftdown", "左下"), ("leftup", "左上"),
            ("right", "右"), ("rightdown", "右下"), ("rightup", "右上")]
@@ -28,6 +29,8 @@ def main() -> None:
     for key, folder in (("src", SRC), ("ref", REF)):
         for facing, _ in FACINGS:
             data[f"{key}_{facing}"] = [uri(folder / f"idle_{facing}_{i}.png") for i in range(1, 6)]
+    for facing, _ in FACINGS:
+        data[f"raw_{facing}"] = [uri(RAW / f"raw_{facing}_{i}.png") for i in range(1, 6)]
 
     html = TEMPLATE.replace("__DATA__", json.dumps(data, ensure_ascii=False)) \
                    .replace("__FACINGS__", json.dumps(FACINGS, ensure_ascii=False)) \
@@ -70,7 +73,8 @@ for(const [key,label] of F){
   const card=document.createElement('div'); card.className='card';
   card.innerHTML='<h2>'+label+'</h2><div class="pair">'+
     '<div class="col"><span>源帧</span><canvas data-k="src_'+key+'" width="240" height="320"></canvas></div>'+
-    '<div class="col"><span>A 方案</span><canvas data-k="ref_'+key+'" width="240" height="320"></canvas></div></div>';
+    '<div class="col"><span>A 方案（套源轮廓）</span><canvas data-k="ref_'+key+'" width="240" height="320"></canvas></div>'+
+    '<div class="col"><span>模型原始（未裁）</span><canvas data-k="raw_'+key+'" width="240" height="320"></canvas></div></div>';
   grid.appendChild(card);
 }
 document.querySelectorAll('canvas').forEach(c=>{
