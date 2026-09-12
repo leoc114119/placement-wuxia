@@ -36,7 +36,9 @@ const flipLR = n => n.startsWith('L_') ? 'R_' + n.slice(2)
                     : n.startsWith('R_') ? 'L_' + n.slice(2) : n;
 /** 生效映射：默认做左右互换（`--no-swap-lr` 关掉，仅用于复现 09-12 之前的旧产物）。 */
 export const MIXAMO_TO_MODEL = (() => {
-  const swap = !process.argv.includes('--no-swap-lr');
+  // ⚠️ 09-12 实测更正：模型朝 +Z ⇒ 其「右」= −X，`R_*` 正在 −X ⇒ **骨名与角色左右一致**，
+  //   不需要互换。默认关（--swap-lr 可手动开做对照）。
+  const swap = process.argv.includes('--swap-lr');
   const o = {};
   for (const [k, v] of Object.entries(MIXAMO_TO_MODEL_RAW)) o[k] = swap ? flipLR(v) : v;
   return o;
@@ -277,8 +279,32 @@ function main() {
     R_Thigh:'R_Calf',R_Calf:'R_Foot',R_Foot:'R_ToeBase'};
   const srcJoint = {}; C.joints.forEach(j=>{ srcJoint[j.clean]=j; });
   // 源 rest 世界矩阵
+  // ★ 朝向对齐 Q：**我们的模型与 Mixamo 角色朝向相反**
+  //   实测：模型在 yaw=180 渲染时**看得见正脸**（yaw=0 只见后脑）⇒ 模型朝 **−Z**；
+  //   源 Mixamo 的 `LeftHand` 在 +X 侧、`RightHand` 在 −X 侧 ⇒ 朝 **+Z**（右手在 −X）。
+  //   两者相对转 180° 才能把「源的右手」对到「我们角色的右手」所在的半身。
+  //   Q = 绕 Y 转 180°（**真旋转，det=+1**）——注意不能只"互换 L/R 骨名"：
+  //   只换骨名等于做镜面（det=−1），会把绕骨轴的 roll 拧反 → 肢体扭屈（09-12 实测踩过）。
+  // ⚠️ 09-12 实测更正：**模型其实朝 +Z**（深度缓冲 + 位移标记双证），与 Mixamo 同向
+  //    ⇒ 不需要朝向对齐。默认关（--src-yaw 180 可手动开做对照）。
+  const QYAW = process.argv.includes('--src-yaw') ? 180 : 0;
+  const applyQ = (m) => {
+    if (!QYAW) return m;
+    const o = new Float64Array(m);
+    const cy = Math.cos(QYAW * Math.PI / 180), sy = Math.sin(QYAW * Math.PI / 180);
+    // Q = [[cy,0,-sy],[0,1,0],[sy,0,cy]]：新行0 = cy*行0 - sy*行2；新行2 = sy*行0 + cy*行2
+    for (let c = 0; c < 4; c++) {
+      const x = m[c*4+0], z = m[c*4+2];
+      o[c*4+0] = cy*x - sy*z;
+      o[c*4+2] = sy*x + cy*z;
+    }
+    return o;
+  };
   const SRW = new Map();
-  { const go=j=>{ if(SRW.has(j))return SRW.get(j); const w=j.parent?mul(go(j.parent),j.rest):j.rest; SRW.set(j,w); return w; };
+  { const go=j=>{ if(SRW.has(j))return SRW.get(j);
+      // ⚠️ Q 只能作用在**根节点**：父节点的世界矩阵已含 Q，若对每个节点再乘一次
+      //    就等于 Q 被应用两次（180° 转两圈 = 原样），实测踩过——现象是"没效果/结果更乱"。
+      const w=j.parent?mul(go(j.parent),j.rest):applyQ(j.rest); SRW.set(j,w); return w; };
     C.joints.forEach(go); }
   // 源骨骼「指向」：到子骨骼；叶子骨用「父→自身」
   const srcDirOf = (j, cache) => {
@@ -383,7 +409,7 @@ function main() {
     const srcAnimWorldCache = (() => {
       const W = new Map();
       const go = j => { if (W.has(j)) return W.get(j); const L2 = sampleMat(j, +t);
-        const w = j.parent ? mul(go(j.parent), L2) : L2; W.set(j, w); return w; };
+        const w = j.parent ? mul(go(j.parent), L2) : applyQ(L2); W.set(j, w); return w; };
       C.joints.forEach(go); return W;
     })();
     const L = new Array(nodes.length);

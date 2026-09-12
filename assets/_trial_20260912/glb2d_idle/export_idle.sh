@@ -30,7 +30,8 @@ W=$(( 240 * SS )); H=$(( 320 * SS ))
 PP=(--palette 256 --palette-reserve 8 --outline 1 --depth-thresh 0.08 --normal-thresh 0.95 --chroma-blur 0 --speckle 1)
 
 # 方向 → yaw（实测映射，勿凭感觉改；已由 run 交付件反查确认）
-DIRS=(left:270 leftdown:225 leftup:315 right:90 rightdown:135 rightup:45)
+# ★ 09-12 屏幕 x 取消镜像后，侧向 yaw 左右对调（270↔90 / 225↔135 / 315↔45）
+DIRS=(left:90 leftdown:135 leftup:45 right:270 rightdown:225 rightup:315)
 # 采样源帧号（30fps）—— 199 帧闭环的均匀相位
 SRC_FRAMES=(0 40 80 119 159)
 

@@ -232,7 +232,12 @@ const scale = Math.min((H*0.80)/charH, (W*0.92)/charW);
 const cxModel = (mn[0]+mx[0])/2;
 const minYRef = FIXCAM ? fitSrc.minY : mn[1];
 const baselineY = H * 0.96;
-const toScreen = (q) => [ W/2 + (q[0]-cxModel)*scale, baselineY - (q[1]-minYRef)*scale ];
+// ★ 09-12 修 BUG-16：**屏幕 x 必须取负**。
+//   实测：相机在世界 −Z 侧（yaw=0 只见后脑 ⇒ 相机在模型背后；深度缓冲证 +Z 是「远」），
+//   相机右向量 = f×u = (0,0,1)×(0,1,0) = (−1,0,0) = −X。
+//   而原式 screen_x = W/2 + (q[0]-cx)*scale 用的是 **+X** ⇒ 屏幕右 = 相机的「左」
+//   ⇒ **整幅渲染是左右镜像**（后果：不对称动作的左右手会反，例如攻击"用左手砍"）。
+const toScreen = (q) => [ W/2 - (q[0]-cxModel)*scale, baselineY - (q[1]-minYRef)*scale ];
 
 // ---------- texture ----------
 let TEX=null, TW=+texWs, TH=+texHs;

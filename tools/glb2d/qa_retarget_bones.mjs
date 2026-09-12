@@ -71,7 +71,15 @@ function srcWorldAt(j, t, cache) {
     L = j.anim.matrices[Math.min(T.length - 1, Math.max(0, idx))];
   }
   const pw = j.parent ? srcWorldAt(j.parent, t, cache) : new Float64Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
-  const w = mul(pw, L); cache.set(j.id, w); return w;
+  let w = mul(pw, L);
+  // ★ 源朝向对齐 Q（与 collada2anim 同口径）：**只作用在根节点**
+  //   （我们的模型朝 −Z、Mixamo 角色朝 +Z；不转 180° 则源的右手会落到角色左手）
+  if (!j.parent && !process.argv.includes('--no-src-yaw')) {
+    const o = new Float64Array(w);
+    for (let c = 0; c < 4; c++) { o[c*4+0] = -w[c*4+0]; o[c*4+2] = -w[c*4+2]; }
+    w = o;
+  }
+  cache.set(j.id, w); return w;
 }
 
 const yax = m => [m[4], m[5], m[6]];

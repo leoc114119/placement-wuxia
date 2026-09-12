@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>攻击 v4 防缓存 084653</title>
+<style>body{margin:0;background:#141418;color:#e8e0d0;font:13px/1.5 -apple-system,"PingFang SC",sans-serif}
+h1{font-size:15px;margin:16px 18px 4px;color:#ffe08a}.meta{margin:0 18px 12px;color:#9a9384}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:0 18px 16px}
+.cell{background:#1d1d22;border-radius:8px;padding:8px;text-align:center}
+.cell b{display:block;font-size:12px;color:#8fd4ff;margin-bottom:6px}
+img{width:100%;image-rendering:pixelated;background:#181820;border-radius:4px}
+.row{display:flex;gap:8px;align-items:flex-end;margin:0 18px 18px}.row .cell{width:150px}
+.note{margin:0 18px 20px;color:#9a9384;font-size:12px}</style></head><body>
+<h1>攻击 v4（修复「渲染镜像」后）· 版本 084653</h1>
+<p class="meta">源 Sword And Shield Slash ｜ 重定向 aim4（无额外变换）｜ 地面锁定 299 ｜ PNG-8 无损 30/30<br>
+<b>本次修的是渲染器</b>：屏幕 x 原用 +X 而相机在世界 −Z 侧 ⇒ 整幅渲染左右镜像；已把 screen_x 取负，并把方向表 yaw 左右对调（270↔90 / 225↔135 / 315↔45）</p>
+<div class="grid"><div class="cell"><b>left</b><img src="atk_left.gif?v=084653"></div><div class="cell"><b>leftdown</b><img src="atk_leftdown.gif?v=084653"></div><div class="cell"><b>leftup</b><img src="atk_leftup.gif?v=084653"></div><div class="cell"><b>right</b><img src="atk_right.gif?v=084653"></div><div class="cell"><b>rightdown</b><img src="atk_rightdown.gif?v=084653"></div><div class="cell"><b>rightup</b><img src="atk_rightup.gif?v=084653"></div></div>
+<h1>left 向 5 帧（应与 2D 素材同向：脸朝画面左）</h1><div class="row"><div class="cell"><b>left f1</b><img src="atk_left_1.png?v=084653"></div><div class="cell"><b>left f2</b><img src="atk_left_2.png?v=084653"></div><div class="cell"><b>left f3</b><img src="atk_left_3.png?v=084653"></div><div class="cell"><b>left f4</b><img src="atk_left_4.png?v=084653"></div><div class="cell"><b>left f5</b><img src="atk_left_5.png?v=084653"></div></div>
+<h1>leftdown（正面偏左）——看挥砍手</h1><div class="row"><div class="cell"><b>leftdown f1</b><img src="atk_leftdown_1.png?v=084653"></div><div class="cell"><b>leftdown f3</b><img src="atk_leftdown_3.png?v=084653"></div><div class="cell"><b>leftdown f4</b><img src="atk_leftdown_4.png?v=084653"></div></div>
+<p class="note">正前视角里「画面左 = 角色右」：挥砍手应出现在<b>画面左</b>。</p>
+</body></html>

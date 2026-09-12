@@ -20,7 +20,8 @@ SS=4
 W=$(( 240 * SS )); H=$(( 320 * SS ))
 PP=(--palette 256 --palette-reserve 8 --outline 1 --depth-thresh 0.08 --normal-thresh 0.95 --chroma-blur 0 --speckle 1)
 
-DIRS=(left:270 leftdown:225 leftup:315 right:90 rightdown:135 rightup:45)
+# ★ 09-12 屏幕 x 取消镜像后，侧向 yaw 左右对调（270↔90 / 225↔135 / 315↔45）
+DIRS=(left:90 leftdown:135 leftup:45 right:270 rightdown:225 rightup:315)
 SRC_FRAMES=(0 15 18 24 12)      # 源帧号（30fps）——沿用 09-11 旧件的取帧与顺序
 
 mkdir -p "$OUT"
