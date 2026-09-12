@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>idle 六向预览 · Orc Idle · aim4 · 2026-09-12</title>
+<style>
+  body { margin:0; background:#141418; color:#e8e0d0; font:13px/1.5 -apple-system,"PingFang SC",sans-serif; }
+  h1 { font-size:15px; font-weight:600; margin:16px 18px 4px; color:#ffe08a; }
+  .meta { margin:0 18px 12px; color:#9a9384; }
+  .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; padding:0 18px 16px; }
+  .cell { background:#1d1d22; border-radius:8px; padding:8px; text-align:center; }
+  .cell b { display:block; font-size:12px; color:#8fd4ff; margin-bottom:6px; font-weight:600; }
+  img { width:100%; image-rendering:pixelated; background:#181820; border-radius:4px; }
+  .note { margin:0 18px 20px; color:#9a9384; font-size:12px; }
+  .row { display:flex; gap:8px; align-items:flex-end; margin:0 18px 18px; }
+  .row .cell { width:150px; }
+  .badge { display:inline-block; background:#2c4a2c; color:#a8e6a8; border-radius:4px; padding:1px 7px; font-size:11px; margin-left:6px; }
+</style>
+</head>
+<body>
+  <h1>idle 六向 · 源 = Mixamo「Orc Idle」<span class="badge">重定向 aim4</span></h1>
+  <p class="meta">
+    30 张 / 351 KB / PNG-8 无损　·　199 帧闭环 6.633s → 均匀相位取源帧 0/40/80/119/159　·　每帧 1327ms（GIF 按此节奏播）<br>
+    aim4 = 有子骨骼位移的骨用「子骨骼方向」、叶子骨用「自身 Y 轴」，两侧同口径 → 门检 22/22 骨残差 0.000°
+  </p>
+
+  <div class="grid">
+    <div class="cell"><b>left</b><img src="idle_left.gif" alt="left"></div>
+    <div class="cell"><b>leftdown</b><img src="idle_leftdown.gif" alt="leftdown"></div>
+    <div class="cell"><b>leftup</b><img src="idle_leftup.gif" alt="leftup"></div>
+    <div class="cell"><b>right</b><img src="idle_right.gif" alt="right"></div>
+    <div class="cell"><b>rightdown</b><img src="idle_rightdown.gif" alt="rightdown"></div>
+    <div class="cell"><b>rightup</b><img src="idle_rightup.gif" alt="rightup"></div>
+  </div>
+
+  <h1 style="margin-top:0">单帧并排（left 向 5 帧）</h1>
+  <div class="row">
+    <div class="cell"><b>f1</b><img src="idle_left_1.png"></div>
+    <div class="cell"><b>f2</b><img src="idle_left_2.png"></div>
+    <div class="cell"><b>f3</b><img src="idle_left_3.png"></div>
+    <div class="cell"><b>f4</b><img src="idle_left_4.png"></div>
+    <div class="cell"><b>f5</b><img src="idle_left_5.png"></div>
+  </div>
+
+  <p class="note">
+    成品目录 <code>assets/_trial_20260912/glb2d_idle/idle_6dir/</code>　·　文件名 <code>idle_{facing}_{1..5}.png</code>　·　240×320 RGBA<br>
+    对照：<code>../glb2d_jump/jump_6dir/</code>（轻功，同 aim4 重渲）
+  </p>
+</body>
+</html>

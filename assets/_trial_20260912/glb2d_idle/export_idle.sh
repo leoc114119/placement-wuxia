@@ -19,7 +19,7 @@ set -e
 GLB="$HOME/Downloads/chibi+warrior+3d+model (1).glb"
 TEX="assets/_trial_20260911/glb2d_v2/tex/basecolor.raw"
 DIR="assets/_trial_20260912/glb2d_idle"
-ANIM_JSON="$DIR/retarget_idle_aim3.json"
+ANIM_JSON="$DIR/retarget_idle_aim4.json"
 OUT="$DIR/idle_6dir"
 
 TOOLS="tools/glb2d"

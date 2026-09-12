@@ -12,7 +12,7 @@
 set -e
 GLB="$HOME/Downloads/chibi+warrior+3d+model (1).glb"
 TEX="assets/_trial_20260911/glb2d_v2/tex/basecolor.raw"
-ANIM_JSON="assets/_trial_20260912/glb2d_jump/retarget_jump_aim3.json"
+ANIM_JSON="assets/_trial_20260912/glb2d_jump/retarget_jump_aim4.json"
 OUT="assets/_trial_20260912/glb2d_jump/jump_6dir"
 
 TOOLS="tools/glb2d"

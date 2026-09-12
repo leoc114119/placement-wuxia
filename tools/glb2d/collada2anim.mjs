@@ -232,6 +232,21 @@ function main() {
   // 骨骼自身的 Y 轴（世界）——aim3 的「指向」定义。与「子骨骼−自身」不同：
   // 前者是骨骼真正的朝向（蒙皮跟着它走），后者只在「子骨骼正好落在骨骼末端」时等价。
   const yaxisOf = m => [m[4], m[5], m[6]];
+  // 子骨骼位移方向（骨骼真正的「段」）：目标侧取 rest 世界，源侧取动画世界。
+  // 退化（无子骨骼 / 子骨骼与自身同位置）返回 null → 该骨改用自身 Y 轴。
+  const tgtChildOff = (i) => {
+    const cn = TGT_CHILD[nodes[i].name];
+    const ci = cn !== undefined ? nameToIdx[cn] : undefined;
+    if (ci === undefined) return null;
+    const d = sub3(headOf(TRW[ci]), headOf(TRW[i]));
+    return Math.hypot(d[0], d[1], d[2]) > 1e-6 ? d : null;
+  };
+  const srcChildOff = (j, cache) => {
+    const c = j.children && j.children[0];
+    if (!c) return null;
+    const d = sub3(headOf(cache.get(c)), headOf(cache.get(j)));
+    return Math.hypot(d[0], d[1], d[2]) > 1e-6 ? d : null;
+  };
   // 源骨骼链（用于取「指向」）：每根映射骨骼的「子骨骼」
   const SRC_CHILD = {Hips:'Spine',Spine:'Spine1',Spine1:'Spine2',Spine2:'Neck',Neck:'Head',
     LeftShoulder:'LeftArm',LeftArm:'LeftForeArm',LeftForeArm:'LeftHand',
@@ -316,7 +331,7 @@ function main() {
   // 基准模式：
   //   frame0 = 以「动画第 0 帧」为增量基准（帧0 精确落在本模型 rest）
   //   rest   = 以「源骨架 rest（T-pose）」为基准（帧0 复现源动作的绝对姿态）
-  const MODE = flag('mode', 'aim3');
+  const MODE = flag('mode', 'aim4');
   const R0 = {};
   for (const [mi, j] of Object.entries(srcOfModel)) {
     R0[mi] = MODE === 'frame0' ? Rof(j, 0) : I4();
@@ -380,7 +395,7 @@ function main() {
         }
         Wt[i] = parentOf[i] >= 0 ? mul(Wt[parentOf[i]], L[i]) : L[i];
       }
-    } else if (MODE === 'aim2' || MODE === 'aim3') {
+    } else if (MODE === 'aim2' || MODE === 'aim3' || MODE === 'aim4') {
       // 两段式：① 先用「源的完整世界旋转增量」得到带正确扭转的朝向
       //         ② 再做最小旋转把「目标骨骼指向」拧到「源骨骼指向」
       // 为什么：纯 aim 只约束指向，绕骨骼自身轴的旋转是任意的 →
@@ -396,20 +411,46 @@ function main() {
       //     症状：重定向件「莫名其妙低头」（Head 被多拧 25.8°），轻功同病。
       //   aim3（现行）：两侧都取「骨骼自身 Y 轴」，同口径对比，无歧义、无零向量。
       //     对 17 根本就正确的骨零影响（两定义等价时夹角 0），只修那 5 根。
-      const useAxis = (MODE === 'aim3');
+      const useAxis = (MODE === 'aim3');   // 见下方分支：aim3/aim4 的叶子骨都走 Y 轴
+      // aim4 = aim2/aim3 的正确混合：
+      //   ① 骨骼「有子骨骼且位移非零」→ 两侧都用**子骨骼方向**（＝骨骼真正的段）
+      //      → 关节位置对（aim2 在非叶子骨上是对的）
+      //   ② 否则（叶子骨 / 子骨骼与自身同位置）→ 两侧都用**骨骼自身 Y 轴**
+      //      → 骨骼朝向对（aim3 在叶子骨上是对的；且避免 aim2 的零向量退化）
+      //   判据「是否用子骨骼方向」必须**对同一根骨的两侧取同一个答案**，
+      //   否则又回到 aim2 的老病（两侧口径不一致）。
+      //   实测必要性：源 Mixamo 的 `Neck` 骨轴与其「Neck→Head」位移差 **16.92°**
+      //   （源自身不标准），只用 Y 轴会让头关节多偏 16.9° → 观感「往后仰」；
+      //   而我们的模型 rest 里骨轴与子骨骼位移**全部对齐**（仅 Hip 退化）。
       const Wt = new Array(nodes.length);
       for (const i of order) {
         const j = srcOfModel[i];
         if (j !== undefined) {
+          const useChild = MODE === 'aim4'
+            && tgtChildOff(i) !== null && srcChildOff(j, srcAnimWorldCache) !== null;
           const Sa = rotPart(srcAnimWorldCache.get(j));
           const Sr = rotPart(SRW.get(j));
           const Tr = rotPart(TRW[i]);
           const delta = mul(Sa, invRot(Sr));           // 源：rest → 当前
           const Ta0 = mul(delta, Tr);                  // 施加到目标 rest
-          const dSrc = useAxis ? yaxisOf(srcAnimWorldCache.get(j))
-                               : srcDirOf(j, srcAnimWorldCache);  // 源骨骼指向（动画，世界）
-          const restDirT = useAxis ? yaxisOf(TRW[i])
-                                   : tgtDirRest[i];               // 目标骨骼指向（rest，世界）
+          // 两侧必须用**同一个**口径；三种模式各自的口径：
+          //   aim2（旧）：源「子−自身」/ 叶子「父→自身」  ×  目标「子−自身」/ 叶子「父→自身」
+          //   aim3     ：两侧都用「骨骼自身 Y 轴」
+          //   aim4     ：有非退化子骨骼位移 → 两侧都用「子−自身」；否则 → 两侧都用「自身 Y 轴」
+          let dSrc, restDirT;
+          if (useChild) {
+            dSrc = srcChildOff(j, srcAnimWorldCache);
+            restDirT = tgtChildOff(i);
+          } else if (MODE === 'aim3' || MODE === 'aim4') {
+            dSrc = yaxisOf(srcAnimWorldCache.get(j));
+            restDirT = yaxisOf(TRW[i]);
+          } else if (useAxis) {   // 兼容旧 aim2 之外的 useAxis 语义（当前无此分支）
+            dSrc = yaxisOf(srcAnimWorldCache.get(j));
+            restDirT = yaxisOf(TRW[i]);
+          } else {
+            dSrc = srcDirOf(j, srcAnimWorldCache);
+            restDirT = tgtDirRest[i];
+          }
           let Wt_i = Ta0;
           if (dSrc && restDirT) {
             const curDir = rotVec(delta, restDirT);    // Ta0 作用后的指向

@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 // 重定向件「逐骨朝向残差」门检（09-12 新增，抓 BUG-13 那类缺陷的唯一硬判据）
 //
-// 原理：对每根映射骨，量「重定向件的世界 Y 轴」与「源动作同帧的世界 Y 轴」的夹角。
-//       骨骼的 Y 轴是其真正的朝向（蒙皮跟着它走），两侧同口径 ⇒ 正确重定向下应恒为 0°。
+// 原理：对每根映射骨，量「重定向件的骨骼方向」与「源动作同帧的骨骼方向」的夹角。
+//       方向的定义（与 collada2anim 的 aim4 同口径）：
+//         · 骨骼有子骨骼且子骨骼位移非零 → 用「子骨骼位置 − 自身位置」（＝骨骼真正的段，
+//           关节位置才落得对；源 Mixamo 的 Neck 骨轴与这段差 16.92°，若改用 Y 轴会多偏 16.9°）
+//         · 否则（叶子骨 / 子骨骼与自身同位置）→ 用「骨骼自身世界 Y 轴」（＝骨骼朝向）
+//       两侧必须用**同一个**定义 ⇒ 正确重定向下应恒为 0°。
 //
 // 为什么必须有这条：帧 0 校验只比「源自己 rest vs 源自己帧 0」（永远相等，与跨骨架映射无关）；
 // 火柴人对比图看得是整体形状，头被拧 25° 在图上会被躯干四肢的大位移掩盖。
@@ -69,11 +73,30 @@ function srcWorldAt(j, t, cache) {
 }
 
 const yax = m => [m[4], m[5], m[6]];
+const off = (m1, m2) => [m2[12]-m1[12], m2[13]-m1[13], m2[14]-m1[14]];
+const len = v => Math.hypot(v[0], v[1], v[2]);
+// 与 aim4 同口径：有非退化子骨骼位移就用位移方向，否则用自身 Y 轴
+function dirOf(W, i, childOf) {
+  const c = childOf[i];
+  if (c !== undefined) { const d = off(W[i], W[c]); if (len(d) > 1e-6) return d; }
+  return yax(W[i]);
+}
 const ang = (a, b) => { const d = (a[0]*b[0]+a[1]*b[1]+a[2]*b[2]) / ((Math.hypot(...a)||1) * (Math.hypot(...b)||1));
   return Math.acos(Math.max(-1, Math.min(1, d))) * 180 / Math.PI; };
 
 const fps = RT.fps || 30;
 const frames = frameArgs.length ? frameArgs.map(Number) : [0, Math.floor(RT.nFrames/2), Math.max(0, RT.nFrames-1)];
+
+// 模型侧 / 源侧的「子骨骼」表
+const TGT_CHILD = { Hip:'Waist', Waist:'Spine01', Spine01:'Spine02', Spine02:'NeckTwist01', NeckTwist01:'Head',
+  L_Clavicle:'L_Upperarm', L_Upperarm:'L_Forearm', L_Forearm:'L_Hand',
+  R_Clavicle:'R_Upperarm', R_Upperarm:'R_Forearm', R_Forearm:'R_Hand',
+  L_Thigh:'L_Calf', L_Calf:'L_Foot', L_Foot:'L_ToeBase',
+  R_Thigh:'R_Calf', R_Calf:'R_Foot', R_Foot:'R_ToeBase' };
+const tgtChildIdx = {};
+for (const [k, v] of Object.entries(TGT_CHILD)) { const i = nameIdx[k], c = nameIdx[v]; if (i !== undefined && c !== undefined) tgtChildIdx[i] = c; }
+const srcChildOf = {};
+for (const j of C.joints) if (j.children && j.children.length) srcChildOf[j.clean] = j.children[0].clean;
 
 let worst = 0; const bad = [];
 for (const f of frames) {
@@ -82,9 +105,23 @@ for (const f of frames) {
   for (const [sm, tm] of Object.entries(MIXAMO_TO_MODEL)) {
     const mi = nameIdx[tm], sj = byName[sm];
     if (mi === undefined || !sj) continue;
-    const d = ang(yax(W[mi]), yax(srcWorldAt(sj, f / fps, new Map())));
+
+    // 两侧各自算「子骨骼位移」；只有**两侧都非退化**才用它（与 aim4 同口径）
+    const tgtC = tgtChildIdx[mi];
+    const dTgtOff = tgtC !== undefined ? off(W[mi], W[tgtC]) : null;
+    const cName = srcChildOf[sm];
+    const dSrcOff = cName && byName[cName] ? off(srcWorldAt(sj, f/fps, new Map()), srcWorldAt(byName[cName], f/fps, new Map())) : null;
+
+    const tgtOk = dTgtOff && len(dTgtOff) > 1e-6;
+    const srcOk = dSrcOff && len(dSrcOff) > 1e-6;
+    const useChild = tgtOk && srcOk;
+
+    const dTgt = useChild ? dTgtOff : yax(W[mi]);
+    const dSrc = useChild ? dSrcOff : yax(srcWorldAt(sj, f/fps, new Map()));
+
+    const d = ang(dTgt, dSrc);
     if (d > worst) worst = d;
-    if (d > TOL) bad.push({ f, bone: `${sm}->${tm}`, deg: d });
+    if (d > TOL) bad.push({ f, bone: `${sm}->${tm}`, deg: d, via: useChild ? '子骨骼位移' : 'Y轴' });
   }
 }
 console.log(`模型: ${glbPath}`);
@@ -94,7 +131,7 @@ console.log(`检查帧: ${frames.join(', ')}   映射骨: ${Object.keys(MIXAMO_T
 if (bad.length) {
   console.log(`\n❌ 未过门：${bad.length} 项超容差（最大 ${worst.toFixed(2)}°）`);
   for (const b of bad.sort((x, y) => y.deg - x.deg).slice(0, 20))
-    console.log(`   f=${b.f}  ${b.bone.padEnd(26)} ${b.deg.toFixed(2)}°`);
+    console.log(`   f=${b.f}  ${b.bone.padEnd(26)} ${b.deg.toFixed(2).padStart(7)}°  [口径: ${b.via}]`);
   process.exit(1);
 } else {
   console.log(`\n✅ 过门：全部骨骼朝向残差 ≤ ${TOL}°（实测最大 ${worst.toFixed(3)}°）`);
