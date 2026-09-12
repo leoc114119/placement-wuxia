@@ -254,10 +254,14 @@ let TEX=null, TW=+texWs, TH=+texHs;
 if (texPath && texPath !== 'none') TEX = fs.readFileSync(texPath);
 
 // ---------- raster ----------
+// UVMAP=1：额外输出每像素的贴图坐标（<outRaw>.uv，W*H*2 个 Float32，未命中为 -1），
+// 并把主输出换成 UV 预览图（R=u, G=v）。用于「AI 在 2D 渲染图上加细节 → 回填贴图」。
+const UVMAP = process.env.UVMAP === '1';
 const color = new Float32Array(W*H*3);
 const depth = new Float32Array(W*H).fill(Infinity);
 const nbuf  = new Float32Array(W*H*3);   // view-space normal, for outline post-process
 const alpha = new Uint8Array(W*H);
+const uvbuf = UVMAP ? new Float32Array(W*H*2).fill(-1) : null;
 color.fill(1);
 
 const L = [0.45, 0.72, -0.53]; // light dir (normalized-ish)
@@ -302,6 +306,7 @@ for (let f = 0; f < tri; f++) {
     depth[o]=z; alpha[o]=255;
     const u = w1*P[0].uv[0] + w2*P[1].uv[0] + w0*P[2].uv[0];
     const vv= w1*P[0].uv[1] + w2*P[1].uv[1] + w0*P[2].uv[1];
+    if (uvbuf) { uvbuf[o*2]=u; uvbuf[o*2+1]=vv; }
     let r=1,g=1,b=1;
     if (TEX) {
       // 双线性采样：最近邻在缩小时会严重走样（2048² 贴图渲到 256px 人物，
@@ -353,7 +358,21 @@ for (let f = 0; f < tri; f++) {
 }
 
 const out = Buffer.alloc(W*H*4);
+if (UVMAP) {
+  // 主输出改成 UV 预览图（R=u, G=v）——用于人眼核对"哪块贴图对应身上哪个部位"
+  for (let i=0;i<W*H;i++) {
+    const hit = uvbuf[i*2] >= 0;
+    out[i*4]  = hit ? Math.round(Math.min(1,Math.max(0,uvbuf[i*2]))*255)   : 0;
+    out[i*4+1]= hit ? Math.round(Math.min(1,Math.max(0,uvbuf[i*2+1]))*255) : 0;
+    out[i*4+2]= 0;
+    out[i*4+3]= alpha[i];
+  }
+  const ub = Buffer.alloc(W*H*2*4);
+  for (let i=0;i<W*H*2;i++) ub.writeFloatLE(uvbuf[i], i*4);
+  fs.writeFileSync(outRaw + '.uv', ub);
+}
 for (let i=0;i<W*H;i++) {
+  if (UVMAP) break;
   out[i*4]=Math.round(Math.min(1,Math.max(0,color[i*3]))*255);
   out[i*4+1]=Math.round(Math.min(1,Math.max(0,color[i*3+1]))*255);
   out[i*4+2]=Math.round(Math.min(1,Math.max(0,color[i*3+2]))*255);
