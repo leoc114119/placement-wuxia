@@ -1,0 +1,21 @@
+{
+  "task": "T45",
+  "seq": 387,
+  "model": "built-in image_gen",
+  "provider": "codex-native",
+  "cost": 0,
+  "generationCount": 1,
+  "source": "../全身输入/全身_要上明暗的图.png",
+  "headShadingReference": "头部_明暗分块.png",
+  "rawOutput": "raw_fullbody_shading_imagegen.png",
+  "output": "全身_明暗分块.png",
+  "rawSize": [900, 1748],
+  "size": [640, 1243],
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "processing": "uniform resize only; no semantic redraw or color correction",
+  "result": "candidate_ready_pending_pm2_visual_review"
+}

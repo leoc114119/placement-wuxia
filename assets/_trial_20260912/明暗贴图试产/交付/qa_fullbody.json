@@ -1,0 +1,24 @@
+{
+  "task": "T45",
+  "seq": 387,
+  "raw": {
+    "sha256": "711cb151781f1f889de42ca3afb81f9003c716e7a437469cc5652075e65b039b",
+    "size": [
+      900,
+      1748
+    ]
+  },
+  "output": {
+    "sha256": "bdd7c5cc432887cd2c4c50570a1490db572864ea4c959c5ffe451528dd537835",
+    "size": [
+      640,
+      1243
+    ],
+    "mode": "RGB"
+  },
+  "processing": {
+    "uniformResizeOnly": true,
+    "semanticRedraw": false
+  },
+  "selfGatePass": true
+}
