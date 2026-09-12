@@ -262,6 +262,7 @@ const depth = new Float32Array(W*H).fill(Infinity);
 const nbuf  = new Float32Array(W*H*3);   // view-space normal, for outline post-process
 const alpha = new Uint8Array(W*H);
 const uvbuf = UVMAP ? new Float32Array(W*H*2).fill(-1) : null;
+const shadebuf = UVMAP ? new Float32Array(W*H).fill(1) : null;   // 每像素打光系数，回填时要用它除回去
 color.fill(1);
 
 const L = [0.45, 0.72, -0.53]; // light dir (normalized-ish)
@@ -352,33 +353,40 @@ for (let f = 0; f < tri; f++) {
         d = 0.22 + 0.62*Math.pow(kd,0.8) + 0.20*fd + 0.42*Math.pow(rd,2.2);
       }
       r*=d; g*=d; b*=d;
+      if (shadebuf) shadebuf[o]=d;
     }
     color[o*3]=r; color[o*3+1]=g; color[o*3+2]=b;
   }
 }
 
 const out = Buffer.alloc(W*H*4);
-if (UVMAP) {
-  // 主输出改成 UV 预览图（R=u, G=v）——用于人眼核对"哪块贴图对应身上哪个部位"
-  for (let i=0;i<W*H;i++) {
-    const hit = uvbuf[i*2] >= 0;
-    out[i*4]  = hit ? Math.round(Math.min(1,Math.max(0,uvbuf[i*2]))*255)   : 0;
-    out[i*4+1]= hit ? Math.round(Math.min(1,Math.max(0,uvbuf[i*2+1]))*255) : 0;
-    out[i*4+2]= 0;
-    out[i*4+3]= alpha[i];
-  }
-  const ub = Buffer.alloc(W*H*2*4);
-  for (let i=0;i<W*H*2;i++) ub.writeFloatLE(uvbuf[i], i*4);
-  fs.writeFileSync(outRaw + '.uv', ub);
-}
+// ★ 主输出**始终**是正常渲染结果；UVMAP 只**额外**写 sidecar。
+//   （曾经把主输出换成 UV 预览图 → 回填工具把"UV 颜色"当成"渲染颜色"读进去，整张贴图被毁。）
 for (let i=0;i<W*H;i++) {
-  if (UVMAP) break;
   out[i*4]=Math.round(Math.min(1,Math.max(0,color[i*3]))*255);
   out[i*4+1]=Math.round(Math.min(1,Math.max(0,color[i*3+1]))*255);
   out[i*4+2]=Math.round(Math.min(1,Math.max(0,color[i*3+2]))*255);
   out[i*4+3]=alpha[i];
 }
 fs.writeFileSync(outRaw, out);
+
+if (UVMAP) {
+  const ub = Buffer.alloc(W*H*2*4);
+  for (let i=0;i<W*H*2;i++) ub.writeFloatLE(uvbuf[i], i*4);
+  fs.writeFileSync(outRaw + '.uv', ub);
+  const sb = Buffer.alloc(W*H*4);
+  for (let i=0;i<W*H;i++) sb.writeFloatLE(shadebuf[i], i*4);
+  fs.writeFileSync(outRaw + '.shade', sb);
+  const pv = Buffer.alloc(W*H*4);            // 仅供人眼核对"哪块贴图在身上哪个部位"
+  for (let i=0;i<W*H;i++) {
+    const hit = uvbuf[i*2] >= 0;
+    pv[i*4]  = hit ? Math.round(Math.min(1,Math.max(0,uvbuf[i*2]))*255)   : 0;
+    pv[i*4+1]= hit ? Math.round(Math.min(1,Math.max(0,uvbuf[i*2+1]))*255) : 0;
+    pv[i*4+2]= 0;
+    pv[i*4+3]= alpha[i];
+  }
+  fs.writeFileSync(outRaw + '.uvprev', pv);
+}
 
 // optional aux buffers for the outline post-process (12th arg = prefix)
 const auxPrefix = process.argv[13];  // argv[2..12] 是位置参数（含 yaw），aux 在最后
