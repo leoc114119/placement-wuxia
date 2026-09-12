@@ -1,0 +1,20 @@
+{
+  "rawSize": [
+    1086,
+    1448
+  ],
+  "outputSize": [
+    1024,
+    1365
+  ],
+  "background": [
+    20,
+    20,
+    24
+  ],
+  "changedInsidePixels": 233683,
+  "changedOutsidePixels": 1059821,
+  "detailBlend": 0.45,
+  "insideRgbSource": "45% resized AI detail delta + 55% source RGB",
+  "outsideRgbSource": "exact source alpha mask + mandated background"
+}

@@ -1,0 +1,100 @@
+{
+  "task": "T45",
+  "seq": 374,
+  "view": "yaw270",
+  "source": {
+    "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/角度图/view_yaw270.png",
+    "sha256": "92d51fc1cf7168fdb811c00561fc43530450ce344b27338cd49976c657881efc",
+    "size": [
+      1024,
+      1365
+    ]
+  },
+  "rawImagegen": {
+    "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/raw_view_yaw270_imagegen.png",
+    "sha256": "7a7f8273115e06550c0649100d4b61b77e1c6970f96553d2cfd7e0de24c7738e",
+    "size": [
+      1086,
+      1448
+    ]
+  },
+  "output": {
+    "path": "/Users/leochen/WorkBuddy/Claw/placement-wuxia/assets/_trial_20260912/贴图回填_美术线输入/交付/view_yaw270_detail.png",
+    "sha256": "695202d81e63e6eba3bff0cd9aa844e4cb1628a0d0db9d9e7d9bf3452172662c",
+    "size": [
+      1024,
+      1365
+    ],
+    "mode": "RGB"
+  },
+  "geometry": {
+    "sourceAlphaBBox": [
+      283,
+      238,
+      741,
+      1315
+    ],
+    "outputNonBackgroundBBox": [
+      283,
+      238,
+      741,
+      1315
+    ],
+    "bboxShiftPx": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bboxWidthRelativeDiff": 0.0,
+    "bboxHeightRelativeDiff": 0.0,
+    "iouAgainstSourceAlpha": 1.0,
+    "pass": true
+  },
+  "color": {
+    "meanAbsChannelDelta": [
+      5.929797618996694,
+      5.266042683526759,
+      5.1003905598309425
+    ],
+    "meanAbsRgbDelta": 5.4320769541181315,
+    "threshold": 6,
+    "pass": true
+  },
+  "background": {
+    "expected": [
+      20,
+      20,
+      24
+    ],
+    "outsideAlphaNonBackgroundPixels": 0,
+    "pass": true
+  },
+  "interiorGradientRadius3": {
+    "sourceMean": 4.012906723876308,
+    "outputMean": 4.179373592852339,
+    "samples": 220126,
+    "pass": true
+  },
+  "deterministicProcessing": {
+    "rawSize": [
+      1086,
+      1448
+    ],
+    "outputSize": [
+      1024,
+      1365
+    ],
+    "background": [
+      20,
+      20,
+      24
+    ],
+    "changedInsidePixels": 233683,
+    "changedOutsidePixels": 1059821,
+    "detailBlend": 0.45,
+    "insideRgbSource": "45% resized AI detail delta + 55% source RGB",
+    "outsideRgbSource": "exact source alpha mask + mandated background"
+  },
+  "selfGatePass": true
+}

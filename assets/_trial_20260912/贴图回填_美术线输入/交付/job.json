@@ -1,0 +1,33 @@
+{
+  "task": "T45",
+  "seq": 374,
+  "revision": "texture-detail-pilot-yaw270",
+  "model": "built-in image_gen",
+  "provider": "codex-native",
+  "cost": 0,
+  "generationCount": 1,
+  "source": "assets/_trial_20260912/贴图回填_美术线输入/角度图/view_yaw270.png",
+  "sourceSha256": "92d51fc1cf7168fdb811c00561fc43530450ce344b27338cd49976c657881efc",
+  "alphaSource": "assets/_trial_20260912/贴图回填_美术线输入/alpha/view_yaw270_alpha.png",
+  "alphaSha256": "b261cbb927d92ed08f6d9f73889c69e8008600fe0db6dc7f21a312a7f5857cd0",
+  "output": "assets/_trial_20260912/贴图回填_美术线输入/交付/view_yaw270_detail.png",
+  "size": [1024, 1365],
+  "rawImagegen": "assets/_trial_20260912/贴图回填_美术线输入/交付/raw_view_yaw270_imagegen.png",
+  "rawImagegenSha256": "7a7f8273115e06550c0649100d4b61b77e1c6970f96553d2cfd7e0de24c7738e",
+  "rawImagegenSize": [1086, 1448],
+  "artifactStage": "candidate",
+  "visualReview": "unreviewed",
+  "specGate": "pending",
+  "integrationGate": "not_handed_off",
+  "runtimeTouched": false,
+  "result": "candidate_ready_pending_pm2_visual_review",
+  "outputSha256": "695202d81e63e6eba3bff0cd9aa844e4cb1628a0d0db9d9e7d9bf3452172662c",
+  "qa": "qa_yaw270.json",
+  "deterministicFinalization": {
+    "script": "prepare_yaw270.py",
+    "resizeTo": [1024, 1365],
+    "sourceAlphaBackgroundRestore": "#141418",
+    "detailBlend": 0.45,
+    "insideRgbSource": "45% resized AI detail delta + 55% source RGB"
+  }
+}
