@@ -1,0 +1,33 @@
+<!doctype html><html lang="zh"><meta charset="utf-8"><title>攻击动作条试产</title>
+<style>
+ body{background:#16161a;color:#e8e8ea;font:15px/1.7 -apple-system,"PingFang SC",sans-serif;margin:0;padding:22px}
+ h1{font-size:19px;margin:0 0 4px} .sub{color:#9aa;margin-bottom:18px;font-size:14px}
+ .row{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:26px}
+ .card{background:#1e1e24;border:1px solid #333;border-radius:10px;padding:14px 16px}
+ .card h2{font-size:15px;margin:0 0 10px;color:#ffd866}
+ img{background:#0e0e11;border:1px solid #2a2a30;border-radius:6px;display:block}
+ .gif img{width:407px;height:620px;image-rendering:auto}
+ .sheet img{width:100%;max-width:1500px}
+ .note{color:#9aa;font-size:13px;margin-top:10px}
+ code{background:#2a2a32;padding:1px 6px;border-radius:4px;font-size:13px}
+</style>
+<h1>攻击动作条 · 试产（sprite-gen 方法 + mxai gpt-image-2）</h1>
+<div class="sub">身份锚 = 线上主角 2D idle（右向） · 一次生成 6 格动作条 · 成本 2 积分 · 帧率 8fps</div>
+
+<div class="row">
+  <div class="card gif"><h2>① 对齐后（foot-centroid 对齐）</h2>
+    <img src="attack_aligned.gif" alt="aligned">
+    <div class="note">脚部质心极差 0.8px、底线 0px</div></div>
+  <div class="card gif"><h2>② 抠底原始（未对齐）</h2>
+    <img src="attack_raw.gif" alt="raw">
+    <div class="note">看得到人物在格子里会左右漂</div></div>
+</div>
+
+<div class="row"><div class="card sheet"><h2>③ 六帧逐帧（对齐后）</h2>
+  <img src="六帧动作条_对齐后.png" alt="sheet">
+  <div class="note">起手 → 转体 → 蹲身蓄力 → 弓步出拳 → 拳到最远 → 收势</div></div></div>
+
+<div class="row"><div class="card sheet"><h2>④ 模型原始输出（未抠底）</h2>
+  <img src="raw_attack_row.png" alt="rawrow">
+  <div class="note">品红底是色键；实测生成器把它画成了 <code>(243,4,240)</code> 而不是纯 #FF00FF</div></div></div>
+</body></html>
