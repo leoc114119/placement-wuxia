@@ -191,6 +191,10 @@ def main() -> int:
                     help="AI 图是「已打好光的成品」：回填时不再除以打光系数、重渲用 unlit。"
                          "除以系数会在 8 位贴图上溢出截顶（暗侧 d≈0.25 → 肤色 200/0.25=800 → 截成 255 "
                          "→ 重渲乘 0.25 变灰 153），这是灰脸的真因。")
+    ap.add_argument("--albedo-mode", default="pixel", choices=["pixel", "weighted"],
+                    help="回填的 albedo 估计口径；weighted 不做逐样本除法，暗侧不会溢出截顶")
+    ap.add_argument("--final-mode", default=None,
+                    help="最终渲染用的 mode（默认 lit；paint-as-final 时强制 unlit）")
     ap.add_argument("--keep-base", action="store_true",
                     help="同时导出基准贴图渲染的成品（对照图左格）")
     a = ap.parse_args()
@@ -267,6 +271,7 @@ def main() -> int:
     r = subprocess.run(["node", str(ROOT / "tools/glb2d/backfill_tex.mjs"),
                         "--tex", str(BASE_TEX), "--tw", str(TW), "--th", str(TH),
                         "--out", str(tex_out), "--w", str(W), "--h", str(H), "--mode", "avg",
+                        "--albedo-mode", a.albedo_mode,
                         "--view", str(aligned), str(uv_p), str(nrm_p), str(shd_use)],
                        capture_output=True, text=True)
     if r.returncode != 0:
@@ -275,15 +280,15 @@ def main() -> int:
 
     print("[6/6] 用新贴图重渲")
     out_raw = VIEW / f"out_{a.tag}.raw"
-    render(out_raw, tex_out, a.t, VIEW / f"out_{a.tag}", a.yaw,
-           "unlit" if a.paint_as_final else "lit")
+    fmode = "unlit" if a.paint_as_final else (a.final_mode or "lit")
+    render(out_raw, tex_out, a.t, VIEW / f"out_{a.tag}", a.yaw, fmode)
     bb2 = alpha_bbox(out_raw)
     final, _ = render_to_ai_input(out_raw, bb2, BASE / f"成品_{a.tag}.png")
     print(f"  成品 {final.size} → {BASE / f'成品_{a.tag}.png'}")
 
     if a.keep_base:
         base_raw = VIEW / "out_base.raw"
-        render(base_raw, BASE_TEX, a.t, VIEW / "out_base", a.yaw, "unlit" if a.paint_as_final else "lit")
+        render(base_raw, BASE_TEX, a.t, VIEW / "out_base", a.yaw, fmode)
         bb0 = alpha_bbox(base_raw)
         render_to_ai_input(base_raw, bb0, BASE / "成品_裸渲染.png")
         print(f"  基准贴图成品 → {BASE / '成品_裸渲染.png'}")

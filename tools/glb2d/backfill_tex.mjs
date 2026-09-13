@@ -30,6 +30,12 @@ const VW = +opt('w', 0), VH = +opt('h', 0);   // 视角图尺寸（必须显式�
 // 为什么：俯仰环的职责是**补空洞**，不是替换主环已经采到的好样本——直接混在一起会让俯仰角
 // （掠射、AI 增强质量参差）把更好的水平视角挤掉（实测 8 角度 +11.6% → 直接 20 角度 +8.0%）。
 const COVER_OUT = opt('cover-out', null);
+// albedo 估计口径：
+//   pixel（默认，历史行为）= 逐样本算 col/shade 再加权平均 —— 暗侧 shade 低时单样本会溢出，
+//     8 位写入被截顶成 255（白，色相丢）→ 重渲回乘 shade 后变灰。这是「灰脸」的根因。
+//   weighted = 分别累加 col 与 shade，最后 albedo = Σcol·w / Σshade·w
+//     —— 等价于用 shade 加权的平均，不做逐样本除法，**结构上不会溢出**。
+const ALBEDO_MODE = opt('albedo-mode', 'pixel');
 const FILL_FROM = opt('fill-from', null);
 
 const views = [];
@@ -42,6 +48,7 @@ if (!TEX || !OUT || !views.length) {
 
 const acc = new Float64Array(TW * TH * 3);
 const wsum = new Float64Array(TW * TH);
+const accS = new Float64Array(TW * TH);   // Σ shade·w（weighted 口径用）
 const cover = new Uint8Array(TW * TH);   // 本纹素是否被覆盖过（用于统计，不参与混合）
 const bestW = new Float64Array(TW * TH);  // best 模式：该纹素见过的最大权重
 const bestC = new Float64Array(TW * TH * 3);
@@ -112,10 +119,18 @@ for (const v of views) {
         const ti = ty * TW + tx;
         const sd = shF[i] > 0.05 ? shF[i] : 0.05;
         const rr = col[i * 4] / sd, gg = col[i * 4 + 1] / sd, bb = col[i * 4 + 2] / sd;
-        acc[ti * 3] += rr * sw;
-        acc[ti * 3 + 1] += gg * sw;
-        acc[ti * 3 + 2] += bb * sw;
-        wsum[ti] += sw;
+        if (ALBEDO_MODE === 'weighted') {
+          acc[ti * 3]     += col[i * 4]     * sw;
+          acc[ti * 3 + 1] += col[i * 4 + 1] * sw;
+          acc[ti * 3 + 2] += col[i * 4 + 2] * sw;
+          accS[ti]        += sd * sw;
+          wsum[ti] += sw;
+        } else {
+          acc[ti * 3] += rr * sw;
+          acc[ti * 3 + 1] += gg * sw;
+          acc[ti * 3 + 2] += bb * sw;
+          wsum[ti] += sw;
+        }
         if (sw > bestW[ti]) { bestW[ti] = sw; bestC[ti * 3] = rr; bestC[ti * 3 + 1] = gg; bestC[ti * 3 + 2] = bb; }
         cover[ti] = 1;
       }
@@ -134,7 +149,8 @@ for (let i = 0; i < total; i++) {
   if (!cover[i] || wsum[i] <= 0) continue;          // 没被覆盖的纹素保留原贴图
   if (prev && prev[i]) continue;                    // 上一趟已覆盖 → 保留上一趟的结果
   const src = MODE === 'best' ? bestC : acc;
-  const div = MODE === 'best' ? 1 : wsum[i];
+  const div = MODE === 'best' ? 1
+            : (ALBEDO_MODE === 'weighted' ? accS[i] : wsum[i]);
   out[i * 4] = Math.round(Math.min(255, src[i * 3] / div));
   out[i * 4 + 1] = Math.round(Math.min(255, src[i * 3 + 1] / div));
   out[i * 4 + 2] = Math.round(Math.min(255, src[i * 3 + 2] / div));
@@ -142,5 +158,5 @@ for (let i = 0; i < total; i++) {
 }
 fs.writeFileSync(OUT, out);
 if (COVER_OUT) fs.writeFileSync(COVER_OUT, Buffer.from(cover));
-console.log(JSON.stringify({ mode: MODE, views: views.length, texels: total, painted,
+console.log(JSON.stringify({ mode: MODE, albedoMode: ALBEDO_MODE, views: views.length, texels: total, painted,
   paintedPct: +(painted / total * 100).toFixed(2), samples: used, out: OUT }));
