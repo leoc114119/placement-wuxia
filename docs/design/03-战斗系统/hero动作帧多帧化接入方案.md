@@ -1,0 +1,285 @@
+# Hero 动作帧多帧化接入方案 v2.0 ⭐当前生效
+
+> 定档日期：2026-09-13（Leo 令）· 定档人：Leo · 起草：美术 PM2
+>
+> **本节 v2.0 覆盖下方 v1.0 的帧数与素材口径**；v1.0 的接入机制分析（per-facing 覆盖、jump 时长口径、
+> run→walk 的 W1 裁决）仍然有效，作为实现参考保留。
+
+## 0.1 外观口径（Leo 09-13 逐轮目视定档）
+
+| 项 | 定档值 | 说明 |
+|---|---|---|
+| 渲染 mode | **`flatcel`** | 实测与 Leo 认可的基准件人物区**中位差 0.0**（对照 lit=25 / cel3=9） |
+| 贴图 | **每方向一张** `明暗贴图试产/tex6r/tex_<方向>.raw` | ratio 转移（模糊半径 **3**）：只取美术线明暗图的**光影分布**，不抄它重画的人物 |
+| 影调（tone_pass） | **不用** | 旧件的 `--red 26 --red-scope warm` 是「棕发烧成暗红」的元凶 |
+| 后处理（postprocess） | **不用** | 描边已被 Leo 否决；量化一并去掉 |
+| 地面锁定 | 脚底最深帧 → **y=299** | 与现有 61 张 hero 帧同基准 |
+| 编码 | **PNG-8 共享调色板** | 每 30 帧一组共用调色板 |
+
+**为什么"只取光影"**：美术线的明暗分块图会**把人物重画**（袍子的浅绿刺绣边整条消失、袍/裤形状挪位）。
+旧做法整块贴上去回填，等于把 AI 的绘画偏差抄进贴图 ⇒ 成品在**两腿之间**出现暗斑、动作摆大时特别明显。
+改成 `appearance = 我们的渲染 × 模糊(亮度(AI)/亮度(我们渲染))` 后：
+几何与细节全部来自我们自己，只借它的光影；污迹像素 **169 → 1**（降 99.4%）。
+
+## 0.2 帧规格（Leo：所有动作帧按六个方向 5 帧）
+
+- **画布** 240×320 RGBA；**六向 × 5 帧**
+- 方向集合：`left / leftdown / leftup / right / rightdown / rightup`
+- 命名：
+
+| 动作 | 文件名 | 帧数 |
+|---|---|---|
+| idle | `battle_idle_{方向}_{1..5}.png` | 5×6 |
+| walk | `walk_{方向}_{1..5}.png` | 5×6 |
+| jump | `jump_{方向}_{1..5}.png` | 5×6 |
+| atk | `atk_{方向}_{1..5}.png` | 5×6 |
+| cast | `cast_{方向}_{1..5}.png` | 5×6 |
+| die | `die_common.png` | 1（**六向共用，本次不动**） |
+
+合计 **150 张** + die 1 张。
+
+> **die 说明**：现行为六向共用 1 帧（白骨）。「六个方向 5 帧」对它不适用，本次未动；
+> 若也要多帧化请另行指示。
+
+## 0.3 抽帧点（改自旧版**一字未动**）
+
+| 动作 | 源 | 源帧号 @30fps | t (s) |
+|---|---|---|---|
+| idle | `model_v4/retarget_idle_v4.json` | 0 / 40 / 80 / 119 / 159 | 0 / 1.3333 / 2.6667 / 3.9667 / 5.3 |
+| walk | 模型自带 `animations[0]` | 均匀相位 | 0 / 0.375 / 0.75 / 1.125 / 1.5 |
+| run | 模型自带 `animations[1]` | 均匀相位 | 0 / 0.2583 / 0.5167 / 0.775 / 1.0333 |
+| jump | `model_v4/retarget_jump_v4.json` | 0 / 15 / 18 / 24 / 12 | 0 / 0.5 / 0.6 / 0.8 / 0.4 |
+| atk | `model_v4/retarget_atk_v4.json` | 0 / 8 / 19 / 30 / 44 | 0 / 0.2667 / 0.6333 / 1.0 / 1.4667 |
+| cast | `model_v4/retarget_cast_v4.json` | 0 / 11 / 22 / 33 / 44 | 0 / 0.3667 / 0.7333 / 1.1 / 1.4667 |
+
+模型：`~/Downloads/chibi+character+3d+model (2).glb`；`walk`/`run` **按名字取序号**（v4 里 0=walk、1=run），禁按序号硬编码。
+
+## 0.4 接入需求（本次变更）
+
+```
+clipCounts: {
+  idle: 1 → 5,
+  walk: 2 → 5,
+  jump: 1 → 5,
+  atk:  2 → 5,
+  cast: 3 → 5,
+  die:  1（不变）
+}
+```
+
+**六向全部齐了** ⇒ v1.0 §2 设计的 `clipCountsByFacing`（per-facing 覆盖，为「只有一向有 5 帧」时兜底）
+**本次不再需要**；若研发已实现，可保留但不必启用。
+
+## 0.5 T30 实装覆盖（2026-09-13 · 当前发卡口径）
+
+本节覆盖下方旧 pilot 方案中的单向过渡口径。T30 需求是 idle / walk / jump / atk / cast 五个 clip 全部六向五帧，die 仍为共享单帧：
+
+    clipCounts = { idle: 5, walk: 5, jump: 5, atk: 5, cast: 5, die: 1 }
+
+### 配置与选帧
+
+- frameSrc 删除 idle 与 jump 特例，统一使用 clip 前缀映射：idle→battle_idle，walk→walk，jump→jump，atk→atk，cast→cast；最终路径为 prefix_direction_ordinal.png。die 继续走 sharedSrc=die_common。
+- loader 与测试统一调用 clipCountOf(profile, clip, facing)，保证 150 张全部预载；本次六向齐全，不启用 per-facing 覆盖。
+- idle 五帧加入既有循环组，使用既有 PIECE.walkFrameMs=140ms；不新增 idleFrameMs，帧周期不改。
+- walk 五帧使用 Leo 已裁定的 run 素材落成 walk 文件名，仍沿 140ms 循环；不新增 run clip、不改移动时长。
+- basic→atk1→5 单播至尾帧保持；charge→cast1→5 沿 AS-2 整套循环；strike→cast4→5 单播，AS-8 的 t0 锚为 cast1、t1 锚为 cast5；不改 session/AS 时序。
+- jump→jump1→5 一次播放、到第 5 帧保持；ordinal = 1 + min(4, floor(clamp(ma.t / ma.duration, 0, 1) × 5))。ma.t 达到 duration 后回既有 idle。
+
+### F1 武器层停用
+
+Leo 已裁定本次停用现有武器层入口：
+
+- ui/battle-hex-render.ts 的 weaponLayerOf 查询与贴回段注释掉，旁留 TODO(weapon-redo)；不删 config/hero-weapon-layer.ts、不删 assets/characters/hero/weapon45/ 的 56 文件。
+- proto/battle_demo/main.ts 的剑模/mask 预载、composeWeaponModelLayer 逐行合成和 hero-weapon-missing asset gate 诊断全部停用；BattleHexAssets 可选字段保留供未来回滚，但 T30 宿主不传入。
+- 单测源码扫描须证明 production 无 weaponLayerOf/composeWeaponModelLayer 启用调用；资产与配置仅作为可回滚保留物，不参与本卡 runtime。
+
+### F2 jump hop 停用
+
+新 jump 帧自带竖直位移。本次仅把 jump 的程序化 hop 置零：updateView 为 isJump 的 moveAnim 写 hopHeight=0，pieceHop 再以 actor.isJump 早退 0 作防御锁。directionalFrameOf 仍以 actor.isJump 进入 jump 分支，不能用 hopHeight 是否大于 0 作为唯一判据。
+
+### 归档与验收
+
+- 只归档六向旧 idle/walk/jump/atk/cast 文件并生成 SHA256SUMS；8 向 down 遗留帧不动，武器资产不动。
+- 版本 bump t45v2→t45v3。三档预览须无 404、无旧帧闪回、无 hero-weapon-missing；jump 过程不出现 hop 二次抬升。
+- DoD：150 张新帧正式落位、预载 150/150、idle/walk 循环、jump 五帧尾帧保持、charge/strike AS-8 锚点、武器无启用路径、hop=0、npm test / test:battle / test:behavior 全绿。
+
+### 🔴 武器：**不引入武器合成代码**
+
+- 武器层代码（`config/hero-weapon-layer.ts` 等）**只在 `task/hero-weapon-layer` 分支**，
+  **本分支/main 没有**。本次实装**不得引入、不得合并**；若已有入口一律**注释掉并留 TODO**。
+- **合剑武器要重新处理**：改为**「握剑的拳头」单独贴帧**（即手部握持姿态由帧素材表现，
+  不再靠运行时把剑模合成到拳心）。该批帧素材尚未产出，属后续任务。
+
+### 素材位置
+
+| 动作 | 目录 |
+|---|---|
+| idle | `assets/_trial_20260912/glb2d_idle/idle_6dir_ratio/` |
+| walk | `assets/_trial_20260912/glb2d_walk/walk_6dir_ratio/` |
+| run | `assets/_trial_20260912/glb2d_run/run_6dir_ratio/` |
+| jump | `assets/_trial_20260912/glb2d_jump/jump_6dir_ratio/` |
+| atk | `assets/_trial_20260912/glb2d_atk/atk_6dir_ratio/` |
+| cast | `assets/_trial_20260912/glb2d_cast/cast_6dir_ratio/` |
+
+（`_rgba/` 子目录内为无量化原件，正式接线用目录根的 PNG-8 件。）
+
+### 重出命令
+
+```bash
+python3 tools/glb2d/shading_ratio_transfer.py          # 六向明暗贴图（ratio blur 3）
+python3 tools/glb2d/export_all_actions_ratio.py        # 六动作 × 六向 × 5 帧
+python3 tools/glb2d/export_all_actions_ratio.py --only cast
+```
+
+---
+
+# Hero 动作帧多帧化接入方案 v1.0
+
+> 方案日期：2026-09-11
+>
+> 输入：projbus seq=367（jump 1→5，leftdown 单向 pilot）及 seq=365（战斗移动帧改用 run）；交接文档 tasks/handoff/接入需求-jump-1帧改5帧-20260911.md。
+>
+> 基座：origin/main 3aa004ddd6970f3933446ed05899ceeb47c057b4。本文件是发卡级方案，不直接改游戏代码。
+
+## 1. 总体裁决
+
+### 1.1 Jump：采纳方案 A
+
+跳跃战斗演出时长保持现行 JUMP 参数不变（基准 2 格 0.6s，距离插值规则不动）。5 帧由跳跃演出实例 ma 的实际 duration 均分：
+
+    frameCount = 5
+    progress = clamp(ma.t / ma.duration, 0, 1)
+    idx = min(frameCount - 1, floor(progress * frameCount))
+    ordinal = 1 + idx
+
+不新增 jumpFrameMs，不复用 walkFrameMs，不把 220ms/帧的预览 GIF 速度带进游戏。2 格跳跃的游戏内每帧约 120ms；长距离跳跃随 ma.duration 增长，帧数仍完整铺满。Jump 是一次性演出，不循环；到达第 5 帧后保持尾帧，直到 ma.duration 结束。
+
+方案 B 把 baseDuration 改为约 1.1s，会改战斗手感，且与现行距离插值冲突，本卡不取。
+
+### 1.2 Run：W1 覆盖 walk（单独卡）
+
+战斗中的“行走表现”仍叫 walk，素材换为 run；推荐 W1：
+
+- 30 张 run 六向 240×320 PNG-8 逐字节导入正式 battle45 路径，命名为 walk_{facing}_{1..5}.png。
+- clipCounts.walk 从 2 改为 5；不新增 run clip，不改 stateMap 的移动语义。
+- PIECE.walkFrameMs 保持 140ms。run 源的 258ms/帧是离线素材时长，不作为游戏 clock；若采用 258ms，五帧一循环约 1.29s，反而不能解决 Leo 判定的战斗行走偏慢。
+- 原 2 帧 walk 文件先移入 archive 并保留 SHA；production 只认新 5 帧 walk 路径。
+
+Jump 与 Run 可分别发卡；二者只共用 clip count helper 和素材预检，不能把 run 的状态时钟改动混进 jump pilot。
+
+## 2. Jump 单向混合帧数结构
+
+当前 DirectionalSpriteProfile 的 clipCounts 是全局值，不能直接把 jump 改成 5：其它五向尚未完成新 5 帧时会在预载期产生缺图。新增可选 per-facing 覆盖，旧 profile 不受影响：
+
+    type BattleClipCounts = Readonly<Record<BattleClip, number>>;
+
+    interface DirectionalSpriteProfile {
+      clipCounts: BattleClipCounts; // 未覆盖方向的基线：jump=2
+      clipCountsByFacing?: Readonly<
+        Partial<Record<BattleFacingHex, Partial<BattleClipCounts>>>
+      >;
+      frameSrc(clip: BattleClip, facing: BattleFacingHex, ordinal: number): string;
+      sharedSrc: Readonly<Partial<Record<BattleClip, string>>>;
+      stateMap: DirectionalStateMap;
+    }
+
+    function clipCountOf(profile, clip, facing): number {
+      return profile.clipCountsByFacing?.[facing]?.[clip] ?? profile.clipCounts[clip];
+    }
+
+Hero profile 的 pilot 配置：
+
+    clipCounts: { idle: 1, walk: 2, jump: 2, atk: 2, cast: 3, die: 1 },
+    clipCountsByFacing: {
+      leftdown: { jump: 5 },
+    },
+
+frameSrc 去掉 jump→_2 的单帧特例，统一按 ordinal 拼接。leftdown 新帧消费 jump_leftdown_1..5.png；其它五向保持现有两帧 jump_{facing}_1..2.png。leftdown 原有旧帧不覆盖，先归档并登记 SHA；其它五向旧两帧在本 pilot 保持原正式路径和两帧行为。后续六向 5 帧铺量只增各方向 override 和正式 5 帧，不改渲染接口。
+
+stateMap.jump 可继续写 from:1,to:5；选帧时以 clipCountOf(profile,'jump',actor.facingHex) 将终点钳到该方向实际 count，不需要 stateMapByFacing 第二套结构。
+
+## 3. Jump 精确改动面
+
+1. config/battle-hex.ts
+   - Hero profile jump 基线为 2，增加 clipCountsByFacing.leftdown.jump=5。
+   - 删除 jump 文件名特例，frameSrc 使用通用 {clip}_{facing}_{ordinal}.png。
+   - stateMap.jump 为 { clip:'jump', from:1, to:5 }。
+   - 导出 clipCountOf，供 loader、renderer、测试共用。
+   - BATTLE_HEX_RES.ver 从 t45v2 bump 到 t45v3；仅为新 jump 资源防缓存，不改 JUMP 数值。
+2. ui/battle-hex-render.ts
+   - directionalFrameOf 的 jump 分支使用 ma.t / ma.duration 和 clipCountOf，按上式 clamp；不进入 ANIM_LOOP_GROUPS。
+   - 只在 ma 存在且 ma.t < ma.duration 时读取 jump；jump 结束回到既有 idle。
+   - 保持 hopHeight、moveLerp、脚底锚、FX、HUD、dead 优先级；不改 drawPieces 架构。
+3. proto/battle_demo/main.ts
+   - directional 预载循环改调用 clipCountOf(profile, clip, facing)，否则 leftdown 的 _3..5 不会被预载。
+   - 其余加载、asset gate、URL 版本串沿既有路径；缺图不能以占位判绿。
+
+## 4. Jump 素材 DoR 与正式路径
+
+pilot 只导入 leftdown 五帧：
+
+    candidate:
+    assets/_trial_20260911/glb2d_v2/mixamo/jump_6dir/jump_leftdown_1..5.png
+
+    runtime:
+    assets/characters/hero/battle45/jump_leftdown_1..5.png
+
+逐张核 240×320、RGBA、alpha 非空、PNG 解码、SHA 清单、脚底/质心/单连通和五帧状态顺序。候选→正式必须同一实质提交包含文件、SHA、runtime manifest/版本和预检证据；禁止直接引用 _trial。
+
+已知内容风险如实保留：当前 Jumping Up 源动作没有真实下落段，p4 是重排的落地缓冲姿态。pilot 的 Leo L 环验收点是起跳→上升→腾空→落地缓冲的过程观感，不宣称真实物理下落已解决；真实下落另立素材替换卡。
+
+## 5. Run 接入卡（seq=365 议题）
+
+Run 卡独立落地 30 张：
+
+    candidate:
+    assets/_trial_20260911/glb2d_v2/mixamo/run_6dir/run_{facing}_{1..5}.png
+
+    runtime:
+    assets/characters/hero/battle45/walk_{facing}_{1..5}.png
+
+DoR：六向 30/30、240×320 RGBA、PNG-8 无损、路径/SHA、方向键、脚底 y=300、无裁切。旧 walk 两帧归档，不删不复用旧预检。预载后 clipCounts.walk=5，五帧沿 140ms 循环；普通移动的 ma.duration 只负责位置，不重新按移动时长压缩 walk 帧。
+
+Run 预览覆盖 375×667、560×700、900×560，六向至少一张行走截图；重点看跑动节奏比现有 walk 更快/更有动感，脚底不漂，角色尺寸不变。Run 卡不得改 jump 选帧或 jump duration。
+
+## 6. 文件面、禁碰区与拆卡
+
+### Jump-5-leftdown
+
+允许：
+- assets/characters/hero/battle45/jump_leftdown_1..5.png、archive/旧 leftdown、SHA/manifest
+- config/battle-hex.ts（per-facing count、frameSrc、ver）
+- ui/battle-hex-render.ts（jump 选帧纯表现）
+- proto/battle_demo/main.ts（预载循环）
+- tests/battle-hex-render.test.ts、tests/battle-behavior.test.ts、预览截图/回执
+
+禁止：battle-core、session 行为与数值、JUMP.baseDuration/距离插值、PIECE.moveLerpSec、FX、HUD、其它方向新素材、NPC profile、结算和 config/numbers.ts。
+
+预计 4 小时（高置信；含单向 profile、loader、选帧测试和一档浏览器证据；不含美术等待和 Leo L 环）。
+
+### Run-W1
+
+允许：30 张 run→walk 正式导入、旧 walk 归档、config clipCounts.walk、预载/预检、截图和测试。
+
+禁止：jump pilot 逻辑、JUMP 参数、session 移动规则、NPC 资源、walkFrameMs 以外的数值散落。
+
+预计 4 小时（高置信；素材已齐，主要风险是旧 walk 归档与截图基线更新）。
+
+## 7. DoD 与验收顺序
+
+Jump 卡：
+1. 单测证明 leftdown jump 读取 1→5，其他五向只读 1→2；jump 不循环且尾帧保持。
+2. 时间采样证明 progress 0、0.2、0.4、0.6、0.8、<1.0 依次显示 1..5；长距离 ma.duration 变长时仍 5 帧铺满；ma.t=duration 后不再查 jump。
+3. 预载 gate 只要求 leftdown 五帧新增资源与其它方向两帧旧资源，缺帧红条/非零预检。
+4. 375×667 至少一组 leftdown jump 过程截图，另有 560×700 或 900×560 复核；Leo 看起跳、最高点、落地缓冲连续性和脚底不漂。
+5. typecheck/lint/build、battle 全量、behavior 全绿；BATTLE_HEX_RES.ver=t45v3；禁止改 JUMP/baseDuration。
+
+Run 卡：
+1. 30 张五帧 walk 全量加载、SHA/尺寸/方向/脚底门过；旧两帧 archive 有 SHA。
+2. walk 五帧沿 140ms 循环，移动位置仍由 ma.duration；无新 run clip。
+3. 三档六向截图与既有交互/e2e 全绿；Leo 看跑动节奏、脚底和尺寸。
+4. 两卡都必须提交真实素材/配置/测试或截图，不得提交纯回执。
+
+## 8. 风险时间轴
+
+现在最先爆的是混合 clip count：误改全局 jump=5 会让五个方向在启动 gate 假红；per-facing override 是本 pilot 的结构底线。下一个月的债是 walk/run 与素材源时长不一致，不能用 258ms 机械替代战斗 clock，否则会把“跑得更快”做成更慢。两到三个月后的债是五/六向动作资源一次性预载带来的包体与驻留压力，按场景预载与 LRU 另立资源卡。
