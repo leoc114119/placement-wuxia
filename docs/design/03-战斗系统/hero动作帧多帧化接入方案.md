@@ -70,6 +70,39 @@ clipCounts: {
 **六向全部齐了** ⇒ v1.0 §2 设计的 `clipCountsByFacing`（per-facing 覆盖，为「只有一向有 5 帧」时兜底）
 **本次不再需要**；若研发已实现，可保留但不必启用。
 
+## 0.5 T30 实装覆盖（2026-09-13 · 当前发卡口径）
+
+本节覆盖下方旧 pilot 方案中的单向过渡口径。T30 需求是 idle / walk / jump / atk / cast 五个 clip 全部六向五帧，die 仍为共享单帧：
+
+    clipCounts = { idle: 5, walk: 5, jump: 5, atk: 5, cast: 5, die: 1 }
+
+### 配置与选帧
+
+- frameSrc 删除 idle 与 jump 特例，统一使用 clip 前缀映射：idle→battle_idle，walk→walk，jump→jump，atk→atk，cast→cast；最终路径为 prefix_direction_ordinal.png。die 继续走 sharedSrc=die_common。
+- loader 与测试统一调用 clipCountOf(profile, clip, facing)，保证 150 张全部预载；本次六向齐全，不启用 per-facing 覆盖。
+- idle 五帧加入既有循环组，使用既有 PIECE.walkFrameMs=140ms；不新增 idleFrameMs，帧周期不改。
+- walk 五帧使用 Leo 已裁定的 run 素材落成 walk 文件名，仍沿 140ms 循环；不新增 run clip、不改移动时长。
+- basic→atk1→5 单播至尾帧保持；charge→cast1→5 沿 AS-2 整套循环；strike→cast4→5 单播，AS-8 的 t0 锚为 cast1、t1 锚为 cast5；不改 session/AS 时序。
+- jump→jump1→5 一次播放、到第 5 帧保持；ordinal = 1 + min(4, floor(clamp(ma.t / ma.duration, 0, 1) × 5))。ma.t 达到 duration 后回既有 idle。
+
+### F1 武器层停用
+
+Leo 已裁定本次停用现有武器层入口：
+
+- ui/battle-hex-render.ts 的 weaponLayerOf 查询与贴回段注释掉，旁留 TODO(weapon-redo)；不删 config/hero-weapon-layer.ts、不删 assets/characters/hero/weapon45/ 的 56 文件。
+- proto/battle_demo/main.ts 的剑模/mask 预载、composeWeaponModelLayer 逐行合成和 hero-weapon-missing asset gate 诊断全部停用；BattleHexAssets 可选字段保留供未来回滚，但 T30 宿主不传入。
+- 单测源码扫描须证明 production 无 weaponLayerOf/composeWeaponModelLayer 启用调用；资产与配置仅作为可回滚保留物，不参与本卡 runtime。
+
+### F2 jump hop 停用
+
+新 jump 帧自带竖直位移。本次仅把 jump 的程序化 hop 置零：updateView 为 isJump 的 moveAnim 写 hopHeight=0，pieceHop 再以 actor.isJump 早退 0 作防御锁。directionalFrameOf 仍以 actor.isJump 进入 jump 分支，不能用 hopHeight 是否大于 0 作为唯一判据。
+
+### 归档与验收
+
+- 只归档六向旧 idle/walk/jump/atk/cast 文件并生成 SHA256SUMS；8 向 down 遗留帧不动，武器资产不动。
+- 版本 bump t45v2→t45v3。三档预览须无 404、无旧帧闪回、无 hero-weapon-missing；jump 过程不出现 hop 二次抬升。
+- DoD：150 张新帧正式落位、预载 150/150、idle/walk 循环、jump 五帧尾帧保持、charge/strike AS-8 锚点、武器无启用路径、hop=0、npm test / test:battle / test:behavior 全绿。
+
 ### 🔴 武器：**不引入武器合成代码**
 
 - 武器层代码（`config/hero-weapon-layer.ts` 等）**只在 `task/hero-weapon-layer` 分支**，
