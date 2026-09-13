@@ -36,6 +36,12 @@ const COVER_OUT = opt('cover-out', null);
 //   weighted = 分别累加 col 与 shade，最后 albedo = Σcol·w / Σshade·w
 //     —— 等价于用 shade 加权的平均，不做逐样本除法，**结构上不会溢出**。
 const ALBEDO_MODE = opt('albedo-mode', 'pixel');
+// --min-weight W：累计权重低于 W 的纹素**不写**，保留原贴图。
+//   为什么需要：只被一个视角、且处在轮廓掠射角的纹素，采样到的是被抗锯齿/背景混过的颜色，
+//   写进去就是永久脏点（动作一大就露出来）。多视角底图（如 20 视角）在这些纹素上更可靠。
+const MIN_WEIGHT = +opt('min-weight', 0);
+// --weight-out F：把每纹素的累计权重 dump 成 Float32（调试/定阈值用）
+const WEIGHT_OUT = opt('weight-out', null);
 const FILL_FROM = opt('fill-from', null);
 
 const views = [];
@@ -147,6 +153,7 @@ if (prev && prev.length !== TW * TH) { console.error('FATAL: --fill-from 掩膜�
 let painted = 0, total = TW * TH;
 for (let i = 0; i < total; i++) {
   if (!cover[i] || wsum[i] <= 0) continue;          // 没被覆盖的纹素保留原贴图
+  if (MIN_WEIGHT > 0 && wsum[i] < MIN_WEIGHT) continue;   // 权重太低 → 保留原贴图（防单视角掠射污染）
   if (prev && prev[i]) continue;                    // 上一趟已覆盖 → 保留上一趟的结果
   const src = MODE === 'best' ? bestC : acc;
   const div = MODE === 'best' ? 1
@@ -157,6 +164,11 @@ for (let i = 0; i < total; i++) {
   painted++;
 }
 fs.writeFileSync(OUT, out);
+if (WEIGHT_OUT) {
+  const wb = Buffer.alloc(total * 4);
+  for (let i = 0; i < total; i++) wb.writeFloatLE(wsum[i], i * 4);
+  fs.writeFileSync(WEIGHT_OUT, wb);
+}
 if (COVER_OUT) fs.writeFileSync(COVER_OUT, Buffer.from(cover));
 console.log(JSON.stringify({ mode: MODE, albedoMode: ALBEDO_MODE, views: views.length, texels: total, painted,
   paintedPct: +(painted / total * 100).toFixed(2), samples: used, out: OUT }));

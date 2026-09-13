@@ -24,3 +24,7 @@ assets/_trial_20260912/国风明暗试产/**/*.normal
 assets/_trial_20260912/国风明暗试产/**/*.depth
 assets/_trial_20260912/国风明暗试产/**/*.uv
 assets/_trial_20260912/国风明暗试产/**/*.uvprev
+
+# 明暗贴图试产：修正版贴图（每张 67MB，可由 shading_ratio_transfer.py 重出）
+assets/_trial_20260912/明暗贴图试产/tex6r/*.raw
+assets/_trial_20260912/明暗贴图试产/views6/*_comp_ratio.raw
