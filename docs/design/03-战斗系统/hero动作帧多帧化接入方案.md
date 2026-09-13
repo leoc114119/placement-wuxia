@@ -1,3 +1,105 @@
+# Hero 动作帧多帧化接入方案 v2.0 ⭐当前生效
+
+> 定档日期：2026-09-13（Leo 令）· 定档人：Leo · 起草：美术 PM2
+>
+> **本节 v2.0 覆盖下方 v1.0 的帧数与素材口径**；v1.0 的接入机制分析（per-facing 覆盖、jump 时长口径、
+> run→walk 的 W1 裁决）仍然有效，作为实现参考保留。
+
+## 0.1 外观口径（Leo 09-13 逐轮目视定档）
+
+| 项 | 定档值 | 说明 |
+|---|---|---|
+| 渲染 mode | **`flatcel`** | 实测与 Leo 认可的基准件人物区**中位差 0.0**（对照 lit=25 / cel3=9） |
+| 贴图 | **每方向一张** `明暗贴图试产/tex6r/tex_<方向>.raw` | ratio 转移（模糊半径 **3**）：只取美术线明暗图的**光影分布**，不抄它重画的人物 |
+| 影调（tone_pass） | **不用** | 旧件的 `--red 26 --red-scope warm` 是「棕发烧成暗红」的元凶 |
+| 后处理（postprocess） | **不用** | 描边已被 Leo 否决；量化一并去掉 |
+| 地面锁定 | 脚底最深帧 → **y=299** | 与现有 61 张 hero 帧同基准 |
+| 编码 | **PNG-8 共享调色板** | 每 30 帧一组共用调色板 |
+
+**为什么"只取光影"**：美术线的明暗分块图会**把人物重画**（袍子的浅绿刺绣边整条消失、袍/裤形状挪位）。
+旧做法整块贴上去回填，等于把 AI 的绘画偏差抄进贴图 ⇒ 成品在**两腿之间**出现暗斑、动作摆大时特别明显。
+改成 `appearance = 我们的渲染 × 模糊(亮度(AI)/亮度(我们渲染))` 后：
+几何与细节全部来自我们自己，只借它的光影；污迹像素 **169 → 1**（降 99.4%）。
+
+## 0.2 帧规格（Leo：所有动作帧按六个方向 5 帧）
+
+- **画布** 240×320 RGBA；**六向 × 5 帧**
+- 方向集合：`left / leftdown / leftup / right / rightdown / rightup`
+- 命名：
+
+| 动作 | 文件名 | 帧数 |
+|---|---|---|
+| idle | `battle_idle_{方向}_{1..5}.png` | 5×6 |
+| walk | `walk_{方向}_{1..5}.png` | 5×6 |
+| jump | `jump_{方向}_{1..5}.png` | 5×6 |
+| atk | `atk_{方向}_{1..5}.png` | 5×6 |
+| cast | `cast_{方向}_{1..5}.png` | 5×6 |
+| die | `die_common.png` | 1（**六向共用，本次不动**） |
+
+合计 **150 张** + die 1 张。
+
+> **die 说明**：现行为六向共用 1 帧（白骨）。「六个方向 5 帧」对它不适用，本次未动；
+> 若也要多帧化请另行指示。
+
+## 0.3 抽帧点（改自旧版**一字未动**）
+
+| 动作 | 源 | 源帧号 @30fps | t (s) |
+|---|---|---|---|
+| idle | `model_v4/retarget_idle_v4.json` | 0 / 40 / 80 / 119 / 159 | 0 / 1.3333 / 2.6667 / 3.9667 / 5.3 |
+| walk | 模型自带 `animations[0]` | 均匀相位 | 0 / 0.375 / 0.75 / 1.125 / 1.5 |
+| run | 模型自带 `animations[1]` | 均匀相位 | 0 / 0.2583 / 0.5167 / 0.775 / 1.0333 |
+| jump | `model_v4/retarget_jump_v4.json` | 0 / 15 / 18 / 24 / 12 | 0 / 0.5 / 0.6 / 0.8 / 0.4 |
+| atk | `model_v4/retarget_atk_v4.json` | 0 / 8 / 19 / 30 / 44 | 0 / 0.2667 / 0.6333 / 1.0 / 1.4667 |
+| cast | `model_v4/retarget_cast_v4.json` | 0 / 11 / 22 / 33 / 44 | 0 / 0.3667 / 0.7333 / 1.1 / 1.4667 |
+
+模型：`~/Downloads/chibi+character+3d+model (2).glb`；`walk`/`run` **按名字取序号**（v4 里 0=walk、1=run），禁按序号硬编码。
+
+## 0.4 接入需求（本次变更）
+
+```
+clipCounts: {
+  idle: 1 → 5,
+  walk: 2 → 5,
+  jump: 1 → 5,
+  atk:  2 → 5,
+  cast: 3 → 5,
+  die:  1（不变）
+}
+```
+
+**六向全部齐了** ⇒ v1.0 §2 设计的 `clipCountsByFacing`（per-facing 覆盖，为「只有一向有 5 帧」时兜底）
+**本次不再需要**；若研发已实现，可保留但不必启用。
+
+### 🔴 武器：**不引入武器合成代码**
+
+- 武器层代码（`config/hero-weapon-layer.ts` 等）**只在 `task/hero-weapon-layer` 分支**，
+  **本分支/main 没有**。本次实装**不得引入、不得合并**；若已有入口一律**注释掉并留 TODO**。
+- **合剑武器要重新处理**：改为**「握剑的拳头」单独贴帧**（即手部握持姿态由帧素材表现，
+  不再靠运行时把剑模合成到拳心）。该批帧素材尚未产出，属后续任务。
+
+### 素材位置
+
+| 动作 | 目录 |
+|---|---|
+| idle | `assets/_trial_20260912/glb2d_idle/idle_6dir_ratio/` |
+| walk | `assets/_trial_20260912/glb2d_walk/walk_6dir_ratio/` |
+| run | `assets/_trial_20260912/glb2d_run/run_6dir_ratio/` |
+| jump | `assets/_trial_20260912/glb2d_jump/jump_6dir_ratio/` |
+| atk | `assets/_trial_20260912/glb2d_atk/atk_6dir_ratio/` |
+| cast | `assets/_trial_20260912/glb2d_cast/cast_6dir_ratio/` |
+
+（`_rgba/` 子目录内为无量化原件，正式接线用目录根的 PNG-8 件。）
+
+### 重出命令
+
+```bash
+python3 tools/glb2d/shading_ratio_transfer.py          # 六向明暗贴图（ratio blur 3）
+python3 tools/glb2d/export_all_actions_ratio.py        # 六动作 × 六向 × 5 帧
+python3 tools/glb2d/export_all_actions_ratio.py --only cast
+```
+
+---
+
 # Hero 动作帧多帧化接入方案 v1.0
 
 > 方案日期：2026-09-11
