@@ -1,6 +1,6 @@
 # T27 交付回执 · 山贼六向身体帧接线（第二段）
 
-> 交付链：frontend-battle 施工（commit `4bc19b81`，分支 `task/shanzei-2b-wiring` 已 push）→ PM 四门+视觉复验 PASS → 待主架构技术验收（projbus seq=209）→ 待 Leo L 环
+> 交付链：frontend-battle 施工（commit `4bc19b81`，分支 `task/shanzei-2b-wiring` 已 push）→ PM 四门+视觉复验 PASS → 主架构技术验收 PASS（projbus seq=209/210/211）→ 待合并 main
 
 ## 施工回执摘要（frontend-battle）
 
@@ -32,7 +32,5 @@ battle-core/settle/numbers/types/battle-session/battle-hex-render/fx-player/wf-b
 
 ## 待办
 
-1. 主架构技术验收（seq=209）
-2. Leo L 环（六向走位/攻击/白骨死亡观感）
-3. 通过后并 main（PRE-FLIGHT B）；朴刀叠层卡待 Leo 与美术的武器处理落地后另发
-4. 挂账：第一段 hero 六向脚本证据补复验（另卡可选项）
+1. 通过后并 main（PRE-FLIGHT B）；朴刀叠层卡待 Leo 与美术的武器处理落地后另发
+2. 挂账：第一段 hero 六向脚本证据补复验（另卡可选项）
