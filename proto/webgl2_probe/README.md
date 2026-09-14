@@ -125,7 +125,12 @@ A2 4/4 档 · 末档 FPS 41.2
 | **重跑压测** | 写开关 `pw-probe-a2-mode='run'` 并重启 ⇒ **A2 每轮都跑**（解决"冷启动满 3 次后计数开新组、A2 不再自动跑"⇒ 数据不可复得）。再点一次变 `压测常开·点关` 复原 | `▶ 重跑压测：已设「A2 每轮都跑」，正在重启…`（宿主不支持自动重启时提示手动杀进程重扫） |
 | **切正控模式** | §2.5 的主画布正控模式开关 | `▶ 已切换模式为 …` |
 
-按钮只在**结果产出后**出现（A1 跑完即有；A2 未跑也照常可回收）。另外三个仍然有效的回收口：
+按钮只在**结果产出后**出现（A1 跑完即有；A2 未跑也照常可回收）。
+
+**每次点击都留一条 console 单行** `__PROBE_TAP__={"mapped":[x,y],"hit":"copy|null","canvasSpace":[W,H],"nearest":{...}}`
+—— 真机若再遇"点了没反应"，把这一行发回来即可判定是坐标空间问题还是命中框问题（`hit:null` + `nearest.d` 就是没命中；完全没有这一行说明触摸事件根本没到）。
+
+另外三个仍然有效的回收口：
 
 - 结果同时写入 `wx.env.USER_DATA_PATH/probe-result.json`（devtools 的 Storage 面板可查看）。
 - console 单行 `__WEBGL2_PROBE_RESULT__=<JSON>` 可在 devtools Console 直接复制。
@@ -161,6 +166,10 @@ A2 4/4 档 · 末档 FPS 41.2
 | `WEBGL_debug_renderer_info`（未掩码 GPU 串） | 设备矩阵用 | 取不到 ⇒ null（掩码串仍记录） |
 
 一句话：**平台不支持"自证手段" ≠ 蒙皮失败 ≠ 设备失败**；反之**像素硬判据从不降级**。
+
+**触摸坐标契约**：两个平台的 `onTouchStart(cb)` 回调一律给**画布背衬像素**（与按钮命中框同空间）。
+微信侧在平台层把 `wx` 的逻辑像素按**当帧实际尺寸**换算（`canvas.width / windowWidth`）；浏览器侧
+由 shim 按 canvas 的 CSS 尺寸换算。任何新增交互都按这个契约写，不要再自己换算。
 
 ## 3. 结果字段（`probe-result.json` / console 单行）
 
@@ -289,6 +298,8 @@ python3 -m http.server 8231 --directory .   # 然后开 http://127.0.0.1:8231/pr
 | 5 | 阈值/采样量口径 | `isDone` 曾写死 1800 帧，忽略 `requiredMinSamples` | 改为读 `requiredMinSamples`；`a2Profile`/`specProfile` 一并写入结果，短采样档的结论会被降级标注 |
 | 6 | **微信开发者工具导入被拦**：`[game.json 文件内容错误] … 未找到 ["subpackages"][0]["root"] 对应的 /subpackages/probe-model/game.js 文件` | 方案与首版实现都漏了"每个分包根目录必须有 `game.js` 入口"这条微信硬要求（本分包只放资产、没有逻辑，所以当时没建这个文件） | 补 `subpackages/probe-model/game.js`（**纯注释占位**，文件头写明缘由与"勿删/勿加代码"）；README §1.1 建静态校验清单，§2.1 与文件树同步标注 |
 | 7 | 未使用的 `game.json` 字段可能引发工具告警 | 首版多写了 `networkTimeout`（本 probe 不发 `wx.request`，纯冗余） | 移除；`game.json` 只留确定支持的 `deviceOrientation`/`showStatusBar`/`subpackages`（官方字段页在线 404，无法核的字段不写） |
+| 12 | **真机"所有按钮点了完全没反应"**（连 toast 都没有；HONOR 实测） | 坐标系错位：`wx.onTouchStart` 的 `clientX/Y` 是**逻辑像素**（366×800），而按钮命中框在 `renderScreen` 里按**画布背衬像素**记录（1098×2400）⇒ 逻辑坐标比背衬矩形**永远不命中**（缩放系数=dpr）。浏览器套件没抓到，是因为 shim 的合成触摸与按钮同空间（同类缺陷的测试盲区） | 坐标归一收到**平台边界**：`platform-wx.onTouchStart` 把逻辑坐标按**当帧实际尺寸**换算成背衬像素（`canvas.width / windowWidth`，禁写死 dpr/3）后再回调，两平台契约统一为"回调给背衬像素"；新增 **触摸坐标空间回归门**（假 wx 环境：逻辑 366×800 / 背衬 1098×2400 → 断言换算后落在按钮矩形内、且比例 = 背衬÷逻辑）；另加每次点击的 console 单行 `__PROBE_TAP__`（含换算坐标/命中项/最近按钮距离），下次"点了没反应"可直接远程定位 |
+| 13 | 真机 A2 跑完、面板已 `done + CAPACITY_PASS`，屏上却挂 `▶ 复制：无结果可复制（等 A1 跑完）` | 自动复制 `await copyResultQuiet(state)` 写在 **finalize 之前**，而 `state.result` 是 finalize 内部才赋值的 ⇒ 自动复制必然在"结果还没装配"时触发，打出误导文案并糊在完成面板上 20s | 自动复制挪到 **finalize 之后**（`ranA2` 标记）；新增 `autoCopyQuiet`：成功给正反馈、**失败只记 console 不弹 toast**；手动路径空结果文案改准确：`复制：结果还没产出（阶段：<phase>）`；套件加回归门断言"自动复制的字符数 == 已装配结果长度"且不出现误导文案 |
 | 9 | **安卓真机（magicbrush / 基础库 3.17.3）`getUniform not support`**：console 报 4 次、**整个 A1 没有任何结果行可回收** | `verifyBoneUpload`（41 骨 palette 回读自证）直接调 `gl.getUniform`，该引擎**抛异常** ⇒ 异常冒泡出 run()，整轮中断 | `verifyBoneUpload` **全程 try/catch**：抛错/返回空/`located:false` 一律返回 `{ok:false, unsupported:true, platform:'getUniform-not-support'}`，**绝不抛出**；调用侧对 `unsupported` **不计入 a1.errors、不影响 A1-03/04/05 与 Device-PASS**，只如实记录 + notes 写明「硬判据 = 像素三件套（方案 §4.2）」；套件加**回读降级模拟回归门**（patch `getUniform` 抛错 + `MAX_VERTEX_UNIFORM_VECTORS` 返回 null，断言 run 不中断、A1 全过、不误报 FAIL） |
 | 10 | 同一次审计连带发现：宿主**不返回** `MAX_VERTEX_UNIFORM_VECTORS` 时 `null` 被 `>` 当 0 用 ⇒ 误报「装不下 41 骨」**把资产装载打挂** | `skinning-renderer` 的能力预检 `jointCount*4+8 > maxVec` 未区分"未知"与"已知且太小" | 只在**已知且确实不够**时 FAIL；未知则记 `maxVertexUniformVectorsKnown:false`，硬判据转为 shader compile/link 成功（方案 §4.2 原文）；A1-02 同样口径（`capabilityCheck:'unknown'`，不判死） |
 | 11 | 真机「复制结果」点下去**无任何反馈**（拿不到内容、也不知为何） | ① 复制结果只写剪贴板、成败都不留痕；② 更硬的一条：`navigator.clipboard.writeText` 在无焦点上下文**永不 settle**（不是 reject 而是挂着）⇒ 等待链永久挂起，连"失败"都不会显示；③ 施工中一度存在**重复的 `copyResultQuiet` 定义**（旧定义覆盖新定义，把埋点整段吞掉） | 复制改成 `{ok, errMsg}` + **超时兜底**（wx 3s / 浏览器 2s）⇒ 必出原因；屏上 `▶ 复制：…` + console `__PROBE_CLIPBOARD__`；套件加**交互回归门**（点按钮 → 断言 console 单行 + 屏上文案 + 失败带原因）；并清理重复定义（`node -e` 全文查重已纳入自查） |
@@ -296,7 +307,7 @@ python3 -m http.server 8231 --directory .   # 然后开 http://127.0.0.1:8231/pr
 
 ## 9. 本仓库当前的浏览器层证据（最近一次全跑）
 
-命令：`node proto/webgl2_probe/tests/probe-browser.mjs --runs=3 --profile=spec` → **89/89 PASS**（主检查 + 真机判定矩阵回归门 + 结果回收四兜底交互 + **回读降级模拟**；约 3.5 分钟）。
+命令：`node proto/webgl2_probe/tests/probe-browser.mjs --runs=3 --profile=spec` → **94/94 PASS**（主检查 + 真机判定矩阵回归门 + 结果回收四兜底交互 + 回读降级模拟 + **触摸坐标空间回归门**；约 3.5 分钟）。
 环境：headless Chrome 153 · ANGLE Metal（Apple M4）· viewport 390×844 @2x ⇒ backbuffer **780×1688**（`dprCappedAt:3`，未降 renderScale）。
 
 | 档 | fpsMedian | 1% low | P95 | P99 | over50ms | jsAnimMs(mean) | glSubmitMs(mean) | compositeCpuMs(mean) | gpuMs | draw/palette 每帧 | 采样帧数 | 像素覆盖率 | 可见单位 |

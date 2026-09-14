@@ -268,6 +268,7 @@
         : (a2Mode === 'run' ? (a1.allAssertionsPass ? 'forced' : 'skipped-a1-not-pass')
           : (a1.devicePassCandidate ? 'spec-device-pass' : 'skipped-not-device-pass'));
       state.a2Trigger = a2Trigger;
+      let ranA2 = false;
       if ((a2Trigger === 'spec-device-pass' || a2Trigger === 'forced') && posed) {
         state.phase = 'a2';
         publish(state);
@@ -277,7 +278,7 @@
           renderScreen(state, rec);
           await capture(state, 'u' + profile.plan[i].u);
         }
-        await copyResultQuiet(state);
+        ranA2 = true;
       } else {
         a1.a2Skipped = !posed ? '资产装载失败'
           : a2Trigger === 'skipped-by-option' ? 'a2=skip'
@@ -286,7 +287,11 @@
                 + '；工程师复测可显式 a2=run';
       }
       renderScreen(state, null);
-      return finalize(state, a1);
+      const out = finalize(state, a1);
+      // ★ 自动复制必须在 finalize **之后**（state.result 是 finalize 内部才赋值的）。
+      //   曾经放在 finalize 之前 ⇒ 永远在"结果还没装配"时触发，必然打出一条误导 toast 糊在完成面板上。
+      if (ranA2) await autoCopyQuiet(state);
+      return out;
     } catch (e) {
       state.error = (e && e.message) || String(e);
       state.phase = 'error';
@@ -1146,7 +1151,11 @@
   }
 
   async function copyResultQuiet(state) {
-    if (!state.result) { setToast(state, '复制：无结果可复制（等 A1 跑完）'); return false; }
+    if (!state.result) {
+      // 准确措辞：只说"还没产出"+当前阶段（旧文案"等 A1 跑完"在 A2 跑完时是错的，会误导）
+      setToast(state, '复制：结果还没产出（阶段：' + state.phase + '）' + (state.error ? ' · ' + trunc(state.error, 26) : ''));
+      return false;
+    }
     const text = JSON.stringify(state.result);
     let ok = false, errMsg = null;
     try {
@@ -1160,6 +1169,31 @@
       key: '__PROBE_CLIPBOARD__',
       payload: { ok: ok, chars: text.length, errMsg: errMsg, at: Date.now(), platform: state.platform.kind },
     });
+    return ok;
+  }
+
+  /**
+   * 自动复制（A2 跑完后触发一次）：**只用在 finalize 之后**。
+   * · 成功 → 屏上短提示（不是误导文案，是正反馈）
+   * · 失败 → **静默**，只留 console 单行（自动尝试失败不该糊在完成面板上；用户随时可手动点）
+   */
+  async function autoCopyQuiet(state) {
+    if (!state.result) return false;
+    const text = JSON.stringify(state.result);
+    let ok = false, errMsg = null;
+    try {
+      const r = await state.platform.setClipboard(text);
+      ok = !!(r && r.ok);
+      errMsg = (r && r.errMsg) || (ok ? null : 'setClipboardData 返回失败（无原因）');
+    } catch (e) { errMsg = (e && e.message) || String(e); }
+    state.lastCopyOk = ok;
+    state.autoCopy = { ok: ok, errMsg: errMsg, chars: text.length, at: Date.now(), phase: state.phase };
+    try {
+      if (typeof console !== 'undefined' && console.log) {
+        console.log('__PROBE_CLIPBOARD__=' + JSON.stringify({ ok: ok, chars: text.length, errMsg: errMsg, at: Date.now(), platform: state.platform.kind, auto: true }));
+      }
+    } catch (e) { /* ignore */ }
+    if (ok) setToast(state, '已自动复制结果（' + text.length + ' 字符）· 也可点按钮再复制/分享');
     return ok;
   }
 
@@ -1332,17 +1366,28 @@
         }
         // ② 正常模式：按钮命中
         const bs = (state.hud && state.hud.buttons) || [];
+        state.touchDiag = state.touchDiag || { n: 0, last: null };
+        state.touchDiag.n++;
+        let hitId = null, nearest = null;
         for (let k = 0; k < bs.length; k++) {
           const b = bs[k];
+          const d = Math.hypot(Math.max(b.x - x, 0, x - (b.x + b.w)), Math.max(b.y - y, 0, y - (b.y + b.h)));
+          if (nearest === null || d < nearest.d) nearest = { id: b.id, d: +d.toFixed(1) };
           if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
             if (b.id === 'copy') copyResultQuiet(state);
             else if (b.id === 'share') shareResult(state);
             else if (b.id === 'view') openViewer(state);
             else if (b.id === 'rerun') rerunA2(state);
             else if (b.id === 'mode') switchToControlMode(state);
+            hitId = b.id;
+            state.touchDiag.last = { mapped: [Math.round(x), Math.round(y)], hit: hitId, buttons: bs.length, header: state.hud ? state.hud.rowTop : null };
+            try { if (typeof console !== 'undefined' && console.log) console.log('__PROBE_TAP__=' + JSON.stringify({ mapped: [Math.round(x), Math.round(y)], hit: hitId, canvasSpace: [state.W, state.H], buttons: bs.length, nearest: nearest })); } catch (e) { /* ignore */ }
             return;
           }
         }
+        // 落空：记下最近的按钮与距离（真机"点了没反应"就是靠这条定位的）
+        state.touchDiag.last = { mapped: [Math.round(x), Math.round(y)], hit: null, buttons: bs.length, nearest: nearest };
+        try { if (typeof console !== 'undefined' && console.log) console.log('__PROBE_TAP__=' + JSON.stringify({ mapped: [Math.round(x), Math.round(y)], hit: null, canvasSpace: [state.W, state.H], buttons: bs.length, nearest: nearest })); } catch (e) { /* ignore */ }
       });
     }
   }
@@ -1401,6 +1446,7 @@
     a1.sdkVersionCompare = sdkCmp;
     a1.sdkVersionMethod = '整数分段语义版本比较（禁字符串字典序）；< ' + MIN_SDK + ' 直接 UNSUPPORTED，不参与 A 路线 PASS';
     a1.screenshots = state.screenshots;
+    if (state.touchDiag && state.touchDiag.n) a1.touchDiagnostics = state.touchDiag;
     if (a1.sdkVersionApplicable && a1.sdkVersionOk === false) { a1.devicePassCandidate = false; }
 
     const gpu = state.gl ? queryGpuInfo(state.gl) : null;

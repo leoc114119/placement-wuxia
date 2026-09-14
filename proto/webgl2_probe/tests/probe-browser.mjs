@@ -220,6 +220,70 @@ async function main() {
           await page.waitForTimeout(160);
         };
 
+        // ── 触摸坐标空间回归门（真机按钮全灭的那类 bug）──────────────────────────────
+        // 真机：wx 的 touch clientX/Y 是**逻辑像素**（366×800），按钮命中框按**背衬像素**记录
+        // （1098×2400）⇒ 直接比永远不命中。这里用假 wx 环境把"逻辑坐标 → 平台换算 → 命中按钮"
+        // 整条链钉住（按当帧实际尺寸换算，禁写死 dpr）。
+        const tapGate = await page.evaluate(() => {
+          const s = window.__probe;
+          const b = (s.hud.buttons || []).find((x) => x.id === 'copy');
+          if (!b) return { err: 'no-button' };
+          const ratio = 3;                                  // 模拟 dpr=3 的真机
+          const win = { w: Math.round(s.W / ratio), h: Math.round(s.H / ratio) };
+          const canvas = document.createElement('canvas');
+          canvas.width = s.W; canvas.height = s.H;           // 背衬像素（与按钮同空间）
+          const savedWx = window.wx;
+          let touchCb = null;
+          window.wx = {
+            env: { USER_DATA_PATH: 'wxfile://test' },
+            createCanvas: () => canvas,
+            getSystemInfoSync: () => ({ brand: 'T', model: 'M', system: 'A', platform: 'android', pixelRatio: ratio, windowWidth: win.w, windowHeight: win.h, screenWidth: win.w, screenHeight: win.h }),
+            onTouchStart: (cb) => { touchCb = cb; },
+            getFileSystemManager: () => ({ readFile() {}, readFileSync() { return ''; }, writeFileSync() {}, getFileInfo() {} }),
+            setStorageSync() {}, getStorageSync() { return ''; }, setClipboardData() {}, loadSubpackage() {},
+          };
+          let out = null, err = null;
+          try {
+            const P = window.PWProbe.platformWx.createWxPlatform();
+            P.createCanvas();                            // 真机启动时先拿屏幕画布（换算要用它的实际尺寸）
+            P.onTouchStart((x, y) => { out = [x, y]; });
+            // 用户真机上点到的是**逻辑坐标**（按钮中心的背衬坐标 / 3）
+            const logical = { x: (b.x + b.w / 2) / ratio, y: (b.y + b.h / 2) / ratio };
+            touchCb({ touches: [{ clientX: logical.x, clientY: logical.y }] });
+            const hit = !!out && out[0] >= b.x && out[0] <= b.x + b.w && out[1] >= b.y && out[1] <= b.y + b.h;
+            var result = { logical: logical, mapped: out, rect: { x: b.x, y: b.y, w: b.w, h: b.h }, win: win, hit: hit, diag: P.touchDiag };
+          } catch (e) { err = e.message; }
+          window.wx = savedWx;
+          return result || { err: err };
+        });
+        check(`run${run} 逻辑像素触摸 → 平台换算 → 命中按钮（真机 366×800 / 背衬 1098×2400 场景）`,
+          tapGate.hit === true,
+          JSON.stringify({ err: tapGate.err || null, logical: tapGate.logical, mapped: tapGate.mapped, rect: tapGate.rect, scale: tapGate.diag && tapGate.diag.scale }));
+        // 比例必须是"背衬 ÷ 逻辑"现算出来的（允许逻辑尺寸取整带来的 <1% 误差），而不是写死 dpr
+        check(`run${run} 触摸换算比例按当帧实际尺寸现算（≈3，非写死）`,
+          !!(tapGate.diag && tapGate.diag.scale && tapGate.diag.canvasSpace && tapGate.diag.windowSpace
+            && Math.abs(tapGate.diag.scale[0] - tapGate.diag.canvasSpace[0] / tapGate.diag.windowSpace[0]) < 1e-9
+            && Math.abs(tapGate.diag.scale[1] - tapGate.diag.canvasSpace[1] / tapGate.diag.windowSpace[1]) < 1e-9
+            && Math.abs(tapGate.diag.scale[0] - 3) < 0.05 && Math.abs(tapGate.diag.scale[1] - 3) < 0.05),
+          JSON.stringify(tapGate.diag && { scale: tapGate.diag.scale, canvasSpace: tapGate.diag.canvasSpace, windowSpace: tapGate.diag.windowSpace }));
+
+        // 自动复制（A2 跑完后触发一次）：回归门 —— 必须发生在 finalize 之后（result 已装配），
+        // 且不得再打出"无结果可复制/等 A1 跑完"这种误导文案（HONOR 真机实测踩过）。
+        const autoInfo = await page.evaluate(() => ({
+          auto: window.__probe.autoCopy || null,
+          expected: JSON.stringify(window.__probe.result).length,
+          toast: (window.__probe.toast && window.__probe.toast.text) || null,
+          phase: window.__probe.phase,
+        }));
+        const autoLine = consoleLines.map((l) => l.slice(l.indexOf('__PROBE_CLIPBOARD__='))).find((l) => l.indexOf('__PROBE_CLIPBOARD__=') >= 0 && l.indexOf('"auto":true') >= 0);
+        check(`run${run} 自动复制发生在 finalize 之后（字符数=已装配结果长度，非"无结果"）`,
+          !!autoInfo.auto && autoInfo.auto.chars === autoInfo.expected && autoInfo.expected > 1000,
+          JSON.stringify({ chars: autoInfo.auto && autoInfo.auto.chars, expected: autoInfo.expected, phase: autoInfo.phase, ok: autoInfo.auto && autoInfo.auto.ok }));
+        check(`run${run} 自动复制不再打误导文案（无"等 A1 跑完/还没产出"）`,
+          !(autoInfo.toast && /等 A1 跑完|还没产出/.test(autoInfo.toast)), String(autoInfo.toast));
+        check(`run${run} 自动复制留 console 单行（auto:true，含成败与原因）`,
+          !!autoLine, autoLine || '(缺)');
+
         consoleLines.length = 0;
         await tapBtn('copy');
         // 复制在宿主里可能"永不 settle" ⇒ 平台侧 2s 超时兜底；这里等 toast 出现再断言

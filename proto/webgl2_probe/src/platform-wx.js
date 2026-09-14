@@ -25,8 +25,37 @@
     const sys = (function () {
       try { return wx.getSystemInfoSync(); } catch (e) { return {}; }
     })();
+    const sysRef = { windowWidth: sys.windowWidth, windowHeight: sys.windowHeight };
     let canvasSeq = 0;
+    const touchDiag = { n: 0, raw: null, mapped: null, scale: null, canvasSpace: null, windowSpace: null };
+    let screenCanvas = null;          // 第 1 张 createCanvas = 屏幕画布（触摸坐标换算要按它的实际尺寸）
+    let sysAt = 0;
     const resolvedPaths = {};
+
+    /** 系统信息缓存（最多 500ms 一次）：触摸换算要"当帧实际尺寸"，不能写死 dpr。 */
+    function sysNow() {
+      const t = Date.now();
+      if (t - sysAt > 500) {
+        try { const s = wx.getSystemInfoSync(); if (s && s.windowWidth > 0) { sysRef.windowWidth = s.windowWidth; sysRef.windowHeight = s.windowHeight; } } catch (e) { /* keep cache */ }
+        sysAt = t;
+      }
+      return sysRef;
+    }
+
+    /**
+     * 逻辑像素 → 画布背衬像素。
+     * ★ 真机踩过：wx 的 touch clientX/Y 是**逻辑像素**（如 366×800），而按钮命中框按**背衬像素**
+     *   记录（1098×2400）⇒ 直接比永远不命中（所有按钮"点了没反应"）。
+     *   比例一律按当帧实际尺寸现算（canvas.width / windowWidth），**禁写死 dpr/3**。
+     */
+    function toCanvasSpace(x, y) {
+      const sys = sysNow();
+      const cw = screenCanvas && screenCanvas.width ? screenCanvas.width : 0;
+      const ch = screenCanvas && screenCanvas.height ? screenCanvas.height : 0;
+      const sx = (sys.windowWidth > 0 && cw > 0) ? cw / sys.windowWidth : 1;
+      const sy = (sys.windowHeight > 0 && ch > 0) ? ch / sys.windowHeight : 1;
+      return { x: x * sx, y: y * sy, sx: sx, sy: sy };
+    }
 
     function userPath(name) { return wx.env.USER_DATA_PATH + '/' + name; }
 
@@ -34,10 +63,15 @@
       kind: 'wx',
       env: { userDataPath: wx.env.USER_DATA_PATH, platform: sys.platform || 'unknown' },
       resolvedPaths: resolvedPaths,
+      touchDiag: touchDiag,
+      /** 供套件在假 wx 环境里单独验证坐标归一（真机 bug 的回归门用）。 */
+      toCanvasSpace: toCanvasSpace,
 
       createCanvas: function () {
         canvasSeq++;
-        return wx.createCanvas();
+        const c = wx.createCanvas();
+        if (canvasSeq === 1) screenCanvas = c;
+        return c;
       },
       get canvasSequence() { return canvasSeq; },
       getSystemInfo: function () {
@@ -216,7 +250,15 @@
         if (typeof wx.onTouchStart !== 'function') return;
         wx.onTouchStart(function (e) {
           const t = e.touches && e.touches[0];
-          if (t) cb(t.clientX, t.clientY);
+          if (!t) return;
+          const m = toCanvasSpace(t.clientX, t.clientY);      // 逻辑 → 背衬
+          touchDiag.n++;
+          touchDiag.raw = [t.clientX, t.clientY];
+          touchDiag.mapped = [m.x, m.y];
+          touchDiag.scale = [m.sx, m.sy];
+          touchDiag.canvasSpace = screenCanvas ? [screenCanvas.width, screenCanvas.height] : null;
+          touchDiag.windowSpace = [sysRef.windowWidth, sysRef.windowHeight];
+          cb(m.x, m.y);
         });
       },
       restartApp: function () {

@@ -27,6 +27,9 @@
 <script src="../src/skinning-renderer.js"></script>
 <script src="../src/metrics.js"></script>
 <script src="../src/result.js"></script>
+<!-- platform-wx.js 在浏览器里不参与运行，但**装载它**才能让套件在浏览器层直接验证微信侧的
+     坐标归一（真机"按钮全灭"就是逻辑像素 vs 背衬像素错位）。顶层无 wx 访问，装载安全。 -->
+<script src="../src/platform-wx.js"></script>
 <script src="../game.js"></script>
 <script src="probe-browser.js"></script>
 </body>

@@ -1,6 +1,6 @@
 {
  "schemaVersion": "t31-s0-1.0",
- "commitSha": "d047df0dd73eef676c52ffc66fe8f6f7cd208158",
+ "commitSha": "2f09ab2ca4cb6a395831afb1576acf0e67aa0c7a",
  "probeBaselineNote": "commitSha = probe 工程基线提交；PM 用分支 tip 交叉核对（见 README「结果字段」）",
  "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
  "device": {
@@ -126,34 +126,34 @@
      "glError": 0,
      "drawImageError": null,
      "expectedTop": [
-      101,
-      127,
-      93
+      78,
+      85,
+      88
      ],
      "expectedBottom": [
-      95,
-      71,
-      120
+      69,
+      86,
+      108
      ],
      "readbackTop": [
-      101,
-      127,
-      93,
+      78,
+      85,
+      88,
       255
      ],
      "readbackBottom": [
-      95,
-      71,
-      120,
+      69,
+      86,
+      108,
       255
      ],
-     "nonce": "ule0mapb"
+     "nonce": "6341husm"
     }
    }
   ],
   "errors": [],
   "mode": "offscreen",
-  "nonce": "ule0mapb",
+  "nonce": "6341husm",
   "notes": [
    "MAX_VERTEX_UNIFORM_VECTORS 取不到（宿主不返回）⇒ 记 unknown，不判死；41 骨 shader 的 compile/link 结果即硬判据",
    "41 骨 palette 回读自证在本平台不可用（getUniform not support）⇒ 不计入错误；蒙皮正确性的硬判据 = A1-03/04/05 像素三件套（方案 §4.2）"
@@ -170,14 +170,14 @@
    "glError": 0
   },
   "hudSnapshot": {
-   "at": 1789361857526,
+   "at": 1789364073309,
    "phase": "done",
    "lines": [
     "T31 S0 · BROWSER(shim) · browser/MacIntel",
     "SDK (无) · dpr 2 · bb 780x1688",
     "A1 5/5 · webgl2 OK · UV - · 冷启动 2/3",
     "档位 0 · 实时FPS - · GLerr 0 · ctxLost 0",
-    "nonce ule0mapb · boot",
+    "nonce 6341husm · boot",
     "A2 0/4 档",
     "verdict 待出"
    ],
@@ -186,13 +186,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 13.3,
-    "glbParseMs": 5.7,
-    "animParseMs": 3.6,
-    "textureDecodeMs": 2.6,
-    "firstGpuUploadMs": 133.1,
-    "meshUploadMs": 1.2,
-    "textureUploadMs": 130.6
+    "readFileMs": 12.4,
+    "glbParseMs": 5.5,
+    "animParseMs": 4.5,
+    "textureDecodeMs": 2.2,
+    "firstGpuUploadMs": 119.3,
+    "meshUploadMs": 1.1,
+    "textureUploadMs": 117
    },
    "resolved": {
     "subpackage": {
@@ -316,16 +316,16 @@
    "proof": "readback",
    "glError": 0,
    "drawImageError": null,
-   "nonce": "ule0mapb",
+   "nonce": "6341husm",
    "expectedTop": [
-    101,
-    127,
-    93
+    78,
+    85,
+    88
    ],
    "expectedBottom": [
-    95,
-    71,
-    120
+    69,
+    86,
+    108
    ],
    "topRect": [
     16,
@@ -342,18 +342,18 @@
    "readback": {
     "top": {
      "mean": [
-      101,
-      127,
-      93,
+      78,
+      85,
+      88,
       255
      ],
      "n": 16
     },
     "bottom": {
      "mean": [
-      95,
-      71,
-      120,
+      69,
+      86,
+      108,
       255
      ],
      "n": 16
@@ -371,14 +371,14 @@
    {
     "index": 1,
     "a1Ok": true,
-    "ts": 1789361856785,
+    "ts": 1789364072713,
     "assertionsPass": 5,
     "assertionsTotal": 5
    },
    {
     "index": 2,
     "a1Ok": true,
-    "ts": 1789361857526,
+    "ts": 1789364073308,
     "assertionsPass": 5,
     "assertionsTotal": 5
    }
@@ -419,7 +419,7 @@
  "coldRuns": [
   {
    "index": 1,
-   "ts": 1789361856785,
+   "ts": 1789364072713,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -428,7 +428,7 @@
   },
   {
    "index": 2,
-   "ts": 1789361857526,
+   "ts": 1789364073308,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -465,13 +465,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 13.3,
-    "glbParseMs": 5.7,
-    "animParseMs": 3.6,
-    "textureDecodeMs": 2.6,
-    "firstGpuUploadMs": 133.1,
-    "meshUploadMs": 1.2,
-    "textureUploadMs": 130.6
+    "readFileMs": 12.4,
+    "glbParseMs": 5.5,
+    "animParseMs": 4.5,
+    "textureDecodeMs": 2.2,
+    "firstGpuUploadMs": 119.3,
+    "meshUploadMs": 1.1,
+    "textureUploadMs": 117
    },
    "resolved": {
     "subpackage": {
