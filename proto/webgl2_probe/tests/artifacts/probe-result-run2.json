@@ -1,6 +1,6 @@
 {
  "schemaVersion": "t31-s0-1.0",
- "commitSha": "f5ac3c7fd48151fe90149f728f072cdb3ad65655",
+ "commitSha": "bc8d156987c7026bc3f3ba091031022045a84b15",
  "probeBaselineNote": "commitSha = probe 工程基线提交；PM 用分支 tip 交叉核对（见 README「结果字段」）",
  "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
  "device": {
@@ -125,34 +125,34 @@
      "glError": 0,
      "drawImageError": null,
      "expectedTop": [
-      91,
-      84,
-      82
+      81,
+      107,
+      95
      ],
      "expectedBottom": [
-      101,
-      84,
-      106
+      122,
+      103,
+      88
      ],
      "readbackTop": [
-      91,
-      84,
-      82,
+      81,
+      107,
+      95,
       255
      ],
      "readbackBottom": [
-      101,
-      84,
-      106,
+      122,
+      103,
+      88,
       255
      ],
-     "nonce": "2vuoql6o"
+     "nonce": "lolr3jyi"
     }
    }
   ],
   "errors": [],
   "mode": "offscreen",
-  "nonce": "2vuoql6o",
+  "nonce": "lolr3jyi",
   "webgl2Context": true,
   "maxVertexUniformVectors": 1024,
   "webgl1Diagnostic": null,
@@ -165,14 +165,14 @@
    "glError": 0
   },
   "hudSnapshot": {
-   "at": 1789358885065,
+   "at": 1789359762166,
    "phase": "done",
    "lines": [
     "T31 S0 · BROWSER(shim) · browser/MacIntel",
     "SDK (无) · dpr 2 · bb 780x1688",
     "A1 5/5 · webgl2 OK · UV 1024 · 冷启动 2/3",
     "档位 0 · 实时FPS - · GLerr 0 · ctxLost 0",
-    "nonce 2vuoql6o · boot",
+    "nonce lolr3jyi · boot",
     "A2 0/4 档",
     "verdict 待出"
    ],
@@ -181,13 +181,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 10.3,
-    "glbParseMs": 5.5,
-    "animParseMs": 2.6,
-    "textureDecodeMs": 2.2,
-    "firstGpuUploadMs": 111.6,
-    "meshUploadMs": 0.9,
-    "textureUploadMs": 109.7
+    "readFileMs": 10.5,
+    "glbParseMs": 5.9,
+    "animParseMs": 3.1,
+    "textureDecodeMs": 2.1,
+    "firstGpuUploadMs": 116.8,
+    "meshUploadMs": 1,
+    "textureUploadMs": 114.6
    },
    "resolved": {
     "subpackage": {
@@ -337,16 +337,16 @@
    "proof": "readback",
    "glError": 0,
    "drawImageError": null,
-   "nonce": "2vuoql6o",
+   "nonce": "lolr3jyi",
    "expectedTop": [
-    91,
-    84,
-    82
+    81,
+    107,
+    95
    ],
    "expectedBottom": [
-    101,
-    84,
-    106
+    122,
+    103,
+    88
    ],
    "topRect": [
     16,
@@ -363,18 +363,18 @@
    "readback": {
     "top": {
      "mean": [
-      91,
-      84,
-      82,
+      81,
+      107,
+      95,
       255
      ],
      "n": 16
     },
     "bottom": {
      "mean": [
-      101,
-      84,
-      106,
+      122,
+      103,
+      88,
       255
      ],
      "n": 16
@@ -392,14 +392,14 @@
    {
     "index": 1,
     "a1Ok": true,
-    "ts": 1789358884761,
+    "ts": 1789359761831,
     "assertionsPass": 5,
     "assertionsTotal": 5
    },
    {
     "index": 2,
     "a1Ok": true,
-    "ts": 1789358885064,
+    "ts": 1789359762165,
     "assertionsPass": 5,
     "assertionsTotal": 5
    }
@@ -440,7 +440,7 @@
  "coldRuns": [
   {
    "index": 1,
-   "ts": 1789358884761,
+   "ts": 1789359761831,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -449,7 +449,7 @@
   },
   {
    "index": 2,
-   "ts": 1789358885064,
+   "ts": 1789359762165,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -486,13 +486,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 10.3,
-    "glbParseMs": 5.5,
-    "animParseMs": 2.6,
-    "textureDecodeMs": 2.2,
-    "firstGpuUploadMs": 111.6,
-    "meshUploadMs": 0.9,
-    "textureUploadMs": 109.7
+    "readFileMs": 10.5,
+    "glbParseMs": 5.9,
+    "animParseMs": 3.1,
+    "textureDecodeMs": 2.1,
+    "firstGpuUploadMs": 116.8,
+    "meshUploadMs": 1,
+    "textureUploadMs": 114.6
    },
    "resolved": {
     "subpackage": {

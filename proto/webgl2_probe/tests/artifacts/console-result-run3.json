@@ -1,6 +1,6 @@
 {
  "schemaVersion": "t31-s0-1.0",
- "commitSha": "f5ac3c7fd48151fe90149f728f072cdb3ad65655",
+ "commitSha": "bc8d156987c7026bc3f3ba091031022045a84b15",
  "probeBaselineNote": "commitSha = probe 工程基线提交；PM 用分支 tip 交叉核对（见 README「结果字段」）",
  "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
  "device": {
@@ -125,34 +125,34 @@
      "glError": 0,
      "drawImageError": null,
      "expectedTop": [
-      127,
-      69,
-      99
+      107,
+      103,
+      73
      ],
      "expectedBottom": [
-      113,
-      104,
-      67
+      89,
+      98,
+      104
      ],
      "readbackTop": [
-      127,
-      69,
-      99,
+      107,
+      103,
+      73,
       255
      ],
      "readbackBottom": [
-      113,
+      89,
+      98,
       104,
-      67,
       255
      ],
-     "nonce": "2w2qrm4c"
+     "nonce": "louo1trx"
     }
    }
   ],
   "errors": [],
   "mode": "offscreen",
-  "nonce": "2w2qrm4c",
+  "nonce": "louo1trx",
   "webgl2Context": true,
   "maxVertexUniformVectors": 1024,
   "webgl1Diagnostic": null,
@@ -165,14 +165,14 @@
    "glError": 0
   },
   "hudSnapshot": {
-   "at": 1789359075726,
+   "at": 1789359952757,
    "phase": "a2:20",
    "lines": [
     "T31 S0 · BROWSER(shim) · browser/MacIntel",
     "SDK (无) · dpr 2 · bb 780x1688",
     "A1 5/5 · webgl2 OK · UV 1024 · 冷启动 3/3",
     "档位 20 · 实时FPS - · GLerr 0 · ctxLost 0",
-    "nonce 2w2qrm4c · a2:20",
+    "nonce louo1trx · a2:20",
     "A2 4/4 档 · 末档 FPS 59.88",
     "verdict 待出"
    ],
@@ -181,13 +181,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 10.3,
-    "glbParseMs": 5.8,
+    "readFileMs": 10.9,
+    "glbParseMs": 5.4,
     "animParseMs": 2.8,
-    "textureDecodeMs": 2.9,
-    "firstGpuUploadMs": 112.6,
-    "meshUploadMs": 0.9,
-    "textureUploadMs": 110.5
+    "textureDecodeMs": 2.2,
+    "firstGpuUploadMs": 115.8,
+    "meshUploadMs": 1,
+    "textureUploadMs": 113.3
    },
    "resolved": {
     "subpackage": {
@@ -337,16 +337,16 @@
    "proof": "readback",
    "glError": 0,
    "drawImageError": null,
-   "nonce": "2w2qrm4c",
+   "nonce": "louo1trx",
    "expectedTop": [
-    127,
-    69,
-    99
+    107,
+    103,
+    73
    ],
    "expectedBottom": [
-    113,
-    104,
-    67
+    89,
+    98,
+    104
    ],
    "topRect": [
     16,
@@ -363,18 +363,18 @@
    "readback": {
     "top": {
      "mean": [
-      127,
-      69,
-      99,
+      107,
+      103,
+      73,
       255
      ],
      "n": 16
     },
     "bottom": {
      "mean": [
-      113,
+      89,
+      98,
       104,
-      67,
       255
      ],
      "n": 16
@@ -392,21 +392,21 @@
    {
     "index": 1,
     "a1Ok": true,
-    "ts": 1789358884761,
+    "ts": 1789359761831,
     "assertionsPass": 5,
     "assertionsTotal": 5
    },
    {
     "index": 2,
     "a1Ok": true,
-    "ts": 1789358885064,
+    "ts": 1789359762165,
     "assertionsPass": 5,
     "assertionsTotal": 5
    },
    {
     "index": 3,
     "a1Ok": true,
-    "ts": 1789358885353,
+    "ts": 1789359762457,
     "assertionsPass": 5,
     "assertionsTotal": 5
    }
@@ -473,20 +473,20 @@
    "sampleCount": 1801,
    "fpsMean": 60.05,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.33,
+   "onePercentLowFps": 56.43,
    "frameMsMedian": 16.7,
    "frameMsP95": 17.5,
-   "frameMsP99": 17.6,
+   "frameMsP99": 17.7,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0.1,
-   "glSubmitMs": 0.1,
-   "compositeCpuMs": 0.4,
-   "jsAnimMsMean": 0.0863,
-   "glSubmitMsMean": 0.0591,
-   "compositeCpuMsMean": 0.3651,
-   "twoDTotalMsMean": 0.4537,
-   "gpuMs": 1.2349,
+   "jsAnimMs": 0,
+   "glSubmitMs": 0,
+   "compositeCpuMs": 0.1,
+   "jsAnimMsMean": 0.0364,
+   "glSubmitMsMean": 0.0298,
+   "compositeCpuMsMean": 0.1304,
+   "twoDTotalMsMean": 0.1708,
+   "gpuMs": 1.0656,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -547,24 +547,24 @@
   },
   {
    "unitCount": 5,
-   "durationSec": 30.014,
+   "durationSec": 30.016,
    "sampleCount": 1801,
-   "fpsMean": 60.11,
+   "fpsMean": 60.01,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 52.85,
+   "onePercentLowFps": 56.97,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.7,
-   "frameMsP99": 18.6,
+   "frameMsP95": 17.1,
+   "frameMsP99": 17.4,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0.2,
+   "jsAnimMs": 0.1,
    "glSubmitMs": 0.1,
-   "compositeCpuMs": 0.4,
-   "jsAnimMsMean": 0.2345,
-   "glSubmitMsMean": 0.0748,
-   "compositeCpuMsMean": 0.3767,
-   "twoDTotalMsMean": 0.4728,
-   "gpuMs": 1.9784,
+   "compositeCpuMs": 0.2,
+   "jsAnimMsMean": 0.1319,
+   "glSubmitMsMean": 0.0583,
+   "compositeCpuMsMean": 0.2037,
+   "twoDTotalMsMean": 0.2685,
+   "gpuMs": 2.4281,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -675,22 +675,22 @@
    "unitCount": 10,
    "durationSec": 30.015,
    "sampleCount": 1801,
-   "fpsMean": 60.03,
+   "fpsMean": 60.04,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 55.95,
+   "onePercentLowFps": 56.2,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.2,
-   "frameMsP99": 17.6,
+   "frameMsP95": 17.4,
+   "frameMsP99": 17.7,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0.4,
-   "glSubmitMs": 0.1,
-   "compositeCpuMs": 0.4,
-   "jsAnimMsMean": 0.4057,
-   "glSubmitMsMean": 0.0881,
-   "compositeCpuMsMean": 0.4797,
-   "twoDTotalMsMean": 0.6207,
-   "gpuMs": 3.0423,
+   "jsAnimMs": 0.1,
+   "glSubmitMs": 0,
+   "compositeCpuMs": 0.1,
+   "jsAnimMsMean": 0.1544,
+   "glSubmitMsMean": 0.0384,
+   "compositeCpuMsMean": 0.1416,
+   "twoDTotalMsMean": 0.1816,
+   "gpuMs": 2.9854,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -859,24 +859,24 @@
   },
   {
    "unitCount": 20,
-   "durationSec": 60.013,
+   "durationSec": 60.014,
    "sampleCount": 3601,
-   "fpsMean": 60.06,
+   "fpsMean": 60.04,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.4,
+   "onePercentLowFps": 56.47,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.5,
-   "frameMsP99": 17.7,
+   "frameMsP95": 17.4,
+   "frameMsP99": 17.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0.8,
-   "glSubmitMs": 0.1,
-   "compositeCpuMs": 0.5,
-   "jsAnimMsMean": 0.7388,
-   "glSubmitMsMean": 0.1098,
-   "compositeCpuMsMean": 0.4605,
-   "twoDTotalMsMean": 0.6067,
-   "gpuMs": 5.3344,
+   "jsAnimMs": 0.2,
+   "glSubmitMs": 0,
+   "compositeCpuMs": 0.1,
+   "jsAnimMsMean": 0.2054,
+   "glSubmitMsMean": 0.0305,
+   "compositeCpuMsMean": 0.1059,
+   "twoDTotalMsMean": 0.1391,
+   "gpuMs": 5.1092,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -1172,7 +1172,7 @@
  "coldRuns": [
   {
    "index": 1,
-   "ts": 1789358884761,
+   "ts": 1789359761831,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -1181,7 +1181,7 @@
   },
   {
    "index": 2,
-   "ts": 1789358885064,
+   "ts": 1789359762165,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -1190,7 +1190,7 @@
   },
   {
    "index": 3,
-   "ts": 1789358885353,
+   "ts": 1789359762457,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -1251,13 +1251,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 10.3,
-    "glbParseMs": 5.8,
+    "readFileMs": 10.9,
+    "glbParseMs": 5.4,
     "animParseMs": 2.8,
-    "textureDecodeMs": 2.9,
-    "firstGpuUploadMs": 112.6,
-    "meshUploadMs": 0.9,
-    "textureUploadMs": 110.5
+    "textureDecodeMs": 2.2,
+    "firstGpuUploadMs": 115.8,
+    "meshUploadMs": 1,
+    "textureUploadMs": 113.3
    },
    "resolved": {
     "subpackage": {

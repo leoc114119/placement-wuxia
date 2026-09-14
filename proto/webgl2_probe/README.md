@@ -32,6 +32,8 @@ proto/webgl2_probe/
     platform-browser.js        浏览器 wx shim + 宿主适配（两段式预验证第一段用）
   browser/                     index.html + probe-browser.js（classic script，file:// 与 http:// 都可直开）
   subpackages/probe-model/     hero_48k_20260914.glb + idle_v4.json（美术源文件的**副本**）
+    game.js                    ★ 分包**入口占位**（纯注释）：微信要求每个分包根必须有 game.js，
+                               本分包只承载资产、无逻辑 —— 详见文件头注释，勿删
   tests/
     probe-browser.mjs          浏览器自动化（node:http 静态服务器 + playwright-core + 系统 Chrome）
     artifacts/                 证据：结果 JSON、console 单行、每档截图、汇总
@@ -46,6 +48,27 @@ proto/webgl2_probe/
 理由：ESM 在 `file://` 下被 CORS 拦、且小游戏侧 `project.config.json` 关着 `es6`（不转译）；
 classic script 让两端**同一份源码**都能跑，且不需要任何打包步骤。
 
+### 1.1 开发者工具静态校验清单（导入/编译被拦时先看这里）
+
+微信开发者工具在**导入**时就会做静态校验，与代码能否运行无关。本工程逐项自查过：
+
+| # | 校验项 | 本工程现状 |
+|---|---|---|
+| 1 | 根目录有 `game.js`（主包入口） | ✓ |
+| 2 | 根目录有 `game.json`、可解析 | ✓ |
+| 3 | **每个 `subpackages[].root` 目录里必须有 `game.js`** | ✓ 已补 `subpackages/probe-model/game.js`（**纯注释占位**，本分包只放资产）；<br>缺失时报错原文：`[game.json 文件内容错误] game.json: 未找到 ["subpackages"][0]["root"] 对应的 /subpackages/probe-model/game.js 文件`（实测 mg 2.02.2608040 / lib 3.16.2） |
+| 4 | `subpackages[].name` 非空且唯一、root 为相对路径 | ✓ `probe-model` / `subpackages/probe-model` |
+| 5 | 主包 ≤ 4MB、全部主包+分包 ≤ 30MB | ✓ 主包 ≈ 172KB、分包 ≈ 4.66MB、总计 ≈ 4.8MB |
+| 6 | `packOptions.ignore` 覆盖不入包目录（否则 `tests/artifacts` 的截图会把主包顶爆 ≠） | ✓ 忽略 `browser/`、`tests/`、`README.md` |
+| 7 | `project.config.json`：`compileType=game`、appid、`libVersion` | ✓ 与**已在工具里跑通的主工程** `project.config.json` 逐字段一致，仅 `projectname` 与 `packOptions.ignore` 不同（已 diff 核对） |
+| 8 | 入包文件命名（禁中文/空格/非 ASCII）与杂项文件（`.DS_Store` 等） | ✓ 全部 ASCII、无杂项 |
+| 9 | 入包 `.js` 语法合法 | ✓ 逐个 `node --check` 通过 |
+
+> 本清单是**本地可核**的部分。工具内的编译与预览仍可能因 appid 权限等环境因素报错；
+> 若提示 appid 无权限，把 `project.config.json` 的 `appid` 换成你自己的小游戏 AppID 即可（本 probe 不依赖任何 appid 接口）。
+> 官方 `game.json` 字段页当前在线取不到（404），故**未使用的字段一律不写**：`game.json` 只留
+> `deviceOrientation` / `showStatusBar` / `subpackages`（原先多写的 `networkTimeout` 已移除）。
+
 ## 2. 真机操作步骤（Leo）
 
 ### 2.1 导入与预览
@@ -54,6 +77,12 @@ classic script 让两端**同一份源码**都能跑，且不需要任何打包�
    （AppID 若与你的账号不匹配，改成你自己的小游戏 AppID 即可；本 probe 不调用任何需要 appid 的接口。）
 2. 工具内 `编译` 应无报错。**直接点 `预览` 生成二维码**。
 3. 用**安卓手机**扫码（本卡需至少 2 台安卓、品牌或 GPU 不同；见 §5.2）。
+
+> **分包入口已就位**：`subpackages/probe-model/game.js` 是**必需的占位文件**（纯注释）。
+> 微信要求每个分包根目录都有 `game.js`，缺了会在导入时报 `[game.json 文件内容错误] … 未找到
+> ["subpackages"][0]["root"] 对应的 /subpackages/probe-model/game.js 文件`。
+> 本分包只承载资产（GLB + 动作 JSON），**不要往这个文件里加代码**，也不要删除它。
+> 全部静态校验项见 §1.1。
 
 ### 2.2 屏上会显示什么
 
@@ -217,6 +246,8 @@ python3 -m http.server 8231 --directory .   # 然后开 http://127.0.0.1:8231/pr
 | 3 | `getUniform` 读回全 0 | WebGL 的 `getUniform` 只接受 `WebGLUniformLocation`；且 ANGLE 需要先 `useProgram` | 自证断言 `a1.boneUploadCheck`（上传带标记的 41 个矩阵再逐点回读） |
 | 4 | A2 首帧渲染全透明（覆盖率 0） | `createPose` 出来的 palette 是**全零**，未采样直接画会把网格塌到原点 | 覆盖率检查前先采样；A2 主循环本就是"先采样后画" |
 | 5 | 阈值/采样量口径 | `isDone` 曾写死 1800 帧，忽略 `requiredMinSamples` | 改为读 `requiredMinSamples`；`a2Profile`/`specProfile` 一并写入结果，短采样档的结论会被降级标注 |
+| 6 | **微信开发者工具导入被拦**：`[game.json 文件内容错误] … 未找到 ["subpackages"][0]["root"] 对应的 /subpackages/probe-model/game.js 文件` | 方案与首版实现都漏了"每个分包根目录必须有 `game.js` 入口"这条微信硬要求（本分包只放资产、没有逻辑，所以当时没建这个文件） | 补 `subpackages/probe-model/game.js`（**纯注释占位**，文件头写明缘由与"勿删/勿加代码"）；README §1.1 建静态校验清单，§2.1 与文件树同步标注 |
+| 7 | 未使用的 `game.json` 字段可能引发工具告警 | 首版多写了 `networkTimeout`（本 probe 不发 `wx.request`，纯冗余） | 移除；`game.json` 只留确定支持的 `deviceOrientation`/`showStatusBar`/`subpackages`（官方字段页在线 404，无法核的字段不写） |
 
 ## 9. 本仓库当前的浏览器层证据（最近一次全跑）
 

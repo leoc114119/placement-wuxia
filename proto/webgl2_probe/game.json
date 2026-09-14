@@ -1,9 +1,6 @@
 {
   "deviceOrientation": "portrait",
   "showStatusBar": false,
-  "networkTimeout": {
-    "request": 20000
-  },
   "subpackages": [
     {
       "name": "probe-model",
