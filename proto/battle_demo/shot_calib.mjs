@@ -29,6 +29,8 @@ fs.mkdirSync(path.dirname(outPng), { recursive: true });
 const browser = await chromium.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   headless: true,
+  // 【T31-FE-B】主角 3D 人物层资源由页面经 file:// fetch 读取，Chrome 需放开本地文件访问（只作用于证据浏览器）
+  args: ['--allow-file-access-from-files'],
 });
 const errors = [];
 // 450×800 起页再切 375×667（shot_anchor/shot.mjs L④ 同惯例：起页即目标档绕开历史 resize 观察噪声）

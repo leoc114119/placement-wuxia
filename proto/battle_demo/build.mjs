@@ -42,6 +42,11 @@ function collect(entryKey) {
         target: ts.ScriptTarget.ES2020,
         module: ts.ModuleKind.CommonJS,
         esModuleInterop: true,
+        // 【T31-FE-B】生成产物不携带源码注释：① 体积（3D 运行时模块注释量大）；
+        // ② 源码扫描口径统一——项目约定「扫字面量只看真代码，注释里的说明文字不算命中」
+        //（见 tests/character3d-structure.test.ts 的 stripComments），注释若被带进 bundle 会
+        // 让只扫 bundle 原始文本的用例把文档举例误判成代码引用（T29 §6 退役扫描即此例）。
+        removeComments: true,
       },
       fileName: key,
     });

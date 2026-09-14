@@ -1,0 +1,529 @@
+// T31-FE-B 用例：主角 3D 战斗接线（《2.5D角色运行时接入技术方案》v1.0 §4.1 单一坐标出口 / §4.3 层序 /
+//   §5 动作状态映射 / §6.2 无 2D 降级 / §8 卡 B 明文「T29 的 2D hero 武器层对 3D hero 停用」/ §10 易错点 9·10）。
+//
+// 用例面（DoD 8）：hero 走 3D、敌方走原 profile、depth slot 正确、placed 与 HUD/热区不漂、无重复 hero、
+//   2D 武器层对 hero 零调用；另加 §5 状态映射与命令字段（isJump 原样透传 / 脚底锚=格心 / 物理像素单位）。
+//
+// 关键设计（决定这些用例的形状）：3D 路由 = **宿主注入 3D 层** ∧ config 有该 spriteKey 的 profile 映射。
+//   未注入（既有 T29 用例、微信宿主 S1 未迁移）⇒ 既有 2D 路径原样生效（既有用例零改写）。
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+declare const __dirname: string;
+import { PIECE, SPRITE_PROFILES, TILE_H, hexToWorld, type DirectionalSpriteProfile } from '../config/battle-hex';
+import {
+  createView,
+  directionalBodySrcOf,
+  drawFrame,
+  updateView,
+  type BattleHexAssets,
+  type BattleHexView,
+  type Character3DLayer,
+  type DirectionalFrameStore,
+  type ImgLike,
+} from '../ui/battle-hex-render';
+import type { BattleSnapshot, Character3DPassResult, CharacterRenderCommand, SnapshotActor } from '../types';
+
+const ROOT = path.resolve(__dirname, '..');
+const W = 375;
+const H = 667;
+const DPR = 2; // 用例统一按 hidpi 口径跑（命令=物理像素 2× 逻辑），dpr=1 只是本式的特例
+
+// ---------- 记录型 ctx（同 tests/battle-weapon-layer.test.ts 的 Proxy 式，判 drawImage 序列） ----------
+interface RecordedOp {
+  op: string;
+  args: unknown[];
+}
+function makeRecordingCtx(ops: RecordedOp[]): CanvasRenderingContext2D {
+  const target = {
+    canvas: { width: W, height: H },
+    measureText: () => ({ width: 10 }),
+    createLinearGradient: () => ({ addColorStop: () => {} }),
+  } as unknown as Record<string | symbol, unknown>;
+  return new Proxy(target as unknown as CanvasRenderingContext2D, {
+    get(t, prop) {
+      const rec = t as unknown as Record<string | symbol, unknown>;
+      if (prop in rec) return rec[prop];
+      return (...args: unknown[]) => {
+        ops.push({ op: String(prop), args });
+      };
+    },
+    set(t, prop, value) {
+      (t as unknown as Record<string | symbol, unknown>)[prop] = value;
+      return true;
+    },
+  });
+}
+const drawTags = (ops: RecordedOp[]): string[] =>
+  ops.filter((o) => o.op === 'drawImage').map((o) => (o.args[0] as { tag?: string } | undefined)?.tag ?? '?');
+
+function tagImg(tag: string, width = 240, height = 320): ImgLike {
+  return { width, height, tag } as ImgLike & { tag: string };
+}
+
+/** hero directional 帧库（tag=帧键）+ 两个敌型 legacy 帧条 */
+function makeFrames(): Map<string, DirectionalFrameStore | Array<ImgLike | null>> {
+  const heroFrames = new Map<string, ImgLike | null>();
+  heroFrames.set('idle|right|1', tagImg('hero-2d-idle'));
+  heroFrames.set('die', tagImg('hero-2d-die'));
+  const foeFrames = new Map<string, ImgLike | null>();
+  foeFrames.set('idle|right|1', tagImg('foeA-2d-idle'));
+  const frames = new Map<string, DirectionalFrameStore | Array<ImgLike | null>>();
+  frames.set('hero', { mode: 'directional', frames: heroFrames });
+  frames.set('npc-shanzei-a', { mode: 'directional', frames: foeFrames });
+  frames.set('npc-shanzei-b', { mode: 'directional', frames: foeFrames });
+  return frames;
+}
+
+/** 武器层 spy：hero 行真给合成层，并统计 `.get` 次数（>0 = 2D 武器层被 3D hero 消费 → 违规） */
+class SpyLayerMap extends Map<string, ImgLike | null> {
+  hits = 0;
+  override get(key: string): ImgLike | null | undefined {
+    this.hits++;
+    return super.get(key);
+  }
+}
+function makeAssets(): { assets: BattleHexAssets; heroWeaponHits: () => number } {
+  const heroMap = new SpyLayerMap();
+  // 键 = hero directional 的**真实身体帧路径**（directionalBodySrcOf 单一出处，杜绝自造键导致假绿）
+  const bodySrc = directionalBodySrcOf(SPRITE_PROFILES.hero as DirectionalSpriteProfile, { clip: 'idle', ordinal: 1 }, 'right');
+  heroMap.set(bodySrc, tagImg('weapon-layer'));
+  const assets: BattleHexAssets = {
+    env: null,
+    topbar: null,
+    plaque: null,
+    ctrlFaces: { tuoguan: null, jiasu: null, flee: null },
+    statusIcons: new Map(),
+    frames: makeFrames(),
+    weaponLayers: new Map([['hero', heroMap as unknown as Map<string, ImgLike | null>]]),
+    weaponDiag: { missing: new Set(), gaps: new Set() },
+  };
+  return { assets, heroWeaponHits: () => heroMap.hits };
+}
+
+function actor(over: Partial<SnapshotActor> = {}): SnapshotActor {
+  return {
+    id: 'hero',
+    side: 'player',
+    name: '小虾米',
+    pos: { q: 4, r: 8 },
+    renderPos: { q: 4, r: 8 },
+    hp: 100,
+    maxHp: 100,
+    neili: 80,
+    maxNeili: 100,
+    actionBar: 0,
+    facing: 'right',
+    facingHex: 'right',
+    animState: 'idle',
+    statusIcons: [],
+    isBoss: false,
+    spriteKey: 'hero',
+    isJump: false,
+    ...over,
+  };
+}
+const foe = (id: string, r: number, spriteKey: string): SnapshotActor =>
+  actor({ id, side: 'enemy', name: id, spriteKey, pos: { q: 4, r }, renderPos: { q: 4, r } });
+
+const snap = (actors: SnapshotActor[], over: Partial<BattleSnapshot> = {}): BattleSnapshot =>
+  ({
+    phase: 'fighting',
+    turnActorId: null,
+    pendingInput: false,
+    moveCells: [],
+    moveKind: 'walk',
+    attackCells: [],
+    basicCells: [],
+    selectedSkill: null,
+    heroSkills: [],
+    actors,
+    ...over,
+  }) as unknown as BattleSnapshot;
+
+// ---------- 假 3D 层（记录命令 + 合成次数；可切 not-ready）----------
+interface FakeLayer {
+  layer: Character3DLayer;
+  calls: CharacterRenderCommand[][];
+  composites: { dx: number; dy: number }[];
+  /** 合成时 ctx 的缩放（1/pixelRatio 包装的可观测面） */
+  scales: number[];
+}
+function makeFakeLayer(
+  opts: { pixelRatio?: number; notReady?: boolean; box?: (cmd: CharacterRenderCommand) => { cx: number; top: number; w: number; h: number } } = {},
+): FakeLayer {
+  const pixelRatio = opts.pixelRatio ?? DPR;
+  const calls: CharacterRenderCommand[][] = [];
+  const composites: { dx: number; dy: number }[] = [];
+  const scales: number[] = [];
+  const layer: Character3DLayer = {
+    pixelRatio,
+    render(commands): Character3DPassResult {
+      calls.push(commands.map((c) => ({ ...c })));
+      if (opts.notReady) return { status: 'loading', canvas: null, placed: new Map(), diagnostics: [] };
+      const placed = new Map<string, { cx: number; top: number; w: number; h: number }>();
+      for (const c of commands) {
+        placed.set(
+          c.actorId,
+          opts.box
+            ? opts.box(c)
+            : // 默认：脚底=c.footY，高=c.heightHint（用 screenHeightPxAtReference 口径的 123.2×pixelRatio）
+              { cx: c.footX, top: c.footY - 123.2 * pixelRatio, w: 86.7 * pixelRatio, h: 123.2 * pixelRatio },
+        );
+      }
+      return { status: 'ready', canvas: { width: W * pixelRatio, height: H * pixelRatio }, placed, diagnostics: [] };
+    },
+    composite(target, dx, dy): boolean {
+      if (opts.notReady) return false;
+      composites.push({ dx, dy });
+      target.drawImage(tagImg('3d-layer', W * pixelRatio, H * pixelRatio), dx, dy);
+      return true;
+    },
+  };
+  return { layer, calls, composites, scales };
+}
+
+/** 记录 ctx 上 save/scale/restore，用于验证合成前的「背衬像素空间」包装 */
+function makeScalingRecordingCtx(ops: RecordedOp[], scales: number[]): CanvasRenderingContext2D {
+  const target = {
+    canvas: { width: W, height: H },
+    measureText: () => ({ width: 10 }),
+    createLinearGradient: () => ({ addColorStop: () => {} }),
+    scale: (x: number) => {
+      scales.push(x);
+    },
+  } as unknown as Record<string | symbol, unknown>;
+  return new Proxy(target as unknown as CanvasRenderingContext2D, {
+    get(t, prop) {
+      const rec = t as unknown as Record<string | symbol, unknown>;
+      if (prop in rec) return rec[prop];
+      return (...args: unknown[]) => {
+        ops.push({ op: String(prop), args });
+      };
+    },
+    set(t, prop, value) {
+      (t as unknown as Record<string | symbol, unknown>)[prop] = value;
+      return true;
+    },
+  });
+}
+
+function view3d(layer: Character3DLayer | undefined): BattleHexView {
+  const view = createView();
+  if (layer) view.character3d = layer;
+  return view;
+}
+
+// ══════════════════ 1. 路由：hero 走 3D / 敌方走原 profile ══════════════════
+describe('[T31-FE-B] 路由：只把 spriteKey=hero 切 3D，敌方零改', () => {
+  it('注入 3D 层：hero 出 1 条命令（profileKey=hero-3d）；敌方不出命令且仍画 2D 帧', () => {
+    const { assets, heroWeaponHits } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const snap0 = snap([actor(), foe('e1', 10, 'npc-shanzei-a')]);
+    updateView(view, snap0, 0.016, W, H);
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+
+    expect(fake.calls).toHaveLength(1);
+    expect(fake.calls[0].map((c) => c.actorId)).toEqual(['hero']);
+    expect(fake.calls[0][0].profileKey).toBe('hero-3d');
+    const tags = drawTags(ops);
+    expect(tags).toContain('3d-layer'); // hero 由人物层出
+    expect(tags).not.toContain('hero-2d-idle'); // hero 2D 帧零绘制（易错点 9）
+    expect(tags).toContain('foeA-2d-idle'); // 敌方照常 2D
+    expect(heroWeaponHits()).toBe(0); // 2D hero 武器层零调用（§8 卡 B 明文）
+  });
+
+  it('不注入 3D 层：hero 回到既有 2D 路径（微信宿主 S1 同形；既有 T29 用例零改写的基础）', () => {
+    const { assets, heroWeaponHits } = makeAssets();
+    const view = view3d(undefined);
+    const snap0 = snap([actor()]);
+    updateView(view, snap0, 0.016, W, H);
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const tags = drawTags(ops);
+    expect(tags.some((t) => t.startsWith('weapon-layer'))).toBe(true); // 武器层照常贴回
+    expect(tags).not.toContain('3d-layer');
+    expect(heroWeaponHits()).toBeGreaterThan(0);
+  });
+
+  it('3D 层未就绪（loading）：hero 零绘制（不切 2D 帧，§6.2），敌方不受影响', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer({ notReady: true });
+    const view = view3d(fake.layer);
+    const snap0 = snap([actor(), foe('e1', 10, 'npc-shanzei-a')]);
+    updateView(view, snap0, 0.016, W, H);
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const tags = drawTags(ops);
+    expect(tags).not.toContain('hero-2d-idle');
+    expect(tags).not.toContain('3d-layer');
+    expect(tags).toContain('foeA-2d-idle');
+    expect(view.character3dPlaced?.size).toBe(0); // 未就绪=无任何锚点（HUD 不给人物画半成品）
+    expect(fake.composites).toHaveLength(0);
+  });
+});
+
+// ══════════════════ 2. 层序与「合成一次」 ══════════════════
+describe('[T31-FE-B] depth 槽位与合成一次（§4.3）', () => {
+  it('整张人物层只在 hero 的 depth 槽位合成一次（前后的 2D 敌人正确交错）', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    // r=6（画面上方）→ hero r=8 → r=10（下方）
+    const snap0 = snap([actor(), foe('up', 6, 'npc-shanzei-a'), foe('down', 10, 'npc-shanzei-b')]);
+    updateView(view, snap0, 0.016, W, H);
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const tags = drawTags(ops).filter((t) => t === '3d-layer' || t.includes('foeA-2d'));
+    expect(tags).toEqual(['foeA-2d-idle', '3d-layer', 'foeA-2d-idle']); // 上敌 → hero 人物层 → 下敌
+    expect(fake.composites).toHaveLength(1); // 整张层只合成一次
+  });
+
+  it('死人也只在同一槽位合成一次（阵亡沿压扁淡出，不进 placed）', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const snap0 = snap([actor({ animState: 'dead' })]);
+    updateView(view, snap0, 0.016, W, H);
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    expect(drawTags(ops)).toEqual(['3d-layer']); // 无 2D die 帧
+    expect(fake.calls[0][0].state).toBe('dead');
+    expect(fake.calls[0][0].alpha).toBe(PIECE.deadAlpha);
+    expect(fake.calls[0][0].squashY).toBeCloseTo(0.3, 6);
+    expect(view.character3dPlaced?.size).toBe(0); // dead 不进 placed（HUD 跳过，与 2D 同口径）
+  });
+
+  it('命令坐标=物理像素（×pixelRatio），placed 回算成 2D 逻辑像素（HUD/热区口径）', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer({ pixelRatio: DPR });
+    const view = view3d(fake.layer);
+    const snap0 = snap([actor()]);
+    updateView(view, snap0, 0.016, W, H);
+    const ops: RecordedOp[] = [];
+    const scales: number[] = [];
+    drawFrame({ ctx: makeScalingRecordingCtx(ops, scales), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const cmd = fake.calls[0][0];
+    const w = hexToWorld(4, 8);
+    const logicalX = Math.round(w.x - view.camera.x + W / 2);
+    const logicalY = Math.round(w.y - view.camera.y + H / 2);
+    expect(cmd.footX).toBe(logicalX * DPR);
+    expect(cmd.footY).toBe(logicalY * DPR);
+    // 合成前把上下文换成背衬像素空间一次（否则 drawImage 按逻辑尺寸画=人物 2× 偏移、hidpi 直接不可见）
+    expect(scales).toEqual([1 / DPR]);
+    expect(fake.composites).toEqual([{ dx: 0, dy: 0 }]);
+    // placed 镜像 = 逻辑像素（与 2D placed / HUD / 技能钮同一空间）
+    const box = view.character3dPlaced?.get('hero');
+    expect(box).toEqual({ cx: logicalX, top: (logicalY * DPR - 123.2 * DPR) / DPR, w: 86.7, h: 123.2 });
+  });
+});
+
+// ══════════════════ 3. HUD/热区锚点同源（易错点 10） ══════════════════
+describe('[T31-FE-B] HUD/技能钮锚点来自 pass placed（与摆放矩阵同源）', () => {
+  it('名条与技能钮用 placed 的值（logical）定位；拖动镜头后两者同步平移', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const snap0 = snap([actor()], {
+      pendingInput: true,
+      turnActorId: 'hero',
+      heroSkills: [{ id: 'te', disabled: false }],
+    } as Partial<BattleSnapshot>);
+    updateView(view, snap0, 0.016, W, H);
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const box = view.character3dPlaced!.get('hero')!;
+    // 名条底 y = placed.top − HUD.aboveHead（fillRect 的第一个 op 组里可查）
+    const nameRect = ops.find((o) => o.op === 'fillRect' && Math.abs((o.args[1] as number) - (box.top - 11 - 7)) <= 1);
+    expect(nameRect, `未见 placed 锚定的名条：placed.top=${box.top}`).toBeTruthy();
+    // 技能钮圆心 x 以 placed.cx 为基准（弧布位）
+    const btn = view.layout.skillBtns.find((b) => b.id === 'te');
+    expect(btn).toBeTruthy();
+    expect(Math.abs(btn!.x - box.cx)).toBeLessThan(90);
+
+    // 镜头拖动 → 3D 命令与 2D HUD 同幅平移（无双轨）
+    const before = { ...fake.calls[fake.calls.length - 1][0] };
+    view.camera = { x: view.camera.x + 40, y: view.camera.y };
+    const ops2: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops2), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const after = fake.calls[fake.calls.length - 1][0];
+    expect(after.footX).toBe(before.footX - 40 * DPR);
+    const box2 = view.character3dPlaced!.get('hero')!;
+    expect(box2.cx).toBe(box.cx - 40);
+  });
+});
+
+// ══════════════════ 4. §5 状态映射（命令字段） ══════════════════
+describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
+  it('移动演出期（快照已回 idle）仍出 walk（防长距离滑步；§5「移动结束立即进入 idle 混合」）', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const hero = actor({ animState: 'idle' });
+    const snap0 = snap([hero]);
+    updateView(view, snap0, 0.016, W, H);
+    view.moveAnims.set('hero', {
+      from: { q: 3, r: 8 },
+      pos: { q: 4, r: 8 },
+      path: [],
+      pathPx: [],
+      t: 0.15,
+      duration: 0.6,
+      hopHeight: 0,
+    });
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const cmd = fake.calls[fake.calls.length - 1][0];
+    expect(cmd.state).toBe('walk');
+    expect(cmd.moveProgress).toBeCloseTo(0.25, 6);
+    expect(cmd.isJump).toBe(false);
+  });
+
+  it('轻功：isJump 原样透传（禁 hopPx 猜），hopPx 只作垂直位移且已按 pixelRatio 换算', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const hero = actor({ animState: 'walk', isJump: true, pos: { q: 5, r: 8 }, renderPos: { q: 4, r: 8 } });
+    const snap0 = snap([hero]);
+    updateView(view, snap0, 0.016, W, H); // updateView 起跳上升沿建 moveAnim
+    const ma = view.moveAnims.get('hero')!;
+    expect(ma.hopHeight).toBeGreaterThan(0);
+    ma.t = ma.duration / 2; // 顶点：hop 最大
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const cmd = fake.calls[fake.calls.length - 1][0];
+    const w = hexToWorld(4, 8);
+    expect(cmd.isJump).toBe(true);
+    expect(cmd.hopPx).toBeCloseTo(ma.hopHeight * DPR, 6); // 垂直位移唯一来源=pieceHop
+    expect(cmd.footY).toBe(Math.round(w.y - view.camera.y + H / 2) * DPR); // 锚仍是格心行（hop 另给）
+    expect(cmd.moveProgress).toBeCloseTo(0.5, 6);
+  });
+
+  it('快照 isJump=false 时即便 hopPx>0 也必须是 false（arch seq=414 锁：禁 hop 推断）', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const hero = actor({ animState: 'idle', isJump: false, pos: { q: 5, r: 8 }, renderPos: { q: 4, r: 8 } });
+    const snap0 = snap([hero]);
+    updateView(view, snap0, 0.016, W, H);
+    // 手工挂一个「在空中」的演出（生产里 hopHeight>0 只由 isJump 起跳产生；此处刻意造出
+    // hopPx>0 但快照 isJump=false 的组合，锁「渲染层禁由 hop 反推轻功」）
+    view.moveAnims.set('hero', {
+      from: { q: 4, r: 8 }, pos: { q: 5, r: 8 }, path: [], pathPx: [], t: 0.3, duration: 0.6, hopHeight: 88,
+    });
+    const ma = view.moveAnims.get('hero')!;
+    ma.t = ma.duration / 2;
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const cmd = fake.calls[fake.calls.length - 1][0];
+    expect(cmd.hopPx).toBeGreaterThan(0);
+    expect(cmd.isJump).toBe(false);
+    expect(cmd.state).toBe('walk'); // 演出态仍是 walk（帧组/动作都按移动走，但非轻功）
+  });
+
+  it('普攻保持窗：快照回 idle 仍出 basic，且进态历时连续（尾帧保持由 pass 侧归一窗负责）', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    // 先让 basic 上升沿开窗（updateView 内开 basicHolds）
+    const hero = actor({ animState: 'basic' });
+    updateView(view, snap([hero]), 0.016, W, H);
+    const idle = actor({ animState: 'idle' });
+    const snap0 = snap([idle]);
+    updateView(view, snap0, 0.016, W, H);
+    view.anim.set('hero', { state: 'basic', t: 0.2 });
+    view.basicHolds.set('hero', { since: view.time - 0.2, until: view.time + 0.4 });
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const cmd = fake.calls[fake.calls.length - 1][0];
+    expect(cmd.state).toBe('basic');
+    expect(cmd.stateElapsedSec).toBeCloseTo(0.2, 2);
+  });
+
+  it('charge/strike 沿快照态透传，进态历时取 view 演出钟', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const hero = actor({ animState: 'charge' });
+    updateView(view, snap([hero]), 0.016, W, H);
+    view.anim.set('hero', { state: 'charge', t: 0.42 });
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap([hero]), assets, view);
+    const cmd = fake.calls[fake.calls.length - 1][0];
+    expect(cmd.state).toBe('charge');
+    expect(cmd.stateElapsedSec).toBeCloseTo(0.42, 6);
+  });
+
+  it('脚底锚=格心（3D 不加 feetOffsetPx；2D 敌人仍按既有口径带补偿）', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const snap0 = snap([actor(), foe('e1', 8, 'npc-shanzei-a')]);
+    updateView(view, snap0, 0.016, W, H);
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const cmd = fake.calls[0][0];
+    const w = hexToWorld(4, 8);
+    const groundY = Math.round(w.y - view.camera.y + H / 2);
+    expect(cmd.footY).toBe(groundY * DPR);
+    // 2D 敌人 top = 格心 − 高×基线比 + feetOffsetPx（**既有口径零改**）：两锚点之差恒等于该基线口径
+    const hFoe = TILE_H * PIECE.heightPerTile;
+    const foeDraw = ops.find((o) => o.op === 'drawImage' && (o.args[0] as { tag?: string })?.tag === 'foeA-2d-idle');
+    expect(foeDraw).toBeTruthy();
+    const foeTop = foeDraw!.args[2] as number;
+    // 差 = 既有 2D 基线口径（drawImg 内 Math.round 整数像素定位 ⇒ 容差 ±0.5）
+    expect(Math.abs(groundY - foeTop - (hFoe * PIECE.feetBaselineRatio - PIECE.feetOffsetPx))).toBeLessThanOrEqual(0.5);
+    expect(hFoe * PIECE.feetBaselineRatio - PIECE.feetOffsetPx).toBeGreaterThan(0);
+  });
+});
+
+// ══════════════════ 5. 红线扫描（源码层） ══════════════════
+describe('[T31-FE-B] 红线扫描（源码层证据）', () => {
+  const render = readFileSync(path.join(ROOT, 'ui/battle-hex-render.ts'), 'utf8');
+  const main = readFileSync(path.join(ROOT, 'proto/battle_demo/main.ts'), 'utf8');
+
+  it('渲染层：isJump 原样透传（禁 hopPx/时钟猜轻功）', () => {
+    expect(render).toContain('isJump: actor.isJump');
+    expect(/isJump:\s*[^,\n]*hop/i.test(render)).toBe(false);
+  });
+
+  it('渲染层：spriteKey→3D 键只经 config 查表（渲染层不持资产地址/时长）', () => {
+    expect(render).toContain("from '../config/character-3d'");
+    expect(render).toContain('CHARACTER_3D_PROFILE_BY_SPRITE_KEY');
+    expect(/characters\/hero/.test(render)).toBe(false);
+    expect(/[0-9a-f]{64}/.test(render)).toBe(false);
+  });
+
+  it('渲染层：3D 分支先 continue，武器层查询只在其后（2D 武器层对 3D hero 结构性不可达）', () => {
+    const branch = render.indexOf('const key3d = profile3d.get(actor.id);');
+    const weapon = render.indexOf('weapon = weaponLayerOf(');
+    expect(branch).toBeGreaterThan(-1);
+    expect(weapon).toBeGreaterThan(branch);
+    expect(render.slice(branch, weapon)).toContain('continue;');
+  });
+
+  it('宿主：3D spriteKey 不装配 2D 武器层（配置与素材保留，仅停用消费）', () => {
+    expect(main).toContain('CHARACTER_3D_PROFILE_BY_SPRITE_KEY[k] === undefined');
+    expect(main).toContain('weaponSpriteKeys2d');
+  });
+
+  it('宿主：CDN base 由环境注入（业务侧只见相对 urlPath），且无资产 sha/路径字面量', () => {
+    expect(main).toContain("new URL('cdn/', location.href)");
+    expect(/[0-9a-f]{64}/.test(main)).toBe(false);
+    expect(main).not.toContain('hero_48k_20260914.glb');
+  });
+
+  it('宿主：抗锯齿按能力分支（不传 forceEdgeMode 时由 renderer 读有效属性），诊断开关才传值', () => {
+    expect(main).toContain('forceEdgeMode: AA_FORCE ?? undefined');
+    expect(main).toContain('getContextAttributes');
+  });
+
+  it('红线：battle-core / cloudfunctions / systems 的 diff=0 由 git 层复核（此处锁 import 面）', () => {
+    expect(/from '[^']*battle-core/.test(render)).toBe(false);
+    expect(/from '[^']*cloudfunctions/.test(render)).toBe(false);
+    expect(main).toContain("from '../../systems/battle-session'"); // 宿主本来就消费真 session（未新增）
+  });
+});

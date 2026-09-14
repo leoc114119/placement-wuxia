@@ -2,10 +2,36 @@
 // ① 帧预解码（全部 decode 完才开播，防换帧闪烁）② 整数像素定位（渲染模块内 Math.round）
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
-import type { CombatantInput } from '../../types';
+import type { Character3DClipKey, CombatantInput } from '../../types';
 import { SPEED_FACTOR } from '../../config/battle';
 import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, TRIAL_FX_01, TRIAL_FX_FALLBACK_DURATION_MS, hexToWorld, type BattleClip } from '../../config/battle-hex';
 import { WEAPON_LAYER_PROFILES, WEAPON_MODELS } from '../../config/hero-weapon-layer'; // 【T29】武器层只读配置 v2（runtime 路径，零候选引用）
+// 【T31-FE-B】3D 人物层配置（方案 §3/§4/§5/§7）：profile 清单 + 动作映射 + 全部时长/画质常量。
+// 本文件是 preview 宿主对这些配置的**唯一消费点**（资产地址/sha 只存在于 config，宿主不持字面量）。
+import {
+  CHARACTER_3D_CROSS_FADE_SEC,
+  CHARACTER_3D_FXAA,
+  CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+  CHARACTER_3D_LIGHT,
+  CHARACTER_3D_ORTHO_Z_HALF,
+  CHARACTER_3D_PROFILE_BY_SPRITE_KEY,
+  CHARACTER_3D_RENDER_SCALE,
+  HERO_3D_ACTION_MAP,
+  HERO_3D_MODEL_ACCOUNT,
+  HERO_3D_PROFILE,
+  HERO_3D_PROFILE_ID,
+} from '../../config/character-3d';
+import { createCharacterAssetLoader, type CharacterAssetLoaderStats } from '../../net/character-asset-loader';
+import {
+  decodeUtf8,
+  createModelStructureValidator,
+  loadCharacter3DModel,
+  type Character3DModel,
+} from '../../ui/character3d/glb';
+import { resolveClipSource, type Character3DAnimConfig, type Character3DClipRegistry } from '../../ui/character3d/animation';
+import { createCharacter3DRenderer, type Character3DRenderer, type Character3DEdgeMode } from '../../ui/character3d/renderer';
+import { createCharacter3DPass, type Character3DPass } from '../../ui/character3d/pass';
+import { createBrowserCharacter3DPlatform } from '../../ui/character3d/platform-browser';
 import { FxCastGate, FxPlayer, findCastSnapshot, loadFxFramePack, type FxFramePack } from '../../ui/fx-player';
 import { WfBannerPlayer, bannerTierOf } from '../../ui/wf-banner';
 import { createBattleInput, createPointerTracker } from '../../ui/battle-input';
@@ -20,6 +46,7 @@ import {
   updateView,
   weaponMissingTag,
   type BattleHexAssets,
+  type Character3DLayer,
   type DirectionalFrameStore,
   type ImgLike,
   type LegacyFrameStrip,
@@ -36,6 +63,8 @@ import { createHexBattle } from '../../systems/battle-session';
 // 缓冲与 dpr transform 必在首帧前落设（缺陷锁 = tests/battle-demo-resize.test.ts）。
 let W = 0;
 let H = 0;
+/** 【T31-FE-B】3D 人物层运行时（资源门通过后装配；null=未装配/未启用/诊断关闭） */
+let char3d: Character3DRuntime | null = null;
 const canvas = document.getElementById('cv') as HTMLCanvasElement;
 const dpr = Math.min(3, window.devicePixelRatio || 1);
 function resize(): void {
@@ -52,6 +81,7 @@ function resize(): void {
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 resize();
 window.addEventListener('resize', resize);
+window.addEventListener('resize', () => char3d?.renderer.resize(W, H, dpr)); // 背衬随窗口（FBO/正交投影同步重建）
 
 // ===== toast =====
 const toastEl = document.getElementById('toast') as HTMLElement;
@@ -169,12 +199,21 @@ async function loadAssets(): Promise<BattleHexAssets> {
     const cctx = c.getContext('2d');
     return cctx ? { canvas: c, ctx: cctx } : null;
   };
-  const modelJobs = Object.entries(WEAPON_MODELS).map(
-    async ([key, meta]) => [key, await loadImg(q(meta.src))] as const,
+  // 【T31-FE-B · §8 卡 B 明文】走 3D 的 spriteKey（hero）**停用 2D 武器层**：既不作 2D 帧合成，
+  // 也不把 2D 剑图贴到 3D 人物上（配置与素材保留，供微信 2D 宿主继续使用）。
+  const weaponSpriteKeys2d = Object.keys(WEAPON_LAYER_PROFILES).filter(
+    (k) => CHARACTER_3D_PROFILE_BY_SPRITE_KEY[k] === undefined,
   );
+  const modelJobs = Object.entries(WEAPON_MODELS)
+    .filter(([key]) =>
+      weaponSpriteKeys2d.some((sk) =>
+        [...(WEAPON_LAYER_PROFILES[sk]?.values() ?? [])].some((row) => row.weaponModelKey === key),
+      ),
+    )
+    .map(async ([key, meta]) => [key, await loadImg(q(meta.src))] as const);
   const maskPathSet = new Set<string>();
-  for (const framesMap of Object.values(WEAPON_LAYER_PROFILES)) {
-    for (const row of framesMap.values()) {
+  for (const sk of weaponSpriteKeys2d) {
+    for (const row of WEAPON_LAYER_PROFILES[sk]?.values() ?? []) {
       if (row.maskPath) maskPathSet.add(row.maskPath);
     }
   }
@@ -196,7 +235,8 @@ async function loadAssets(): Promise<BattleHexAssets> {
   // 空手降级（禁画无孔整剑盖拳），missing 汇入 asset gate；任何单行异常不拖垮启动（防御）。
   const modelImgOf = new Map(modelPairs as Array<readonly [string, ImgLike | null]>);
   const maskImgOf = new Map(maskPairs as Array<readonly [string, ImgLike | null]>);
-  for (const [spriteKey, framesMap] of Object.entries(WEAPON_LAYER_PROFILES)) {
+  for (const spriteKey of weaponSpriteKeys2d) {
+    const framesMap = WEAPON_LAYER_PROFILES[spriteKey];
     const store = new Map<string, ImgLike | null>();
     weaponLayers.set(spriteKey, store);
     for (const [bodySrc, row] of framesMap) {
@@ -273,6 +313,191 @@ async function loadAssets(): Promise<BattleHexAssets> {
   );
   return { env, topbar, plaque, ctrlFaces, statusIcons, frames, weaponLayers, weaponDiag };
 }
+
+// ===== 【T31-FE-B】3D 人物层装配（方案 §2 文件面 / §6 资源门 / §7 管线 / §9.2 口径） =====
+//
+// 装配链（§2 依赖方向）：profile 清单（config）→ loader 状态机（net）→ GLB/动作解析（ui/character3d）
+//   → renderer（raw WebGL2 蒙皮 + 能力分支抗锯齿）→ pass（命令 → 整张透明人物层 + placed）
+//   → view.character3d 接点（ui/battle-hex-render 在 depth 槽位合成一次）。
+// 只把 `spriteKey=hero` 切到 3D（CHARACTER_3D_PROFILE_BY_SPRITE_KEY 决定）；敌方/session/input/FX/HUD
+// 零行为改动。资源失败按 §6.2 停在「角色资源加载失败」页给显式重试，**不切 2D 帧**、不进入战斗。
+
+/** CDN 注入基址（§6.1：base URL 由环境配置注入，业务模块只持相对 urlPath）。
+ * preview 的「CDN」= 本页同目录 `cdn/` 静态镜像：`proto/battle_demo/cdn/characters/hero/<sha12>/…`，
+ * 目录名 = 资产 SHA-256 前 12 位，与 config 的 urlPath **逐字对齐**（内容版本化语义与线上一致，
+ * 换内容必换 URL）；因此 loader/缓存状态机在这里跑的是与线上同一条路径。file:// 与 http 都成立。 */
+const CHAR3D_CDN_BASE = new URL('cdn/', location.href).href.replace(/\/+$/, '');
+
+/** 预览诊断开关（沿既有 `?enemy=legacy` 先例；**只影响 preview 宿主**，不改生产分支判定）：
+ * · `?aa=fxaa|native-msaa`：强制抗锯齿分支，用于同机位产出「FXAA / 无 FXAA」并排证据（§9.2）。
+ *   不传 = 能力分支（读 gl.getContextAttributes().antialias **实测值**，易错点 7）。
+ * · `?bg=light|dark`：env 换纯色底，用于深/浅背景对拍（头发/肩/衣摆黑边与 1px 闪烁，§9.2）。
+ * · `?char3d=off`：不注入接点（该角色继续走既有 2D profile——微信宿主同形，行为零变化）；
+ *   `?char3d=loading`：注入接点但把资源门置 loading，用于验证 §6.2「未就绪**不画 2D 帧**、
+ *   不画半成品」并给脚底对格心留一张「无人物」差分参照帧。 */
+const PREVIEW_QUERY = new URLSearchParams(location.search);
+const AA_FORCE: Character3DEdgeMode | null = (() => {
+  const v = PREVIEW_QUERY.get('aa');
+  return v === 'fxaa' || v === 'native-msaa' ? v : null;
+})();
+const BG_OVERRIDE = PREVIEW_QUERY.get('bg');
+const CHAR3D_MODE = PREVIEW_QUERY.get('char3d'); // off | loading | 缺省=正常
+const CHAR3D_OFF = CHAR3D_MODE === 'off';
+const CHAR3D_NOT_READY_DIAG = CHAR3D_MODE === 'loading';
+
+interface Character3DRuntime {
+  readonly pass: Character3DPass;
+  readonly renderer: Character3DRenderer;
+  readonly edgeMode: Character3DEdgeMode;
+  readonly loaderStats: CharacterAssetLoaderStats;
+  readonly diagnostics: readonly string[];
+  readonly loadStatus: 'ready' | 'stale-3d-cache';
+}
+type Character3DLoadOutcome = { ok: true; runtime: Character3DRuntime } | { ok: false; failures: string[] };
+
+/** 模型动作槽位 → 运行时 clip 源（重定向 json 由 loader 取字节，本函数只解析；内嵌槽位查 GLB 动画）。 */
+function buildClipRegistry(model: Character3DModel, rawByKey: Partial<Record<Character3DClipKey, unknown>>): Character3DClipRegistry {
+  const registry: Character3DClipRegistry = {};
+  for (const key of ['idle', 'walk', 'atk', 'cast', 'jump'] as const) {
+    const entry = HERO_3D_PROFILE.clips[key];
+    registry[key] = resolveClipSource(key, entry, model, 'embedded' in entry ? undefined : rawByKey[key]);
+  }
+  return registry;
+}
+
+async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
+  try {
+    const platform = createBrowserCharacter3DPlatform();
+    // 结构门（§6.2）：下载后、登记 LKG 前校验 41 骨/1 primitive/贴图数——不符即不使用该文件。
+    // 只对 GLB 生效（动作 json 走下方 json 解析路径；把 GLB 门套到 json 上=必然误拒）。
+    const modelStructureValidator = createModelStructureValidator(HERO_3D_MODEL_ACCOUNT);
+    const loader = createCharacterAssetLoader({
+      platform,
+      cdnBaseUrl: CHAR3D_CDN_BASE,
+      structureValidator: (bytes, ref) => {
+        if (ref.mediaType === 'model/gltf-binary') modelStructureValidator(bytes, ref);
+      },
+    });
+    const profileLoad = await loader.loadProfile(HERO_3D_PROFILE);
+    if (profileLoad.status === 'failed' || !profileLoad.model?.bytes) {
+      const detail = profileLoad.diagnostics.filter((d) => d.includes('failed') || d.includes('mismatch') || d.includes('reject'));
+      return { ok: false, failures: [`模型/动作下载或校验失败（重试 ${loader.stats().downloadAttempts} 次）`, ...detail].slice(0, 6) };
+    }
+    const model = loadCharacter3DModel(profileLoad.model.bytes);
+    const rawByKey: Partial<Record<Character3DClipKey, unknown>> = {};
+    for (const key of ['idle', 'atk', 'cast', 'jump'] as const) {
+      const res = profileLoad.clips[key];
+      if (!res?.bytes) {
+        return { ok: false, failures: [`动作资产缺失/失败：${key}`, ...(res?.diagnostics ?? [])].slice(0, 6) };
+      }
+      try {
+        rawByKey[key] = JSON.parse(decodeUtf8(res.bytes));
+      } catch (error) {
+        // 「SHA 不符、结构不符：不使用该文件」（§6.2）——带病解析一律失败关闭
+        return { ok: false, failures: [`动作 json 解析失败：${key} · ${String(error)}`] };
+      }
+    }
+    const baseColor = model.textureRoles.baseColor;
+    if (!baseColor) return { ok: false, failures: ['模型缺 baseColor 贴图（§6.2 结构门）'] };
+    const decoded = await platform.decodeImage(baseColor.bytes, baseColor.mimeType, baseColor.name);
+    // renderer 的 ortho 投影只在 resize() 内建立，而 resize 首调「尺寸未变即早退」——
+    // 故画布先以 1×1 建立，再 resize 到目标背衬尺寸，保证首调必不早退（否则投影全零=人物不可见）。
+    const canvas3d = platform.createOffscreenCanvas(1, 1);
+    const renderer = createCharacter3DRenderer({
+      canvas: canvas3d,
+      model,
+      baseColor: decoded,
+      platform,
+      light: CHARACTER_3D_LIGHT,
+      orthoZHalf: CHARACTER_3D_ORTHO_Z_HALF,
+      renderScale: CHARACTER_3D_RENDER_SCALE,
+      fxaa: CHARACTER_3D_FXAA,
+      forceEdgeMode: AA_FORCE ?? undefined, // 生产不传（能力分支）；仅预览诊断传值
+    });
+    renderer.resize(W, H, dpr);
+    if (renderer.status !== 'ready') {
+      return { ok: false, failures: [`renderer 初始化失败：${renderer.diagnostics.join(' | ') || renderer.status}`] };
+    }
+    // 上下文丢失/恢复（§6.2）：让 renderer 的既有状态机接管，不让「隐形人物战斗」继续
+    const evtCanvas = canvas3d as unknown as {
+      addEventListener?: (type: string, cb: (e: { preventDefault?: () => void }) => void) => void;
+    };
+    evtCanvas.addEventListener?.('webglcontextlost', (e) => {
+      e.preventDefault?.();
+      renderer.notifyContextLost();
+    });
+    evtCanvas.addEventListener?.('webglcontextrestored', () => {
+      if (!renderer.handleContextRestored()) showCharacter3DGate(['WebGL2 上下文重建失败（已尝试一次）'], true);
+    });
+    const anim: Character3DAnimConfig = {
+      actionMap: HERO_3D_ACTION_MAP,
+      crossFadeSec: CHARACTER_3D_CROSS_FADE_SEC,
+      jumpToIdleBlendSec: CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+      clips: buildClipRegistry(model, rawByKey),
+    };
+    const pass = createCharacter3DPass({
+      renderer,
+      // 背衬（物理像素）= 渲染器正交像素空间；命令侧同单位（battle-hex-render 接点说明）
+      viewport: { width: Math.max(1, Math.round(W * dpr)), height: Math.max(1, Math.round(H * dpr)) },
+      // ⚠ 桥接：pass 把模型缩放到 profile.screenHeightPxAtReference，而该值在 GL 的（物理像素）正交
+      // 空间里被直接消费 ⇒ 宿主须按 pixelRatio 把「逻辑参考高（沿 PIECE 定尺）」换算成物理参考高，
+      // 否则 hidpi 屏上人物只有 1/dpr 大（dpr=1 时两值相同、零差异）。config 本体不改（卡 A 冻结）。
+      runtimes: {
+        [HERO_3D_PROFILE_ID]: {
+          profile: { ...HERO_3D_PROFILE, screenHeightPxAtReference: HERO_3D_PROFILE.screenHeightPxAtReference * dpr },
+          model,
+          anim,
+        },
+      },
+      // 诊断：置 loading 时 pass 返回空 placed/不合成（=未就绪口径，不画半成品、不切 2D 帧）
+      loadState: CHAR3D_NOT_READY_DIAG ? 'loading' : 'ready',
+    });
+    const stats = loader.stats();
+    return {
+      ok: true,
+      runtime: {
+        pass,
+        renderer,
+        edgeMode: renderer.edgeMode,
+        loaderStats: stats,
+        diagnostics: [...profileLoad.diagnostics, ...renderer.diagnostics],
+        loadStatus: profileLoad.status === 'stale-3d-cache' ? 'stale-3d-cache' : 'ready',
+      },
+    };
+  } catch (error) {
+    return { ok: false, failures: [`3D 人物层装配异常：${error instanceof Error ? error.message : String(error)}`] };
+  }
+}
+
+/** 「角色资源加载失败」页（§6.2：停在失败页给显式重试，不进入战斗）。 */
+function showCharacter3DGate(failures: string[], contextLost = false): void {
+  const el = document.getElementById('char3dGate');
+  const msg = document.getElementById('char3dGateMsg');
+  if (msg) {
+    msg.textContent =
+      (contextLost ? 'WebGL2 上下文重建失败：' : '角色资源加载失败：') +
+      (failures[0] ?? '未知原因') +
+      (failures.length > 1 ? `（共 ${failures.length} 条，详见控制台）` : '');
+  }
+  for (const f of failures) console.error('[battle_demo][char3dGate FAIL] ' + f);
+  if (el) el.style.display = 'flex';
+}
+function hideCharacter3DGate(): void {
+  const el = document.getElementById('char3dGate');
+  if (el) el.style.display = 'none';
+}
+
+/** env 底色覆盖（`?bg=` 诊断）：纯色 canvas 作为 env 位图，走既有 env 绘制口径（世界系、随镜头）。 */
+function solidEnv(color: string): ImgLike {
+  const c = document.createElement('canvas');
+  c.width = 8;
+  c.height = 8;
+  const cctx = c.getContext('2d') as CanvasRenderingContext2D;
+  cctx.fillStyle = color;
+  cctx.fillRect(0, 0, 8, 8);
+  return c;
+}
+const BG_COLORS: Record<string, string> = { light: '#e9e4d6', dark: '#101418' };
 
 // ===== 对局构造（联调：真 session；演示阵容=主角四技 vs 山贼双敌（Leo 09-04 裁定摘狼：设计无狼 NPC），R-07 档位语义占位） =====
 /** 演示技能表（id 与 ui ARC_BTNS.ids 对齐；数值走 SkillDef 结构由 core 结算，此处非真值来源） */
@@ -526,6 +751,44 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
   get H() {
     return H;
   },
+  /** 设备像素比（脚底对格心「物理像素」口径换算用；调试挂载不进正式接入） */
+  get dpr() {
+    return dpr;
+  },
+  /** 【T31-FE-B】3D 人物层只读诊断（shot/e2e 断言用；调试挂载不进正式接入）。
+   * placed=pass 返回的**本帧**锚点（与摆放矩阵同源，易错点 10）；ctx=有效上下文属性实测值。 */
+  get character3d(): {
+    off: boolean;
+    status: string | null;
+    edgeMode: Character3DEdgeMode | null;
+    contextAttributes: WebGLContextAttributes | null;
+    backbuffer: { width: number; height: number } | null;
+    pixelRatio: number;
+    loadStatus: string | null;
+    loader: CharacterAssetLoaderStats | null;
+    diagnostics: readonly string[];
+    placed: ReadonlyMap<string, { cx: number; top: number; w: number; h: number }> | null;
+  } {
+    const r = char3d;
+    return {
+      off: CHAR3D_OFF,
+      status: view.character3d ? (r?.renderer.status ?? null) : null,
+      edgeMode: r?.renderer.edgeMode ?? null,
+      contextAttributes: r?.renderer.contextAttributes ?? null,
+      backbuffer: r ? { ...r.renderer.backbuffer } : null,
+      pixelRatio: dpr,
+      loadStatus: r?.loadStatus ?? null,
+      loader: r?.loaderStats ?? null,
+      diagnostics: r?.diagnostics ?? [],
+      placed: view.character3dPlaced,
+    };
+  },
+  /** 【T31-FE-B】格 → **画布物理像素**坐标（= 3D 命令 footX/footY 的同一坐标空间与同一条换算：
+   * hexToWorld → 减 camera → 加半屏 → ×dpr。脚底对格心误差量测的真值锚点）。 */
+  cellPx(q: number, r: number): { x: number; y: number } {
+    const w = hexToWorld(q, r);
+    return { x: (w.x - view.camera.x + W / 2) * dpr, y: (w.y - view.camera.y + H / 2) * dpr };
+  },
   /** 格 → 页面坐标（自动化点击用） */
   cellCss(q: number, r: number): CssPoint {
     const w = hexToWorld(q, r);
@@ -633,12 +896,88 @@ function loop(t: number): void {
   requestAnimationFrame(loop);
 }
 
-void loadAssets().then((a) => {
+// ===== 启动（资源门 → 3D 人物层装配 → 主循环）=====
+// 【T31-FE-B】顺序：2D 帧资源 → 3D 人物层（§6.2「进入战斗前」完成清单校验/缓存/解析/上传）→ 主循环。
+// 3D 失败=停在「角色资源加载失败」页 + 显式重试，**不进入战斗**、不切 2D 帧（§6.2 明文）。
+async function bootstrap(): Promise<void> {
+  hideCharacter3DGate();
+  const a = await loadAssets();
   assets = a;
-  fxPlayer.setPack(fxPack); // 【T25】预载完成的帧包注入（稳定实例；主循环此刻才启动）
+  fxPlayer.setPack(fxPack); // 【T25】预载完成的帧包注入（稳定实例）
+  if (BG_OVERRIDE && BG_COLORS[BG_OVERRIDE]) assets.env = solidEnv(BG_COLORS[BG_OVERRIDE]); // 诊断底色
+  if (CHAR3D_OFF) {
+    view.character3d = undefined; // 诊断：整层不注入（该角色零绘制，无 2D 帧降级）
+  } else {
+    const outcome = await loadCharacter3DRuntime();
+    if (!outcome.ok) {
+      showCharacter3DGate(outcome.failures);
+      return; // 不启动主循环（§6.2：不进入战斗）
+    }
+    char3d = outcome.runtime;
+    // 接点绑定：pixelRatio = 离屏背衬/逻辑像素（命令坐标单位，见 battle-hex-render 接点说明）
+    const layer: Character3DLayer = {
+      pixelRatio: dpr,
+      render: (commands, dtSec) => outcome.runtime.pass.render(commands, dtSec),
+      composite: (target, dx, dy) => outcome.runtime.pass.composite(target, dx, dy),
+    };
+    view.character3d = layer;
+    logCharacter3DDiagnostics(outcome.runtime);
+  }
   assetsReady = true;
   requestAnimationFrame((t) => {
     last = t;
     loop(t);
   });
+}
+
+/** §9.2 日志口径：edgeMode / 有效上下文属性 / 背衬 / 缓存命中（S1 不得把 antialias=false 隐去）。
+ * vendor/renderer 取同一上下文（画布二次 getContext 返回已建上下文）。 */
+function logCharacter3DDiagnostics(runtime: Character3DRuntime): void {
+  const canvas3d = runtime.renderer.canvas as unknown as {
+    getContext?: (type: 'webgl2') => WebGL2RenderingContext | null;
+  };
+  let vendor = 'n/a';
+  try {
+    const gl = canvas3d.getContext?.('webgl2') ?? null;
+    const dbg = gl?.getExtension('WEBGL_debug_renderer_info');
+    if (gl) {
+      const v = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+      const r = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+      vendor = `${String(v)} / ${String(r)}`;
+    }
+  } catch {
+    vendor = 'unavailable';
+  }
+  const ctxAttrs = runtime.renderer.contextAttributes;
+  console.log(
+    `[battle_demo][char3d] vendor=${vendor} edgeMode=${runtime.edgeMode} ` +
+      `contextAttributes.antialias=${ctxAttrs ? String(ctxAttrs.antialias) : 'null'} ` +
+      `backbuffer=${runtime.renderer.backbuffer.width}x${runtime.renderer.backbuffer.height} ` +
+      `dpr=${dpr} load=${runtime.loadStatus} ` +
+      `cacheHit=${runtime.loaderStats.cacheHits} download=${runtime.loaderStats.downloads} ` +
+      `attempts=${runtime.loaderStats.downloadAttempts} stale=${runtime.loaderStats.staleFallbacks}`,
+  );
+  exportCharacter3DDebug(runtime);
+}
+
+/** 预览页诊断面（`window.__char3d`：目验/自动化读取；不进正式接入）。 */
+function exportCharacter3DDebug(runtime: Character3DRuntime): void {
+  (window as unknown as Record<string, unknown>).__char3d = {
+    canvas: runtime.renderer.canvas, // 离屏人物画布本体（预览诊断：自证层内容与包围盒）
+    edgeMode: runtime.edgeMode,
+    contextAttributes: runtime.renderer.contextAttributes,
+    backbuffer: { ...runtime.renderer.backbuffer },
+    diagnostics: runtime.diagnostics,
+    loaderStats: runtime.loaderStats,
+    cdnBaseUrl: CHAR3D_CDN_BASE,
+    forcedEdgeMode: AA_FORCE,
+    pixelRatio: dpr,
+  };
+}
+
+document.getElementById('char3dRetry')?.addEventListener('click', () => {
+  // 显式重试（§6.2）：重跑资源门 + 3D 装配；成功后主循环才启动
+  void bootstrap();
 });
+
+void bootstrap();

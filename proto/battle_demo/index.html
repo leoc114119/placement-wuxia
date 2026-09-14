@@ -14,6 +14,13 @@
            padding:8px 18px; border-radius:8px; font-size:clamp(11px,2.8vw,14px); z-index:60; opacity:0; transition:opacity .25s; pointer-events:none; }
   #assetGate { position:fixed; left:0; right:0; top:0; display:none; background:#a01818; color:#fff; font:11px monospace;
                padding:4px 8px; z-index:70; pointer-events:none; }
+  /* 【T31-FE-B】「角色资源加载失败」页（方案 §6.2）：停在失败页给显式重试，不进入战斗、不切 2D 帧 */
+  #char3dGate { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:80;
+                background:#0b0f14ee; }
+  #char3dGate .box { max-width:78%; padding:18px 22px; border:1px solid #8a6a35; border-radius:10px;
+                     background:#151b22; color:#ffe9b8; font:13px/1.6 "PingFang SC","Microsoft YaHei",sans-serif; text-align:center; }
+  #char3dGate button { margin-top:12px; padding:7px 22px; border:1px solid #c9a25e; border-radius:8px;
+                       background:#2a2118; color:#ffe9b8; font:13px "PingFang SC","Microsoft YaHei",sans-serif; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -24,7 +31,8 @@
   <div id="assetGate"></div>
   </div>
 </div>
-<script src="bundle.js?v=v1788957597479"></script>
-<div id="verTag" style="position:fixed;right:4px;top:4px;font:9px monospace;color:#8888;z-index:99">v1788957597479</div>
+<div id="char3dGate"><div class="box"><div id="char3dGateMsg">角色资源加载失败</div><button id="char3dRetry">重试</button></div></div>
+<script src="bundle.js?v=v1789376605975"></script>
+<div id="verTag" style="position:fixed;right:4px;top:4px;font:9px monospace;color:#8888;z-index:99">v1789376605975</div>
 </body>
 </html>

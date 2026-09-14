@@ -17,6 +17,8 @@ const tag = argv.find((a) => a.startsWith('--tag='))?.slice(6) ?? 'build';
 const browser = await chromium.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   headless: true,
+  // 【T31-FE-B】主角 3D 人物层资源由页面经 file:// fetch 读取，Chrome 需放开本地文件访问（只作用于证据浏览器）
+  args: ['--allow-file-access-from-files'],
 });
 const page = await browser.newPage({ viewport: { width: 450, height: 800 } });
 page.on('pageerror', (e) => console.log('[pageerror]', e.message));

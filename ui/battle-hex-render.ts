@@ -5,6 +5,8 @@ import type {
   BattleFacingHex,
   BattleMode,
   BattleSnapshot,
+  Character3DPassResult,
+  CharacterRenderCommand,
   FrameContext,
   HexPos,
   SkillButtonInfo,
@@ -56,6 +58,44 @@ import {
   type HeroWeaponRuntimeRow,
   type WeaponModelMeta,
 } from '../config/hero-weapon-layer'; // 【T29】武器层只读配置 v2（键=bodyFrame→48 行标定行+全局剑模；渲染只消费不算数值）
+// 【T31-FE-B】spriteKey → 3D profile 键（方案 §3 末段：由 config 决定该键走 3D 还是现有 2D profile）。
+// 只读查表：渲染层不持任何资产地址/时长（§6.1 资源 URL 只在 config）。
+import { CHARACTER_3D_PROFILE_BY_SPRITE_KEY } from '../config/character-3d';
+
+// ============ T31-FE-B · 3D 人物层接点（方案 §2/§4.1/§4.3；S1 仅主角 3D） ============
+//
+// 职责边界（本卡只做「接点」）：
+//   ① **单一坐标出口**（§4.1）：命令的 footX/footY/hopPx 由本文件沿既有 moveAnimDrawPosPx/camera/
+//      pieceHop 算出（与 2D 绘制同一份几何，见 pieceGeometryOf）；3D 侧禁再从 q/r 重投影（易错点 3）。
+//   ② **层序**（§4.3）：pass 每帧先渲染整张透明人物层（仅主角），既有 depthKey 排序遍历走到该角色
+//      槽位时**合成一次**；HUD/热区复用 pass 返回的 placed（与摆放矩阵同源，易错点 10）。
+//   ③ **不降级**（§6.2）：已注入 3D 层的宿主上，该角色**不再走 2D 帧**（同帧双画=重影，易错点 9）；
+//      未注入 = 全部角色走既有 2D 路径（微信宿主 S1 未迁移，零行为变化）。
+//
+// 命令坐标单位 = **物理像素**（= WebGL 正交像素空间；宿主以 pixelRatio = 离屏背衬/逻辑像素 声明）。
+// 理由：main 的 2D 上下文带 dpr transform（逻辑像素），而 renderer.resize 的背衬与 orthoPixel 都是
+// 物理像素；命令在出口处一次换算，合成时 drawImage(canvas, 0, 0) 即 1:1 物理像素（不糊）。
+
+/** 合成目标最小面（CanvasRenderingContext2D 结构满足；与 pass 的 Canvas2DCompositeTarget 同形）。 */
+export interface Character3DCompositeTarget {
+  drawImage(image: unknown, dx: number, dy: number): void;
+}
+
+/** 3D 人物层接口（结构类型零 import：宿主注入 ui/character3d/pass 的产物，渲染层不认识 WebGL）。
+ * 未注入 = 既有 2D 路径全量生效（既有用例/微信宿主零改动）。 */
+export interface Character3DLayer {
+  /** 离屏背衬像素 / 逻辑像素（宿主 dpr；缺省 1）。命令坐标按此换算（见上方单位说明）。 */
+  readonly pixelRatio: number;
+  /** 每帧一次：吃该帧全部 3D 单位命令，产出整张透明人物层与 placed。dtSec = 帧间隔秒（表现钟）。 */
+  render(commands: readonly CharacterRenderCommand[], dtSec: number): Character3DPassResult;
+  /** 在 2D 世界层的该角色 depth 槽位合成整张人物层（§4.3「走到 hero 槽位只合成一次」）。 */
+  composite(target: Character3DCompositeTarget, dx: number, dy: number): boolean;
+}
+
+/** 该 spriteKey 是否走 3D（纯查表；未配置=null → 既有 2D profile）。 */
+export function character3DProfileKeyOf(actor: SnapshotActor): string | null {
+  return CHARACTER_3D_PROFILE_BY_SPRITE_KEY[actor.spriteKey] ?? null;
+}
 
 // ============ 资源与视图类型 ============
 
@@ -368,6 +408,13 @@ export interface BattleHexView {
    * ui/wf-banner.ts 的 WfBannerPlayer 结构满足；宿主绑定一次（稳定实例）。drawFrame 在世界
    * clip restore 后/drawComponents 前调用（名条压棋盘与 HUD、组件与结算遮罩之下）；不设=零影响。 */
   wfBanner?: WfBannerLayer;
+  /** 【T31-FE-B】3D 人物层引用（方案 §2/§4.3）：结构类型零 import——preview 宿主绑定
+   * ui/character3d/pass 的产物（稳定实例）。drawPieces 组命令→渲染一次→按 depthKey 槽位合成一次；
+   * 不设=该角色继续走既有 2D profile（微信宿主 S1 未迁移，行为零变化）。 */
+  character3d?: Character3DLayer;
+  /** 【T31-FE-B】3D placed 本帧镜像（渲染私有 last-drawn，沿 topbarHud 先例）：供宿主/HUD 断言
+   * 复用 pass 返回的锚点；未注入 3D 层或未就绪=null。不进 types.ts、零契约新增。 */
+  character3dPlaced: ReadonlyMap<string, { cx: number; top: number; w: number; h: number }> | null;
   layout: HitLayout;
 }
 
@@ -400,6 +447,7 @@ export function createView(): BattleHexView {
       ctrlActive: { mode: false, speed: false },
     },
     layout: { skillBtns: [], ctrlRect: null, plaqueRect: null, atkBtn: null },
+    character3dPlaced: null,
   };
 }
 
@@ -1285,6 +1333,102 @@ export function pieceHop(view: BattleHexView, actor: SnapshotActor): number {
   return Math.sin(Math.PI * p) * ma.hopHeight;
 }
 
+// ============ T31-FE-B · 棋子绘制几何（**单一坐标出口**，方案 §4.1） ============
+
+/** 棋子屏幕几何：2D 帧绘制与 3D 人物命令**共用这一份**换算结果。
+ * 3D 侧禁再从 q/r 重投影（易错点 3：镜头拖动/moveAnim 会与 2D 出双轨）。 */
+interface PieceGeometry {
+  /** 演出插值后的世界 y（= 既有深度排序键；3D 命令 depthKey 同源，保证层序与 2D 一致） */
+  worldY: number;
+  /** 脚底屏幕 x（含 T21 受击震动位移；与 2D 绘制 cx 同值） */
+  footX: number;
+  /** 脚底行屏幕 y（格心行；轻功垂直位移由 hopPx 单独给，不在本值里烤） */
+  footY: number;
+  /** 轻功抛物线高度（垂直位移唯一来源；3D 侧 root 位移已归零，禁双重抬升） */
+  hopPx: number;
+}
+
+function pieceGeometryOf(
+  view: BattleHexView,
+  actor: SnapshotActor,
+  cam: { x: number; y: number },
+  width: number,
+  height: number,
+): PieceGeometry {
+  const ma = view.moveAnims.get(actor.id);
+  const draw = ma ? moveAnimDrawPosPx(ma) : hexToWorld(actor.renderPos.q, actor.renderPos.r); // 演出期=像素空间插值（双轨消灭）
+  const sx = Math.round(draw.x - cam.x + width / 2);
+  const syGround = Math.round(draw.y - cam.y + height / 2);
+  const hop = pieceHop(view, actor); // 轻功抛物线（演出期参数随距离插值）
+  // 【T21 受击反馈互指】T21 震动=事件驱动（view.shakes，参数组 DMG.shake*，下方 shakeDmg 附加偏移）；
+  // 下面这行 animState==='hit' 是休眠钩子——session 从不产生 'hit' 态，永不执行，维持休眠不删不接。
+  // 与 updateView 内 hit fx 分支互指（同注）。
+  const shake = actor.animState === 'hit' ? Math.sin(view.time * 70) * 2 : 0;
+  const shakeElapsed = view.shakes.get(actor.id);
+  const shakeDmg =
+    shakeElapsed !== undefined
+      ? Math.sin(shakeElapsed * DMG.shakeFreq) * DMG.shakePx * (1 - shakeElapsed / DMG.shakeSec)
+      : 0; // T21 §2.5：水平 ±3px 衰减 ~200ms，cx 附加偏移（不动 moveAnims 插值位）
+  return { worldY: draw.y, footX: sx + shake + shakeDmg, footY: syGround, hopPx: hop };
+}
+
+/** 死亡压扁比例（沿既有 2D 阵亡表现：画布高 ×0.3 落地压扁）——2D/3D 两路同源。 */
+const DEAD_SQUASH_Y = 0.3;
+
+/** 3D 动作状态 + 进态历时（表现态口径，**与 2D 选帧同源**，方案 §5）：
+ * - 移动演出期（moveAnims 未走完）→ 'walk'：§5 walk 行「时钟由 view 演出钟推进，**移动结束**
+ *   立即进入 idle 混合」——「移动结束」= 演出结束（2D directionalFrameOf 的 walk 臂同口径），
+ *   若改用快照 animState（ANIM_MS.walk=300ms 即回 idle）则长距离移动后半程会站着滑行（滑步）；
+ * - 普攻保持窗内（快照已回 idle 但 CHOREO.basicSec 窗未到）→ 'basic' 且历时取钟连续值，尾帧保持；
+ * - 其余沿快照 animState；进态历时 = view 表演钟 t（新组从 0，与 2D 帧组重放同沿）。 */
+function character3DPresentationOf(
+  view: BattleHexView,
+  actor: SnapshotActor,
+): { state: SnapshotActor['animState']; elapsedSec: number } {
+  const clock = view.anim.get(actor.id);
+  const sameState = clock !== undefined && clock.state === actor.animState ? clock.t : 0;
+  if (actor.animState === 'dead') return { state: 'dead', elapsedSec: 0 };
+  const ma = view.moveAnims.get(actor.id);
+  if (ma && ma.t < ma.duration) return { state: 'walk', elapsedSec: sameState };
+  const hold = view.basicHolds.get(actor.id);
+  if (actor.animState === 'idle' && hold !== undefined && view.time < hold.until) {
+    // 窗内历时取钟连续值：仍在 basic 态取钟，已翻 idle 取「窗起点差」（与 2D directionalFrameOf 同式）
+    const elapsed = clock !== undefined && clock.state === 'basic' ? clock.t : view.time - hold.since;
+    return { state: 'basic', elapsedSec: elapsed };
+  }
+  return { state: actor.animState, elapsedSec: sameState };
+}
+
+/** 组一条 3D 人物渲染命令（方案 §3 冻结契约；坐标=物理像素，见本文件接点说明）。
+ * isJump = **SnapshotActor.isJump 原样透传**（§4.1/§5；禁用 hopPx 或时钟猜——抛物线端点 hop 恰为 0）。 */
+function character3DCommandOf(
+  view: BattleHexView,
+  actor: SnapshotActor,
+  profileKey: string,
+  geo: PieceGeometry,
+  pixelRatio: number,
+): CharacterRenderCommand {
+  const pres = character3DPresentationOf(view, actor);
+  const ma = view.moveAnims.get(actor.id);
+  const dead = actor.animState === 'dead';
+  return {
+    actorId: actor.id,
+    profileKey,
+    footX: geo.footX * pixelRatio,
+    footY: geo.footY * pixelRatio,
+    depthKey: geo.worldY,
+    facing: actor.facingHex,
+    state: pres.state,
+    isJump: actor.isJump,
+    stateElapsedSec: pres.elapsedSec,
+    // jump 专用：0→1 映射完整 jump 源（§5 末行）；无移动演出=null（状态机回落到 stateElapsed）
+    moveProgress: ma ? Math.min(1, ma.t / ma.duration) : null,
+    hopPx: geo.hopPx * pixelRatio,
+    alpha: dead ? PIECE.deadAlpha : 1,
+    squashY: dead ? DEAD_SQUASH_Y : 1,
+  };
+}
+
 function drawPieces(
   ctx: CanvasRenderingContext2D,
   snapshot: BattleSnapshot,
@@ -1293,6 +1437,7 @@ function drawPieces(
   cam: { x: number; y: number },
   width: number,
   height: number,
+  dtSec: number,
 ): PlacedPiece[] {
   const hexH = TILE_H; // 压扁格高（棋子定尺基准）
   // y 排序遮挡（移动演出期按演出位置排序，保证跃过单位时遮挡正确）
@@ -1304,11 +1449,70 @@ function drawPieces(
     return wa.y - wb.y;
   });
   const placed: PlacedPiece[] = [];
+  // ---- 【T31-FE-B · 方案 §4.3】3D 人物层：本帧先组命令 → pass 渲染**一次**（整张透明人物层），
+  // 再按既有 depthKey 排序遍历，走到该角色槽位时**只合成一次**（S1 只有主角，故仍与前后 2D 敌人
+  // 正确交错）。命令坐标与下方 2D 绘制共用 pieceGeometryOf（单一坐标出口，§4.1）。
+  // 未注入 3D 层 = 本段整体跳过，全部角色走既有 2D profile（既有用例/微信宿主零变化）。
+  const layer3d = view.character3d;
+  const geom3d = new Map<string, PieceGeometry>();
+  const profile3d = new Map<string, string>();
+  const cmds3d: CharacterRenderCommand[] = [];
+  if (layer3d) {
+    for (const actor of sorted) {
+      const key = character3DProfileKeyOf(actor);
+      if (!key) continue;
+      const geo = pieceGeometryOf(view, actor, cam, width, height);
+      profile3d.set(actor.id, key);
+      geom3d.set(actor.id, geo);
+      cmds3d.push(character3DCommandOf(view, actor, key, geo, layer3d.pixelRatio));
+    }
+  }
+  // pass 未就绪（loading/failed/context-lost）时返回空 placed/空层：该角色**不画 2D 帧**
+  //（方案 §6.2：不允许切 2D 帧降级，也不允许「隐形人物战斗」——宿主按 status 停在加载失败页）
+  const placed3d = layer3d && cmds3d.length > 0 ? layer3d.render(cmds3d, dtSec).placed : null;
+  const ratio3d = layer3d && layer3d.pixelRatio > 0 ? layer3d.pixelRatio : 1;
+  /** 本帧实际喂给 HUD/热区的 3D 锚点（**2D 逻辑像素**，与 drawPieces 的 placed 同口径；
+   * dead 不进=与 2D 口径一致）。既是 HUD 数据源也是宿主/断言的 last-drawn 镜像。 */
+  const placed3dLogical = new Map<string, { cx: number; top: number; w: number; h: number }>();
+  let composed3d = false;
+  const composeCharacterLayerOnce = (): void => {
+    if (composed3d || !layer3d) return;
+    composed3d = true;
+    // 人物层背衬是**物理像素**（= 命令坐标空间），而 2D 上下文处于 dpr 变换下（逻辑像素）——
+    // 合成前把上下文换成背衬像素空间一次（1/pixelRatio），drawImage 即 1:1 物理像素、不糊不缩。
+    // pixelRatio 由宿主按「离屏背衬/逻辑像素」声明，与 main 的 dpr 同源（接点契约）。
+    const ratio = layer3d.pixelRatio > 0 ? layer3d.pixelRatio : 1;
+    if (ratio === 1) {
+      layer3d.composite(ctx, 0, 0);
+      return;
+    }
+    ctx.save();
+    ctx.scale(1 / ratio, 1 / ratio);
+    layer3d.composite(ctx, 0, 0);
+    ctx.restore();
+  };
   for (const actor of sorted) {
+    // 3D 分支：本角色本帧**只**出 3D 一份（易错点 9：同帧画 2D 帧+武器层=重影）；因为整张人物层
+    // 已在 pass 内按 yaw/alpha/squash 摆好，这里只做「槽位合成一次」+ 复用 placed（易错点 10：HUD
+    // 与技能钮锚点与摆放矩阵同源）。
+    const key3d = profile3d.get(actor.id);
+    if (key3d !== undefined && layer3d) {
+      composeCharacterLayerOnce();
+      if (actor.animState === 'dead') continue; // 阵亡：pass 已按 alpha/squashY 压扁淡出，HUD 同 2D 口径跳过
+      const box = placed3d?.get(actor.id);
+      if (box) {
+        // pass 的 placed 在**命令坐标空间（物理像素）**；HUD/名条/技能钮热区全在 2D 逻辑像素空间绘制，
+        // 故此处换算一次（易错点 10：placed 与脚底必须同源——换算是同一个 ratio，不引入第二套几何）。
+        const entry = { cx: box.cx / ratio3d, top: box.top / ratio3d, h: box.h / ratio3d, w: box.w / ratio3d };
+        placed.push({ actor, ...entry });
+        placed3dLogical.set(actor.id, entry);
+      }
+      continue;
+    }
+    const geo = geom3d.get(actor.id) ?? pieceGeometryOf(view, actor, cam, width, height);
+    const sx = geo.footX;
+    const syGround = geo.footY;
     const ma = view.moveAnims.get(actor.id);
-    const draw = ma ? moveAnimDrawPosPx(ma) : hexToWorld(actor.renderPos.q, actor.renderPos.r); // 演出期=像素空间插值（双轨消灭）
-    const sx = Math.round(draw.x - cam.x + width / 2);
-    const syGround = Math.round(draw.y - cam.y + height / 2);
     const scale = actor.isBoss ? PIECE.bossScale : 1;
     const h = hexH * PIECE.heightPerTile * scale;
     // 【六向帧接线 §4.1】先取 profile 再取帧：directional=facingHex+clip+ordinal 零翻转；
@@ -1337,22 +1541,13 @@ function drawPieces(
       if (img) {
         ctx.save();
         ctx.globalAlpha = PIECE.deadAlpha;
-        drawImg(ctx, img, sx - w / 2, syGround - h * 0.3, w, h * 0.3);
+        drawImg(ctx, img, sx - w / 2, syGround - h * DEAD_SQUASH_Y, w, h * DEAD_SQUASH_Y);
         ctx.restore();
       }
       continue;
     }
-    const hop = pieceHop(view, actor); // 轻功抛物线（演出期参数随距离插值）
-    // 【T21 受击反馈互指】T21 震动=事件驱动（view.shakes，参数组 DMG.shake*，下方 shakeDmg 附加偏移）；
-    // 下面这行 animState==='hit' 是休眠钩子——session 从不产生 'hit' 态，永不执行，维持休眠不删不接。
-    // 与 updateView 内 hit fx 分支互指（同注）。
-    const shake = actor.animState === 'hit' ? Math.sin(view.time * 70) * 2 : 0;
-    const shakeElapsed = view.shakes.get(actor.id);
-    const shakeDmg =
-      shakeElapsed !== undefined
-        ? Math.sin(shakeElapsed * DMG.shakeFreq) * DMG.shakePx * (1 - shakeElapsed / DMG.shakeSec)
-        : 0; // T21 §2.5：水平 ±3px 衰减 ~200ms，cx 附加偏移（不动 moveAnims 插值位）
-    const cx = sx + shake + shakeDmg;
+    const hop = geo.hopPx; // 轻功抛物线（演出期参数随距离插值）
+    const cx = geo.footX;
     // 【L 环锚点修正 09-06（主架构验收定版）】directional=脚底基线锚定格心：battle45 帧画布 240×320
     // 脚底在 y=300（底部 20px 空白），落地基准=脚底非画布底（旧整画布底口径上浮 h×20/320≈7.7px）；
     // +PIECE.feetOffsetPx 脚底向下补偿（L 环二轮居中校准：正数=下移，Leo 选档 6px）。
@@ -1370,6 +1565,7 @@ function drawPieces(
     // layerOrder 的上下关系已在 layer 内部实现（weapon_front=destination-over 身体垫挖孔剑下 /
     // body_front=source-over 身体盖剑上，§4.3）；HUD/world FX/UI 时序零改（T25/T27）。
     // 合成层缺失（模型/蒙版/身体缺图）=空手降级走身体原路径 + diag.missing（宿主进 asset gate）。
+    // 【T31-FE-B】走 3D 的 spriteKey 在**上方分支已 continue**，本查询对它们零调用（§8 卡 B 明文）。
     let weapon: { row: HeroWeaponRuntimeRow; model: WeaponModelMeta; layer: ImgLike } | null = null;
     if (isDirectional && img && sel && sel.clip !== 'jump') {
       weapon = weaponLayerOf(
@@ -1400,6 +1596,7 @@ function drawPieces(
       ctx.fill();
     }
   }
+  view.character3dPlaced = layer3d && cmds3d.length > 0 ? placed3dLogical : null;
   return placed;
 }
 
@@ -1827,7 +2024,9 @@ export function drawFrame(
   ctx.rect(0, 0, width, height);
   ctx.clip();
   drawCells(ctx, snapshot, cam, width, height, view.selectedCell, view.hoverCell);
-  const placed = drawPieces(ctx, snapshot, assets, view, cam, width, height);
+  // 【T31-FE-B】dt 沿既有调用口径为**秒**（updateView 的 dt 同源同值：main loop 与既有用例都传秒），
+  // 只喂 3D 动作状态机（表现钟）——不进 session/结算，不改任何 2D 演出（易错点 12）。
+  const placed = drawPieces(ctx, snapshot, assets, view, cam, width, height, fc.dt);
   view.fxWorld?.draw(ctx, cam, width, height); // 【T25】世界光影层：棋子后/血条前（方案 §3.2）
   drawPieceHud(ctx, placed, snapshot, view);
   drawFx(ctx, view, cam, width, height);

@@ -28,6 +28,8 @@ const CAST_FRAME_PERIOD_MS = 280; // 【v0.3】施法相 cast 循环步频（con
 const browser = await chromium.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   headless: true,
+  // 【T31-FE-B】主角 3D 人物层资源由页面经 file:// fetch 读取，Chrome 需放开本地文件访问（只作用于证据浏览器）
+  args: ['--allow-file-access-from-files'],
 });
 
 const errors = [];

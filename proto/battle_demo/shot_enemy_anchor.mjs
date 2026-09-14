@@ -33,6 +33,7 @@ if (phase === 'sixdir') {
   const browser2 = await chromium2.launch({
     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     headless: true,
+  args: ['--allow-file-access-from-files'],
   });
   const errs = [];
   const page2 = await browser2.newPage({ viewport: { width: 450, height: 800 } });
@@ -153,6 +154,8 @@ if (phase === 'sixdir') {
 const browser = await chromium.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   headless: true,
+  // 【T31-FE-B】主角 3D 人物层资源由页面经 file:// fetch 读取，Chrome 需放开本地文件访问（只作用于证据浏览器）
+  args: ['--allow-file-access-from-files'],
 });
 const errors = [];
 const page = await browser.newPage({ viewport: { width: 450, height: 800 } });
