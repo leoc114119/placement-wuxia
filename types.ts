@@ -398,3 +398,75 @@ export interface FxRecipe {
   anchor: 'casterCellCenter';
   layers: FxLayerRecipe[];
 }
+
+// ============ T31-FE-A · 2.5D 角色运行时契约（《2.5D角色运行时接入技术方案》v1.0 §3 冻结接口） ============
+// 只增不改：本区块是 3D 人物运行时的跨模块唯一契约，types 之外不得另立同名结构。
+// 依赖方向（方案 §2）：SnapshotActor + BattleHexView →（只读）CharacterRenderCommand[]
+//   → Character3DPass → Character3DRenderer → 离屏 WebGL2 canvas →（一次 drawImage）Canvas 2D 世界层。
+// 红线：ui/character3d/** 禁 import battle-core / battle-session / 任何结算配置；只消费渲染命令。
+//   spriteKey 仍是角色外观稳定键，由 config/character-3d.ts 决定该键走 3D 还是现有 2D profile
+//（S1 仅 hero → 3D，敌型不改；SnapshotActor 不新增模型 URL / 骨骼 / 动作帧 / 下载状态）。
+
+/** 3D 动作槽位（方案 §5 动作映射表）。与 BattleAnimState 不同集：本类型是**资产槽位**，
+ * idle/walk/atk/cast/jump 各对接一条资产；hit/dead 不占槽位（分别沿用当前 clip 与 idle 首帧）。 */
+export type Character3DClipKey = 'idle' | 'walk' | 'atk' | 'cast' | 'jump';
+
+/** 3D 资产引用（模型 / 动作 json）。urlPath 恒为**相对**已批准 CDN base URL 的路径，
+ * 业务代码禁拼完整 URL（方案 §6.1：base URL 由环境配置注入，并进入微信 downloadFile 合法域名白名单）。 */
+export interface Character3DAssetRef {
+  id: string;
+  urlPath: string; // 相对已批准 CDN base URL；禁止业务代码拼完整 URL
+  sha256: string;
+  byteLength: number;
+  mediaType: 'model/gltf-binary' | 'application/json';
+}
+
+/** 挂点预留（方案 §11：attachment 从 S1 预留，素材不过双门不得启用）。
+ * localMatrix = 16 个数（列主序，与 glTF/WebGL 同序）；素材未过门时 enabled=false。 */
+export interface CharacterAttachmentProfile {
+  bone: string;
+  assetId: string;
+  enabled: boolean;
+  localMatrix: readonly number[]; // 16 个数；素材过门前 enabled=false
+}
+
+/** 3D 角色 profile：清单**随代码发布**（体积小），模型/动作 payload 走 CDN（方案 §6.1）。
+ * jointCount/primitiveCount 是资产门检硬指标：不符即不使用该文件、也不覆盖 last-known-good（§6.2）。 */
+export interface Character3DProfile {
+  mode: 'webgl2-skinned';
+  model: Character3DAssetRef;
+  clips: Readonly<Record<Character3DClipKey, Character3DAssetRef | { embedded: string }>>;
+  jointCount: 41;
+  primitiveCount: 1;
+  modelHeight: number;
+  screenHeightPxAtReference: number;
+  sourceViewYawDeg: Readonly<Record<BattleFacingHex, number>>;
+  attachments: Readonly<Record<string, CharacterAttachmentProfile>>;
+}
+
+/** 人物层渲染命令（方案 §4.1「单一坐标出口」）：脚底屏幕坐标**只由 battle-hex-render** 沿
+ * moveAnimDrawPosPx / camera / pieceHop 算出后填入；3D pass 禁再次从 q/r 推屏幕坐标。
+ * depthKey 由 2D 层排序消费，pass 本身不排序（S1 仅主角，整张透明层在 hero 槽位合成一次）。 */
+export interface CharacterRenderCommand {
+  actorId: string;
+  profileKey: string;
+  footX: number;
+  footY: number;
+  depthKey: number;
+  facing: BattleFacingHex;
+  state: SnapshotActor['animState'];
+  stateElapsedSec: number;
+  moveProgress: number | null;
+  hopPx: number;
+  alpha: number;
+  squashY: number;
+}
+
+/** 人物层 pass 输出（方案 §4.3）：canvas 为全视口透明离屏尺寸；placed 供 HUD 名条/技能钮定位，
+ * 必须与**建矩阵用的是同一组数**（易错点 10：bbox 与脚底不同源会导致 HUD 漂移）。 */
+export interface Character3DPassResult {
+  status: 'ready' | 'loading' | 'failed' | 'context-lost';
+  canvas: { width: number; height: number } | null;
+  placed: ReadonlyMap<string, { cx: number; top: number; w: number; h: number }>;
+  diagnostics: ReadonlyArray<string>;
+}
