@@ -769,6 +769,48 @@ describe('红线：卡 C 新宿主', () => {
     expect(bundle).toContain('proto/character3d_runtime_demo/main');
   });
 
+  // ---- P0 回退门：微信小游戏运行时**禁用动态代码求值** ----
+  // 崩因实测（Leo 真机，macOS/mg，lib 3.17.2）：旧 bundle 用 `new Function("require","module","exports",源码)`
+  // 注册模块 ⇒ 每处注册拿不到函数 ⇒ 入口第一次 __req 抛 `TypeError: m.fn is not a function`（栈里只有入口帧）。
+  // 修法：模块体**内联成函数字面量**（与 webpack/rollup 同形态）。
+
+  it('bundle.js 内零动态代码求值（new Function / Function( / eval）', () => {
+    const bundle = readFileSync('proto/character3d_runtime_demo/bundle.js', 'utf8');
+    expect(bundle.match(/\bnew\s+Function\s*\(/g) ?? []).toEqual([]);
+    expect(bundle.match(/(^|[^.\w$])eval\s*\(/g) ?? []).toEqual([]);
+    expect(bundle.replace(/\bnew\s+Function\s*\(/g, '').match(/(^|[^.\w$])Function\s*\(/g) ?? []).toEqual([]);
+    // 游戏入口文件同样细查
+    const gameJs = readFileSync('proto/character3d_runtime_demo/game.js', 'utf8');
+    expect(gameJs.match(/\bnew\s+Function\s*\(/g) ?? []).toEqual([]);
+    expect(gameJs.match(/(^|[^.\w$])eval\s*\(/g) ?? []).toEqual([]);
+  });
+
+  it('bundle.js 的模块注册形态是**函数字面量**（不是源码字符串 + 构造）', () => {
+    const bundle = readFileSync('proto/character3d_runtime_demo/bundle.js', 'utf8');
+    // 入口与生产模块都以 `__def("<id>", function (require, module, exports) {` 注册
+    expect(bundle).toContain('__def("proto/character3d_runtime_demo/main", function (require, module, exports) {');
+    expect(bundle).toContain('__def("proto/character3d_runtime_demo/host", function (require, module, exports) {');
+    expect(bundle).toContain('__def("ui/character3d/renderer", function (require, module, exports) {');
+    expect(bundle).toContain('__def("net/character-asset-loader", function (require, module, exports) {');
+    // 注册数 = 模块数（20）：每处都是函数字面量形态
+    expect((bundle.match(/__def\("[^"]+", function \(require, module, exports\) \{/g) ?? []).length).toBe(20);
+    // 旧的「源码字符串变量 + 构造」形态必须彻底消失
+    expect(bundle).not.toContain('new Function("require", "module", "exports"');
+  });
+
+  it('build.mjs 自带防回退门（生成器与门不许脱钩）', () => {
+    const build = readFileSync('proto/character3d_runtime_demo/build.mjs', 'utf8');
+    // 门函数在：扫描 new Function / eval / 裸 Function(
+    expect(build).toContain('function scanDynamicEval(text)');
+    expect(build).toContain('/\\bnew\\s+Function\\s*\\(/g');
+    expect(build).toContain('含动态代码求值（微信运行时禁用）');
+    // 生成器不再产出构造形态；且构建期就拦「模块体自带动态求值」
+    expect(build).not.toContain('new Function("require", "module", "exports"');
+    expect(build).toContain('禁止入包');
+    // 语法自检也不再依赖动态求值（改用 TS 解析器）
+    expect(build).toContain('parseDiagnostics');
+  });
+
   it('禁碰区零改动（battle-core / systems / cloudfunctions / package.json / types.ts 由 git diff 另行核对）', () => {
     // 本用例是**用例层**的可见性提醒：这五个路径的内容断言交给交付时的 git diff 证据；
     // 这里只锁「宿主不 import 它们」这一条能自动化的部分（上面已有），并确认文件仍存在。

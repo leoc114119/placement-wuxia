@@ -96,13 +96,25 @@ function buildBundle() {
   parts.push('    if (m.exp === null) { m.exp = { exports: {} }; m.fn(function (s) { return __req(id, s); }, m.exp, m.exp.exports); }');
   parts.push('    return m.exp.exports;');
   parts.push('  }');
+  // ★【T31-FE-C P0 修复】模块体**直接内联为函数字面量**（webpack / rollup 的常规形态）。
+  //   禁 `new Function(源码字符串)`：微信小游戏运行时**禁用动态代码求值**——实测真机（macOS/mg，lib 3.17.2）
+  //   下每处注册拿不到函数，入口第一次 __req 即抛 `TypeError: m.fn is not a function`（栈里只有入口帧）。
+  //   旧写法是「源码字符串 + new Function」，Node/浏览器能跑（它们允许动态求值），真机一加载即崩。
+  //   ⚠ 这条约束由本文件末尾的**防回退门**（scanDynamicEval）与 tests/character3d-runtime-demo.test.ts 双锁。
   for (const key of order) {
-    const varName = '__mod_' + key.replace(/[^a-z0-9]/gi, '_');
-    parts.push(`  var ${varName} = ${JSON.stringify(seen.get(key))};`);
+    const body = seen.get(key);
+    // 安全自检：模块体若自身带动态求值，注册成函数字面量也救不了（同族限制，构建期就报出来）
+    const inner = scanDynamicEval(body);
+    if (inner.length > 0) {
+      throw new Error(`[build] 模块 ${key} 内含动态代码求值（${inner.join(' / ')}）——微信运行时禁用，禁止入包`);
+    }
     parts.push(`  // ---- ${key} ----`);
-    parts.push(`  __def(${JSON.stringify(key)}, new Function("require", "module", "exports", ${varName}));`);
+    // 函数字面量：模块体作为**函数体**（TS 编译出的 CommonJS 可直接作函数体），不做任何字符串求值
+    parts.push(`  __def(${JSON.stringify(key)}, function (require, module, exports) {`);
+    parts.push(body);
+    parts.push('  });');
   }
-  parts.push('  __req("proto/character3d_runtime_demo/main", "./main");');
+  parts.push('  __req("proto/character3d_runtime_demo/main", "./main"); // 入口');
   parts.push('})();');
   const text = parts.join('\n');
   if (!CHECK_ONLY) fs.writeFileSync(OUT, text, 'utf8');
@@ -111,6 +123,11 @@ function buildBundle() {
 
 // ===== 资产账真源：直接用 typescript 把 config/character-3d.ts 跑起来取 ref（不复制 sha/长度）=====
 
+/**
+ * 构建期在 **Node** 里执行一个 TS 配置模块（只为读出资产清单真值：sha256 / byteLength / urlPath）。
+ * ★ 这里的 `new Function` 只发生在**构建机 Node**上，**不进任何产物**（产物扫描门只针对 bundle.js/game.js）；
+ *   小程序运行时看不到它。若把这段搬进产物即触发 §7 的动态求值禁令。
+ */
 function loadTsModule(key, cache = new Map()) {
   if (cache.has(key)) return cache.get(key);
   const src = fs.readFileSync(path.join(ROOT, key + '.ts'), 'utf8');
@@ -128,6 +145,36 @@ function loadTsModule(key, cache = new Map()) {
   };
   new Function('require', 'module', 'exports', js)(req, mod, mod.exports);
   return mod.exports;
+}
+
+/**
+ * 动态代码求值扫描（微信小游戏运行时**禁用** `new Function` / `eval` 等动态求值）。
+ * 返回命中的形态清单（空数组 = 干净）。三态理由：
+ *   · `new Function(` —— P0 崩因本体（真机实测 m.fn is not a function）；
+ *   · `eval(` —— 同族禁令，构建期就拦；
+ *   · 裸 `Function(`（非 new 形态）—— Function 构造器的另一种调用写法。
+ * 另附**报告项**（同族但不在本轮硬门内，命中只提示不失败）：字符串型 setTimeout/setInterval、动态 import()。
+ */
+function scanDynamicEval(text) {
+  const hits = [];
+  const newFn = text.match(/\bnew\s+Function\s*\(/g) || [];
+  if (newFn.length) hits.push('new Function × ' + newFn.length);
+  const evalCall = text.match(/(^|[^.\w$])eval\s*\(/g) || [];
+  if (evalCall.length) hits.push('eval( × ' + evalCall.length);
+  // 去掉 `new Function(` 之后再看裸 `Function(`（避免同一处重复计数）
+  const bare = text.replace(/\bnew\s+Function\s*\(/g, '').match(/(^|[^.\w$])Function\s*\(/g) || [];
+  if (bare.length) hits.push('Function( × ' + bare.length);
+  return hits;
+}
+
+/** 同族限制的报告项（不阻断，只提示；扫描口径见 README §7）。 */
+function scanDynamicEvalFamily(text) {
+  const notes = [];
+  const strTimer = text.match(/\b(setTimeout|setInterval)\s*\(\s*["']/g) || [];
+  if (strTimer.length) notes.push('字符串型定时器 × ' + strTimer.length);
+  const dynImport = text.match(/[^.\w$]import\s*\(/g) || [];
+  if (dynImport.length) notes.push('动态 import() × ' + dynImport.length);
+  return notes;
 }
 
 function sha256Hex(bytes) {
@@ -186,8 +233,13 @@ function staticGate() {
     .filter((d) => d.isFile() && /\.(js|json)$/.test(d.name)).map((d) => d.name);
   for (const f of mainFiles) if (!/^[\x20-\x7e]+$/.test(f)) problems.push(`主包文件名非 ASCII：${f}`);
   if (!CHECK_ONLY) {
-    try { new Function(fs.readFileSync(path.join(DEMO, 'game.js'), 'utf8')); } catch (e) { problems.push('game.js 语法非法：' + e.message); }
-    try { new Function(fs.readFileSync(OUT, 'utf8')); } catch (e) { problems.push('bundle.js 语法非法：' + e.message); }
+    // 语法自检走 TypeScript 解析器（**不用** new Function 求值：本文件自身也保持零动态求值形态）
+    for (const f of ['game.js', 'bundle.js']) {
+      const file = path.join(DEMO, f);
+      if (!fs.existsSync(file)) continue;
+      const diags = ts.createSourceFile(f, fs.readFileSync(file, 'utf8'), ts.ScriptTarget.ES2020, false).parseDiagnostics;
+      if (diags.length) problems.push(`${f} 语法非法：${diags[0].messageText}`);
+    }
   }
 
   // 6) 红线：新宿主不得 import proto/webgl2_probe（扫**真代码**：注释里的说明文字不算命中，
@@ -203,6 +255,17 @@ function staticGate() {
     const bundleCode = fs.readFileSync(OUT, 'utf8');
     if (/webgl2_probe/.test(bundleCode)) problems.push('bundle.js 内出现 proto/webgl2_probe 引用');
     if (/systems\/battle-core|battle-session/.test(bundleCode)) problems.push('bundle.js 内出现 battle-core/battle-session（宿主不引结算）');
+  }
+
+  // 7) 入包 JS **禁动态代码求值**（微信小游戏运行时禁令；T31-FE-C P0 防回退门）
+  for (const f of ['bundle.js', 'game.js']) {
+    const file = path.join(DEMO, f);
+    if (!fs.existsSync(file)) continue;
+    const text = fs.readFileSync(file, 'utf8');
+    const hits = scanDynamicEval(text);
+    if (hits.length) problems.push(`${f} 含动态代码求值（微信运行时禁用）：${hits.join(' / ')}`);
+    const family = scanDynamicEvalFamily(text);
+    if (family.length) notes.push(`${f} 同族限制报告（未阻断）：${family.join(' / ')}`);
   }
   notes.push(`资产副本 ${refs.length} 个 / ${(copiedBytes / 1048576).toFixed(2)} MB（源 = proto/battle_demo/cdn）`);
   notes.push(`主包 bundle ${(fs.existsSync(OUT) ? fs.statSync(OUT).size / 1024 : 0).toFixed(0)} KB（微信主包上限 4MB）`);

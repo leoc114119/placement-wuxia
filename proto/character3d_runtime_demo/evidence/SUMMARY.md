@@ -146,6 +146,35 @@
 
 ---
 
+## B0. P0 缺陷记录：bundle 动态求值（真机门第一坎，已修）
+
+| 项 | 内容 |
+|---|---|
+| 现象 | 真机/开发者工具一加载即崩：`TypeError: MiniProgramError → m.fn is not a function at __req (bundle.js:22)`，然后入口 `__req("proto/character3d_runtime_demo/main", "./main")`（bundle.js:84）；栈里**只有入口帧**、无更深帧 |
+| 环境 | 微信开发者工具 macOS/mg，基础库 3.17.2（Leo 实测） |
+| 根因 | 旧 `build.mjs` 用 `__def(id, new Function("require","module","exports", <源码字符串>))` 注册 20 个模块（bundle 内 20 处 `new Function`）。**微信小游戏运行时禁用动态代码求值** ⇒ 每处注册拿到的不是函数 ⇒ 第一次 `__req` 即抛 `m.fn is not a function`（栈浅 = 所有模块都没注册成函数） |
+| 对照（三条互相独立，均指向同一结论） | ① `node -e "require('./bundle.js')"` 旧包在 Node 下加载正常（只报预期的「无 wx 全局」）——Node 允许动态求值；② 浏览器 sim 旧包 30/30 全绿——Chrome 允许 `new Function`；③ S0 probe 真机可跑是因为它走原生多文件 `require`，从不碰 `new Function` |
+| 修复 | `build.mjs` 生成器改为**函数字面量内联**：`__def("<id>", function (require, module, exports) { <模块体> });`（webpack/rollup 常规形态）。**只改打包形态**，生产模块与 demo 语义零改动 |
+| 防回退（两道） | ① `build.mjs` 静态导入门第 7 条：扫 `bundle.js`/`game.js`，命中 `new Function(`/`Function(`/`eval(` **exit 1**（负例自检：注入一行 `new Function` → 门红、退出码 1）；另扫同族（字符串型定时器、动态 `import()`）只提示；② `tests/character3d-runtime-demo.test.ts` 新增 3 用例锁「bundle 零动态求值 / 注册形态是函数字面量（20 处且含入口与生产模块）/ build.mjs 自带门不许脱钩」 |
+| 修复后验证 | ① `node -e require` → 只报 `[host] 无 wx 全局：不是微信小游戏宿主`（不再有 `m.fn`）；② 浏览器 sim **30/30 PASS**；③ 五门 typecheck/lint/build 0 错、`test:battle` **734 passed / 14 skipped**、`test:behavior` 14/14；④ 开发者工具 `cli open` → 日志 `starting compiler` + `project ready` + `BACKEND_READY`，**无** `TypeError` / `m.fn` / `game.json 文件内容错误`（详见 §B1） |
+| 复发次数 | 1（本轮） |
+
+### B1. 开发者工具侧证据（P0 修复后复测）
+
+- 命令：`"/Applications/wechatwebdevtools.app/Contents/MacOS/cli" open --project /tmp/pw-t31-fea/proto/character3d_runtime_demo` → `✔ open`
+- 主日志 `~/Library/Application Support/微信开发者工具/<hash>/WeappLog/logs/2026-09-14-19-32-41-716.log`：
+  - `19:38:45.529 [BackendInitEnv] [rt:2,win:s2] isMiniAppProject=false, isEvalProject=false, starting compiler`
+  - 同刻 `[BackendInitEnv] project ready, projectpath=/tmp/pw-t31-fea/proto/character3d_runtime_demo`
+  - `19:38:46.304 [backendManager] received BACKEND_READY for /tmp/pw-t31-fea/proto/character3d_runtime_demo, port=0`
+- 该会话日志（`2026-09-14-19-38-46-246.log`）与主日志：**无** `TypeError`、**无** `m.fn is not a function`、
+  **无** `game.json 文件内容错误`、无编译错误条目。
+- **未取得（如实登记）**：IDE 控制台/模拟器的运行期输出。该会话有 2 条 `routeTo appLaunch timeout`（CLI `open`
+  的临时工程窗口路由超时；同一形态在修复前的 19:05 会话里同样出现 2 条 ⇒ 与本次修复无关，也不是本项目代码特征；
+  用 GUI 打开的 probe 会话为 0 条）。⇒ 结论强度记为「编译器已启动 + 后端就绪 + 日志无错误条目」，
+  **不等于**「已在开发者工具里跑起来」。运行期实证请以 Leo 在导入目录里重编译/预览为准。
+
+---
+
 ## C. 已知缺口与不确定项（交付时如实登记）
 
 1. **CDN 未跑**：真机侧无已备案域名 ⇒ 走分包/本地路径 adapter（同一条 loader 代码路径）。

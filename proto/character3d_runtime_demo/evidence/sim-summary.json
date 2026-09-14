@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-14T11:04:30.001Z",
- "commitSha": "cd2d713f00701e8cf08ada2cc5f7d0a174e8e14f",
+ "generatedAt": "2026-09-14T11:38:34.115Z",
+ "commitSha": "50950c6a3464d28c9b56b23b3eca8323852ca770",
  "aa": "fxaa",
  "profile": "sim",
  "viewport": {
@@ -44,7 +44,7 @@
   {
    "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
    "ok": true,
-   "detail": "{\"subpackageMs\":0,\"loaderMs\":38,\"glbParseMs\":4,\"animParseMs\":2,\"textureDecodeMs\":1,\"firstGpuUploadMs\":100}"
+   "detail": "{\"subpackageMs\":0,\"loaderMs\":35,\"glbParseMs\":3,\"animParseMs\":2,\"textureDecodeMs\":1,\"firstGpuUploadMs\":56}"
   },
   {
    "name": "六向 6 行且逐向 expected==activeClipKey",
@@ -119,7 +119,7 @@
   {
    "name": "20u 档：屏上 20 个角色全部可见",
    "ok": true,
-   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18537,perf-1:20495,perf-2:20232,perf-3:20536,perf-4:19099,perf-5:18711,…"
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18543,perf-1:20496,perf-2:20234,perf-3:20542,perf-4:19099,perf-5:18700,…"
   },
   {
    "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
@@ -139,7 +139,7 @@
   {
    "name": "结果回收：剪贴板成功（字符数 > 0）",
    "ok": true,
-   "detail": "10982"
+   "detail": "10971"
   },
   {
    "name": "结果回收：分享被调起",

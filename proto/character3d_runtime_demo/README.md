@@ -201,7 +201,14 @@ node proto/character3d_runtime_demo/tests/runtime-demo-browser.mjs --runs=2
 3. `project.config.json`：`compileType=game` + 非空 appid；
 4. 分包资产副本与 `config/character-3d.ts` 的清单**逐字节核对**（byteLength + SHA-256），缺失即复制；
 5. 入包文件名 ASCII + `game.js`/`bundle.js` 语法合法；
-6. 红线：宿主源码与 bundle **不含** `proto/webgl2_probe` 引用，bundle **不含** `systems/battle-core|battle-session`。
+6. 红线：宿主源码与 bundle **不含** `proto/webgl2_probe` 引用，bundle **不含** `systems/battle-core|battle-session`；
+7. **入包 JS 零动态代码求值**：`bundle.js` / `game.js` 命中 `new Function(` / `Function(` / `eval(` 即**失败退出**
+   （微信小游戏运行时禁用动态求值 —— T31-FE-C P0：旧包用 `new Function(源码)` 注册模块，真机一加载即
+   `TypeError: m.fn is not a function`）。同族限制（字符串型 `setTimeout/setInterval`、动态 `import()`）
+   一并扫描并**提示**（不阻断）；模块体自身带动态求值会在构建期直接抛错。
+
+> 模块注册形态 = **函数字面量内联**（`__def("<id>", function (require, module, exports) { <模块体> });`），
+> 与 webpack/rollup 同形态；禁用「源码字符串 + 构造」两段式（Node/Chrome 能跑、真机必崩）。
 
 ## 8. 已知缺口与不确定项（交付时如实登记）
 
