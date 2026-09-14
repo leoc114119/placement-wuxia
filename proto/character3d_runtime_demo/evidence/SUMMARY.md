@@ -151,9 +151,21 @@
 1. **CDN 未跑**：真机侧无已备案域名 ⇒ 走分包/本地路径 adapter（同一条 loader 代码路径）。
    已执行/未执行分支逐条见 A.1 与结果 JSON 的 `resource.executedBranches/notExecutedBranches`。
 2. **第二台异品牌安卓未采**（Leo 借测并行补采，不阻塞本卡；A1 升格仍需 ≥2 台 × 各 3 次冷启动）。
-3. **开发者工具导入未经 CLI 验证**：本机无微信开发者工具 CLI（需登录）⇒ 未能自动编译验证；
-   改为 `build.mjs` 的**静态导入门**逐项核对（game.js/game.json/分包 game.js/命名/语法/资产 SHA/红线），
-   导入步骤见 README §2.1。**若工具内仍报错，请把报错原文回传**（gate 清单见 README §7，可逐条对照）。
+3. **开发者工具导入：CLI 实测已过（编译器启动 + 后端就绪 + 无编译错误条目）**
+   - 本机 `cli islogin` = `{"login":true}` ⇒ 未触发任务卡说的「需登录即停」。
+   - `"/Applications/wechatwebdevtools.app/Contents/MacOS/cli" open --project <本目录>` → `✔ open`（退出码 0）。
+   - 工具日志（`~/Library/Application Support/微信开发者工具/<hash>/WeappLog/logs/2026-09-14-12-44-17-203.log`，
+     19:05:18~19:05:21）逐条为证：
+     `[CLI-OPEN] openProjectWindow … { appid: 'wx59d99dc241b7bbe9', compileType: 'game', alreadyImported: false, isTemp: true }`
+     → `[BackendInitEnv] isMiniAppProject=false, isEvalProject=false, **starting compiler**`
+     → `[BackendInitEnv] project ready, projectpath=…/proto/character3d_runtime_demo`
+     → `[backendManager] received BACKEND_READY … port=0`
+     全程**没有** `[game.json 文件内容错误]` 一类导入拦截（S0 probe 踩过的那条），也没有编译错误条目。
+   - **未取得**：IDE 控制台的「编译成功」原文；同一日志 19:05:35 另有两条 `routeTo appLaunch timeout`
+     （CLI 开窗路由超时，晚于 `project ready`，判断与项目代码无关但**未排除**）。
+     ⇒ 证据强度记为「编译器已启动 + 后端就绪 + 无错误条目」，不是「IDE 显示编译通过」。请 Leo 在工具里目验一次。
+   - **未执行** `cli preview`（会以 Leo 的 AppID 向微信服务器上传预览包）——真机扫码按分工由 Leo 在工具里点「预览」。
+   - 另：`build.mjs --check` 提供不依赖工具链的静态导入门逐项核对（game.js/game.json/分包 game.js/命名/语法/资产 SHA/红线）。
 4. sim 的 `animMs/submitMs` 为**时间代理**测值（生产 renderer 无插桩），与 S0 自带插桩不完全同源，只看趋势。
 5. 真机 `gpuMs` 是否可得取决于 `EXT_disjoint_timer_query_webgl2`；不可用则为 `null`（**不用 performance.now 冒充**）。
 6. 本卡不覆盖：敌方 3D、换装/挂点、根 `game.ts` 新战斗宿主迁移（方案 §1.3 明列）。
