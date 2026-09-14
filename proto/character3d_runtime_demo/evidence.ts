@@ -411,9 +411,17 @@ export function runtimeVerdicts(ctx: RuntimeResultContext): { verdict: RuntimeVe
     );
   }
   if (structuralRows.some((r) => !r.byteLengthMatches)) {
+    const hotDrift = structuralRows.filter((r) => !r.byteLengthMatches && r.source === 'cache-hit');
     notes.push(
-      '注意（结构性放行的代价）：被平台改写的文本资产，其缓存索引按**清单值**登记 ⇒ 下次启动长度校验不符，' +
-        '会被摘掉后重新读包（该资产的热启动缓存退化为「摘除+重读」，不影响正确性）。',
+      '结构性放行资产的字节与清单不符（平台改写导致字节不可比），' +
+        (hotDrift.length > 0
+          ? '其中 ' + hotDrift.length + ' 个本次是**热命中**（P0-5：缓存索引以「盘上事实」observedByteLength/' +
+            'observedSha256 为基准，命中判定=索引命中且盘上文件与索引一致，**不以与清单相等为条件**）——' +
+            '清单值只用于结构校验与资产身份判断。'
+          : '本次为读包登记（冷系列）；下次启动即按索引热命中（P0-5）。'),
+    );
+    notes.push(
+      '提示：升级前写入的旧索引（按清单值登记）会在下一次启动因长度不符被摘除一次，随后按盘上事实重建（自愈，仅多读一次）。',
     );
   }
   const strictDrift = ctx.resource.assetIntegrity.filter(

@@ -79,8 +79,12 @@ function gitHead() {
 /** 一轮页面加载 = 一次「启动」。★ 用**同一个 browser context**（localStorage 跨启动保留，
  *  与真机「杀微信重开」等价：storage 与 USER_DATA_PATH 都在，内存里的东西不在）。
  *  返回 {result, consoleLines, screenshots, clipboardLen, shares, fileCount} */
-async function runOnce(context, baseUrl, runIndex, commit) {
+async function runOnce(context, baseUrl, runIndex, commit, preseed) {
   const page = await context.newPage();
+  // 复刻真机持久盘：把上一轮的缓存文件注入本次启动（浏览器内存 FS 不跨页面存活）
+  if (preseed && Object.keys(preseed).length > 0) {
+    await page.addInitScript((data) => { window.__WX_SHIM_PRESEED_FILES = data; }, preseed);
+  }
   const consoleLines = [];
   page.on('console', (msg) => consoleLines.push(msg.text()));
   page.on('pageerror', (e) => consoleLines.push('PAGEERROR ' + e.message));
@@ -123,10 +127,12 @@ async function runOnce(context, baseUrl, runIndex, commit) {
   const shares = await page.evaluate(() => window.__WX_SHIM.shares());
   const fileCount = await page.evaluate(() => window.__WX_SHIM.fileCount());
   const fileNames = await page.evaluate(() => window.__WX_SHIM.fileNames());
+  const userFiles = await page.evaluate(() => window.__WX_SHIM.dumpUserFiles());
+  const preseedCount = await page.evaluate(() => window.__WX_SHIM.preseedCount());
   // 页面级截图存 JPEG（控体积；取景证据用上面的逐项截图）
   await page.screenshot({ path: path.join(OUT, `${TAG}-page-run${runIndex}.jpg`), type: 'jpeg', quality: 72 });
   await page.close();
-  return { result, consoleLines, screenshots, clipboardLen, shares, fileCount, fileNames };
+  return { result, consoleLines, screenshots, clipboardLen, shares, fileCount, fileNames, userFiles, preseedCount };
 }
 
 /** 截图压缩：50% 尺寸 + JPEG（默认；`--shots=full` 保留原 PNG）。 */
@@ -177,7 +183,9 @@ try {
   });
   for (let i = 1; i <= RUNS; i++) {
     console.log(`\n===== sim 第 ${i}/${RUNS} 次启动（commit ${commit.slice(0, 8)} · aa=${AA} · profile=${PROFILE}）=====`);
-    const r = await runOnce(context, base, i, commit);
+    // rewritejson 场景：第 1 次启动后把缓存文件搬到第 2 次启动（复刻真机持久盘 ⇒ 验证热缓存推进）
+    const carryOver = REWRITE_JSON && i > 1 ? runs[runs.length - 1].userFiles : null;
+    const r = await runOnce(context, base, i, commit, carryOver);
     runs.push(r);
 
     // 结果 JSON 落库（含 console 单行原文）
@@ -213,23 +221,29 @@ try {
   check('资源链证据：本地分包模式 + 已执行/未执行分支都列了',
     last.resource.mode === 'local-subpackage' && last.resource.executedBranches.length >= 5 && last.resource.notExecutedBranches.length >= 2,
     `${last.resource.mode} · 已执行 ${last.resource.executedBranches.length} / 未执行 ${last.resource.notExecutedBranches.length}`);
-  check('资源链证据：冷链（downloads>0）跑过', (last.resource.loaderStats.downloads ?? 0) > 0,
-    JSON.stringify(last.resource.loaderStats));
+  if (!REWRITE_JSON) {
+    // 常规/真重建场景：末次启动即冷启动 ⇒ 冷链必然跑过；
+    // 改写场景末次是**首个热启动**（downloads=0 才是期望），其冷链由「冷系列」断言覆盖。
+    check('资源链证据：冷链（downloads>0）跑过', (last.resource.loaderStats.downloads ?? 0) > 0,
+      JSON.stringify(last.resource.loaderStats));
+  }
   if (REWRITE_JSON) {
-    // 平台改写的文本资产：索引按**清单值**登记 ⇒ 下次启动长度校验不符被摘掉重读
-    // （GLB 未改写 ⇒ 仍能命中）⇒ 热链整体不成立，这是**如实结果**，不是缺陷
-    const reload = last.resource.reloadStats ?? {};
-    check('P0-4：改写场景下热链如实不成立（文本被摘除重读 + GLB 仍命中）并已记进 notes',
-      last.resource.hotChainObserved === false && (reload.downloads ?? 0) > 0 &&
-        last.notes.join(' ').includes('热启动缓存退化为'),
-      `hotChainObserved=${last.resource.hotChainObserved} reload=${JSON.stringify(reload)}`);
+    // 冷系列（runIndex ≤ 3）每轮启动前按 assetId 清缓存 ⇒ 必须如实「冷」
+    const coldRuns = runs.slice(0, Math.min(3, runs.length));
+    check('P0-5：冷系列（前 3 次启动）cacheState 全 cold + downloads>0（清缓存是按设计的）',
+      coldRuns.every((r) => r.result.runs[r.result.runs.length - 1].cacheState === 'cold' &&
+        (r.result.resource.loaderStats.downloads ?? 0) > 0),
+      coldRuns.map((r) => `#${r.result.runs[r.result.runs.length - 1].runIndex}:${r.result.runs[r.result.runs.length - 1].cacheState}/dl=${r.result.resource.loaderStats.downloads}`).join(' '));
   } else {
     check('资源链证据：热链（cacheHits>0 且 downloads=0）跑过', last.resource.hotChainObserved === true,
       JSON.stringify(last.resource.reloadStats));
   }
   if (REWRITE_JSON) {
     // P0-4 核心：平台改写包内文本 ⇒ 必须结构放行 + 整轮继续（不得资源门拒收）
-    const rows = last.resource.assetIntegrity;
+    // 注：本场景会跑多次启动（冷 3 + 首个热），P0-4 的"首装观测"断言用**第 1 次启动**的证据；
+    //     热缓存推进断言（P0-5）用**最后一次启动**的证据。
+    const launch1 = runs[0].result;
+    const rows = launch1.resource.assetIntegrity;
     const textRows = rows.filter((r) => r.mediaType === 'application/json');
     const glbRows = rows.filter((r) => r.mediaType === 'model/gltf-binary');
     check('P0-4：模拟平台改写后，4 个文本资产按结构不变量放行（integrityMode=structural + structuralOk + 结构账）',
@@ -243,16 +257,40 @@ try {
       glbRows.length === 1 && glbRows[0].integrityMode === 'strict' && glbRows[0].byteLengthMatches === true,
       glbRows.map((r) => `${r.assetId}:${r.integrityMode}/${r.observedByteLength}`).join(' '));
     check('P0-4：资源门放行后整轮继续（boot 阶段 ok，且非 DEVICE_FAIL）',
-      last.phases.find((p) => p.name === 'boot')?.status === 'ok' && !String(last.verdict.device).endsWith('FAIL'),
-      `boot=${last.phases.find((p) => p.name === 'boot')?.status} device=${last.verdict.device}`);
+      runs.every((r) => r.result.phases.find((p) => p.name === 'boot')?.status === 'ok') &&
+        !String(launch1.verdict.device).endsWith('FAIL'),
+      runs.map((r) => `#${r.result.runs.length}:boot=${r.result.phases.find((p) => p.name === 'boot')?.status}`).join(' '));
     check('P0-4：notes 点明结构放行 + 字节漂移',
       last.notes.join(' ').includes('integrityMode=structural') &&
         last.notes.join(' ').includes('结构账见 resource.assetIntegrity'));
     check('P0-4：诊断单行 __CHAR3D_INTEGRITY__ 已打出（含 observed/expected/readSource/head·tail hex）',
       runs.some((r) => r.consoleLines.some((l) => l.startsWith('__CHAR3D_INTEGRITY__=') && l.includes('headHex64') && l.includes('readSource'))));
     check('P0-4：首装观测未被重建/重试覆盖（assetIntegrity=首装行，重建行单独在 rebuildIntegrity）',
-      last.resource.assetIntegrity.length === 5 && textRows.every((r) => r.source === 'download'),
-      `assetIntegrity=${last.resource.assetIntegrity.length} rebuild=${String(last.resource.rebuildIntegrity?.length ?? null)}`);
+      rows.length === 5 && textRows.every((r) => r.source === 'download'),
+      `assetIntegrity=${rows.length} rebuild=${String(launch1.resource.rebuildIntegrity?.length ?? null)}`);
+
+    // ---- P0-5：热缓存必须能推进（索引以「盘上事实」为基准）----
+    //     前 3 次是冷系列（每轮清缓存）；第 4 次进入热系列 ⇒ 必须热命中、且热缓存计数推进
+    if (RUNS >= 4) {
+      const launch2 = last.resource;
+      const text2 = launch2.assetIntegrity.filter((r) => r.mediaType === 'application/json');
+      check('P0-5：改写资产在**第二次启动**判为 cacheHit（4 个文本资产 source=cache-hit）',
+        text2.length === 4 && text2.every((r) => r.source === 'cache-hit'),
+        text2.map((r) => `${r.assetId}:${r.source}`).join(' '));
+      check('P0-5：第二次启动 downloads 归零（热命中不再重读）',
+        (launch2.loaderStats.downloads ?? -1) === 0 && (launch2.loaderStats.cacheHits ?? 0) >= 4,
+        runs.map((r, idx) => `#${idx + 1}(dl=${r.result.resource.loaderStats.downloads},hits=${r.result.resource.loaderStats.cacheHits})`).join(' → '));
+      check('P0-5：命中仍是 structural 口径且如实标注 observed≠清单',
+        text2.every((r) => r.integrityMode === 'structural' && r.byteLengthMatches === false && !!r.note),
+        text2.map((r) => `${r.observedByteLength}≠${r.expectedByteLength}`).join(' '));
+      check('P0-5：热缓存计数能推进（运行历史出现 cacheState=hot）',
+        last.runs.filter((r) => r.cacheState === 'hot').length >= 1,
+        last.runs.map((r) => `#${r.runIndex}:${r.cacheState}`).join(' '));
+      check('P0-5：GLB 仍走严格口径热命中（索引=清单值）',
+        launch2.assetIntegrity.filter((r) => r.mediaType === 'model/gltf-binary')
+          .every((r) => r.integrityMode === 'strict' && r.byteLengthMatches === true),
+        launch2.assetIntegrity.filter((r) => r.mediaType === 'model/gltf-binary').map((r) => `${r.integrityMode}/${r.source}`).join(' '));
+    }
   }
 
   check('首启分段计时齐全（loader/解析/纹理解码/首传 GPU）',

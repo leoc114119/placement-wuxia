@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-14T12:30:08.791Z",
- "commitSha": "7071c8471fe4302161b5aad2dbea03d58a9143c3",
+ "generatedAt": "2026-09-14T13:07:17.471Z",
+ "commitSha": "6c63e4b773691ec7dc9367bfc8c1c3e18fee84e6",
  "scenario": "rewritejson（复刻真机 P0-4：平台改写包内文本资产 ⇒ 结构不变量放行）",
  "aa": "fxaa",
  "profile": "sim",
@@ -33,14 +33,9 @@
    "detail": "local-subpackage · 已执行 9 / 未执行 4"
   },
   {
-   "name": "资源链证据：冷链（downloads>0）跑过",
+   "name": "P0-5：冷系列（前 3 次启动）cacheState 全 cold + downloads>0（清缓存是按设计的）",
    "ok": true,
-   "detail": "{\"downloadAttempts\":5,\"downloads\":5,\"cacheHits\":0,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
-  },
-  {
-   "name": "P0-4：改写场景下热链如实不成立（文本被摘除重读 + GLB 仍命中）并已记进 notes",
-   "ok": true,
-   "detail": "hotChainObserved=false reload={\"downloadAttempts\":4,\"downloads\":4,\"cacheHits\":1,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
+   "detail": "#1:cold/dl=5 #2:cold/dl=5 #3:cold/dl=5"
   },
   {
    "name": "P0-4：模拟平台改写后，4 个文本资产按结构不变量放行（integrityMode=structural + structuralOk + 结构账）",
@@ -60,7 +55,7 @@
   {
    "name": "P0-4：资源门放行后整轮继续（boot 阶段 ok，且非 DEVICE_FAIL）",
    "ok": true,
-   "detail": "boot=ok device=SIM_DEVICE_INCOMPLETE"
+   "detail": "#1:boot=ok #2:boot=ok #3:boot=ok #4:boot=ok"
   },
   {
    "name": "P0-4：notes 点明结构放行 + 字节漂移",
@@ -78,9 +73,34 @@
    "detail": "assetIntegrity=5 rebuild=5"
   },
   {
+   "name": "P0-5：改写资产在**第二次启动**判为 cacheHit（4 个文本资产 source=cache-hit）",
+   "ok": true,
+   "detail": "hero-clip-idle-v4:cache-hit hero-clip-atk-v4:cache-hit hero-clip-cast-v4:cache-hit hero-clip-jump-v6-1p5s:cache-hit"
+  },
+  {
+   "name": "P0-5：第二次启动 downloads 归零（热命中不再重读）",
+   "ok": true,
+   "detail": "#1(dl=5,hits=0) → #2(dl=5,hits=0) → #3(dl=5,hits=0) → #4(dl=0,hits=5)"
+  },
+  {
+   "name": "P0-5：命中仍是 structural 口径且如实标注 observed≠清单",
+   "ok": true,
+   "detail": "685959≠726299 153780≠162924 462699≠490227 156804≠166799"
+  },
+  {
+   "name": "P0-5：热缓存计数能推进（运行历史出现 cacheState=hot）",
+   "ok": true,
+   "detail": "#1:cold #2:cold #3:cold #4:hot"
+  },
+  {
+   "name": "P0-5：GLB 仍走严格口径热命中（索引=清单值）",
+   "ok": true,
+   "detail": "strict/cache-hit"
+  },
+  {
    "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
    "ok": true,
-   "detail": "{\"subpackageMs\":0,\"loaderMs\":57,\"glbParseMs\":2,\"animParseMs\":2,\"textureDecodeMs\":3,\"firstGpuUploadMs\":89}"
+   "detail": "{\"subpackageMs\":0,\"loaderMs\":5,\"glbParseMs\":8,\"animParseMs\":2,\"textureDecodeMs\":2,\"firstGpuUploadMs\":59}"
   },
   {
    "name": "六向 6 行且逐向 expected==activeClipKey",
@@ -160,7 +180,7 @@
   {
    "name": "压测后先落 precontext 中间快照（自测失败也不丢测量结果）",
    "ok": true,
-   "detail": "/sim-user/char3d_hcrbug_result_run1_precontext.json /sim-user/char3d_hcrbug_result_run1.json"
+   "detail": "/sim-user/char3d_hcrbug_result_run4_precontext.json /sim-user/char3d_hcrbug_result_run4.json"
   },
   {
    "name": "FXAA 分支是生产分支（有效 antialias=false）",
@@ -175,7 +195,7 @@
   {
    "name": "20u 档：屏上 20 个角色全部可见",
    "ok": true,
-   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18546,perf-1:20499,perf-2:20235,perf-3:20540,perf-4:19102,perf-5:18705,…"
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18553,perf-1:20505,perf-2:20236,perf-3:20541,perf-4:19101,perf-5:18706,…"
   },
   {
    "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
@@ -195,7 +215,7 @@
   {
    "name": "结果回收：剪贴板成功（字符数 > 0）",
    "ok": true,
-   "detail": "28788"
+   "detail": "25822"
   },
   {
    "name": "结果回收：分享被调起",
@@ -215,9 +235,9 @@
   {
    "name": "运行历史跨启动累积（第 N 次启动读到 ≥N 条记录）",
    "ok": true,
-   "detail": "runs=1 / 启动次数=1"
+   "detail": "runs=4 / 启动次数=4"
   }
  ],
- "passCount": 41,
- "total": 41
+ "passCount": 45,
+ "total": 45
 }

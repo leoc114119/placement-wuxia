@@ -89,6 +89,8 @@ RAF 峰值 1 · ctxLost 0 · GLerr 0 · 帧 512 · draw/palette 1/1
 | 热缓存 ×3 | 再启动 3 次（杀进程重开即可；缓存是落盘的） | `热缓存 n/3` 递增；面板 `缓存 hot`；`cacheHits>0 且 downloads=0` |
 
 - 前 3 次运行**先按 assetId 清 LKG**（走生产 `cacheRemove`），保证「冷」是真冷；第 4 次起不清，走 cache-hit 链。
+- **热命中的口径**（§7.3）：索引命中且盘上文件与索引一致即算命中；**包内文本资产即使被平台改写**（observed ≠ 清单）
+  也照样热命中 ⇒ 面板 `缓存 hot`、`热缓存 n/3` 能推进（`loaderStats.cacheHits>0 且 downloads=0`）。
 - 第 6 次（冷 3 + 热 3 齐）会**自动跑压测**：预热 10s + 1/5/10 各 30s + 20 单位 60s ≈ **3.5 分钟，全程别熄屏/别切走**。
 - 看不到 `3/3` 就不要下 Device-PASS 结论 —— 证据不足不许写 PASS（屏上会写 `DEVICE_INCOMPLETE`，那是**未完成不是失败**）。
 
@@ -199,8 +201,23 @@ resource.assetIntegrity[]      ← 结果 JSON 里的完整版
 resource.readSourceTrail[]     ← 适配器读取轨迹（readFile 候选 / writeTempFile / getFileInfo digest / cachePut 逐条）
 ```
 
-> **结构性放行的代价（如实记）**：被改写的文本资产，其缓存索引仍按**清单值**登记 ⇒ 下次启动长度校验不符，
-> 会被摘掉后重新读包（该资产热启动缓存退化为「摘除+重读」；GLB 不受影响）。结果 `notes` 里会写明。
+### 7.3 缓存索引的自洽基准 = 「盘上事实」（P0-5）
+
+> 病灶：结构性放行的资产曾按**清单值**登记索引 ⇒ 下次启动「盘上文件长度 ≠ 索引长度」⇒ 索引被摘除重读
+> ⇒ `cacheHits` 永远 0、**热缓存序列无法推进**（真机实测「冷 3/3 后热缓存恒 0/3」）。
+
+修法（口径写死，别再漂）：
+
+| 项 | structural（包内文本） | strict（GLB / CDN） |
+|---|---|---|
+| `cachePut` 登记值 | **observedByteLength / observedSha256**（盘上真实文件） | 清单值（= 清单，行为不变） |
+| **cacheHit 判定** | 索引命中 **且** 盘上文件与**索引**一致（长度相等）+ 过文本结构校验 | 索引命中 **且** 索引=清单 **且** 盘上长度一致（原口径） |
+| 清单值的用途 | 结构校验 + 资产身份判断（**不再用于命中比对**） | 命中比对（不变） |
+| LKG 回退 | 额外过文本结构校验（坏内容不回流） | 不变 |
+
+- **`cacheHit` 的定义**：索引命中且**盘上文件与索引记录一致**；**不以「与清单相等」为条件**。
+- 旧索引（升级前按清单值写的）会在下一次启动因长度不符被摘掉一次，随后按盘上事实重建（**自愈，仅多读一次**）。
+- GLB 与 CDN 路径的严格校验**不放宽**（`types`/`integrityMode` 上都看得出是 strict）。
 
 ## 6. 浏览器 sim（导进微信之前的自检，**不是真机证据**）
 
@@ -261,7 +278,8 @@ boot（资源门装配）→ sixdir（六向）→ states（全状态）→ jump
 - 三个 sim 场景（产物各自带前缀，互不覆盖）：
   · **常规** `--runs=2` → `evidence/sim-*`（事件快路径）
   · **`--norestore=1`** → `evidence/sim-norestore-*`（复刻微信模拟器「restoreContext 被拒」⇒ 真重建路径）
-  · **`--rewritejson=1`** → `evidence/sim-rewritejson-*`（复刻真机 P0-4：平台改写包内文本资产 ⇒ 结构不变量放行）
+  · **`--rewritejson=1 --runs=4`** → `evidence/sim-rewritejson-*`（复刻真机 P0-4 + P0-5：平台改写包内文本资产
+    ⇒ 结构不变量放行；且**冷 3 次后第 4 次必须热命中**——断言 `#4(downloads=0, cacheHits=5)` 且运行历史出现 `cacheState=hot`）
 
 ## 8. 已知缺口与不确定项（交付时如实登记）
 

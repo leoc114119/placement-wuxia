@@ -83,11 +83,11 @@
   "modelResolvedPath": "subpackages/char3d-assets/characters/hero/ff9202b48470/hero_48k_20260914.glb",
   "assetStages": {
    "subpackageMs": 0,
-   "loaderMs": 70,
-   "glbParseMs": 4,
+   "loaderMs": 56,
+   "glbParseMs": 3,
    "animParseMs": 2,
    "textureDecodeMs": 2,
-   "firstGpuUploadMs": 114
+   "firstGpuUploadMs": 98
   },
   "loaderStats": {
    "downloadAttempts": 5,
@@ -256,7 +256,7 @@
     "tailHex64": "8ca1f13db87db43603522e3ecc6333bd59ffa33dcb2d7b3f00522e3ec36333bd56ffa33dcc2d7b3fffff7f3ffeff7f3f0100803ffeff7f3ffdff7f3fffff7f3f",
     "structuralOk": null,
     "structuralDetail": [
-     "索引命中：字节长度与索引一致，未重算摘要（索引里的 SHA 即观测值）"
+     "索引命中：盘上文件长度 = 索引长度 4040728（索引=盘上事实）"
     ],
     "note": "",
     "assetId": "hero-model-48k-20260914",
@@ -277,9 +277,10 @@
     "readSource": "readFileBytes(hero-clip-idle-v4-0d3262385d45.bin) → 726299 bytes",
     "headHex64": "7b22736f75726365223a20226173736574732f5f747269616c5f32303236303931322f676c6232645f69646c652f7372632f4f72632049646c652e646165222c",
     "tailHex64": "205b302c20312e32303734333231303639393536343836652d30352c20305d2c205b302c20382e383138373837343032353939353534652d30372c20305d5d7d",
-    "structuralOk": null,
+    "structuralOk": true,
     "structuralDetail": [
-     "索引命中：字节长度与索引一致，未重算摘要（索引里的 SHA 即观测值）"
+     "索引命中：盘上文件长度 = 索引长度 726299（索引=盘上事实）",
+     "结构化：fps=30 nFrames=200 duration=6.666666666666667（清单 6.666666666666667）骨轨道=40 rootTrack=200 rootMode=y 值有限=true"
     ],
     "note": "",
     "assetId": "hero-clip-idle-v4",
@@ -300,9 +301,10 @@
     "readSource": "readFileBytes(hero-clip-atk-v4-546ec94f9906.bin) → 162924 bytes",
     "headHex64": "7b22736f75726365223a20226173736574732f5f747269616c5f32303236303931322f676c6232645f61746b2f7372632f53776f726420416e6420536869656c",
     "tailHex64": "2c205b302c202d302e30303336333430343839323036383437372c20305d2c205b302c202d302e303031393332333436353736363733343535392c20305d5d7d",
-    "structuralOk": null,
+    "structuralOk": true,
     "structuralDetail": [
-     "索引命中：字节长度与索引一致，未重算摘要（索引里的 SHA 即观测值）"
+     "索引命中：盘上文件长度 = 索引长度 162924（索引=盘上事实）",
+     "结构化：fps=30 nFrames=45 duration=1.5（清单 1.5）骨轨道=40 rootTrack=45 rootMode=y 值有限=true"
     ],
     "note": "",
     "assetId": "hero-clip-atk-v4",
@@ -323,9 +325,10 @@
     "readSource": "readFileBytes(hero-clip-cast-v4-3bca24123582.bin) → 490227 bytes",
     "headHex64": "7b22736f75726365223a20226173736574732f5f747269616c5f32303236303931322f676c6232645f636173742f7372632f4f6e652048616e642053776f7264",
     "tailHex64": "205b302c20302e303030363334373937383532353234353338382c20305d2c205b302c20302e30303033353233313237363133333039313337362c20305d5d7d",
-    "structuralOk": null,
+    "structuralOk": true,
     "structuralDetail": [
-     "索引命中：字节长度与索引一致，未重算摘要（索引里的 SHA 即观测值）"
+     "索引命中：盘上文件长度 = 索引长度 490227（索引=盘上事实）",
+     "结构化：fps=30 nFrames=136 duration=4.533333333333333（清单 4.533333333333333）骨轨道=40 rootTrack=136 rootMode=y 值有限=true"
     ],
     "note": "",
     "assetId": "hero-clip-cast-v4",
@@ -346,9 +349,10 @@
     "readSource": "readFileBytes(hero-clip-jump-v6-1p5s-2895612562c2.bin) → 166799 bytes",
     "headHex64": "7b22736f75726365223a20222f746d702f6a756d707a69702f4a756d702e6461655c75666630385c753838633120302e32307e312e373073202f205c75363833",
     "tailHex64": "2c202d302e31373430393534383436333930343739352c20302e305d2c205b302e302c202d302e31363932303739303335313939323130372c20302e305d5d7d",
-    "structuralOk": null,
+    "structuralOk": true,
     "structuralDetail": [
-     "索引命中：字节长度与索引一致，未重算摘要（索引里的 SHA 即观测值）"
+     "索引命中：盘上文件长度 = 索引长度 166799（索引=盘上事实）",
+     "结构化：fps=30 nFrames=46 duration=1.5（清单 1.5）骨轨道=40 rootTrack=46 rootMode=y 值有限=true"
     ],
     "note": "",
     "assetId": "hero-clip-jump-v6-1p5s",
@@ -642,19 +646,19 @@
    "unitCount": 1,
    "durationSec": 3,
    "sampleCount": 181,
-   "fpsMean": 60.05,
-   "fpsMedian": 60.24,
+   "fpsMean": 60.03,
+   "fpsMedian": 59.88,
    "onePercentLowFps": 56.5,
-   "frameMsMedian": 16.6,
-   "frameMsP95": 17.5,
+   "frameMsMedian": 16.7,
+   "frameMsP95": 17.6,
    "frameMsP99": 17.7,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "passMsMedian": 0.2,
-   "passMsMean": 0.1713,
-   "animMsMean": 0.1602,
-   "submitMsMean": 0.011,
-   "compositeCpuMsMean": 0.0796,
+   "passMsMean": 0.1691,
+   "animMsMean": 0.1564,
+   "submitMsMean": 0.0127,
+   "compositeCpuMsMean": 0.0917,
    "gpuMs": 0,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "contextLostCount": 0,
@@ -662,7 +666,7 @@
    "drawCallsPerFrame": 1,
    "skinPalettesPerFrame": 1,
    "allUnitsOnScreen": true,
-   "visibilityNote": "fillRatio=0.0132 bb=780x1688 · perf-0:17327",
+   "visibilityNote": "fillRatio=0.0132 bb=780x1688 · perf-0:17326",
    "specProfile": false,
    "a2Profile": "sim-short",
    "truncated": false,
@@ -670,21 +674,21 @@
   },
   {
    "unitCount": 5,
-   "durationSec": 3,
-   "sampleCount": 181,
+   "durationSec": 3.017,
+   "sampleCount": 182,
    "fpsMean": 60.05,
-   "fpsMedian": 60.24,
-   "onePercentLowFps": 56.5,
-   "frameMsMedian": 16.6,
+   "fpsMedian": 59.88,
+   "onePercentLowFps": 55.71,
+   "frameMsMedian": 16.7,
    "frameMsP95": 17.5,
-   "frameMsP99": 17.7,
+   "frameMsP99": 17.8,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "passMsMedian": 0.3,
-   "passMsMean": 0.3492,
-   "animMsMean": 0.3155,
-   "submitMsMean": 0.0337,
-   "compositeCpuMsMean": 0.0724,
+   "passMsMean": 0.2995,
+   "animMsMean": 0.2753,
+   "submitMsMean": 0.0242,
+   "compositeCpuMsMean": 0.0786,
    "gpuMs": 0,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "contextLostCount": 0,
@@ -700,21 +704,21 @@
   },
   {
    "unitCount": 10,
-   "durationSec": 3.004,
+   "durationSec": 3.011,
    "sampleCount": 182,
-   "fpsMean": 61.4,
+   "fpsMean": 60.14,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 42.28,
+   "onePercentLowFps": 49.5,
    "frameMsMedian": 16.7,
    "frameMsP95": 17.5,
-   "frameMsP99": 18,
+   "frameMsP99": 17.8,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "passMsMedian": 0.5,
-   "passMsMean": 0.5137,
-   "animMsMean": 0.478,
-   "submitMsMean": 0.0357,
-   "compositeCpuMsMean": 0.0681,
+   "passMsMean": 0.4681,
+   "animMsMean": 0.439,
+   "submitMsMean": 0.0291,
+   "compositeCpuMsMean": 0.0758,
    "gpuMs": 0,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "contextLostCount": 0,
@@ -722,7 +726,7 @@
    "drawCallsPerFrame": 10,
    "skinPalettesPerFrame": 10,
    "allUnitsOnScreen": true,
-   "visibilityNote": "fillRatio=0.1311 bb=780x1688 · perf-0:17338,perf-1:17312,perf-2:17363,perf-3:17351,perf-4:17430,perf-5:17045,…",
+   "visibilityNote": "fillRatio=0.1311 bb=780x1688 · perf-0:17333,perf-1:17319,perf-2:17369,perf-3:17351,perf-4:17431,perf-5:17044,…",
    "specProfile": false,
    "a2Profile": "sim-short",
    "truncated": false,
@@ -730,21 +734,21 @@
   },
   {
    "unitCount": 20,
-   "durationSec": 6.014,
+   "durationSec": 6.013,
    "sampleCount": 362,
-   "fpsMean": 60.07,
+   "fpsMean": 60.08,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 55.79,
+   "onePercentLowFps": 53.76,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.5,
-   "frameMsP99": 17.8,
+   "frameMsP95": 17.6,
+   "frameMsP99": 17.9,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "passMsMedian": 0.8,
-   "passMsMean": 0.845,
-   "animMsMean": 0.779,
-   "submitMsMean": 0.066,
-   "compositeCpuMsMean": 0.0638,
+   "passMsMean": 0.7928,
+   "animMsMean": 0.7376,
+   "submitMsMean": 0.0552,
+   "compositeCpuMsMean": 0.0757,
    "gpuMs": 0,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "contextLostCount": 0,
@@ -752,7 +756,7 @@
    "drawCallsPerFrame": 20,
    "skinPalettesPerFrame": 20,
    "allUnitsOnScreen": true,
-   "visibilityNote": "fillRatio=0.2629 bb=780x1688 · perf-0:18537,perf-1:20496,perf-2:20233,perf-3:20536,perf-4:19099,perf-5:18711,…",
+   "visibilityNote": "fillRatio=0.2629 bb=780x1688 · perf-0:18546,perf-1:20500,perf-2:20236,perf-3:20540,perf-4:19102,perf-5:18711,…",
    "specProfile": false,
    "a2Profile": "sim-short",
    "truncated": false,
@@ -764,13 +768,13 @@
    "name": "boot",
    "status": "ok",
    "detail": "edgeMode=fxaa · 缓存=cold · local-subpackage",
-   "ms": 199
+   "ms": 169
   },
   {
    "name": "sixdir",
    "status": "ok",
    "detail": "right:idle rightup:walk leftup:idle left:walk leftdown:idle rightdown:walk",
-   "ms": 3019
+   "ms": 3026
   },
   {
    "name": "states",
@@ -782,26 +786,26 @@
    "name": "jump-trio",
    "status": "ok",
    "detail": "jump-inside-300ms-window:jump jump-after-300ms-snapshot-window:jump walk-normal-no-jump:walk jump-endpoint-hop0:jump jump-landing-hop0:jump jump-released-after-duration:walk jump-died-releases:idle",
-   "ms": 3470
+   "ms": 3474
   },
   {
    "name": "perf",
    "status": "ok",
-   "detail": "1u:60.24 5u:60.24 10u:59.88 20u:59.88",
-   "ms": 23335
+   "detail": "1u:59.88 5u:59.88 10u:59.88 20u:59.88",
+   "ms": 23349
   },
   {
    "name": "context",
    "status": "ok",
    "detail": "gl-ext → event",
-   "ms": 1460
+   "ms": 1493
   }
  ],
  "runs": [
   {
    "runIndex": 1,
    "cacheState": "cold",
-   "at": 225,
+   "at": 192,
    "sixdirOk": true,
    "statesOk": true,
    "contextOk": true,
@@ -810,7 +814,7 @@
  ],
  "env": {
   "sim": true,
-  "commitSha": "7071c8471fe4302161b5aad2dbea03d58a9143c3",
+  "commitSha": "6c63e4b773691ec7dc9367bfc8c1c3e18fee84e6",
   "profile": "sim-short",
   "screenshots": [
    "char3d-sixdir_right.png",

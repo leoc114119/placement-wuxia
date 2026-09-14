@@ -323,6 +323,154 @@ describe('P0-4 · 包内文本资产：结构不变量放行（GLB 与 CDN 仍�
     expect(r2.errors.length).toBeGreaterThan(0);
   });
 
+  // ---- P0-5：热缓存必须能推进（索引以「盘上事实」为基准）----
+
+  it('P0-5：平台改写场景下**第二次启动**判为 cacheHit（downloads=0），索引按 observed 登记', async () => {
+    const fake = createFakeWx({});
+    const bytes = rewrittenIdleClipJson();
+    fake.files.set(SUBPACKAGE_PATH, bytes);
+    const makeLoader = () => createCharacterAssetLoader({
+      platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
+      cdnBaseUrl: LOCAL_BASE_URL,
+      sleep: async () => undefined,
+      textIntegrityMode: 'structural',
+      textStructureValidator: (b, r) => {
+        const v = validateClipJsonStructure(b, r);
+        return { errors: v.errors, summary: v.summary };
+      },
+    });
+    // 第一次启动：走下载链，登记索引
+    const l1 = makeLoader();
+    const r1 = await l1.load(ref);
+    expect(r1.status).toBe('downloaded');
+    const index = fake.storage.get('character3d-cache-index-v1') as Record<string, { sha256: string; byteLength: number }>;
+    // ★ 索引记的是**盘上事实**（observed），不是清单值
+    expect(index[ref.id].byteLength).toBe(bytes.byteLength);
+    expect(index[ref.id].sha256).not.toBe(ref.sha256);
+    // 第二次启动（同一台"机器"：storage + 盘上文件都在）：必须热命中，不得再下载
+    const l2 = makeLoader();
+    const r2 = await l2.load(ref);
+    expect(r2.status).toBe('cache-hit');
+    expect(l2.stats().cacheHits).toBe(1);
+    expect(l2.stats().downloads).toBe(0);
+    expect(l2.stats().byteLengthMismatches).toBe(0);
+    expect(r2.integrity?.mode).toBe('structural');
+    expect(r2.integrity?.observedByteLength).toBe(bytes.byteLength);
+    expect(r2.integrity?.byteLengthMatches).toBe(false); // 与清单不符（如实），但仍算命中
+    expect(r2.integrity?.note).toContain('索引=盘上事实');
+  });
+
+  it('P0-5：旧索引（按清单值写）自愈 —— 摘掉一次后按 observed 重建，再下一次即热命中', async () => {
+    const fake = createFakeWx({});
+    fake.storage.set('character3d-cache-index-v1', {
+      [ref.id]: {
+        assetId: ref.id, sha256: ref.sha256, savedPath: '/user/character3d/legacy.bin',
+        byteLength: ref.byteLength, lastUsedAt: 1,
+      },
+    });
+    const bytes = rewrittenIdleClipJson();
+    fake.files.set(SUBPACKAGE_PATH, bytes);
+    fake.files.set('/user/character3d/legacy.bin', bytes); // 盘上是改写版，索引却是清单值
+    const makeLoader = () => createCharacterAssetLoader({
+      platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
+      cdnBaseUrl: LOCAL_BASE_URL,
+      sleep: async () => undefined,
+      textIntegrityMode: 'structural',
+      textStructureValidator: (b, r) => {
+        const v = validateClipJsonStructure(b, r);
+        return { errors: v.errors, summary: v.summary };
+      },
+    });
+    const first = await makeLoader().load(ref);
+    expect(first.diagnostics.some((d) => d.startsWith('cache-length-mismatch'))).toBe(true);
+    expect(first.status).toBe('downloaded'); // 摘掉坏索引后按无缓存重走
+    const second = await makeLoader().load(ref);
+    expect(second.status).toBe('cache-hit');
+  });
+
+  it('P0-5：structural 命中前要过结构校验（盘上内容坏了不许当热命中）', async () => {
+    const fake = createFakeWx({});
+    const good = rewrittenIdleClipJson();
+    fake.files.set(SUBPACKAGE_PATH, good);
+    const platform = createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined });
+    const mkLoader = () => createCharacterAssetLoader({
+      platform, cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
+      textIntegrityMode: 'structural',
+      textStructureValidator: (b, r) => {
+        const v = validateClipJsonStructure(b, r);
+        return { errors: v.errors, summary: v.summary };
+      },
+    });
+    await mkLoader().load(ref);
+    // 把盘上/索引都改成长度一致但内容非法的字节（截断成同长度：改尾字节破坏 JSON 结构）
+    const broken = new Uint8Array(good);
+    broken[broken.length - 1] = 0x00; // 去掉结尾 '}' ⇒ JSON 解析失败，长度不变
+    const platform2 = createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined });
+    // 直接替换缓存文件内容（长度不变，只有结构坏了）
+    const index = fake.storage.get('character3d-cache-index-v1') as Record<string, { savedPath: string; byteLength: number }>;
+    // 先按新内容重建一次索引（使长度一致、内容非法）
+    fake.files.set(SUBPACKAGE_PATH, broken);
+    await createCharacterAssetLoader({
+      platform: platform2, cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
+      textIntegrityMode: 'structural',
+      textStructureValidator: (b, r) => {
+        const v = validateClipJsonStructure(b, r);
+        return { errors: v.errors, summary: v.summary };
+      },
+    }).load(ref);
+    // 现在把盘上缓存文件替换成"长度相同但内容非法"的字节，再加载 ⇒ 必须不走热命中
+    fake.files.set(index[ref.id].savedPath, broken);
+    const res = await createCharacterAssetLoader({
+      platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
+      cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
+      textIntegrityMode: 'structural',
+      textStructureValidator: (b, r) => {
+        const v = validateClipJsonStructure(b, r);
+        return { errors: v.errors, summary: v.summary };
+      },
+    }).load(ref);
+    // 结构不过 ⇒ 不得当热命中（要么重读要么失败，但**不能**是 cache-hit）
+    expect(res.status).not.toBe('cache-hit');
+  });
+
+  it('P0-5：GLB（严格模式）热命中原口径不变 —— 索引仍记清单值，命中仍要求与清单一致', async () => {
+    // 本文件假宿主的 getFileInfo 返回**常量**摘要 'a'.repeat(64)（真哈希在 character3d-platform-wx 用例里验），
+    // 故这里把"清单值"取成该常量，构造一个"内容与清单一致"的严格场景。
+    const glbBytes = new Uint8Array(2048);
+    glbBytes.fill(7);
+    const constantDigest = 'a'.repeat(64);
+    const fake = createFakeWx({});
+    fake.files.set(SUBPACKAGE_PATH, glbBytes);
+    const mkLoader = () => createCharacterAssetLoader({
+      platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
+      cdnBaseUrl: LOCAL_BASE_URL,
+      sleep: async () => undefined,
+      textIntegrityMode: 'structural', // 即使开了 structural，GLB 也恒走 strict
+      textStructureValidator: () => ({ errors: [], summary: '不应被调用' }),
+    });
+    const glbRef = { ...HERO_3D_MODEL_REF, urlPath: REF_URL_PATH, sha256: constantDigest, byteLength: glbBytes.byteLength };
+    const first = await mkLoader().load(glbRef);
+    expect(first.status).toBe('downloaded');
+    expect(first.integrity?.mode).toBe('strict');
+    const index = fake.storage.get('character3d-cache-index-v1') as Record<string, { sha256: string; byteLength: number }>;
+    // 严格模式：索引 = 清单值（未被 observed 改写）
+    expect(index[glbRef.id].byteLength).toBe(glbRef.byteLength);
+    expect(index[glbRef.id].sha256).toBe(glbRef.sha256);
+    // 第二次启动：热命中
+    const l2 = mkLoader();
+    const hit = await l2.load(glbRef);
+    expect(hit.status).toBe('cache-hit');
+    expect(l2.stats().downloads).toBe(0);
+    // 原口径不变：清单（sha）变了就不再**热命中**（严格模式仍以清单为判据）；
+    // 此时走的是 §6.2 的 LKG 回退（有 last-known-good 就用旧的，并打 stale-3d-cache），不是 cache-hit。
+    const changedManifest = { ...glbRef, sha256: 'b'.repeat(64) };
+    const l3 = mkLoader();
+    const miss = await l3.load(changedManifest);
+    expect(l3.stats().cacheHits).toBe(0);
+    expect(miss.status).not.toBe('cache-hit');
+    expect(miss.status).toBe('stale-3d-cache'); // §6.2：有 LKG ⇒ 用旧内容 + 诊断，不切 2D 帧
+  });
+
   it('读取来源可追溯：分包命中候选路径被记录（P0-4 诊断）', async () => {
     const bytes = rewrittenIdleClipJson();
     const { loader, platform } = loaderWith({ bytes, textIntegrityMode: 'structural' });

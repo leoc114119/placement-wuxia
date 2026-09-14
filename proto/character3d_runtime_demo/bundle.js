@@ -2370,26 +2370,61 @@ function createCharacterAssetLoader(options) {
         inflight.set(ref.id, task);
         return task;
     }
+    async function loadOnceAfterBadCache(ref, diags) {
+        const rest = await loadOnceBody(ref, diags, true);
+        return rest;
+    }
     async function loadOnce(ref) {
-        const diags = [];
-        const cached = await safeCacheGet(ref.id, diags);
-        if (cached && cached.sha256 === ref.sha256 && cached.byteLength === ref.byteLength) {
+        return loadOnceBody(ref, [], false);
+    }
+    async function loadOnceBody(ref, diagsIn, cacheAlreadyRemoved) {
+        const diags = diagsIn;
+        const cached = cacheAlreadyRemoved ? null : await safeCacheGet(ref.id, diags);
+        const cacheStructural = policyModeOf(ref) === 'structural';
+        const cachedForManifest = cached !== null &&
+            (cacheStructural || (cached.sha256 === ref.sha256 && cached.byteLength === ref.byteLength));
+        if (cached && cachedForManifest) {
             try {
                 const bytes = await platform.readFileBytes(cached.savedPath);
-                if (bytes.byteLength === ref.byteLength) {
+                if (bytes.byteLength === cached.byteLength) {
+                    let cacheStructuralOk = null;
+                    const cacheStructuralDetail = [
+                        '索引命中：盘上文件长度 = 索引长度 ' + cached.byteLength + '（索引=盘上事实' +
+                            (cacheStructural && cached.byteLength !== ref.byteLength ? '；与清单 ' + ref.byteLength + ' 不符，属平台改写' : '') + '）',
+                    ];
+                    if (cacheStructural) {
+                        const verdict = options.textStructureValidator
+                            ? options.textStructureValidator(bytes, ref)
+                            : { errors: ['缺少 textStructureValidator：结构性命中必须由结构校验把关'] };
+                        const errs = Array.isArray(verdict) ? verdict : verdict.errors;
+                        if (!Array.isArray(verdict) && verdict.summary)
+                            cacheStructuralDetail.push(verdict.summary);
+                        cacheStructuralOk = errs.length === 0;
+                        cacheStructuralDetail.push(...errs);
+                        if (!cacheStructuralOk) {
+                            stats.structureRejects++;
+                            diags.push('cache-text-structure-reject:' + errs[0]);
+                            await safeCacheRemove(ref.id, diags);
+                            return loadOnceAfterBadCache(ref, diags);
+                        }
+                    }
                     stats.cacheHits++;
                     const edges = hexEdges(bytes);
-                    const cacheMode = policyModeOf(ref);
                     return result(ref, 'cache-hit', bytes, cached.savedPath, 0, diags, null, {
-                        source: 'cache-hit', mode: cacheMode, byteLengthMatches: true, sha256Matches: true,
+                        source: 'cache-hit', mode: policyModeOf(ref),
+                        byteLengthMatches: cached.byteLength === ref.byteLength,
+                        sha256Matches: cached.sha256 === ref.sha256,
                         observedByteLength: bytes.byteLength, observedSha256: cached.sha256,
                         expectedByteLength: ref.byteLength, expectedSha256: ref.sha256,
                         readSource: readSourceOf(), headHex64: edges.head, tailHex64: edges.tail,
-                        structuralOk: null, structuralDetail: ['索引命中：字节长度与索引一致，未重算摘要（索引里的 SHA 即观测值）'],
-                        note: '',
+                        structuralOk: cacheStructuralOk, structuralDetail: cacheStructuralDetail,
+                        note: cacheStructural && cached.byteLength !== ref.byteLength
+                            ? '热命中（索引=盘上事实：observed ' + cached.byteLength + ' ≠ 清单 ' + ref.byteLength +
+                                '，平台改写导致字节不可比；清单值只用于结构校验与身份判断）'
+                            : '',
                     });
                 }
-                diags.push('cache-length-mismatch:' + bytes.byteLength);
+                diags.push('cache-length-mismatch:' + bytes.byteLength + '!=index ' + cached.byteLength);
             }
             catch (error) {
                 diags.push('cache-read-failed:' + messageOf(error));
@@ -2416,7 +2451,18 @@ function createCharacterAssetLoader(options) {
         if (lkg && lkg.sha256 !== ref.sha256) {
             try {
                 const bytes = await platform.readFileBytes(lkg.savedPath);
-                if (bytes.byteLength === lkg.byteLength && structureOk(bytes, ref, diags)) {
+                const lkgTextOk = !cacheStructural
+                    ? true
+                    : (() => {
+                        const verdict = options.textStructureValidator
+                            ? options.textStructureValidator(bytes, ref)
+                            : { errors: ['缺少 textStructureValidator'] };
+                        const errs = Array.isArray(verdict) ? verdict : verdict.errors;
+                        if (errs.length)
+                            diags.push('stale-lkg-text-reject:' + errs[0]);
+                        return errs.length === 0;
+                    })();
+                if (bytes.byteLength === lkg.byteLength && lkgTextOk && structureOk(bytes, ref, diags)) {
                     stats.staleFallbacks++;
                     diags.push('stale-3d-cache');
                     const edges = hexEdges(bytes);
@@ -2524,8 +2570,8 @@ function createCharacterAssetLoader(options) {
             try {
                 const entry = await platform.cachePut({
                     assetId: ref.id,
-                    sha256: ref.sha256,
-                    byteLength: ref.byteLength,
+                    sha256: structuralMode && observedSha !== null ? observedSha : ref.sha256,
+                    byteLength: structuralMode ? bytes.byteLength : ref.byteLength,
                     tempPath,
                 });
                 savedPath = entry.savedPath;
@@ -4938,8 +4984,14 @@ function runtimeVerdicts(ctx) {
                 : '（字节与清单一致）'));
     }
     if (structuralRows.some((r) => !r.byteLengthMatches)) {
-        notes.push('注意（结构性放行的代价）：被平台改写的文本资产，其缓存索引按**清单值**登记 ⇒ 下次启动长度校验不符，' +
-            '会被摘掉后重新读包（该资产的热启动缓存退化为「摘除+重读」，不影响正确性）。');
+        const hotDrift = structuralRows.filter((r) => !r.byteLengthMatches && r.source === 'cache-hit');
+        notes.push('结构性放行资产的字节与清单不符（平台改写导致字节不可比），' +
+            (hotDrift.length > 0
+                ? '其中 ' + hotDrift.length + ' 个本次是**热命中**（P0-5：缓存索引以「盘上事实」observedByteLength/' +
+                    'observedSha256 为基准，命中判定=索引命中且盘上文件与索引一致，**不以与清单相等为条件**）——' +
+                    '清单值只用于结构校验与资产身份判断。'
+                : '本次为读包登记（冷系列）；下次启动即按索引热命中（P0-5）。'));
+        notes.push('提示：升级前写入的旧索引（按清单值登记）会在下一次启动因长度不符被摘除一次，随后按盘上事实重建（自愈，仅多读一次）。');
     }
     const strictDrift = ctx.resource.assetIntegrity.filter((r) => r.integrityMode === 'strict' && (!r.byteLengthMatches || !r.sha256Matches));
     if (strictDrift.length > 0) {

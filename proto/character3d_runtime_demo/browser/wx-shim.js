@@ -26,6 +26,7 @@
   var forceAntialiasFalse = false;
   var bootMs = Date.now();
   var rewriteStats = [];
+  var preseedStats = 0;
   var encoder = new TextEncoder();
 
   function hex(buf) {
@@ -50,6 +51,23 @@
   function writeStorage(key, value) {
     try { localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value)); } catch (e) { /* 配额满则丢弃 */ }
   }
+  // 复刻「真机 USER_DATA_PATH 跨启动持久」：把上一轮的缓存文件按 base64 注入本次页面
+  // （浏览器内存 FS 不跨页面存活；真机是持久盘 —— 故由 harness 当"盘"搬运，语义等价）
+  if (window.__WX_SHIM_PRESEED_FILES && typeof window.__WX_SHIM_PRESEED_FILES === 'object') {
+    var preseeded = 0;
+    Object.keys(window.__WX_SHIM_PRESEED_FILES).forEach(function (path) {
+      var b64 = String(window.__WX_SHIM_PRESEED_FILES[path] || '');
+      try {
+        var bin = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        files.set(path, bytes);
+        preseeded++;
+      } catch (e) { /* 坏数据跳过：宁可 miss 也不要假命中 */ }
+    });
+    preseedStats = preseeded;
+  }
+
   // 预置 storage（index.html 在 shim 加载前设置；sim 用，真机不设）
   if (window.__WX_SHIM_PRESET && typeof window.__WX_SHIM_PRESET === 'object') {
     Object.keys(window.__WX_SHIM_PRESET).forEach(function (k) { writeStorage(k, window.__WX_SHIM_PRESET[k]); });
@@ -264,6 +282,21 @@
     fileCount: function () { return files.size; },
     fileNames: function () { return Array.from(files.keys()); },
     rewriteStats: function () { return rewriteStats.slice(); },
+    preseedCount: function () { return preseedStats; },
+    /** 转存用户目录缓存文件（模拟真机持久盘：harness 拿它在下次启动注入） */
+    dumpUserFiles: function () {
+      var out = {};
+      var chunk = 0x8000;
+      files.forEach(function (bytes, path) {
+        if (path.indexOf(USER_DATA_PATH + '/character3d/') !== 0) return;
+        var bin = '';
+        for (var i = 0; i < bytes.length; i += chunk) {
+          bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+        }
+        out[path] = btoa(bin);
+      });
+      return out;
+    },
     bootMs: bootMs,
   };
 })();

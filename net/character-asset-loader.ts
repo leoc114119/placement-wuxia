@@ -24,6 +24,14 @@
 //   observedByteLength / observedSha256 / head·tail hex / readSource 供定位。
 //   **二进制（GLB）与 CDN 下载路径一律保持严格 byteLength+SHA 不变**——模型字节可比，且是安全边界。
 //   结构性放行只影响「要不要用这份字节」，**不降低**后续结构门（41 骨/1 primitive）与失败关闭语义。
+//
+// ★【T31-FE-C P0-5】缓存索引的自洽基准 = **盘上真实文件**，不是清单：
+//   病灶：结构性放行的资产曾按**清单值**登记索引 ⇒ 下次启动「盘上文件长度 ≠ 索引长度」⇒ 索引被摘除重读
+//   ⇒ `cacheHits` 永远 0、热缓存序列无法推进（真机实测「冷 3/3 后热缓存恒 0/3」）。
+//   修法：structural 资产的 `cachePut` 记 **observedByteLength / observedSha256**（盘上事实），
+//   命中判定改为「索引命中 且 盘上文件与**索引**一致」——**不以「与清单相等」为条件**；清单值仅用于
+//   结构校验与资产身份判断。strict（GLB / CDN）路径口径不变。
+//   旧索引（上一版按清单值写的）在本次启动会因长度不符被摘掉一次，随后按新口径重建（自愈，仅多读一次）。
 
 import type { Character3DAssetRef, Character3DClipKey, Character3DProfile } from '../types';
 import type { Character3DCacheEntry, Character3DPlatform } from '../ui/character3d/platform';
@@ -204,28 +212,72 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
     return task;
   }
 
-  async function loadOnce(ref: Character3DAssetRef): Promise<CharacterAssetLoadResult> {
-    const diags: string[] = [];
-    const cached = await safeCacheGet(ref.id, diags);
+  /** 索引里的文本内容结构校验不过 ⇒ 摘掉该条目后按「无缓存」重走一遍（只重走一次，不递归）。 */
+  async function loadOnceAfterBadCache(ref: Character3DAssetRef, diags: string[]): Promise<CharacterAssetLoadResult> {
+    const rest = await loadOnceBody(ref, diags, true);
+    return rest;
+  }
 
-    // ---- ① cache by SHA 命中（§6.1）----
-    if (cached && cached.sha256 === ref.sha256 && cached.byteLength === ref.byteLength) {
+  async function loadOnce(ref: Character3DAssetRef): Promise<CharacterAssetLoadResult> {
+    return loadOnceBody(ref, [], false);
+  }
+
+  async function loadOnceBody(
+    ref: Character3DAssetRef,
+    diagsIn: string[],
+    cacheAlreadyRemoved: boolean,
+  ): Promise<CharacterAssetLoadResult> {
+    const diags: string[] = diagsIn;
+    const cached = cacheAlreadyRemoved ? null : await safeCacheGet(ref.id, diags);
+
+    // ---- ① cache 命中（§6.1；P0-5 口径见文件头）----
+    //   structural：索引即「盘上事实」⇒ 只要索引在且盘上文件与索引一致就算命中（与清单是否相等无关）；
+    //   strict（GLB / CDN）：索引里恒是清单值 ⇒ 沿用原判据（索引=清单 且 盘上长度一致），行为逐字不变。
+    const cacheStructural = policyModeOf(ref) === 'structural';
+    const cachedForManifest = cached !== null &&
+      (cacheStructural || (cached.sha256 === ref.sha256 && cached.byteLength === ref.byteLength));
+    if (cached && cachedForManifest) {
       try {
         const bytes = await platform.readFileBytes(cached.savedPath);
-        if (bytes.byteLength === ref.byteLength) {
+        if (bytes.byteLength === cached.byteLength) {
+          // structural 命中还要过结构校验（盘上内容不可全信：坏内容不许被当成热命中）
+          let cacheStructuralOk: boolean | null = null;
+          const cacheStructuralDetail: string[] = [
+            '索引命中：盘上文件长度 = 索引长度 ' + cached.byteLength + '（索引=盘上事实' +
+              (cacheStructural && cached.byteLength !== ref.byteLength ? '；与清单 ' + ref.byteLength + ' 不符，属平台改写' : '') + '）',
+          ];
+          if (cacheStructural) {
+            const verdict = options.textStructureValidator
+              ? options.textStructureValidator(bytes, ref)
+              : { errors: ['缺少 textStructureValidator：结构性命中必须由结构校验把关'] };
+            const errs = Array.isArray(verdict) ? verdict : verdict.errors;
+            if (!Array.isArray(verdict) && verdict.summary) cacheStructuralDetail.push(verdict.summary);
+            cacheStructuralOk = errs.length === 0;
+            cacheStructuralDetail.push(...errs);
+            if (!cacheStructuralOk) {
+              stats.structureRejects++;
+              diags.push('cache-text-structure-reject:' + errs[0]);
+              await safeCacheRemove(ref.id, diags);
+              return loadOnceAfterBadCache(ref, diags);
+            }
+          }
           stats.cacheHits++;
           const edges = hexEdges(bytes);
-          const cacheMode = policyModeOf(ref);
           return result(ref, 'cache-hit', bytes, cached.savedPath, 0, diags, null, {
-            source: 'cache-hit', mode: cacheMode, byteLengthMatches: true, sha256Matches: true,
+            source: 'cache-hit', mode: policyModeOf(ref),
+            byteLengthMatches: cached.byteLength === ref.byteLength,
+            sha256Matches: cached.sha256 === ref.sha256,
             observedByteLength: bytes.byteLength, observedSha256: cached.sha256,
             expectedByteLength: ref.byteLength, expectedSha256: ref.sha256,
             readSource: readSourceOf(), headHex64: edges.head, tailHex64: edges.tail,
-            structuralOk: null, structuralDetail: ['索引命中：字节长度与索引一致，未重算摘要（索引里的 SHA 即观测值）'],
-            note: '',
+            structuralOk: cacheStructuralOk, structuralDetail: cacheStructuralDetail,
+            note: cacheStructural && cached.byteLength !== ref.byteLength
+              ? '热命中（索引=盘上事实：observed ' + cached.byteLength + ' ≠ 清单 ' + ref.byteLength +
+                '，平台改写导致字节不可比；清单值只用于结构校验与身份判断）'
+              : '',
           });
         }
-        diags.push('cache-length-mismatch:' + bytes.byteLength);
+        diags.push('cache-length-mismatch:' + bytes.byteLength + '!=index ' + cached.byteLength);
       } catch (error) {
         diags.push('cache-read-failed:' + messageOf(error));
       }
@@ -255,7 +307,17 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
     if (lkg && lkg.sha256 !== ref.sha256) {
       try {
         const bytes = await platform.readFileBytes(lkg.savedPath);
-        if (bytes.byteLength === lkg.byteLength && structureOk(bytes, ref, diags)) {
+        const lkgTextOk = !cacheStructural
+          ? true
+          : ((): boolean => {
+              const verdict = options.textStructureValidator
+                ? options.textStructureValidator(bytes, ref)
+                : { errors: ['缺少 textStructureValidator'] };
+              const errs = Array.isArray(verdict) ? verdict : verdict.errors;
+              if (errs.length) diags.push('stale-lkg-text-reject:' + errs[0]);
+              return errs.length === 0;
+            })();
+        if (bytes.byteLength === lkg.byteLength && lkgTextOk && structureOk(bytes, ref, diags)) {
           stats.staleFallbacks++;
           diags.push('stale-3d-cache');
           const edges = hexEdges(bytes);
@@ -381,12 +443,14 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
         throw new Error('结构不符（' + ref.id + '）');
       }
       // 原子登记为 last-known-good（cachePut 失败不阻断本次使用，但也不留半成品路径）
+      // ★ P0-5：structural 资产按**盘上事实**登记（observedLength/SHA）；清单值只用于结构校验与身份判断。
+      //   strict 路径登记值不变（= 清单值）——行为与既有实现一致。
       let savedPath: string | null = null;
       try {
         const entry = await platform.cachePut({
           assetId: ref.id,
-          sha256: ref.sha256,
-          byteLength: ref.byteLength,
+          sha256: structuralMode && observedSha !== null ? observedSha : ref.sha256,
+          byteLength: structuralMode ? bytes.byteLength : ref.byteLength,
           tempPath,
         });
         savedPath = entry.savedPath;
