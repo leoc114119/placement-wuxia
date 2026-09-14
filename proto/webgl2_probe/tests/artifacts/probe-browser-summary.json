@@ -1,7 +1,7 @@
 {
- "at": "2026-09-14T05:34:33.579Z",
+ "at": "2026-09-14T06:18:23.367Z",
  "repo": "/private/tmp/pw-t31-probe",
- "head": "2f09ab2ca4cb6a395831afb1576acf0e67aa0c7a",
+ "head": "73f637d1c581950875102fe7506ee876c15d5fd7",
  "profile": "spec",
  "runs": 3,
  "viewport": {
@@ -19,7 +19,7 @@
   {
    "name": "run1 无致命错误",
    "ok": true,
-   "detail": "0.5s"
+   "detail": "0.4s"
   },
   {
    "name": "run1 console 单行 __WEBGL2_PROBE_RESULT__ 可解析",
@@ -59,7 +59,7 @@
   {
    "name": "run1 41 骨整块 palette 上传自证（getUniform 回读）",
    "ok": true,
-   "detail": "[{\"index\":0,\"located\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
+   "detail": "[{\"index\":0,\"located\":true,\"hasValue\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"hasValue\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"hasValue\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"hasValue\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
   },
   {
    "name": "run1 A1-05 合成走程序化 readback（非 visualProof 假写）",
@@ -129,7 +129,7 @@
   {
    "name": "run2 41 骨整块 palette 上传自证（getUniform 回读）",
    "ok": true,
-   "detail": "[{\"index\":0,\"located\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
+   "detail": "[{\"index\":0,\"located\":true,\"hasValue\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"hasValue\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"hasValue\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"hasValue\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
   },
   {
    "name": "run2 A1-05 合成走程序化 readback（非 visualProof 假写）",
@@ -199,7 +199,7 @@
   {
    "name": "run3 41 骨整块 palette 上传自证（getUniform 回读）",
    "ok": true,
-   "detail": "[{\"index\":0,\"located\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
+   "detail": "[{\"index\":0,\"located\":true,\"hasValue\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"hasValue\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"hasValue\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"hasValue\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
   },
   {
    "name": "run3 A1-05 合成走程序化 readback（非 visualProof 假写）",
@@ -244,7 +244,7 @@
   {
    "name": "run3 A2 1u：采样量达标（≥1800 帧且达秒数）",
    "ok": true,
-   "detail": "samples=1801 dur=30.015s truncated=false"
+   "detail": "samples=1801 dur=30.016s truncated=false"
   },
   {
    "name": "run3 A2 1u：角色全部在屏且不重叠",
@@ -259,7 +259,7 @@
   {
    "name": "run3 A2 1u：gpuMs 口径诚实（null 或真查询值）",
    "ok": true,
-   "detail": "gpuMs=1.0857 source=EXT_disjoint_timer_query_webgl2"
+   "detail": "gpuMs=1.1165 source=EXT_disjoint_timer_query_webgl2"
   },
   {
    "name": "run3 A2 5u：每帧 draw/palette 次数 == 单位数",
@@ -284,7 +284,7 @@
   {
    "name": "run3 A2 5u：gpuMs 口径诚实（null 或真查询值）",
    "ok": true,
-   "detail": "gpuMs=2.9509 source=EXT_disjoint_timer_query_webgl2"
+   "detail": "gpuMs=1.9009 source=EXT_disjoint_timer_query_webgl2"
   },
   {
    "name": "run3 A2 10u：每帧 draw/palette 次数 == 单位数",
@@ -294,7 +294,7 @@
   {
    "name": "run3 A2 10u：采样量达标（≥1800 帧且达秒数）",
    "ok": true,
-   "detail": "samples=1801 dur=30.015s truncated=false"
+   "detail": "samples=1801 dur=30.014s truncated=false"
   },
   {
    "name": "run3 A2 10u：角色全部在屏且不重叠",
@@ -309,7 +309,7 @@
   {
    "name": "run3 A2 10u：gpuMs 口径诚实（null 或真查询值）",
    "ok": true,
-   "detail": "gpuMs=3.119 source=EXT_disjoint_timer_query_webgl2"
+   "detail": "gpuMs=5.0103 source=EXT_disjoint_timer_query_webgl2"
   },
   {
    "name": "run3 A2 20u：每帧 draw/palette 次数 == 单位数",
@@ -319,7 +319,7 @@
   {
    "name": "run3 A2 20u：采样量达标（≥1800 帧且达秒数）",
    "ok": true,
-   "detail": "samples=3601 dur=60.014s truncated=false"
+   "detail": "samples=3601 dur=60.015s truncated=false"
   },
   {
    "name": "run3 A2 20u：角色全部在屏且不重叠",
@@ -334,12 +334,12 @@
   {
    "name": "run3 A2 20u：gpuMs 口径诚实（null 或真查询值）",
    "ok": true,
-   "detail": "gpuMs=5.3827 source=EXT_disjoint_timer_query_webgl2"
+   "detail": "gpuMs=5.677 source=EXT_disjoint_timer_query_webgl2"
   },
   {
    "name": "run3 A2 四档出数（fps/P95/P99）",
    "ok": true,
-   "detail": "1u:59.88fps/17.5ms 5u:59.88fps/17.5ms 10u:59.88fps/17.4ms 20u:59.88fps/17.6ms"
+   "detail": "1u:59.88fps/17.5ms 5u:59.88fps/17.5ms 10u:59.88fps/17.3ms 20u:59.88fps/18.2ms"
   },
   {
    "name": "run3 verdict 三档字段齐",
@@ -364,7 +364,7 @@
   {
    "name": "run3 自动复制发生在 finalize 之后（字符数=已装配结果长度，非\"无结果\"）",
    "ok": true,
-   "detail": "{\"chars\":19100,\"expected\":19100,\"phase\":\"done\",\"ok\":false}"
+   "detail": "{\"chars\":19189,\"expected\":19189,\"phase\":\"done\",\"ok\":false}"
   },
   {
    "name": "run3 自动复制不再打误导文案（无\"等 A1 跑完/还没产出\"）",
@@ -374,12 +374,12 @@
   {
    "name": "run3 自动复制留 console 单行（auto:true，含成败与原因）",
    "ok": true,
-   "detail": "__PROBE_CLIPBOARD__={\"ok\":false,\"chars\":19100,\"errMsg\":\"Failed to execute 'writeText' on 'Clipboard': Write permission denied.\",\"at\":1789364070744,\"platform\":\"browser\",\"auto\":true}"
+   "detail": "__PROBE_CLIPBOARD__={\"ok\":false,\"chars\":19189,\"errMsg\":\"Failed to execute 'writeText' on 'Clipboard': Write permission denied.\",\"at\":1789366700270,\"platform\":\"browser\",\"auto\":true}"
   },
   {
    "name": "run3 复制结果：成功/失败都留痕（console 单行 + 屏上文案）",
    "ok": true,
-   "detail": "console=__PROBE_CLIPBOARD__={\"ok\":true,\"chars\":19100,\"errMsg\":null,\"at\":1789364071002,\"platform\":\"browser\"} toast=复制：成功（19100 字符）"
+   "detail": "console=__PROBE_CLIPBOARD__={\"ok\":true,\"chars\":19189,\"errMsg\":null,\"at\":1789366700500,\"platform\":\"browser\"} toast=复制：成功（19189 字符）"
   },
   {
    "name": "run3 复制失败时带原因（不吃掉错误）",
@@ -389,12 +389,12 @@
   {
    "name": "run3 分享结果文件：fail 分支屏上可见且带原因（浏览器如实报不支持）",
    "ok": true,
-   "detail": "__PROBE_SHARE__={\"ok\":false,\"fileName\":\"probe_wvx13b_run3.json\",\"filePath\":\"wxfile://probe-user-data/probe-result.json\",\"errMsg\":\"browser: 无 wx.shareFileMessage（浏览器层请用 tests/artifacts/probe_wvx13b_run3.json，或直接取 vfs 里的 wxfile://probe-user-data/probe-result.json）\",\"at\":1789364071168}"
+   "detail": "__PROBE_SHARE__={\"ok\":false,\"fileName\":\"probe_wvx13b_run3.json\",\"filePath\":\"wxfile://probe-user-data/probe-result.json\",\"errMsg\":\"browser: 无 wx.shareFileMessage（浏览器层请用 tests/artifacts/probe_wvx13b_run3.json，或直接取 vfs 里的 wxfile://probe-user-data/probe-result.json）\",\"at\":1789366700667}"
   },
   {
    "name": "run3 查看结果：第 1 页是人读摘要（含 nonce/verdict），后续页为 JSON 分片",
    "ok": true,
-   "detail": "pages=17 head=T31 S0 结果摘要（第 1 页＝人读版，后续页＝原始 JSON 分片）\nnonce 1y9f47ei · runIndex 3/3 · 冷启动绿 3/3\ndevice browser/MacIntel · browser · SDK n"
+   "detail": "pages=18 head=T31 S0 结果摘要（第 1 页＝人读版，后续页＝原始 JSON 分片）\nnonce mb7ohlmt · runIndex 3/3 · 冷启动绿 3/3\ndevice browser/MacIntel · browser · SDK n"
   },
   {
    "name": "run3 查看结果：点右半下一页 / 左半上一页",
@@ -472,7 +472,7 @@
    "detail": "{\"id\":\"A1-02\",\"name\":\"WebGL2 context：非 null / 未丢上下文 / 初始无 GL error / MAX_VERTEX_UNIFORM_VECTORS ≥ 180\",\"pass\":true,\"detail\":{\"contextLost\":false,\"initialGlError\":0,\"maxVertexUniformVectors\":null,\"capabilityCheck\":\"unknown（宿主不返回该常量 ⇒ 硬判据转为 shader link 成功，方案 §4.2）\",\"renderer\":\"WebKit WebGL\"}}"
   },
   {
-   "name": "降级模拟：判定不误报 FAIL（冷启动未满 → 未完成态）",
+   "name": "降级模拟：判定不误报 FAIL（A1 全过 ⇒ PASS 或未完成态）",
    "ok": true,
    "detail": "BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE"
   },
@@ -480,6 +480,21 @@
    "name": "降级模拟：带原因的 console 单行仍在（可远程诊断）",
    "ok": true,
    "detail": "console 行数=2"
+  },
+  {
+   "name": "getUniform 返回 null：判 unsupported 且 located=true（HONOR 形态）",
+   "ok": true,
+   "detail": "{\"ok\":false,\"unsupported\":true,\"located\":true,\"gotValue\":false}"
+  },
+  {
+   "name": "getUniform 返回 null：**不进 a1.errors**（修掉与 DEVICE_PASS 的自相矛盾）",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "name": "getUniform 返回 null：判定不变（A1 全过 ⇒ PASS 或未完成态，非 FAIL）",
+   "ok": true,
+   "detail": "{\"device\":\"BROWSER_SHIM_PASS\",\"a1\":\"A1-01:OK A1-02:OK A1-03:OK A1-04:OK A1-05:OK\"}"
   }
  ],
  "verdicts": [
@@ -540,11 +555,11 @@
  "a2": [
   {
    "unitCount": 1,
-   "durationSec": 30.015,
+   "durationSec": 30.016,
    "sampleCount": 1801,
    "fpsMean": 60.05,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.4,
+   "onePercentLowFps": 56.28,
    "frameMsMedian": 16.7,
    "frameMsP95": 17.5,
    "frameMsP99": 17.7,
@@ -552,12 +567,12 @@
    "over50msRatio": 0,
    "jsAnimMs": 0.1,
    "glSubmitMs": 0.1,
-   "compositeCpuMs": 0.3,
-   "jsAnimMsMean": 0.0689,
-   "glSubmitMsMean": 0.0565,
-   "compositeCpuMsMean": 0.2527,
-   "twoDTotalMsMean": 0.3183,
-   "gpuMs": 1.0857,
+   "compositeCpuMs": 0.2,
+   "jsAnimMsMean": 0.0601,
+   "glSubmitMsMean": 0.0561,
+   "compositeCpuMsMean": 0.2486,
+   "twoDTotalMsMean": 0.3138,
+   "gpuMs": 1.1165,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -620,22 +635,22 @@
    "unitCount": 5,
    "durationSec": 30.015,
    "sampleCount": 1801,
-   "fpsMean": 60.04,
+   "fpsMean": 60.05,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.38,
+   "onePercentLowFps": 56.43,
    "frameMsMedian": 16.7,
    "frameMsP95": 17.5,
-   "frameMsP99": 17.7,
+   "frameMsP99": 17.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "jsAnimMs": 0.1,
    "glSubmitMs": 0.1,
    "compositeCpuMs": 0.2,
-   "jsAnimMsMean": 0.1486,
-   "glSubmitMsMean": 0.0625,
-   "compositeCpuMsMean": 0.2297,
-   "twoDTotalMsMean": 0.2904,
-   "gpuMs": 2.9509,
+   "jsAnimMsMean": 0.1489,
+   "glSubmitMsMean": 0.0659,
+   "compositeCpuMsMean": 0.2333,
+   "twoDTotalMsMean": 0.3004,
+   "gpuMs": 1.9009,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -744,24 +759,24 @@
   },
   {
    "unitCount": 10,
-   "durationSec": 30.015,
+   "durationSec": 30.014,
    "sampleCount": 1801,
    "fpsMean": 60.03,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.08,
+   "onePercentLowFps": 56.62,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.4,
-   "frameMsP99": 17.7,
+   "frameMsP95": 17.3,
+   "frameMsP99": 17.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "jsAnimMs": 0.2,
    "glSubmitMs": 0.1,
    "compositeCpuMs": 0.2,
-   "jsAnimMsMean": 0.2371,
-   "glSubmitMsMean": 0.0574,
-   "compositeCpuMsMean": 0.2118,
-   "twoDTotalMsMean": 0.2661,
-   "gpuMs": 3.119,
+   "jsAnimMsMean": 0.2369,
+   "glSubmitMsMean": 0.0655,
+   "compositeCpuMsMean": 0.2133,
+   "twoDTotalMsMean": 0.275,
+   "gpuMs": 5.0103,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -930,24 +945,24 @@
   },
   {
    "unitCount": 20,
-   "durationSec": 60.014,
+   "durationSec": 60.015,
    "sampleCount": 3601,
-   "fpsMean": 60.09,
+   "fpsMean": 60.13,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 53.45,
+   "onePercentLowFps": 52.98,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.6,
-   "frameMsP99": 18.4,
+   "frameMsP95": 18.2,
+   "frameMsP99": 18.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0.4,
-   "glSubmitMs": 0,
-   "compositeCpuMs": 0.2,
-   "jsAnimMsMean": 0.4053,
-   "glSubmitMsMean": 0.0557,
-   "compositeCpuMsMean": 0.2136,
-   "twoDTotalMsMean": 0.2791,
-   "gpuMs": 5.3827,
+   "jsAnimMs": 0.6,
+   "glSubmitMs": 0.1,
+   "compositeCpuMs": 0.3,
+   "jsAnimMsMean": 0.6281,
+   "glSubmitMsMean": 0.1043,
+   "compositeCpuMsMean": 0.3602,
+   "twoDTotalMsMean": 0.4661,
+   "gpuMs": 5.677,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,

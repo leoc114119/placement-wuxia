@@ -1,6 +1,6 @@
 {
  "schemaVersion": "t31-s0-1.0",
- "commitSha": "2f09ab2ca4cb6a395831afb1576acf0e67aa0c7a",
+ "commitSha": "73f637d1c581950875102fe7506ee876c15d5fd7",
  "probeBaselineNote": "commitSha = probe 工程基线提交；PM 用分支 tip 交叉核对（见 README「结果字段」）",
  "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
  "device": {
@@ -126,34 +126,34 @@
      "glError": 0,
      "drawImageError": null,
      "expectedTop": [
-      89,
-      84,
-      69
+      90,
+      120,
+      110
      ],
      "expectedBottom": [
-      85,
-      113,
-      113
+      110,
+      91,
+      115
      ],
      "readbackTop": [
-      89,
-      84,
-      69,
+      90,
+      120,
+      110,
       255
      ],
      "readbackBottom": [
-      85,
-      113,
-      113,
+      110,
+      91,
+      115,
       255
      ],
-     "nonce": "1y1dic27"
+     "nonce": "mazp6kk5"
     }
    }
   ],
   "errors": [],
   "mode": "offscreen",
-  "nonce": "1y1dic27",
+  "nonce": "mazp6kk5",
   "webgl2Context": true,
   "maxVertexUniformVectors": 1024,
   "webgl1Diagnostic": null,
@@ -166,14 +166,14 @@
    "glError": 0
   },
   "hudSnapshot": {
-   "at": 1789363880088,
+   "at": 1789366509609,
    "phase": "done",
    "lines": [
     "T31 S0 · BROWSER(shim) · browser/MacIntel",
     "SDK (无) · dpr 2 · bb 780x1688",
     "A1 5/5 · webgl2 OK · UV 1024 · 冷启动 2/3",
     "档位 0 · 实时FPS - · GLerr 0 · ctxLost 0",
-    "nonce 1y1dic27 · boot",
+    "nonce mazp6kk5 · boot",
     "A2 0/4 档",
     "verdict 待出"
    ],
@@ -182,13 +182,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 10.7,
-    "glbParseMs": 6.5,
+    "readFileMs": 11.9,
+    "glbParseMs": 5.6,
     "animParseMs": 3.1,
-    "textureDecodeMs": 2.1,
-    "firstGpuUploadMs": 117.6,
-    "meshUploadMs": 1,
-    "textureUploadMs": 115.5
+    "textureDecodeMs": 2.7,
+    "firstGpuUploadMs": 117,
+    "meshUploadMs": 0.9,
+    "textureUploadMs": 114.8
    },
    "resolved": {
     "subpackage": {
@@ -268,11 +268,14 @@
    "ok": true,
    "unsupported": false,
    "glError": 0,
+   "located": true,
+   "gotValue": true,
    "jointCount": 41,
    "samples": [
     {
      "index": 0,
      "located": true,
+     "hasValue": true,
      "tx": 0,
      "m00": 1,
      "ok": true
@@ -280,6 +283,7 @@
     {
      "index": 7,
      "located": true,
+     "hasValue": true,
      "tx": 7,
      "m00": 1.0700000524520874,
      "ok": true
@@ -287,6 +291,7 @@
     {
      "index": 20,
      "located": true,
+     "hasValue": true,
      "tx": 20,
      "m00": 1.2000000476837158,
      "ok": true
@@ -294,6 +299,7 @@
     {
      "index": 40,
      "located": true,
+     "hasValue": true,
      "tx": 40,
      "m00": 1.399999976158142,
      "ok": true
@@ -338,16 +344,16 @@
    "proof": "readback",
    "glError": 0,
    "drawImageError": null,
-   "nonce": "1y1dic27",
+   "nonce": "mazp6kk5",
    "expectedTop": [
-    89,
-    84,
-    69
+    90,
+    120,
+    110
    ],
    "expectedBottom": [
-    85,
-    113,
-    113
+    110,
+    91,
+    115
    ],
    "topRect": [
     16,
@@ -364,18 +370,18 @@
    "readback": {
     "top": {
      "mean": [
-      89,
-      84,
-      69,
+      90,
+      120,
+      110,
       255
      ],
      "n": 16
     },
     "bottom": {
      "mean": [
-      85,
-      113,
-      113,
+      110,
+      91,
+      115,
       255
      ],
      "n": 16
@@ -393,14 +399,14 @@
    {
     "index": 1,
     "a1Ok": true,
-    "ts": 1789363879788,
+    "ts": 1789366509312,
     "assertionsPass": 5,
     "assertionsTotal": 5
    },
    {
     "index": 2,
     "a1Ok": true,
-    "ts": 1789363880087,
+    "ts": 1789366509609,
     "assertionsPass": 5,
     "assertionsTotal": 5
    }
@@ -441,7 +447,7 @@
  "coldRuns": [
   {
    "index": 1,
-   "ts": 1789363879788,
+   "ts": 1789366509312,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -450,7 +456,7 @@
   },
   {
    "index": 2,
-   "ts": 1789363880087,
+   "ts": 1789366509609,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -487,13 +493,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 10.7,
-    "glbParseMs": 6.5,
+    "readFileMs": 11.9,
+    "glbParseMs": 5.6,
     "animParseMs": 3.1,
-    "textureDecodeMs": 2.1,
-    "firstGpuUploadMs": 117.6,
-    "meshUploadMs": 1,
-    "textureUploadMs": 115.5
+    "textureDecodeMs": 2.7,
+    "firstGpuUploadMs": 117,
+    "meshUploadMs": 0.9,
+    "textureUploadMs": 114.8
    },
    "resolved": {
     "subpackage": {

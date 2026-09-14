@@ -1,6 +1,6 @@
 {
  "schemaVersion": "t31-s0-1.0",
- "commitSha": "2f09ab2ca4cb6a395831afb1576acf0e67aa0c7a",
+ "commitSha": "73f637d1c581950875102fe7506ee876c15d5fd7",
  "probeBaselineNote": "commitSha = probe 工程基线提交；PM 用分支 tip 交叉核对（见 README「结果字段」）",
  "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
  "device": {
@@ -126,34 +126,34 @@
      "glError": 0,
      "drawImageError": null,
      "expectedTop": [
-      115,
-      67,
-      120
+      73,
+      98,
+      99
      ],
      "expectedBottom": [
-      64,
-      126,
-      126
+      120,
+      88,
+      101
      ],
      "readbackTop": [
-      115,
-      67,
-      120,
+      73,
+      98,
+      99,
       255
      ],
      "readbackBottom": [
-      64,
-      126,
-      126,
+      120,
+      88,
+      101,
       255
      ],
-     "nonce": "1y9f47ei"
+     "nonce": "mb7ohlmt"
     }
    }
   ],
   "errors": [],
   "mode": "offscreen",
-  "nonce": "1y9f47ei",
+  "nonce": "mb7ohlmt",
   "webgl2Context": true,
   "maxVertexUniformVectors": 1024,
   "webgl1Diagnostic": null,
@@ -166,14 +166,14 @@
    "glError": 0
   },
   "hudSnapshot": {
-   "at": 1789364070740,
+   "at": 1789366700266,
    "phase": "a2:20",
    "lines": [
     "T31 S0 · BROWSER(shim) · browser/MacIntel",
     "SDK (无) · dpr 2 · bb 780x1688",
     "A1 5/5 · webgl2 OK · UV 1024 · 冷启动 3/3",
     "档位 20 · 实时FPS - · GLerr 0 · ctxLost 0",
-    "nonce 1y9f47ei · a2:20",
+    "nonce mb7ohlmt · a2:20",
     "A2 4/4 档 · 末档 FPS 59.88",
     "verdict 待出"
    ],
@@ -182,13 +182,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 11.2,
-    "glbParseMs": 5.1,
+    "readFileMs": 11.5,
+    "glbParseMs": 5.2,
     "animParseMs": 2.8,
-    "textureDecodeMs": 2.2,
-    "firstGpuUploadMs": 115.2,
-    "meshUploadMs": 0.9,
-    "textureUploadMs": 113
+    "textureDecodeMs": 2.8,
+    "firstGpuUploadMs": 116.6,
+    "meshUploadMs": 1,
+    "textureUploadMs": 114.4
    },
    "resolved": {
     "subpackage": {
@@ -268,11 +268,14 @@
    "ok": true,
    "unsupported": false,
    "glError": 0,
+   "located": true,
+   "gotValue": true,
    "jointCount": 41,
    "samples": [
     {
      "index": 0,
      "located": true,
+     "hasValue": true,
      "tx": 0,
      "m00": 1,
      "ok": true
@@ -280,6 +283,7 @@
     {
      "index": 7,
      "located": true,
+     "hasValue": true,
      "tx": 7,
      "m00": 1.0700000524520874,
      "ok": true
@@ -287,6 +291,7 @@
     {
      "index": 20,
      "located": true,
+     "hasValue": true,
      "tx": 20,
      "m00": 1.2000000476837158,
      "ok": true
@@ -294,6 +299,7 @@
     {
      "index": 40,
      "located": true,
+     "hasValue": true,
      "tx": 40,
      "m00": 1.399999976158142,
      "ok": true
@@ -338,16 +344,16 @@
    "proof": "readback",
    "glError": 0,
    "drawImageError": null,
-   "nonce": "1y9f47ei",
+   "nonce": "mb7ohlmt",
    "expectedTop": [
-    115,
-    67,
-    120
+    73,
+    98,
+    99
    ],
    "expectedBottom": [
-    64,
-    126,
-    126
+    120,
+    88,
+    101
    ],
    "topRect": [
     16,
@@ -364,18 +370,18 @@
    "readback": {
     "top": {
      "mean": [
-      115,
-      67,
-      120,
+      73,
+      98,
+      99,
       255
      ],
      "n": 16
     },
     "bottom": {
      "mean": [
-      64,
-      126,
-      126,
+      120,
+      88,
+      101,
       255
      ],
      "n": 16
@@ -393,21 +399,21 @@
    {
     "index": 1,
     "a1Ok": true,
-    "ts": 1789363879788,
+    "ts": 1789366509312,
     "assertionsPass": 5,
     "assertionsTotal": 5
    },
    {
     "index": 2,
     "a1Ok": true,
-    "ts": 1789363880087,
+    "ts": 1789366509609,
     "assertionsPass": 5,
     "assertionsTotal": 5
    },
    {
     "index": 3,
     "a1Ok": true,
-    "ts": 1789363880374,
+    "ts": 1789366509897,
     "assertionsPass": 5,
     "assertionsTotal": 5
    }
@@ -470,11 +476,11 @@
  "a2": [
   {
    "unitCount": 1,
-   "durationSec": 30.015,
+   "durationSec": 30.016,
    "sampleCount": 1801,
    "fpsMean": 60.05,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.4,
+   "onePercentLowFps": 56.28,
    "frameMsMedian": 16.7,
    "frameMsP95": 17.5,
    "frameMsP99": 17.7,
@@ -482,12 +488,12 @@
    "over50msRatio": 0,
    "jsAnimMs": 0.1,
    "glSubmitMs": 0.1,
-   "compositeCpuMs": 0.3,
-   "jsAnimMsMean": 0.0689,
-   "glSubmitMsMean": 0.0565,
-   "compositeCpuMsMean": 0.2527,
-   "twoDTotalMsMean": 0.3183,
-   "gpuMs": 1.0857,
+   "compositeCpuMs": 0.2,
+   "jsAnimMsMean": 0.0601,
+   "glSubmitMsMean": 0.0561,
+   "compositeCpuMsMean": 0.2486,
+   "twoDTotalMsMean": 0.3138,
+   "gpuMs": 1.1165,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -550,22 +556,22 @@
    "unitCount": 5,
    "durationSec": 30.015,
    "sampleCount": 1801,
-   "fpsMean": 60.04,
+   "fpsMean": 60.05,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.38,
+   "onePercentLowFps": 56.43,
    "frameMsMedian": 16.7,
    "frameMsP95": 17.5,
-   "frameMsP99": 17.7,
+   "frameMsP99": 17.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "jsAnimMs": 0.1,
    "glSubmitMs": 0.1,
    "compositeCpuMs": 0.2,
-   "jsAnimMsMean": 0.1486,
-   "glSubmitMsMean": 0.0625,
-   "compositeCpuMsMean": 0.2297,
-   "twoDTotalMsMean": 0.2904,
-   "gpuMs": 2.9509,
+   "jsAnimMsMean": 0.1489,
+   "glSubmitMsMean": 0.0659,
+   "compositeCpuMsMean": 0.2333,
+   "twoDTotalMsMean": 0.3004,
+   "gpuMs": 1.9009,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -674,24 +680,24 @@
   },
   {
    "unitCount": 10,
-   "durationSec": 30.015,
+   "durationSec": 30.014,
    "sampleCount": 1801,
    "fpsMean": 60.03,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.08,
+   "onePercentLowFps": 56.62,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.4,
-   "frameMsP99": 17.7,
+   "frameMsP95": 17.3,
+   "frameMsP99": 17.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "jsAnimMs": 0.2,
    "glSubmitMs": 0.1,
    "compositeCpuMs": 0.2,
-   "jsAnimMsMean": 0.2371,
-   "glSubmitMsMean": 0.0574,
-   "compositeCpuMsMean": 0.2118,
-   "twoDTotalMsMean": 0.2661,
-   "gpuMs": 3.119,
+   "jsAnimMsMean": 0.2369,
+   "glSubmitMsMean": 0.0655,
+   "compositeCpuMsMean": 0.2133,
+   "twoDTotalMsMean": 0.275,
+   "gpuMs": 5.0103,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -860,24 +866,24 @@
   },
   {
    "unitCount": 20,
-   "durationSec": 60.014,
+   "durationSec": 60.015,
    "sampleCount": 3601,
-   "fpsMean": 60.09,
+   "fpsMean": 60.13,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 53.45,
+   "onePercentLowFps": 52.98,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.6,
-   "frameMsP99": 18.4,
+   "frameMsP95": 18.2,
+   "frameMsP99": 18.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0.4,
-   "glSubmitMs": 0,
-   "compositeCpuMs": 0.2,
-   "jsAnimMsMean": 0.4053,
-   "glSubmitMsMean": 0.0557,
-   "compositeCpuMsMean": 0.2136,
-   "twoDTotalMsMean": 0.2791,
-   "gpuMs": 5.3827,
+   "jsAnimMs": 0.6,
+   "glSubmitMs": 0.1,
+   "compositeCpuMs": 0.3,
+   "jsAnimMsMean": 0.6281,
+   "glSubmitMsMean": 0.1043,
+   "compositeCpuMsMean": 0.3602,
+   "twoDTotalMsMean": 0.4661,
+   "gpuMs": 5.677,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -1173,7 +1179,7 @@
  "coldRuns": [
   {
    "index": 1,
-   "ts": 1789363879788,
+   "ts": 1789366509312,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -1182,7 +1188,7 @@
   },
   {
    "index": 2,
-   "ts": 1789363880087,
+   "ts": 1789366509609,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -1191,7 +1197,7 @@
   },
   {
    "index": 3,
-   "ts": 1789363880374,
+   "ts": 1789366509897,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -1252,13 +1258,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 11.2,
-    "glbParseMs": 5.1,
+    "readFileMs": 11.5,
+    "glbParseMs": 5.2,
     "animParseMs": 2.8,
-    "textureDecodeMs": 2.2,
-    "firstGpuUploadMs": 115.2,
-    "meshUploadMs": 0.9,
-    "textureUploadMs": 113
+    "textureDecodeMs": 2.8,
+    "firstGpuUploadMs": 116.6,
+    "meshUploadMs": 1,
+    "textureUploadMs": 114.4
    },
    "resolved": {
     "subpackage": {

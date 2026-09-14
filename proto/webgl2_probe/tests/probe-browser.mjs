@@ -427,12 +427,36 @@ async function main() {
     check('降级模拟：MAX_VERTEX_UNIFORM_VECTORS 取不到时记 unknown、不判死',
       !!(deg.r && deg.r.a1.assertions.find((x) => x.id === 'A1-02' && x.detail && String(x.detail.capabilityCheck).indexOf('unknown') >= 0)),
       JSON.stringify(deg.r && deg.r.a1.assertions.find((x) => x.id === 'A1-02')));
-    check('降级模拟：判定不误报 FAIL（冷启动未满 → 未完成态）',
-      !!(deg.r && deg.r.verdict.device === 'BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE'),
+    // 判定只看"不得误报失败"（本 context 里冷启动历史会随多次加载滚动，不锁定具体档位）
+    check('降级模拟：判定不误报 FAIL（A1 全过 ⇒ PASS 或未完成态）',
+      !!(deg.r && deg.r.verdict.device.indexOf('PASS') >= 0 && deg.r.verdict.device.indexOf('FAIL') < 0 && deg.r.a1.assertions.every((x) => x.pass === true)),
       deg.r && deg.r.verdict.device);
     check('降级模拟：带原因的 console 单行仍在（可远程诊断）',
       consoleLines.some((l) => l.indexOf('__WEBGL2_PROBE_RESULT__=') >= 0),
       `console 行数=${consoleLines.length}`);
+
+    // ── 补丁七回归门：getUniform **返回 null**（HONOR 真机形态：located=true 但读回空）──────
+    // 真机 JSON 里这一条曾进 a1.errors ⇒ 与同机 DEVICE_PASS 自相矛盾。口径：拿不到值=平台不回读=unsupported。
+    // （后加的 initScript 覆盖先前的"抛错"补丁 ⇒ 这次走"返回 null"分支。）
+    console.log('\n=== 补丁七回归：getUniform 返回 null（located 但读回空）===');
+    await context.addInitScript(() => {
+      WebGL2RenderingContext.prototype.getUniform = function () { return null; };
+    });
+    consoleLines.length = 0;
+    await page.goto(`http://127.0.0.1:${port}/proto/webgl2_probe/browser/index.html?a2=skip&commit=${head}&sha=${modelSha}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.__probeDone === true, null, { timeout: 5 * 60 * 1000 });
+    const nul = await page.evaluate(() => ({ error: window.__probeError, r: window.__probeResult }));
+    fs.writeFileSync(path.join(OUT, 'probe-result-getuniform-null.json'), JSON.stringify(nul.r || { error: nul.error }, null, 1));
+    const nb = nul.r && nul.r.a1 && nul.r.a1.boneUploadCheck;
+    check('getUniform 返回 null：判 unsupported 且 located=true（HONOR 形态）',
+      !!(nb && nb.unsupported === true && nb.located === true && nb.ok === false),
+      JSON.stringify(nb && { ok: nb.ok, unsupported: nb.unsupported, located: nb.located, gotValue: nb.gotValue, err: nb.error }));
+    check('getUniform 返回 null：**不进 a1.errors**（修掉与 DEVICE_PASS 的自相矛盾）',
+      !!(nul.r && (nul.r.a1.errors || []).filter((e) => /palette 上传自证/.test(e)).length === 0),
+      JSON.stringify(nul.r && nul.r.a1.errors));
+    check('getUniform 返回 null：判定不变（A1 全过 ⇒ PASS 或未完成态，非 FAIL）',
+      !!(nul.r && nul.r.a1.assertions.every((x) => x.pass === true) && nul.r.verdict.device.indexOf('PASS') >= 0 && nul.r.verdict.device.indexOf('FAIL') < 0),
+      nul.r && JSON.stringify({ device: nul.r.verdict.device, a1: nul.r.a1.assertions.map((x) => x.id + ':' + (x.pass ? 'OK' : 'NG')).join(' ') }));
   } finally {
     await context.close();
     await browser.close();

@@ -80,8 +80,8 @@
     "detail": {
      "contextLost": false,
      "initialGlError": 0,
-     "maxVertexUniformVectors": 1024,
-     "capabilityCheck": true,
+     "maxVertexUniformVectors": null,
+     "capabilityCheck": "unknown（宿主不返回该常量 ⇒ 硬判据转为 shader link 成功，方案 §4.2）",
      "renderer": "WebKit WebGL"
     }
    },
@@ -126,39 +126,43 @@
      "glError": 0,
      "drawImageError": null,
      "expectedTop": [
-      81,
-      104,
-      126
+      71,
+      89,
+      73
      ],
      "expectedBottom": [
-      106,
-      79,
-      70
+      86,
+      114,
+      86
      ],
      "readbackTop": [
-      81,
-      104,
-      126,
+      71,
+      89,
+      73,
       255
      ],
      "readbackBottom": [
-      106,
-      79,
-      70,
+      86,
+      114,
+      86,
       255
      ],
-     "nonce": "mamrifmu"
+     "nonce": "qgbqzhxk"
     }
    }
   ],
   "errors": [],
   "mode": "offscreen",
-  "nonce": "mamrifmu",
+  "nonce": "qgbqzhxk",
+  "notes": [
+   "MAX_VERTEX_UNIFORM_VECTORS 取不到（宿主不返回）⇒ 记 unknown，不判死；41 骨 shader 的 compile/link 结果即硬判据",
+   "41 骨 palette 回读自证在本平台不可用（getUniform-not-support）⇒ 不计入错误；蒙皮正确性的硬判据 = A1-03/04/05 像素三件套（方案 §4.2）"
+  ],
   "webgl2Context": true,
-  "maxVertexUniformVectors": 1024,
+  "maxVertexUniformVectors": null,
   "webgl1Diagnostic": null,
   "timerResolutionMs": 0.1,
-  "coldRunIndex": 1,
+  "coldRunIndex": 3,
   "shaderLink": true,
   "triangleReadback": {
    "nonClearPixels": 16,
@@ -166,14 +170,14 @@
    "glError": 0
   },
   "hudSnapshot": {
-   "at": 1789366509313,
+   "at": 1789366703139,
    "phase": "done",
    "lines": [
     "T31 S0 · BROWSER(shim) · browser/MacIntel",
     "SDK (无) · dpr 2 · bb 780x1688",
-    "A1 5/5 · webgl2 OK · UV 1024 · 冷启动 1/3",
+    "A1 5/5 · webgl2 OK · UV - · 冷启动 3/3",
     "档位 0 · 实时FPS - · GLerr 0 · ctxLost 0",
-    "nonce mamrifmu · boot",
+    "nonce qgbqzhxk · boot",
     "A2 0/4 档",
     "verdict 待出"
    ],
@@ -181,14 +185,14 @@
   },
   "asset": {
    "stages": {
-    "subpackageMs": 0.1,
-    "readFileMs": 13.4,
-    "glbParseMs": 6.5,
-    "animParseMs": 3.5,
-    "textureDecodeMs": 3.9,
-    "firstGpuUploadMs": 122.3,
-    "meshUploadMs": 1.8,
-    "textureUploadMs": 118.8
+    "subpackageMs": 0,
+    "readFileMs": 10.5,
+    "glbParseMs": 5.5,
+    "animParseMs": 4.1,
+    "textureDecodeMs": 2.8,
+    "firstGpuUploadMs": 116.1,
+    "meshUploadMs": 1.1,
+    "textureUploadMs": 113.8
    },
    "resolved": {
     "subpackage": {
@@ -230,7 +234,7 @@
     }
    ],
    "gpu": {
-    "maxVertexUniformVectors": 1024,
+    "maxVertexUniformVectors": null,
     "jointCount": 41,
     "vertexCount": 29281,
     "indexCount": 145257
@@ -265,46 +269,47 @@
   },
   "modelAccountOk": true,
   "boneUploadCheck": {
-   "ok": true,
-   "unsupported": false,
-   "glError": 0,
+   "ok": false,
+   "unsupported": true,
+   "platform": "getUniform-not-support",
    "located": true,
-   "gotValue": true,
+   "gotValue": false,
    "jointCount": 41,
    "samples": [
     {
      "index": 0,
      "located": true,
-     "hasValue": true,
-     "tx": 0,
-     "m00": 1,
-     "ok": true
+     "hasValue": false,
+     "tx": null,
+     "m00": null,
+     "ok": false
     },
     {
      "index": 7,
      "located": true,
-     "hasValue": true,
-     "tx": 7,
-     "m00": 1.0700000524520874,
-     "ok": true
+     "hasValue": false,
+     "tx": null,
+     "m00": null,
+     "ok": false
     },
     {
      "index": 20,
      "located": true,
-     "hasValue": true,
-     "tx": 20,
-     "m00": 1.2000000476837158,
-     "ok": true
+     "hasValue": false,
+     "tx": null,
+     "m00": null,
+     "ok": false
     },
     {
      "index": 40,
      "located": true,
-     "hasValue": true,
-     "tx": 40,
-     "m00": 1.399999976158142,
-     "ok": true
+     "hasValue": false,
+     "tx": null,
+     "m00": null,
+     "ok": false
     }
-   ]
+   ],
+   "note": "getUniformLocation/getUniform 未返回可用矩阵（已定位但读回空） ⇒ 视为平台不回读；硬判据 = A1-03/04/05 像素三件套（方案 §4.2）"
   },
   "modelReadback": {
    "region": {
@@ -344,16 +349,16 @@
    "proof": "readback",
    "glError": 0,
    "drawImageError": null,
-   "nonce": "mamrifmu",
+   "nonce": "qgbqzhxk",
    "expectedTop": [
-    81,
-    104,
-    126
+    71,
+    89,
+    73
    ],
    "expectedBottom": [
-    106,
-    79,
-    70
+    86,
+    114,
+    86
    ],
    "topRect": [
     16,
@@ -370,18 +375,18 @@
    "readback": {
     "top": {
      "mean": [
-      81,
-      104,
-      126,
+      71,
+      89,
+      73,
       255
      ],
      "n": 16
     },
     "bottom": {
      "mean": [
-      106,
-      79,
-      70,
+      86,
+      114,
+      86,
       255
      ],
      "n": 16
@@ -392,14 +397,28 @@
    "note": "两块色块上下分置：既验\"合成过去了\"，也验没有上下颠倒；色值由本次 nonce 派生"
   },
   "compositeProof": "readback",
-  "coldRunsTotal": 1,
-  "coldRunsGreen": 1,
+  "coldRunsTotal": 3,
+  "coldRunsGreen": 3,
   "coldRunsRequired": 3,
   "coldRunDetail": [
    {
     "index": 1,
     "a1Ok": true,
-    "ts": 1789366509312,
+    "ts": 1789366702094,
+    "assertionsPass": 5,
+    "assertionsTotal": 5
+   },
+   {
+    "index": 2,
+    "a1Ok": true,
+    "ts": 1789366702804,
+    "assertionsPass": 5,
+    "assertionsTotal": 5
+   },
+   {
+    "index": 3,
+    "a1Ok": true,
+    "ts": 1789366703138,
     "assertionsPass": 5,
     "assertionsTotal": 5
    }
@@ -407,9 +426,9 @@
   "coldRunNote": "Device-PASS 需\"完全杀微信/重新扫码\"连续 3 次全绿（方案 §4.2 A1-06）；浏览器端由测试 harness 连续 3 次加载等价模拟",
   "allAssertionsPass": true,
   "offscreenFailed": false,
-  "devicePassCandidate": false,
+  "devicePassCandidate": true,
   "webgl1FallbackUsed": false,
-  "a2Skipped": "本机 A1 尚未 Device-PASS（连续 3 次冷启动全绿）—— 方案 §5：A2 只在 Device-PASS 后运行；冷启动进度 1/3；工程师复测可显式 a2=run",
+  "a2Skipped": "a2=skip",
   "sdkVersionApplicable": false,
   "sdkVersionOk": null,
   "sdkVersionMin": "2.24.0",
@@ -418,20 +437,20 @@
   "screenshots": [
    {
     "tag": "a1-03-triangle",
-    "name": "probe_wvx13b_nosdk_a1-03-triangle_run1.png",
-    "path": "dataurl:probe_wvx13b_nosdk_a1-03-triangle_run1.png",
+    "name": "probe_wvx13b_nosdk_a1-03-triangle_run3.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-03-triangle_run3.png",
     "ok": true
    },
    {
     "tag": "a1-04-model",
-    "name": "probe_wvx13b_nosdk_a1-04-model_run1.png",
-    "path": "dataurl:probe_wvx13b_nosdk_a1-04-model_run1.png",
+    "name": "probe_wvx13b_nosdk_a1-04-model_run3.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-04-model_run3.png",
     "ok": true
    },
    {
     "tag": "a1-05-composite",
-    "name": "probe_wvx13b_nosdk_a1-05-composite_run1.png",
-    "path": "dataurl:probe_wvx13b_nosdk_a1-05-composite_run1.png",
+    "name": "probe_wvx13b_nosdk_a1-05-composite_run3.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-05-composite_run3.png",
     "ok": true
    }
   ]
@@ -440,7 +459,25 @@
  "coldRuns": [
   {
    "index": 1,
-   "ts": 1789366509312,
+   "ts": 1789366702094,
+   "deviceHash": "wvx13b",
+   "a1Ok": true,
+   "sdkVersion": null,
+   "assertionsPass": 5,
+   "assertionsTotal": 5
+  },
+  {
+   "index": 2,
+   "ts": 1789366702804,
+   "deviceHash": "wvx13b",
+   "a1Ok": true,
+   "sdkVersion": null,
+   "assertionsPass": 5,
+   "assertionsTotal": 5
+  },
+  {
+   "index": 3,
+   "ts": 1789366703138,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -450,40 +487,40 @@
  ],
  "env": {
   "browser": true,
-  "a2Profile": "spec",
-  "a2SpecProfile": true,
-  "a2Trigger": "skipped-not-device-pass",
-  "a2Skipped": "本机 A1 尚未 Device-PASS（连续 3 次冷启动全绿）—— 方案 §5：A2 只在 Device-PASS 后运行；冷启动进度 1/3；工程师复测可显式 a2=run",
+  "a2Profile": "browser-short",
+  "a2SpecProfile": false,
+  "a2Trigger": "skipped-by-option",
+  "a2Skipped": "a2=skip",
   "screenshots": [
    {
     "tag": "a1-03-triangle",
-    "name": "probe_wvx13b_nosdk_a1-03-triangle_run1.png",
-    "path": "dataurl:probe_wvx13b_nosdk_a1-03-triangle_run1.png",
+    "name": "probe_wvx13b_nosdk_a1-03-triangle_run3.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-03-triangle_run3.png",
     "ok": true
    },
    {
     "tag": "a1-04-model",
-    "name": "probe_wvx13b_nosdk_a1-04-model_run1.png",
-    "path": "dataurl:probe_wvx13b_nosdk_a1-04-model_run1.png",
+    "name": "probe_wvx13b_nosdk_a1-04-model_run3.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-04-model_run3.png",
     "ok": true
    },
    {
     "tag": "a1-05-composite",
-    "name": "probe_wvx13b_nosdk_a1-05-composite_run1.png",
-    "path": "dataurl:probe_wvx13b_nosdk_a1-05-composite_run1.png",
+    "name": "probe_wvx13b_nosdk_a1-05-composite_run3.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-05-composite_run3.png",
     "ok": true
    }
   ],
   "asset": {
    "stages": {
-    "subpackageMs": 0.1,
-    "readFileMs": 13.4,
-    "glbParseMs": 6.5,
-    "animParseMs": 3.5,
-    "textureDecodeMs": 3.9,
-    "firstGpuUploadMs": 122.3,
-    "meshUploadMs": 1.8,
-    "textureUploadMs": 118.8
+    "subpackageMs": 0,
+    "readFileMs": 10.5,
+    "glbParseMs": 5.5,
+    "animParseMs": 4.1,
+    "textureDecodeMs": 2.8,
+    "firstGpuUploadMs": 116.1,
+    "meshUploadMs": 1.1,
+    "textureUploadMs": 113.8
    },
    "resolved": {
     "subpackage": {
@@ -525,7 +562,7 @@
     }
    ],
    "gpu": {
-    "maxVertexUniformVectors": 1024,
+    "maxVertexUniformVectors": null,
     "jointCount": 41,
     "vertexCount": 29281,
     "indexCount": 145257
@@ -559,17 +596,16 @@
   },
   "probe": "proto/webgl2_probe",
   "specCommit": "f5ac3c7f",
-  "profileNote": "A2 按方案 §5.1 原文口径采样"
+  "profileNote": "A2 为浏览器层短采样（仅证明代码路径通，四档出数）；容量结论必须用真机 spec 档数字"
  },
  "verdict": {
-  "device": "BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE",
+  "device": "BROWSER_SHIM_PASS",
   "architecture": "BROWSER_ONLY_NOT_DEVICE_EVIDENCE",
   "capacity20": "NOT_RUN",
   "capacity20Engine": null,
   "capacity20Reasons": null
  },
  "notes": [
-  "浏览器 + wx shim 结果只证明核心代码路径通，不证明微信/安卓能力；不得据此写 A 方案成立（方案 §7.1）",
-  "本次 A1 断言全过，但冷启动系列仅 1/3 次 ⇒ 尚未构成 Device-PASS（不是失败）"
+  "浏览器 + wx shim 结果只证明核心代码路径通，不证明微信/安卓能力；不得据此写 A 方案成立（方案 §7.1）"
  ]
 }

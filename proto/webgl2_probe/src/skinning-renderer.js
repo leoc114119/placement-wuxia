@@ -380,6 +380,7 @@
         const samples = [];
         let err = null;
         let located = false;
+        let gotValue = false;
         try {
           const probe = new Float32Array(jointCount * 16);
           for (let j = 0; j < jointCount; j++) {
@@ -397,9 +398,13 @@
             const loc = gl.getUniformLocation(program, 'uBones[' + j + ']');
             if (loc) located = true;
             const v = loc ? gl.getUniform(program, loc) : null;
+            // 只有拿到"够长的矩阵"才算**读回了值**；返回 null / 空数组一律算"没读回"
+            const hasVal = !!v && typeof v.length === 'number' && v.length >= 16;
+            if (hasVal) gotValue = true;
             samples.push({
-              index: j, located: !!loc, tx: v ? v[12] : null, m00: v ? v[0] : null,
-              ok: !!v && Math.abs(v[12] - j) < 1e-6 && Math.abs(v[0] - (1 + j * 0.01)) < 1e-6,
+              index: j, located: !!loc, hasValue: hasVal,
+              tx: hasVal ? v[12] : null, m00: hasVal ? v[0] : null,
+              ok: hasVal && Math.abs(v[12] - j) < 1e-6 && Math.abs(v[0] - (1 + j * 0.01)) < 1e-6,
             });
           }
         } catch (e) {
@@ -410,17 +415,21 @@
             note: '回读自证在部分安卓引擎不可用（硬判据 = A1-03/04/05 像素三件套，方案 §4.2）',
           };
         }
-        const readbackOk = located && samples.length > 0;
+        // ★ 分类口径（真机 HONOR 实测：located=true 但 getUniform 读回 null ⇒ 曾误进 a1.errors，
+        //   与同机的 DEVICE_PASS 自相矛盾）：**拿不到值 = 平台不回读 = unsupported**，不是上传失败。
+        //   只有"确实读回了矩阵、值与上传的不符"才算真失败（那才是这条自证要抓的东西）。
+        const readbackOk = located && samples.length > 0 && gotValue;
         if (!readbackOk) {
           return {
             ok: false, unsupported: true, platform: 'getUniform-not-support',
-            located: located, jointCount: jointCount, samples: samples,
-            note: 'getUniformLocation/getUniform 未返回可用值 ⇒ 视为平台不回读；硬判据 = A1-03/04/05 像素三件套',
+            located: located, gotValue: gotValue, jointCount: jointCount, samples: samples,
+            note: 'getUniformLocation/getUniform 未返回可用矩阵（' + (located ? '已定位但读回空' : '未定位到') + '）'
+              + ' ⇒ 视为平台不回读；硬判据 = A1-03/04/05 像素三件套（方案 §4.2）',
           };
         }
         return {
           ok: err === gl.NO_ERROR && samples.every(function (s) { return s.ok; }),
-          unsupported: false, glError: err, jointCount: jointCount, samples: samples,
+          unsupported: false, glError: err, located: located, gotValue: gotValue, jointCount: jointCount, samples: samples,
         };
       },
       resetCounters: function () { counters.drawCalls = 0; counters.paletteUploads = 0; counters.frames = 0; },
