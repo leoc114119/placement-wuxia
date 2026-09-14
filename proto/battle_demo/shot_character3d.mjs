@@ -65,6 +65,27 @@ const shot = async (page, name) => {
   return p;
 };
 
+/** 两图强差异像素数（阈值 60，避开棋盘亚像素噪声）：用于「帧不是同一张」的自证——
+ * 六向帧若全部相同=朝向没生效、状态帧若相同=动作没播（本项目历史缺陷：截图退化成同帧假证据）。 */
+const strongDiffCount = (fileA, fileB) => {
+  const A = decodePng(fileA);
+  const B = decodePng(fileB);
+  const w = Math.min(A.width, B.width);
+  const h = Math.min(A.height, B.height);
+  let n = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const s = (y * w + x) * 4;
+      const d =
+        Math.abs(A.rgba[s] - B.rgba[s]) +
+        Math.abs(A.rgba[s + 1] - B.rgba[s + 1]) +
+        Math.abs(A.rgba[s + 2] - B.rgba[s + 2]);
+      if (d > 60) n++;
+    }
+  }
+  return n;
+};
+
 /** 冻结行动条：证据窗口内敌我均不行动（白盒仅证据驱动用，非生产路径） */
 const quiet = (page) =>
   page.evaluate(() => {
@@ -152,13 +173,25 @@ for (const [vw, vh, tag] of VIEWPORTS) {
   check(`${tag} 3D 就绪（loadStatus/edgeMode）`, diag.status === 'ready' && !!diag.edgeMode, `status=${diag.status} edge=${diag.edgeMode} bb=${diag.backbuffer?.width}x${diag.backbuffer?.height}`);
 
   // ① 六向 idle
+  const facingFiles = {};
   for (const facing of FACINGS) {
     await quiet(page);
     await setHero(page, { hexFacing: FACING_VEC[facing], animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1 });
     await page.waitForTimeout(140);
     const placed = (await char3dDiag(page)).placed;
     check(`${tag} 六向 ${facing} 有 placed（脚底锚同源）`, !!placed && !!placed.hero, placed ? JSON.stringify(placed.hero) : 'placed=null');
-    await shot(page, `${tag}_idle_${facing}`);
+    facingFiles[facing] = await shot(page, `${tag}_idle_${facing}`);
+  }
+
+  // ①' 六向自证：任一方向对之间都必须显著不同（否则=朝向没生效的假证据）
+  {
+    let minPair = Infinity;
+    for (let i = 0; i < FACINGS.length; i++) {
+      for (let j = i + 1; j < FACINGS.length; j++) {
+        minPair = Math.min(minPair, strongDiffCount(facingFiles[FACINGS[i]], facingFiles[FACINGS[j]]));
+      }
+    }
+    check(`${tag} 六向 15 对帧互不相同（朝向真生效）`, minPair > 300, `最小对间强差异=${minPair}`);
   }
 
   // ② 动作时间线（facing=right：动作最易读的一向）
