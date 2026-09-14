@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>T31-FE-C · 2.5D runtime smoke sim（浏览器）</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { width:100%; height:100%; background:#000; overflow:hidden; font-family:"PingFang SC","Microsoft YaHei",sans-serif; touch-action:none; user-select:none; }
+  #cv { position:absolute; inset:0; width:100%; height:100%; }
+  #simTag { position:fixed; right:4px; top:4px; font:10px monospace; color:#e0a0a0; z-index:99; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="simTag">SIM（非真机证据）</div>
+
+<!-- ① 预置 storage（必须在 shim 加载前设置；sim 用，真机不设） -->
+<script>
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var preset = {};
+    if (q.get('perf') === '1') preset['char3d-runtime-perf-mode'] = 1;
+    if (q.get('commit')) preset['char3d-commit-sha'] = q.get('commit');
+    window.__WX_SHIM_PRESET = preset;
+    window.__WX_SHIM_AA = q.get('aa') || null; // 'fxaa' | 'native-msaa' | null
+    window.__WX_SHIM_PROFILE = q.get('profile') || 'sim';
+  })();
+</script>
+
+<!-- ② wx 全局仿真 -->
+<script src="wx-shim.js"></script>
+
+<!-- ③ 宿主选项 + 把 body 里那张 canvas 当"第一张 wx.createCanvas"（屏幕画布，与真机同序） -->
+<script>
+  (function () {
+    var aa = window.__WX_SHIM_AA;
+    if (aa === 'fxaa') window.__WX_SHIM.setForceAntialiasFalse(true);
+    window.__CHAR3D_DEMO_OPTS = {
+      sim: true,
+      forceEdgeMode: aa === 'fxaa' || aa === 'native-msaa' ? aa : undefined,
+      shortProfile: window.__WX_SHIM_PROFILE !== 'spec',
+      commitShaOverride: new URLSearchParams(location.search).get('commit') || '',
+    };
+    var real = document.getElementById('cv');
+    var seq = 0;
+    var origCreate = window.wx.createCanvas;
+    window.wx.createCanvas = function () {
+      seq++;
+      return seq === 1 ? real : origCreate.apply(window.wx, arguments);
+    };
+  })();
+</script>
+
+<!-- ④ 构建产物（与微信包内同一份 bundle.js） -->
+<script src="../bundle.js?v=sim1"></script>
+</body>
+</html>

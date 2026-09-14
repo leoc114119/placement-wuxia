@@ -1,0 +1,57 @@
+{
+  "compileType": "game",
+  "appid": "wx59d99dc241b7bbe9",
+  "projectname": "placement-wuxia-char3d-runtime",
+  "libVersion": "latest",
+  "setting": {
+    "es6": false,
+    "minified": false,
+    "urlCheck": false,
+    "postcss": false,
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "enhance": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "condition": {},
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "browser"
+      },
+      {
+        "type": "folder",
+        "value": "tests"
+      },
+      {
+        "type": "folder",
+        "value": "evidence"
+      },
+      {
+        "type": "file",
+        "value": "README.md"
+      },
+      {
+        "type": "file",
+        "value": "build.mjs"
+      }
+    ]
+  },
+  "editorSetting": {},
+  "isGameTourist": false
+}

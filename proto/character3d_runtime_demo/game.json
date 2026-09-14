@@ -1,0 +1,10 @@
+{
+  "deviceOrientation": "portrait",
+  "showStatusBar": false,
+  "subpackages": [
+    {
+      "name": "char3d-assets",
+      "root": "subpackages/char3d-assets"
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+ "generatedAt": "2026-09-14T11:04:30.001Z",
+ "commitSha": "cd2d713f00701e8cf08ada2cc5f7d0a174e8e14f",
+ "aa": "fxaa",
+ "profile": "sim",
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "deviceScaleFactor": 2,
+ "deviceEvidence": false,
+ "note": "sim（浏览器 + wx shim）只证明同一份 bundle 的代码路径通；真机能力证据必须来自 HONOR 扫码运行（方案 §9.3）",
+ "assertions": [
+  {
+   "name": "结果 schema 版本",
+   "ok": true,
+   "detail": "t31-fe-c-1.0"
+  },
+  {
+   "name": "sim 标记（非真机证据）",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "device 判定为 SIM_ 前缀",
+   "ok": true,
+   "detail": "SIM_DEVICE_INCOMPLETE"
+  },
+  {
+   "name": "资源链证据：本地分包模式 + 已执行/未执行分支都列了",
+   "ok": true,
+   "detail": "local-subpackage · 已执行 9 / 未执行 4"
+  },
+  {
+   "name": "资源链证据：冷链（downloads>0）跑过",
+   "ok": true,
+   "detail": "{\"downloadAttempts\":5,\"downloads\":5,\"cacheHits\":0,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
+  },
+  {
+   "name": "资源链证据：热链（cacheHits>0 且 downloads=0）跑过",
+   "ok": true,
+   "detail": "{\"downloadAttempts\":0,\"downloads\":0,\"cacheHits\":5,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
+  },
+  {
+   "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
+   "ok": true,
+   "detail": "{\"subpackageMs\":0,\"loaderMs\":38,\"glbParseMs\":4,\"animParseMs\":2,\"textureDecodeMs\":1,\"firstGpuUploadMs\":100}"
+  },
+  {
+   "name": "六向 6 行且逐向 expected==activeClipKey",
+   "ok": true,
+   "detail": "right:idle rightup:walk leftup:idle left:walk leftdown:idle rightdown:walk"
+  },
+  {
+   "name": "全状态 7 行（idle/walk/basic/charge/strike/jump/dead）且逐态一致",
+   "ok": true,
+   "detail": "idle:idle walk:walk basic:atk charge:cast strike:cast jump:jump dead:idle"
+  },
+  {
+   "name": "轻功三元 7 例：cmdIsJump 与 activeClipKey 全对（含 300ms 窗后 / 起落 hop=0 / 死亡释放）",
+   "ok": true,
+   "detail": "jump-inside-300ms-window:snap=true,cmd=true,clip=jump | jump-after-300ms-snapshot-window:snap=true,cmd=true,clip=jump | walk-normal-no-jump:snap=false,cmd=false,clip=walk | jump-endpoint-hop0:snap=true,cmd=true,clip=jump | jump-landing-hop0:snap=true,cmd=true,clip=jump | jump-released-after-duration:snap=true,cmd=false,clip=walk | jump-died-releases:snap=true,cmd=false,clip=idle"
+  },
+  {
+   "name": "三元文案含 snapIsJump/cmdIsJump/activeClipKey 三者且有口径声明",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "上下文注入：真 WEBGL_lose_context 可用",
+   "ok": true,
+   "detail": "gl-ext · restoreVia=event"
+  },
+  {
+   "name": "上下文注入：lost 被观测 + 短暂 lost 期间 session 继续",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "上下文注入：恢复成功 + 恢复首帧 dt=0（不补算停顿）",
+   "ok": true,
+   "detail": "dt=0"
+  },
+  {
+   "name": "上下文注入：暂停期间帧冻结 + 恢复 dt=0",
+   "ok": true,
+   "detail": "frozen=0 resumeDt=0"
+  },
+  {
+   "name": "上下文注入：单 RAF（峰值 ≤1）",
+   "ok": true,
+   "detail": "raf 峰值=1"
+  },
+  {
+   "name": "上下文注入：二次重建终失败 → 暂停对局 + 错误页 + 输入被忽略",
+   "ok": true,
+   "detail": "failed=true paused=true page=true inputIgnored=true"
+  },
+  {
+   "name": "上下文注入：终失败暂停后 tick 冻结",
+   "ok": true,
+   "detail": "frames=0"
+  },
+  {
+   "name": "上下文 verdict 非 FAIL",
+   "ok": true,
+   "detail": "SIM_PASS"
+  },
+  {
+   "name": "FXAA 分支是生产分支（有效 antialias=false）",
+   "ok": true,
+   "detail": "edgeMode=fxaa aa=false"
+  },
+  {
+   "name": "20u 档：每帧 drawCall=20 / palette=20（计数器差分）",
+   "ok": true,
+   "detail": "1u:1/1 5u:5/5 10u:10/10 20u:20/20"
+  },
+  {
+   "name": "20u 档：屏上 20 个角色全部可见",
+   "ok": true,
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18537,perf-1:20495,perf-2:20232,perf-3:20536,perf-4:19099,perf-5:18711,…"
+  },
+  {
+   "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
+   "ok": true,
+   "detail": "A_COMPATIBLE_CAPACITY_FAIL → capacity20=NON_SPEC_PROFILE_NOT_APPLICABLE"
+  },
+  {
+   "name": "20u 档：记录 edgeMode/backbuffer/cacheHit",
+   "ok": true,
+   "detail": "bb={\"width\":780,\"height\":1688}"
+  },
+  {
+   "name": "结果回收：console 单行可用",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "结果回收：剪贴板成功（字符数 > 0）",
+   "ok": true,
+   "detail": "10982"
+  },
+  {
+   "name": "结果回收：分享被调起",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "tap 诊断单行（含 mapped/hit/verdict）",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "无页面异常",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "运行历史跨启动累积（第 N 次启动读到 ≥N 条记录）",
+   "ok": true,
+   "detail": "runs=2 / 启动次数=2"
+  }
+ ],
+ "passCount": 30,
+ "total": 30
+}
