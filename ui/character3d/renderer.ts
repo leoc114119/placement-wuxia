@@ -85,7 +85,9 @@ export interface Character3DRenderer {
   readonly counters: Character3DRendererCounters;
   readonly diagnostics: readonly string[];
   beginFrame(): void;
-  drawUnit(palette: Float32Array, modelMatrix: Float32Array, alpha: number): void;
+  /** 画一个单位。yawDeg = 该单位绕 Y 轴朝向（config 的 yawDegForFacing）；
+   * 固定方向光据此旋进模型空间，保证「光在世界空间固定」（方案 §4.2 + §7 光照口径）。 */
+  drawUnit(palette: Float32Array, modelMatrix: Float32Array, alpha: number, yawDeg: number): void;
   endFrame(): void;
   resize(cssWidth: number, cssHeight: number, dpr: number): void;
   /** 宿主 webglcontextlost 事件的唯一入口（平台适配器负责订阅）。 */
@@ -134,7 +136,9 @@ function skinVertexSrc(jointCount: number): string {
     '  mat4 skin = uBones[j0] * aWeights.x + uBones[j1] * aWeights.y',
     '            + uBones[j2] * aWeights.z + uBones[j3] * aWeights.w;',
     '  vec3 deformed = (skin * vec4(aPos, 1.0)).xyz;',
-    // 光照在**模型空间**算（uModel 含 y 翻转 + 六向 yaw，法线跟着蒙皮走，避免被翻反）
+    // 法线在**模型空间**插值（随蒙皮走）；光照点乘也在模型空间做 ——
+    // ★ 方向光在世界空间固定，故 drawUnit 每单位把光向按 R_y(−yaw) 旋进模型空间
+    //   （见 renderer 的 rotateYInto 与说明块）。此处**不得**把 uModel 的 y 翻转当成世界翻转。
     '  vNormal = mat3(skin) * aNormal;',
     '  vUv = aUv;',
     '  gl_Position = uProjection * uModel * vec4(deformed, 1.0);',
@@ -160,6 +164,7 @@ const SKIN_FRAGMENT_SRC = [
   // 观感台口径（config/character-3d 的 CHARACTER_3D_LIGHT 注释）：sRGB 采样 → 线性 → 光照 → sRGB
   '  vec3 base = uUseTexture > 0.5 ? srgbToLinear(texture(uBaseColor, vUv).rgb) : vec3(0.82, 0.78, 0.72);',
   '  vec3 n = normalize(vNormal);',
+  // uLightDir 已是**模型空间**光向（每单位按 facing 由 CPU 旋入），故此处点乘即世界空间光照
   '  float ndl = max(dot(n, normalize(uLightDir)), 0.0);',
   '  vec3 lit = base * (uAmbient + uDirIntensity * ndl) * uDiffuseNorm;',
   // 预乘 alpha 输出：Canvas 2D 的 drawImage 合成在 sRGB 空间做 source-over，
@@ -307,11 +312,13 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
   const counters: Character3DRendererCounters = { drawCalls: 0, paletteUploads: 0, frames: 0 };
   const vertexData = buildVertexInterleave(model);
   const projection = new Float32Array(16);
-  const lightDir = new Float32Array(3);
+  /** 世界（观感台）方向光，归一化；每单位再旋进模型空间（见 drawUnit） */
+  const lightDirWorld = new Float32Array(3);
+  const lightDirModel = new Float32Array(3);
   const lightDirNorm = Math.hypot(light.direction[0], light.direction[1], light.direction[2]) || 1;
-  lightDir[0] = light.direction[0] / lightDirNorm;
-  lightDir[1] = light.direction[1] / lightDirNorm;
-  lightDir[2] = light.direction[2] / lightDirNorm;
+  lightDirWorld[0] = light.direction[0] / lightDirNorm;
+  lightDirWorld[1] = light.direction[1] / lightDirNorm;
+  lightDirWorld[2] = light.direction[2] / lightDirNorm;
 
   let status: Character3DRenderStatus = 'ready';
   let restoreAttempted = false;
@@ -478,6 +485,13 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
     g.bindFramebuffer(g.FRAMEBUFFER, fbo);
     g.framebufferTexture2D(g.FRAMEBUFFER, g.COLOR_ATTACHMENT0, g.TEXTURE_2D, fboTexture, 0);
     g.framebufferRenderbuffer(g.FRAMEBUFFER, g.DEPTH_ATTACHMENT, g.RENDERBUFFER, depthBuffer);
+    // ★ 完整性必须显式检查：组装失败时部分宿主不报 GL error，只会在后面读出全黑/花屏，
+    //   那就成了「静默降级」。非 COMPLETE ⇒ 抛错，由 buildAll 的调用方判 failed（失败关闭）。
+    const fbStatus = g.checkFramebufferStatus(g.FRAMEBUFFER);
+    if (fbStatus !== g.FRAMEBUFFER_COMPLETE) {
+      g.bindFramebuffer(g.FRAMEBUFFER, null);
+      fail('framebuffer incomplete: 0x' + fbStatus.toString(16));
+    }
     g.bindFramebuffer(g.FRAMEBUFFER, null);
     g.bindTexture(g.TEXTURE_2D, null);
     g.bindRenderbuffer(g.RENDERBUFFER, null);
@@ -587,7 +601,7 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       g.useProgram(s.program);
       g.bindVertexArray(s.vao);
       g.uniformMatrix4fv(s.u.projection, false, projection);
-      g.uniform3fv(s.u.lightDir, lightDir);
+      // 光向不在此处上传：它随单位 facing 变化（见 drawUnit）
       g.uniform1f(s.u.ambient, light.ambientIntensity);
       g.uniform1f(s.u.dirIntensity, light.directionalIntensity);
       g.uniform1f(s.u.diffuseNorm, light.diffuseNormalization);
@@ -597,11 +611,17 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       g.uniform1f(s.u.useTexture, 1);
     },
 
-    drawUnit(palette: Float32Array, modelMatrix: Float32Array, alpha: number): void {
+    drawUnit(palette: Float32Array, modelMatrix: Float32Array, alpha: number, yawDeg: number): void {
       if (status !== 'ready') return;
       const g = gl as WebGL2RenderingContext;
       const s = skin;
       if (!s) return;
+      // 固定方向光 + 绕 Y 朝向的模型 ⇒ 把光旋进模型空间（R_y(−yaw)），
+      // 使 dot(n_model, L_model) ≡ dot(R_y(yaw)·n_model, L_world)：光在世界空间固定，
+      // 不随角色转身而"跟转"。放置矩阵的 y 翻转是屏幕 y 向下的坐标约定，**不是**世界翻转，
+      // 故这里只转 yaw，不动 y 分量。
+      rotateYInto(lightDirModel, lightDirWorld, -yawDeg);
+      g.uniform3fv(s.u.lightDir, lightDirModel);
       // ★ 计量点：1 次 uniformMatrix4fv（整块 41×16）+ 1 次 drawElements。
       //   禁改成 41 次逐骨上传（方案 §7、易错点 1：会把 20 单位变成 820 次调用）。
       g.uniformMatrix4fv(s.u.bones, false, palette);
@@ -704,6 +724,16 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       status = 'disposed';
     },
   };
+}
+
+/** out = R_y(deg) · v（右手、+Y 向上）。用于把世界空间方向光旋进模型空间。 */
+function rotateYInto(out: Float32Array, v: Float32Array, deg: number): void {
+  const h = (deg * Math.PI) / 180;
+  const c = Math.cos(h);
+  const sn = Math.sin(h);
+  out[0] = v[0] * c + v[2] * sn;
+  out[1] = v[1];
+  out[2] = -v[0] * sn + v[2] * c;
 }
 
 /** 供测试/诊断读取的着色器源码（生产不导出源码，避免被误当 API 依赖）。 */

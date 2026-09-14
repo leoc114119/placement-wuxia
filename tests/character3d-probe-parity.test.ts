@@ -39,14 +39,6 @@ const GOLDEN = JSON.parse(
 const readBytesSync = readFileSync as unknown as (path: string) => Uint8Array;
 
 interface Golden {
-  meta: {
-    probeRef: string;
-    probeRev: string;
-    modelPath: string;
-    modelSha256: string;
-    clipPaths: Record<string, string>;
-    note: string;
-  };
   math: {
     identity: number[];
     mulIdentityIdentity: number[];
@@ -74,6 +66,15 @@ interface Golden {
     imageMeta: { index: number; mimeType: string; byteLength: number; digest: number }[];
     vertexInterleave: { length: number; digest: number; head: number[] };
   };
+  meta: {
+    probeRef: string;
+    probeRev: string;
+    modelPath: string;
+    modelSha256: string;
+    clipPaths: Record<string, string>;
+    note: string;
+    corrections: Record<string, string>;
+  };
   animation: Record<
     string,
     {
@@ -83,15 +84,19 @@ interface Golden {
       coveredJoints: number;
       rootNode: number;
       rootRest: number[];
-      cases: {
+      /** 本节的 intentional correction 标记（arch seq=414） */
+      correction: string;
+      rotationCases: {
+        frame: number;
+        a: number;
         phase: number;
-        rootDisplacement: 'track' | 'zero';
-        timeSec: number;
+        aActual: number;
+        mirroredTimeSec: number;
         paletteDigest: number;
         paletteSample: number[];
         sampleJointIndices: number[];
-        rootTranslation: number[];
       }[];
+      rootCases: { frame: number; a: number; timeSec: number; rootTranslation: number[] }[];
     }
   >;
 }
@@ -121,6 +126,26 @@ function expectSameFloats(actual: ArrayLike<number>, expected: readonly number[]
     }
   }
   expect(maxDiff, `${label} 逐元素差异（首个不符下标 ${firstBad}）`).toBe(0);
+}
+
+/** 带容差的逐元素比较（用于 anim 旋转链：probe 侧镜像子帧时刻引入 ~1e-9 的浮点噪声）。 */
+function expectSameFloatsWithin(
+  actual: ArrayLike<number>,
+  expected: readonly number[],
+  label: string,
+  tolerance: number,
+): void {
+  expect(actual.length, `${label} 长度`).toBe(expected.length);
+  let maxDiff = 0;
+  let firstBad = -1;
+  for (let i = 0; i < expected.length; i++) {
+    const d = Math.abs(actual[i] - expected[i]);
+    if (d > maxDiff) {
+      maxDiff = d;
+      if (firstBad < 0 && d > tolerance) firstBad = i;
+    }
+  }
+  expect(maxDiff, `${label} 逐元素差异（首个超差下标 ${firstBad}，容差 ${tolerance}）`).toBeLessThan(tolerance);
 }
 
 const model = loadCharacter3DModel(readBytesSync(GOLDEN.meta.modelPath));
@@ -249,13 +274,18 @@ describe('probe 对拍 · glb-loader（真实 48k 模型）', () => {
 describe('probe 对拍 · anim-loader（41 骨 palette）', () => {
   const pose = createPose(model);
 
-  for (const key of Object.keys(GOLDEN.meta.clipPaths)) {
-    it(`${key} 全相位 palette 与 Root 平移逐位一致`, () => {
-      const golden = GOLDEN.animation[key];
-      const raw = JSON.parse(readFileSync(GOLDEN.meta.clipPaths[key], 'utf8'));
-      const clip = parseCharacter3DClipJson(raw, key);
-      const bound = bindRetargetedClip(clip, model);
+  it('golden 显式标注了 intentional correction（防止被当成「沿用旧口径」的证据）', () => {
+    expect(GOLDEN.meta.corrections['nlerp-time-polarity']).toContain('seq=414');
+    for (const key of Object.keys(GOLDEN.animation)) {
+      expect(GOLDEN.animation[key].correction).toContain('intentional correction');
+    }
+  });
 
+  for (const key of Object.keys(GOLDEN.meta.clipPaths)) {
+    it(`${key} · 旋转链对拍（probe 喂镜像子帧：除极性外整条采样链逐位一致）`, () => {
+      const golden = GOLDEN.animation[key];
+      const clip = parseCharacter3DClipJson(JSON.parse(readFileSync(GOLDEN.meta.clipPaths[key], 'utf8')), key);
+      const bound = bindRetargetedClip(clip, model);
       expect(clip.fps).toBe(golden.fps);
       expect(clip.nFrames).toBe(golden.nFrames);
       expect(clip.declaredDurationSec).toBeCloseTo(golden.declaredDurationSec, 12);
@@ -263,15 +293,27 @@ describe('probe 对拍 · anim-loader（41 骨 palette）', () => {
       expect(bound.rootNode).toBe(golden.rootNode);
       expect(bound.rootRest).toEqual(golden.rootRest);
 
-      for (const c of golden.cases) {
-        expect(clip.samplerDurationSec * c.phase).toBeCloseTo(c.timeSec, 12);
-        applyRetargetedClip(clip, bound, model, pose, c.phase, c.rootDisplacement);
+      for (const c of golden.rotationCases) {
+        // root 置零：把「时间极性」与「root 轨道」两件事解耦（后者由 rootCases 同时刻对拍）
+        applyRetargetedClip(clip, bound, model, pose, c.phase, 'zero');
         const palette = resolvePose(model, pose);
-        const label = `${key} phase=${c.phase} root=${c.rootDisplacement}`;
+        const label = `${key} frame=${c.frame} a=${c.a}`;
         expect(digestFloats(palette, 1e-5), `${label} paletteDigest`).toBe(c.paletteDigest);
         const sample = c.sampleJointIndices.flatMap((j) => Array.from(palette.subarray(j * 16, j * 16 + 16)));
-        expectSameFloats(sample, c.paletteSample, `${label} paletteSample`);
-        expectSameFloats(pose.tV[bound.rootNode], c.rootTranslation, `${label} rootTranslation`);
+        // 容差说明：probe 侧被喂到镜像子帧时刻，浮点上无法与迁移件逐位相同（~1e-9 量级）；
+        // 该容差比一帧的位移（~1e-2）小 7 个数量级，不足以掩盖任何真实差异。
+        expectSameFloatsWithin(sample, c.paletteSample, `${label} paletteSample`, 1e-5);
+      }
+    });
+
+    it(`${key} · root 位移对拍（同时刻零容差：这一段 probe 极性本就正确，对拍面未变）`, () => {
+      const golden = GOLDEN.animation[key];
+      const clip = parseCharacter3DClipJson(JSON.parse(readFileSync(GOLDEN.meta.clipPaths[key], 'utf8')), key);
+      const bound = bindRetargetedClip(clip, model);
+      for (const c of golden.rootCases) {
+        const phase = (c.frame + c.a) / clip.nFrames;
+        applyRetargetedClip(clip, bound, model, pose, phase, 'track');
+        expectSameFloats(pose.tV[bound.rootNode], c.rootTranslation, `${key} frame=${c.frame} a=${c.a} root`);
       }
     });
   }

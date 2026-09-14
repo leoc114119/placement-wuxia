@@ -24,6 +24,8 @@ export interface FakeGlState {
   createdVertexArrays: number;
   createdFramebuffers: number;
   createdRenderbuffers: number;
+  framebufferStatusChecks: number;
+  lastUniform3fv: [unknown, Float32Array | null];
   texImage2DCalls: unknown[][];
   uniformMatrix4fvCalls: unknown[][];
   drawElementsCalls: unknown[][];
@@ -34,6 +36,8 @@ export interface FakeGlState {
 }
 
 export interface FakeGlOptions {
+  /** checkFramebufferStatus 的返回值（默认 COMPLETE） */
+  framebufferStatus?: number;
   /** getContextAttributes().antialias 的**有效值**（模拟实机返回 false 的场景） */
   antialias?: boolean;
   /** null = 宿主不返回该常量（probe 真机踩坑场景） */
@@ -69,6 +73,8 @@ export function createFakeWebGL2(options: FakeGlOptions = {}): FakeGl {
     createdVertexArrays: 0,
     createdFramebuffers: 0,
     createdRenderbuffers: 0,
+    framebufferStatusChecks: 0,
+    lastUniform3fv: [null, null],
     texImage2DCalls: [],
     uniformMatrix4fvCalls: [],
     drawElementsCalls: [],
@@ -84,6 +90,10 @@ export function createFakeWebGL2(options: FakeGlOptions = {}): FakeGl {
   }
 
   const constants: Record<string, number> = {
+    FRAMEBUFFER_COMPLETE: 0x8cd5,
+    FRAMEBUFFER_INCOMPLETE_ATTACHMENT: 0x8cd6,
+    FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: 0x8cd7,
+    FRAMEBUFFER_UNSUPPORTED: 0x8cdd,
     DEPTH_TEST: 0x0b71,
     BLEND: 0x0be2,
     CULL_FACE: 0x0b44,
@@ -198,7 +208,10 @@ export function createFakeWebGL2(options: FakeGlOptions = {}): FakeGl {
     uniform1f(): void { rec('uniform1f', []); },
     uniform2f(): void { rec('uniform2f', []); },
     uniform3f(): void { rec('uniform3f', []); },
-    uniform3fv(): void { rec('uniform3fv', []); },
+    uniform3fv(location: unknown, value: Float32Array): void {
+      state.lastUniform3fv = [location, Float32Array.from(value)];
+      rec('uniform3fv', [location, value]);
+    },
     uniform4f(): void { rec('uniform4f', []); },
 
     createVertexArray(): unknown {
@@ -261,6 +274,11 @@ export function createFakeWebGL2(options: FakeGlOptions = {}): FakeGl {
     deleteRenderbuffer(): void { rec('deleteRenderbuffer', []); },
     renderbufferStorage(): void { rec('renderbufferStorage', []); },
     framebufferRenderbuffer(): void { rec('framebufferRenderbuffer', []); },
+    checkFramebufferStatus(): number {
+      state.framebufferStatusChecks++;
+      rec('checkFramebufferStatus', []);
+      return options.framebufferStatus === undefined ? constants.FRAMEBUFFER_COMPLETE : options.framebufferStatus;
+    },
 
     viewport(x: number, y: number, w: number, h: number): void {
       state.viewport = [x, y, w, h];

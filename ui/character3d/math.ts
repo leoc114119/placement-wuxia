@@ -112,8 +112,9 @@ export function placement(out: Mat4Out, centerX: number, feetY: number, scale: n
 
 /**
  * 单位四元数 nlerp：q = nlerp(qa, qb, k)。qa/qb 为扁平数组的 [off, off+4) 区间。
- * ★ 与 probe 同口径：k=1 ⇒ 取 qa；k=0 ⇒ 取 qb（调用方按需传权重，勿「顺手改正」）。
- *   对趾（dot<0）时翻转一侧，避免走长弧。
+ * ★ 权重方向：k=1 ⇒ 取 qa（= 原样返回），k=0 ⇒ 取 qb。对趾（dot<0）时翻转一侧，避免走长弧。
+ *   时间域调用**必须**按「t=0→i0、t=1→i1」传 k=1−a（见 animation 的采样点）；
+ *   本函数只做加权与归一，不承担时间极性的语义（arch seq=414：区间内倒播属缺陷，已在下游修正）。
  */
 export function nlerp(
   out: QuatOut,

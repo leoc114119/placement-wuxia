@@ -36,6 +36,7 @@ type StubRenderer = Omit<Character3DRenderer, 'status'> & {
   status: Character3DRenderer['status'];
   frames: number;
   draws: { palette: Float32Array; matrix: Float32Array; alpha: number }[];
+  yaws: number[];
 };
 
 function createStubRenderer(overrides: Partial<Character3DRenderer> = {}): StubRenderer {
@@ -53,8 +54,10 @@ function createStubRenderer(overrides: Partial<Character3DRenderer> = {}): StubR
     diagnostics: [],
     frames: 0,
     draws: [],
+    yaws: [],
     beginFrame() { stub.frames++; },
-    drawUnit(palette, matrix, alpha) {
+    drawUnit(palette, matrix, alpha, yawDeg) {
+      stub.yaws.push(yawDeg);
       // 复制一份：渲染端 uniformMatrix4fv 当场复制（pass 的 matrix 是每帧复用 scratch），
       // 桩件也照此语义快照，否则断言会读到被下一单位覆盖后的值。
       stub.draws.push({ palette: Float32Array.from(palette), matrix: Float32Array.from(matrix), alpha });
@@ -78,6 +81,7 @@ function command(overrides: Partial<CharacterRenderCommand> = {}): CharacterRend
     depthKey: 10,
     facing: 'right',
     state: 'idle',
+    isJump: false,
     stateElapsedSec: 0,
     moveProgress: null,
     hopPx: 0,
@@ -181,6 +185,28 @@ describe('放置与 placed 输出（方案 §4.1 / §4.3）', () => {
     const res2 = pass.render([command({ actorId: 'a' })], 0.016);
     expect([...res2.placed.keys()]).toEqual(['a']);
     expect([...pass.controllers.keys()]).toEqual(['a']); // b 的控制器已回收
+  });
+
+  it('B1 · isJump 原样透传到动画状态机（hopPx=0 的端点帧仍走 jump 槽位）', () => {
+    const renderer = createStubRenderer();
+    const pass = makePass(renderer);
+    // 起点帧：isJump 已为 true，但 hop 恰好为 0
+    pass.render([command({ state: 'walk', isJump: true, moveProgress: 0, hopPx: 0 })], 0.016);
+    const ctrl = pass.controllers.get('hero');
+    expect(ctrl?.actionKey).toBe('jump');
+    expect(ctrl?.activeClipKey).toBe('jump');
+    // 对照：非轻功的行走（hopPx 非 0 也不得被判成 jump）
+    pass.render([command({ state: 'walk', isJump: false, moveProgress: 0.5, hopPx: 40 })], 0.016);
+    expect(pass.controllers.get('hero')?.activeClipKey).toBe('walk');
+  });
+
+  it('六向 yaw 进入渲染（pass 把每个单位的 yaw 传给 renderer，供光向变换）', () => {
+    const renderer = createStubRenderer();
+    const pass = makePass(renderer);
+    pass.render([command({ facing: 'left' })], 0.016);
+    expect(renderer.yaws).toEqual([180]);
+    pass.render([command({ facing: 'rightup' })], 0.016);
+    expect(renderer.yaws[1]).toBe(-45);
   });
 
   it('20 单位容量：一次 beginFrame、20 次 drawUnit、20 条 placed', () => {

@@ -248,6 +248,12 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
       } catch (error) {
         stats.cacheWriteFailures++;
         diags.push('cache-write-failed:' + messageOf(error));
+        // ★ 原子性收口：登记失败的临时文件必须删掉。
+        //   否则每进一次战斗就在用户目录攒一份 4MB 残片（且没有索引指向它，永远不会被复用/清理）。
+        if (tempPath) {
+          await removeTemp(tempPath, diags);
+          tempPath = null;
+        }
       }
       return { ok: true, bytes, savedPath };
     } catch (error) {

@@ -147,7 +147,14 @@ export function createWxCharacter3DPlatform(options: WxPlatformOptions = {}): Ch
     }
   }
 
-  function persistIndex(): void {
+  /**
+   * 索引落盘。
+   * @param strict true ⇒ 落盘失败**抛出**（供 cachePut 的原子语义使用：
+   *   要么「文件 + 索引」都立住，要么什么都不留，不得谎报持久化成功）；
+   *   false ⇒ 只记日志（cacheRemove / 坏索引清理等自愈路径：残余索引下次冷启动会被 cacheGet 摘掉，
+   *   不会造成错误命中，故不阻断调用方）。
+   */
+  function persistIndex(strict: boolean): void {
     if (!indexDirty) return;
     try {
       const obj: Record<string, Character3DCacheEntry> = {};
@@ -155,8 +162,8 @@ export function createWxCharacter3DPlatform(options: WxPlatformOptions = {}): Ch
       host.setStorageSync(CACHE_INDEX_KEY, obj);
       indexDirty = false;
     } catch (error) {
-      // 索引写失败不致命：下次冷启动重下；不静默假装成功
-      logSink('warn', '[platform-wx] 缓存索引落盘失败', { message: String(error) });
+      logSink('warn', '[platform-wx] 缓存索引落盘失败', { message: String(error), strict });
+      if (strict) throw new Error('[platform-wx] 缓存索引落盘失败: ' + String(error));
     }
   }
 
@@ -264,7 +271,7 @@ export function createWxCharacter3DPlatform(options: WxPlatformOptions = {}): Ch
       if (!fileExists(entry.savedPath)) {
         cacheIndex.delete(assetId);
         indexDirty = true;
-        persistIndex();
+        persistIndex(false);
         return null;
       }
       return { ...entry };
@@ -295,7 +302,17 @@ export function createWxCharacter3DPlatform(options: WxPlatformOptions = {}): Ch
       };
       cacheIndex.set(input.assetId, entry);
       indexDirty = true;
-      persistIndex();
+      try {
+        persistIndex(true);
+      } catch (error) {
+        // ★ 原子性收口：索引没能落盘 ⇒ 整个登记作废（文件 + 索引一起撤），
+        //   绝不留「有文件没索引」的孤儿，也绝不向调用方谎报持久化成功。
+        cacheIndex.delete(input.assetId);
+        indexDirty = true;
+        try { fs.unlinkSync(dest); } catch { /* 目标可能已被系统清理 */ }
+        persistIndex(false); // 回滚落盘尽力而为；失败也只留一条残索引，下次冷启动自愈
+        throw error;
+      }
       return { ...entry };
     },
 
@@ -306,7 +323,7 @@ export function createWxCharacter3DPlatform(options: WxPlatformOptions = {}): Ch
       }
       cacheIndex.delete(assetId);
       indexDirty = true;
-      persistIndex();
+      persistIndex(false);
     },
 
     async writeTempFile(name, bytes): Promise<string> {

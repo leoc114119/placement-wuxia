@@ -268,11 +268,14 @@ export function applyRetargetedClip(
 
   for (let i = 0; i < bound.tracks.length; i++) {
     const tr = bound.tracks[i].track;
-    nlerp(q4, tr[i0], 0, tr[i1], 0, a);
+    // ★ 时间极性：k=1→qa。标准化为 t=0→i0、t=1→i1，故传 1−a（arch seq=414 驳回「维持现状」：
+    //   旧口径 a=0 取 i1、a→1 回 i0 是**区间内倒播**，且与 root 位移的时间方向相反）。
+    nlerp(q4, tr[i0], 0, tr[i1], 0, 1 - a);
     const q = pose.qV[bound.tracks[i].node];
     q[0] = q4[0]; q[1] = q4[1]; q[2] = q4[2]; q[3] = q4[3];
   }
   if (rootDisplacement === 'zero') return; // jump：root 留静止位移，位移全由外部 hop 控制
+  // root 位移同极性：t=0→r0、t=1→r1（与上面的旋转一致，两轨不得反向）
   const r0 = clip.rootTrack[i0];
   const r1 = clip.rootTrack[i1];
   const rt = pose.tV[bound.rootNode];
@@ -321,7 +324,8 @@ function applyTrack(pose: Character3DPose, track: Character3DTrack, t: number): 
       q[0] = values[o0]; q[1] = values[o0 + 1]; q[2] = values[o0 + 2]; q[3] = values[o0 + 3];
       return;
     }
-    nlerp(q, values, o0, values, i1 * ncomp, a);
+    // 与重定向 clip 同一时间极性：t=0→i0、t=1→i1
+    nlerp(q, values, o0, values, i1 * ncomp, 1 - a);
     return;
   }
   const dst = track.path === 'translation' ? pose.tV[track.nodeIndex] : pose.sV[track.nodeIndex];
@@ -396,12 +400,16 @@ export function resolveClipSource(
   return { kind: 'retargeted', ref: entry, clip, bound: bindRetargetedClip(clip, model) };
 }
 
-/** 状态机输入：**全部来自 CharacterRenderCommand**（快照真值的只读投影）。 */
+// 状态机输入：**全部来自 CharacterRenderCommand**（快照真值的只读投影）。
+/** 状态机输入。
+ * `isJump` = SnapshotActor.isJump 的**原样透传**（方案 §4.1，arch 9e824cb5）：
+ * 轻功判据只认这一个字段。禁再用 hopPx 猜 —— 抛物线起点/终点 hop 恰为 0，猜会各漏一帧。
+ * 故本输入**不接收 hopPx**（垂直位移仍由 pass 的摆放矩阵消费，与动作选择无关）。 */
 export interface CharacterAnimInput {
   state: 'idle' | 'walk' | 'charge' | 'strike' | 'basic' | 'hit' | 'dead';
+  isJump: boolean;
   stateElapsedSec: number;
   moveProgress: number | null;
-  hopPx: number;
 }
 
 /** 动作装配配置（config/character-3d 派生；pass/runtime 按 profile 维度持有一份）。 */
@@ -458,8 +466,6 @@ export class CharacterAnimController {
   private lastRatio = 0;
   /** 当前相位是否按循环口径解（决定末帧保持 vs 取模回卷） */
   private lastLoop = true;
-  /** 轻功闩锁：hopPx>0 置位，moveProgress 变 null 复位（见 README 交付说明的契约缺口条目） */
-  private jumpLatched = false;
   /** hit 继承：沿用进入 hit 时的 clip 与相位，继续推进（方案 §5 hit 行「不切专用动作」） */
   private inherited: { clipKey: Character3DClipKey; phaseRatio: number; clockSec: number; loop: boolean; rootDisplacement: 'track' | 'zero' } | null = null;
 
@@ -489,10 +495,6 @@ export class CharacterAnimController {
   update(dtSec: number, input: CharacterAnimInput): void {
     this.viewClockSec += dtSec;
     if (this.fade) this.fadeElapsedSec += dtSec;
-
-    // 轻功闩锁：能否走 jump 槽位只认快照真值派生的 hopPx（禁按坐标/时长启发式猜）
-    if (input.moveProgress === null) this.jumpLatched = false;
-    else if (input.hopPx !== 0) this.jumpLatched = true;
 
     const actionKey = this.resolveActionKey(input);
 
@@ -607,7 +609,7 @@ export class CharacterAnimController {
   private resolveActionKey(input: CharacterAnimInput): Character3DActionKey {
     if (input.state === 'hit') return this.currentActionKey === 'hit' ? 'hit' : this.currentActionKey;
     if (input.state === 'dead') return 'dead';
-    if (input.state === 'walk' && this.jumpLatched) return 'jump';
+    if (input.state === 'walk' && input.isJump) return 'jump'; // 轻功只认 isJump 透传
     return input.state;
   }
 

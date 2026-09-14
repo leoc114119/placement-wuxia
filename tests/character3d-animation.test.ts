@@ -31,7 +31,7 @@ import { nlerp } from '../ui/character3d/math';
 import { heroClip, heroClipRegistry, heroClipRaw, heroModel } from './character3d-fixtures';
 
 const model = heroModel();
-const IDLE: CharacterAnimInput = { state: 'idle', stateElapsedSec: 0, moveProgress: null, hopPx: 0 };
+const IDLE: CharacterAnimInput = { state: 'idle', stateElapsedSec: 0, moveProgress: null, isJump: false };
 
 function newController() {
   return new CharacterAnimController({
@@ -134,17 +134,34 @@ describe('重定向 clip 采样（方案 §4.1）', () => {
     }
   });
 
-  it('帧间插值口径与 tools/glb2d/render.mjs 同源：k=a 权重给 i0（勿「顺手改正」）', () => {
-    // 该口径是 2D 出帧链路（已被 Leo 认可的成品帧）一直在用的同一实现，
-    // probe 与迁移件都逐位复现它；对拍用例（character3d-probe-parity）锁定的是同一件事。
+  it('时间极性为 t=0→i0（**有意更正**：不再沿用 probe/render.mjs 的历史反向口径）', () => {
+    // 历史实现（probe 与 tools/glb2d/render.mjs）把 nlerp 权重 k=a 给 i0 ⇒ a=0 取 i1、a→1 回 i0，
+    // 即区间内倒播，且与 root 位移的时间方向相反。arch seq=414 判定为缺陷并要求标准化。
+    // 本用例锁的是**更正后**口径；对拍金标已按镜像子帧时刻重生成并标 intentional correction
+    //（见 tests/character3d-parity-golden/probe-golden.json 的 meta.corrections）。
     const clip = heroClip('atk');
     const bound = bindRetargetedClip(clip, model);
+    const bone = bound.tracks.find((t) => t.name === 'L_Thigh');
+    if (!bone) throw new Error('夹具缺 L_Thigh');
+    const q0 = clip.boneTracks.L_Thigh[2];
+    const q1 = clip.boneTracks.L_Thigh[3];
     const pose = createPose(model);
-    const probeLike = new Float32Array(4);
-    nlerp(probeLike, clip.boneTracks.L_Thigh[2], 0, clip.boneTracks.L_Thigh[3], 0, 0.25);
+    const maxDiff = (v: ArrayLike<number>, q: ArrayLike<number>): number => {
+      let d = 0;
+      for (let i = 0; i < 4; i++) d = Math.max(d, Math.abs(v[i] - q[i]));
+      return d;
+    };
+    // a=0 ⇒ k=1（取 i0）
+    applyRetargetedClip(clip, bound, model, pose, 2 / clip.nFrames, 'track', true);
+    const expectK1 = nlerp(new Float32Array(4), q0, 0, q1, 0, 1);
+    expect(maxDiff(pose.qV[bone.node], expectK1)).toBeLessThan(1e-6);
+    // a=0.25 ⇒ k=0.75
     applyRetargetedClip(clip, bound, model, pose, 2.25 / clip.nFrames, 'track', true);
-    const q = pose.qV[bound.tracks.find((t) => t.name === 'L_Thigh')!.node];
-    for (let i = 0; i < 4; i++) expect(q[i]).toBeCloseTo(probeLike[i], 6);
+    const expectK075 = nlerp(new Float32Array(4), q0, 0, q1, 0, 0.75);
+    expect(maxDiff(pose.qV[bone.node], expectK075)).toBeLessThan(1e-6);
+    // 反向口径（k=a=0.25）必须与之显著不同 —— 若有人回退极性，本断言立刻报警
+    const legacyK025 = nlerp(new Float32Array(4), q0, 0, q1, 0, 0.25);
+    expect(maxDiff(expectK075, legacyK025)).toBeGreaterThan(1e-4);
   });
 
   it('jump 剥离 rootTrack 三轴位移（防双跳）：zero 时 Root 恒为静止位移', () => {
@@ -255,73 +272,93 @@ describe('动作状态机（方案 §5）', () => {
 
   it('walk + moveProgress + hopPx>0 ⇒ 轻功（jump 槽位）；moveProgress 归 null 后回到 idle', () => {
     const c = newController();
-    c.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.2, hopPx: 12 });
+    c.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.2, isJump: true });
     expect(c.actionKey).toBe('jump');
     expect(c.activeClipKey).toBe('jump');
-    c.update(0.016, { state: 'walk', stateElapsedSec: 0.2, moveProgress: 0.9, hopPx: 2 });
+    c.update(0.016, { state: 'walk', stateElapsedSec: 0.2, moveProgress: 0.9, isJump: true });
     expect(c.activeClipKey).toBe('jump'); // 闩锁：一次移动窗口内不因 hop 归零而回落
-    c.update(0.016, { state: 'idle', stateElapsedSec: 0, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'idle', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('idle');
   });
 
   it('jump 采样期间 root 三轴归零（状态机透传 rootMotion=zero）', () => {
     const c = newController();
-    c.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, hopPx: 20 });
+    c.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, isJump: true });
     const palette = samplePalette(c);
     expect(palette.length).toBe(41 * 16);
     const reference = referencePalette('jump', 0.5, false, 'zero');
     // 相位 = moveProgress（0.5）× 完整 1.5s 源 ⇒ 与参考实现同帧
     const c2 = newController();
-    c2.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, hopPx: 20 });
+    c2.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, isJump: true });
     expect(sampleDigest(c2)).toBe(reference);
+  });
+
+  it('B1 · 轻功判据 = isJump 透传：hopPx 为 0 的端点帧也全程走 jump 槽位', () => {
+    // 方案 §4.1（arch 9e824cb5）：isJump 必须从 SnapshotActor.isJump 原样透传；
+    // 禁用 hopPx!==0 猜轻功 —— 抛物线起点/终点 hop 恰为 0，猜会各漏一帧。
+    const c = newController();
+    // 轻功窗口第一帧：moveProgress 已非 null 但 hop 仍为 0
+    c.update(0.016, { state: 'walk', stateElapsedSec: 0, moveProgress: 0, isJump: true });
+    expect(c.actionKey, '起点帧').toBe('jump');
+    expect(c.activeClipKey, '起点帧').toBe('jump');
+    const startDigest = sampleDigest(c);
+    expect(startDigest).toBe(referencePalette('jump', 0, false, 'zero'));
+    // 窗口末帧：hop 回到 0、moveProgress 仍非 null
+    c.update(0.016, { state: 'walk', stateElapsedSec: 1.5, moveProgress: 1, isJump: true });
+    expect(c.actionKey, '终点帧').toBe('jump');
+    expect(sampleDigest(c)).toBe(referencePalette('jump', 1, false, 'zero'));
+    // 非轻功：hopPx 非 0 也不得被判成 jump（判据只认 isJump）
+    c.update(0.016, { state: 'walk', stateElapsedSec: 0.2, moveProgress: 0.4, isJump: false });
+    expect(c.actionKey).toBe('walk');
+    expect(c.activeClipKey).toBe('walk');
   });
 
   it('basic：把 1.50s 源归一映射到 CHOREO.basicSec，窗尾保持末帧（不跳回首帧）', () => {
     const c = newController();
-    c.update(0.016, { state: 'basic', stateElapsedSec: 0, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'basic', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('atk');
     expect(sampleDigest(c)).toBe(referencePalette('atk', 0, false));
-    c.update(0.016, { state: 'basic', stateElapsedSec: CHOREO.basicSec, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'basic', stateElapsedSec: CHOREO.basicSec, moveProgress: null, isJump: false });
     const atWindowEnd = sampleDigest(c);
     expect(atWindowEnd).toBe(referencePalette('atk', 1, false)); // 末帧
     expect(atWindowEnd).not.toBe(referencePalette('atk', 0, false)); // 不是首帧
     // 窗后仍保持末帧
-    c.update(0.016, { state: 'basic', stateElapsedSec: CHOREO.basicSec * 3, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'basic', stateElapsedSec: CHOREO.basicSec * 3, moveProgress: null, isJump: false });
     expect(sampleDigest(c)).toBe(atWindowEnd);
   });
 
   it('charge：cast 循环，一轮 = 840ms（相位 0 与 0.84 同帧、0.42 不同帧）', () => {
     const c = newController();
-    c.update(0.016, { state: 'charge', stateElapsedSec: 0, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'charge', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('cast');
     const p0 = sampleDigest(c);
-    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_CAST_CYCLE_SEC, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_CAST_CYCLE_SEC, moveProgress: null, isJump: false });
     expect(sampleDigest(c)).toBe(p0);
-    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_CAST_CYCLE_SEC / 2, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_CAST_CYCLE_SEC / 2, moveProgress: null, isJump: false });
     expect(sampleDigest(c)).not.toBe(p0);
   });
 
   it('strike：从 2/3 播到末尾并保持，走完一帧节拍（280ms）即到位', () => {
     const c = newController();
-    c.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('cast');
     expect(HERO_3D_ACTION_MAP.strike.playWindowSec).toBeCloseTo(CAST_FRAME_PERIOD_MS / 1000, 12);
     expect(HERO_3D_STRIKE_WINDOW_SEC).toBeCloseTo(0.28, 12);
     // 起点 = 2/3（与 reference 的 2/3 相位同帧）
-    c.update(0.016, { state: 'charge', stateElapsedSec: 0, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'charge', stateElapsedSec: 0, moveProgress: null, isJump: false });
     const c2 = newController();
-    c2.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, hopPx: 0 });
+    c2.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(sampleDigest(c2)).toBe(referencePalette('cast', HERO_3D_STRIKE_START_RATIO, false));
     // 一帧节拍后 = 末帧
-    c2.update(0.016, { state: 'strike', stateElapsedSec: HERO_3D_STRIKE_WINDOW_SEC, moveProgress: null, hopPx: 0 });
+    c2.update(0.016, { state: 'strike', stateElapsedSec: HERO_3D_STRIKE_WINDOW_SEC, moveProgress: null, isJump: false });
     expect(sampleDigest(c2)).toBe(referencePalette('cast', 1, false));
   });
 
   it('charge→strike 不重启 clip（同一 cast 槽位、无抽搐式回到首帧）', () => {
     const c = newController();
-    c.update(0.016, { state: 'charge', stateElapsedSec: 0.6, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'charge', stateElapsedSec: 0.6, moveProgress: null, isJump: false });
     const chargeDigest = sampleDigest(c);
-    c.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('cast');
     const strikeDigest = sampleDigest(c);
     // strike 从 2/3 起播（不是从 0），且与 charge 相位不同的位置
@@ -333,11 +370,11 @@ describe('动作状态机（方案 §5）', () => {
   it('hit：不切专用动作（沿用当前 clip），dead：idle 首帧且不混回', () => {
     const c = newController();
     c.update(0.016, { ...IDLE, state: 'walk' });
-    c.update(0.016, { state: 'hit', stateElapsedSec: 0.05, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'hit', stateElapsedSec: 0.05, moveProgress: null, isJump: false });
     expect(c.actionKey).not.toBe('hit'); // hit 继承的是上一个动作键
     expect(c.activeClipKey).toBe('walk');
     expect(c.fadeWeight).toBe(1); // 不重起混合
-    c.update(0.016, { state: 'dead', stateElapsedSec: 0, moveProgress: null, hopPx: 0 });
+    c.update(0.016, { state: 'dead', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('idle');
     expect(sampleDigest(c)).toBe(referencePalette('idle', 0, false));
   });
@@ -369,7 +406,7 @@ describe('动作状态机（方案 §5）', () => {
     // jump → idle：180ms（时长由配置固定，且长于默认 100ms）
     const d = newController();
     d.update(0.016, IDLE);
-    d.update(0, { state: 'walk', stateElapsedSec: 0.05, moveProgress: 0.3, hopPx: 9 });
+    d.update(0, { state: 'walk', stateElapsedSec: 0.05, moveProgress: 0.3, isJump: true });
     expect(d.activeClipKey).toBe('jump');
     d.update(0, IDLE);
     expect(d.fadeWeight).toBe(0);
@@ -389,8 +426,8 @@ describe('动作状态机（方案 §5）', () => {
       const dt = 0.016;
       a.update(dt, IDLE);
       soloA.update(dt, IDLE);
-      b.update(dt, { state: 'charge', stateElapsedSec: i * dt, moveProgress: null, hopPx: 0 });
-      soloB.update(dt, { state: 'charge', stateElapsedSec: i * dt, moveProgress: null, hopPx: 0 });
+      b.update(dt, { state: 'charge', stateElapsedSec: i * dt, moveProgress: null, isJump: false });
+      soloB.update(dt, { state: 'charge', stateElapsedSec: i * dt, moveProgress: null, isJump: false });
     }
     expect(sampleDigest(a)).toBe(sampleDigest(soloA));
     expect(sampleDigest(b)).toBe(sampleDigest(soloB));

@@ -233,6 +233,61 @@ describe('红线：渲染管线口径不被顺手优化（方案 §7）', () => 
   });
 });
 
+describe('红线：arch 打回整改项的回归锁（seq=414）', () => {
+  it('B1 · 契约里有 isJump，且动画层不再用 hopPx 猜轻功', () => {
+    const types = readFileSync('types.ts', 'utf8'); // 含注释：契约的**说明文字**也是要锁的面
+    expect(types).toContain('isJump: boolean;');
+    expect(types).toContain('禁用 hopPx/坐标/时钟猜轻功');
+    const anim = code('ui/character3d/animation.ts');
+    // 判据只认 isJump；hopPx 不得再出现在状态机里（连注释外的代码都不许有）
+    expect(anim).toContain('input.isJump');
+    expect(anim).not.toContain('hopPx');
+    expect(anim).not.toContain('jumpLatched');
+    expect(code('ui/character3d/pass.ts')).toContain('isJump: cmd.isJump');
+  });
+
+  it('B2 · 采样点按 t=0→i0 传权重（k = 1 − a），不得回退为 k = a', () => {
+    const anim = code('ui/character3d/animation.ts');
+    expect(anim).toContain('nlerp(q4, tr[i0], 0, tr[i1], 0, 1 - a)');
+    expect(anim).toContain('nlerp(q, values, o0, values, i1 * ncomp, 1 - a)');
+    expect(anim).not.toContain('tr[i1], 0, a)');
+    // 金标显式标注 intentional correction
+    const golden = JSON.parse(readFileSync('tests/character3d-parity-golden/probe-golden.json', 'utf8')) as {
+      meta: { corrections: Record<string, string> };
+    };
+    expect(golden.meta.corrections['nlerp-time-polarity']).toContain('seq=414');
+  });
+
+  it('B3 · loader 登记失败删临时文件；wx 索引落盘失败回滚并抛出', () => {
+    const loaderRaw = readFileSync('net/character-asset-loader.ts', 'utf8');
+    const loader = code('net/character-asset-loader.ts');
+    expect(loaderRaw).toContain('原子性收口'); // 标记在注释里，按原文查
+    expect(/cacheWriteFailures\+\+[\s\S]{0,400}removeTemp\(tempPath/.test(loader)).toBe(true);
+    const wx = code('ui/character3d/platform-wx.ts');
+    expect(wx).toContain('persistIndex(true)');
+    expect(/persistIndex\(true\)[\s\S]{0,600}fs\.unlinkSync\(dest\)/.test(wx)).toBe(true);
+  });
+
+  it('B4 · FXAA 中间目标必须检查完整性（非 COMPLETE 即失败关闭）', () => {
+    const renderer = code('ui/character3d/renderer.ts');
+    expect(renderer).toContain('checkFramebufferStatus');
+    expect(renderer).toContain('FRAMEBUFFER_COMPLETE');
+    expect(renderer).toContain('framebuffer incomplete');
+  });
+
+  it('B5 · 方向光随 facing 旋进模型空间，且渲染层不再是「模型空间固定光」', () => {
+    const renderer = code('ui/character3d/renderer.ts');
+    expect(renderer).toContain('rotateYInto');
+    expect(renderer).toContain('uniform3fv(s.u.lightDir, lightDirModel)');
+    // beginFrame 不得再上传恒定光向
+    const begin = renderer.slice(renderer.indexOf('beginFrame(): void {'), renderer.indexOf('drawUnit(palette'));
+    expect(begin).not.toContain('uniform3fv(s.u.lightDir');
+    // 旧错误注释必须已被替换
+    expect(renderer).not.toContain('uModel 含 y 翻转 + 六向 yaw，法线跟着蒙皮走');
+    expect(code('ui/character3d/pass.ts')).toMatch(/drawUnit\(palette, matrix, clampAlpha\(cmd\.alpha\), yawDeg\)/);
+  });
+});
+
 describe('对拍工装入库（任务卡 §5「对拍脚本与结果入库」）', () => {
   it('金标文件与生成脚本都在仓库内，并记录了 probe 修订号', () => {
     expect(existsSync('tests/character3d-parity-golden/probe-golden.json')).toBe(true);

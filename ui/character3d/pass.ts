@@ -120,13 +120,15 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
       const view = actorViewFor(cmd.actorId, runtime);
       view.controller.update(dtSec, {
         state: cmd.state,
+        isJump: cmd.isJump, // 轻功意图原样透传（禁 hopPx 猜，方案 §4.1）
         stateElapsedSec: cmd.stateElapsedSec,
         moveProgress: cmd.moveProgress,
-        hopPx: cmd.hopPx,
       });
       const palette = view.controller.sample(runtime.model, view.pose, view.scratchPose);
-      const box = buildPlacement(matrix, cmd, runtime);
-      renderer.drawUnit(palette, matrix, clampAlpha(cmd.alpha));
+      const yawDeg = yawDegForFacing(cmd.facing);
+      const box = buildPlacement(matrix, cmd, runtime, yawDeg);
+      // yaw 同源传两份消费者：摆放矩阵与光向变换（两处不得各算一次，否则会漂）
+      renderer.drawUnit(palette, matrix, clampAlpha(cmd.alpha), yawDeg);
       placed.set(cmd.actorId, box);
       for (const d of view.controller.diagnostics) note(cmd.actorId + ':' + d);
     }
@@ -153,12 +155,13 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
     out: Float32Array,
     cmd: CharacterRenderCommand,
     runtime: Character3DProfileRuntime,
+    yawDeg: number,
   ): { cx: number; top: number; w: number; h: number } {
     const { profile, model } = runtime;
     const scale = profile.screenHeightPxAtReference / profile.modelHeight;
     const feetY = cmd.footY - cmd.hopPx; // 垂直位移唯一来自 pieceHop（方案 §4.1）
     const squashY = cmd.squashY > 0 ? cmd.squashY : 1;
-    placementYawSquash(out, cmd.footX, feetY, scale, yawDegForFacing(cmd.facing), squashY);
+    placementYawSquash(out, cmd.footX, feetY, scale, yawDeg, squashY);
     const h = profile.screenHeightPxAtReference * squashY;
     const xSpan = model.bounds.max[0] - model.bounds.min[0];
     const zSpan = model.bounds.max[2] - model.bounds.min[2];

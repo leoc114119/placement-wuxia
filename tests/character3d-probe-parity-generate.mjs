@@ -98,6 +98,12 @@ const golden = {
     modelSha256: sha256Hex(readFileSync(join(repoRoot, MODEL_PATH))),
     clipPaths: CLIP_PATHS,
     note: '迁移件（ui/character3d/*）与本文件逐算子/逐帧比对；容差与比较口径见 character3d-probe-parity.test.ts',
+    corrections: {
+      'nlerp-time-polarity': 'animation.rotationCases 的 probe 侧喂镜像子帧时刻 (i0 + (1−a))：'
+        + 'arch seq=414 判定历史口径（k=a 权重给 i0）为区间内倒播缺陷并要求标准化为 t=0→i0、t=1→i1。'
+        + 'root 轨道极性本就正确，故 rootCases 用同时刻零容差对拍（该对拍面未变）。'
+        + 'math / glb 对拍面完全未变。',
+    },
   },
   math: {},
   glb: {},
@@ -194,34 +200,64 @@ golden.glb.imageMeta = probeModel.images.map((img) => ({
 }
 
 // ---- ⑤ 重定向动作采样对拍（palette） ----
-const PHASES = [0, 0.17, 0.5, 0.833];
+//
+// ★ intentional correction（arch seq=414）：nlerp 的时间极性被有意更正为 t=0→i0、t=1→i1。
+//   历史实现（probe 与 tools/glb2d/render.mjs）把权重 k=a 给 i0，导致区间内倒播。
+//   因此本节的**旋转**对拍把 probe 喂到「镜像子帧时刻」(i0 + (1−a))，使 probe 产出与更正后同极性的结果，
+//   从而继续锁住「除极性外的整条采样链」（nlerp 数学 → TRS → 拓扑 world → palette = world·IBM）。
+//   旧 probe golden 不得用来锁这个缺陷（arch 原话），故旧 anim 金标整体作废并重生成。
+//   **root 位移**不参与该镜像：probe 的 root 轨道本就是 t=0→r0 的正确极性，
+//   故 root 用**同时刻**对拍（零容差），保证这一段的对拍面完全不变。
+const SEGMENT_CASES = [
+  { frame: 0, a: 0.25 },
+  { frame: 0, a: 0.75 },
+  { frame: 17, a: 0.5 },
+  { frame: 99, a: 0.25 },
+];
 const probePose = probeAnim.createPose(probeModel);
 for (const [key, path] of Object.entries(CLIP_PATHS)) {
   const raw = JSON.parse(readFileSync(join(repoRoot, path), 'utf8'));
   const clip = probeAnim.parseAnim(raw);
   const bound = probeAnim.bindToModel(clip, probeModel);
-  const cases = [];
-  for (const phase of PHASES) {
-    for (const rootDisplacement of key === 'jump' ? ['track', 'zero'] : ['track']) {
-      const timeSec = phase * (clip.nFrames / clip.fps);
-      const savedRoot = raw.rootTrack;
-      if (rootDisplacement === 'zero') {
-        // 「剥离 rootTrack 三轴位移」在 probe 里的等价操作：把增量整体置零（静止位移保留）
-        clip.rootTrack = clip.nFrames > 0 ? new Array(clip.nFrames).fill([0, 0, 0]) : [];
-      }
-      const palette = probeAnim.sampleToPalette(clip, bound, probeModel, probePose, timeSec);
-      clip.rootTrack = savedRoot;
-      const joints = [0, 16, 40];
-      cases.push({
-        phase,
-        rootDisplacement,
-        timeSec,
-        paletteDigest: digestFloats(palette, 1e-5),
-        paletteSample: joints.flatMap((j) => Array.from(Float32Array.from(palette.subarray(j * 16, j * 16 + 16)))),
-        sampleJointIndices: joints,
-        rootTranslation: Array.from(Float32Array.from(probePose.tV[bound.rootNode])),
-      });
-    }
+  const nF = clip.nFrames;
+  const fps = clip.fps;
+  const joints = [0, 16, 40];
+  const rotationCases = [];
+  const rootCases = [];
+  for (const seg of SEGMENT_CASES) {
+    const phase = (seg.frame + seg.a) / nF;
+    // ★ 与迁移件/probe 内部同口径：相位先按帧数取模（frame 可能跨圈），再取段下标与子帧权重。
+    //   否则 frame > nF 的用例会算出负的镜像时刻（曾实测：atk nF=45 时 frame=99 爆出负时间）。
+    let fi = phase * nF;
+    fi = fi - Math.floor(fi / nF) * nF;
+    const i0 = Math.min(nF - 1, Math.floor(fi));
+    const aActual = fi - i0;
+    // --- 旋转：probe 喂镜像子帧时刻（root 轨道先置零，隔离出旋转链） ---
+    const savedRoot = clip.rootTrack;
+    clip.rootTrack = new Array(nF).fill([0, 0, 0]);
+    const mirroredTimeSec = (i0 + (1 - aActual)) / fps;
+    const mirroredPalette = probeAnim.sampleToPalette(clip, bound, probeModel, probePose, mirroredTimeSec);
+    clip.rootTrack = savedRoot;
+    rotationCases.push({
+      frame: seg.frame,
+      a: seg.a,
+      phase,
+      wrappedPhase: fi / nF,
+      aActual,
+      mirroredTimeSec,
+      paletteDigest: digestFloats(mirroredPalette, 1e-5),
+      paletteSample: joints.flatMap((j) => Array.from(Float32Array.from(mirroredPalette.subarray(j * 16, j * 16 + 16)))),
+      sampleJointIndices: joints,
+    });
+    // --- root 位移：probe 用**同时刻**（极性本就一致），零容差对拍面 ---
+    const nominalTimeSec = (seg.frame + seg.a) / fps;
+    probeAnim.sampleToPalette(clip, bound, probeModel, probePose, nominalTimeSec);
+    rootCases.push({
+      frame: seg.frame,
+      a: seg.a,
+      timeSec: nominalTimeSec,
+      rootTranslation: Array.from(Float32Array.from(probePose.tV[bound.rootNode])),
+    });
   }
   golden.animation[key] = {
     fps: clip.fps,
@@ -230,7 +266,9 @@ for (const [key, path] of Object.entries(CLIP_PATHS)) {
     coveredJoints: bound.coveredJoints,
     rootNode: bound.rootNode,
     rootRest: bound.rootRest,
-    cases,
+    correction: 'nlerp-time-polarity（intentional correction · arch seq=414）',
+    rotationCases,
+    rootCases,
   };
 }
 
@@ -244,3 +282,6 @@ console.log(`[parity] wrote ${outPath} (${sizeKb} KB)`);
 console.log(`[parity] math cases: trs=${golden.math.trs.length} nlerp=${golden.math.nlerp.length}`);
 console.log(`[parity] glb account: ${JSON.stringify(golden.glb.account)}`);
 console.log(`[parity] animation clips: ${Object.keys(golden.animation).join(', ')}`);
+console.log(`[parity] animation rotationCases=${Object.values(golden.animation).reduce((n, c) => n + c.rotationCases.length, 0)}`
+  + ` rootCases=${Object.values(golden.animation).reduce((n, c) => n + c.rootCases.length, 0)}`
+  + '（旋转=镜像子帧 · intentional correction；root=同时刻零容差）');

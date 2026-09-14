@@ -455,6 +455,9 @@ export interface CharacterRenderCommand {
   depthKey: number;
   facing: BattleFacingHex;
   state: SnapshotActor['animState'];
+  /** 轻功意图：**直接透传 SnapshotActor.isJump**（方案 §3/§4.1，arch 9e824cb5 冻结）。
+   * 禁用 hopPx/坐标/时钟猜轻功 —— 抛物线起点与终点的 hop 恰为 0，猜会各漏一帧。 */
+  isJump: boolean;
   stateElapsedSec: number;
   moveProgress: number | null;
   hopPx: number;

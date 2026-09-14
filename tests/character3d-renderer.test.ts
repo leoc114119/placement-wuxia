@@ -11,7 +11,14 @@ import {
   type Character3DRenderer,
 } from '../ui/character3d/renderer';
 import type { PlatformDecodedImage } from '../ui/character3d/platform';
-import { CHARACTER_3D_FXAA, CHARACTER_3D_LIGHT, CHARACTER_3D_ORTHO_Z_HALF, CHARACTER_3D_RENDER_SCALE } from '../config/character-3d';
+import {
+  CHARACTER_3D_FXAA,
+  CHARACTER_3D_LIGHT,
+  CHARACTER_3D_ORTHO_Z_HALF,
+  CHARACTER_3D_RENDER_SCALE,
+  yawDegForFacing,
+} from '../config/character-3d';
+import type { CharacterRenderCommand } from '../types';
 import { heroModel } from './character3d-fixtures';
 import { createFakeCanvas, createFakeWebGL2, type FakeGlState } from './character3d-fake-gl';
 
@@ -77,7 +84,7 @@ describe('抗锯齿能力分支（方案 §7）', () => {
     expect(renderer.diagnostics).toContain('edgeMode=native-msaa');
     renderer.beginFrame();
     expect(state.boundFramebuffer).toBeNull();
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     renderer.endFrame();
     expect(state.drawElementsCalls).toHaveLength(1);
     expect(state.drawArraysCalls).toHaveLength(0); // 无 FXAA 全屏 pass
@@ -90,7 +97,7 @@ describe('抗锯齿能力分支（方案 §7）', () => {
     expect(state.createdRenderbuffers).toBe(1);
     renderer.beginFrame();
     expect(state.boundFramebuffer).not.toBeNull(); // 先渲进 FBO
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     renderer.endFrame();
     expect(state.drawArraysCalls).toHaveLength(1); // FXAA 全屏三角形
     expect(state.boundFramebuffer).toBeNull();     // 最后回到默认帧缓冲
@@ -138,7 +145,7 @@ describe('提交次数（方案 §7 / §9.1）', () => {
     for (const mode of ['native-msaa', 'fxaa'] as const) {
       const { renderer, state } = makeRenderer({ forceEdgeMode: mode });
       renderer.beginFrame();
-      for (let i = 0; i < 20; i++) renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+      for (let i = 0; i < 20; i++) renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
       renderer.endFrame();
       expect(renderer.counters.paletteUploads, mode).toBe(20);
       expect(renderer.counters.drawCalls, mode).toBe(20);
@@ -154,7 +161,7 @@ describe('提交次数（方案 §7 / §9.1）', () => {
   it('每帧一次 clear（全视口**透明**）与一次 projection 上传', () => {
     const { renderer, state } = makeRenderer();
     renderer.beginFrame();
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     renderer.endFrame();
     expect(state.clearColor).toEqual([0, 0, 0, 0]);
     const projectionUploads = state.uniformMatrix4fvCalls.filter((c) => (c[2] as Float32Array).length === 16);
@@ -165,12 +172,12 @@ describe('提交次数（方案 §7 / §9.1）', () => {
     // native 分支：2 buffer（vbo+ibo）+ 1 贴图（底色）+ 1 程序（skin）
     const native = makeRenderer({ forceEdgeMode: 'native-msaa' });
     native.renderer.beginFrame();
-    native.renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    native.renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     for (let f = 0; f < 5; f++) {
       native.renderer.endFrame();
       native.renderer.beginFrame();
-      native.renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
-      native.renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+      native.renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
+      native.renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     }
     native.renderer.endFrame();
     expect(native.state.createdBuffers).toBe(2); // vbo + ibo
@@ -185,7 +192,7 @@ describe('提交次数（方案 §7 / §9.1）', () => {
   it('每 actor 一次 uniformMatrix4fv 上传整块 41×16（禁 41 次逐骨上传）', () => {
     const { renderer, state } = makeRenderer();
     renderer.beginFrame();
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     renderer.endFrame();
     const uploads = state.uniformMatrix4fvCalls.filter((c) => (c[2] as Float32Array).length === 41 * 16);
     expect(uploads).toHaveLength(1);
@@ -195,7 +202,7 @@ describe('提交次数（方案 §7 / §9.1）', () => {
   it('alpha 作为 uniform 下发（死亡淡出走渲染侧，不改任何数值）', () => {
     const { renderer, state } = makeRenderer();
     renderer.beginFrame();
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 0.45);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 0.45, 0);
     renderer.endFrame();
     const alphaCalls = state.calls.get('uniform1f') ?? [];
     expect(alphaCalls.length).toBeGreaterThan(0);
@@ -240,13 +247,13 @@ describe('context lost / restore（方案 §6.2）', () => {
   it('lost 后暂停提交（session 继续，但不画半成品）', () => {
     const { renderer, state } = makeRenderer();
     renderer.beginFrame();
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     renderer.endFrame();
     renderer.notifyContextLost();
     expect(renderer.status).toBe('context-lost');
     const drawsBefore = state.drawElementsCalls.length;
     renderer.beginFrame();
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     renderer.endFrame();
     expect(state.drawElementsCalls.length).toBe(drawsBefore); // 零提交
     expect(renderer.diagnostics).toContain('context-lost');
@@ -263,7 +270,7 @@ describe('context lost / restore（方案 §6.2）', () => {
     expect(state.deletedPrograms).toBe(0);
     expect(renderer.diagnostics).toContain('context-restored');
     renderer.beginFrame();
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     renderer.endFrame();
     expect(state.drawElementsCalls.length).toBeGreaterThan(0);
   });
@@ -307,7 +314,7 @@ describe('context lost / restore（方案 §6.2）', () => {
     expect(renderer.status).toBe('disposed');
     const before = state.drawElementsCalls.length;
     renderer.beginFrame();
-    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1);
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
     expect(state.drawElementsCalls.length).toBe(before);
     expect(renderer.handleContextRestored()).toBe(false);
   });
@@ -354,6 +361,110 @@ describe('能力与硬失败', () => {
     });
     expect(renderer.status).toBe('failed');
     expect(renderer.diagnostics).toContain('webgl2-context-unavailable');
+  });
+});
+
+describe('B4 · FXAA 中间目标完整性（失败关闭）', () => {
+  it('FBO 不完整 ⇒ 初始化 failed，不静默拿着坏目标继续画', () => {
+    const { gl, state } = createFakeWebGL2({ antialias: false, framebufferStatus: 0x8cd6 });
+    const renderer = createCharacter3DRenderer({
+      canvas: createFakeCanvas(gl, 375, 667),
+      model,
+      baseColor: fakeImage,
+      platform,
+      light: {
+        ambientIntensity: CHARACTER_3D_LIGHT.ambientIntensity,
+        directionalIntensity: CHARACTER_3D_LIGHT.directionalIntensity,
+        direction: CHARACTER_3D_LIGHT.direction,
+        diffuseNormalization: CHARACTER_3D_LIGHT.diffuseNormalization,
+      },
+      orthoZHalf: CHARACTER_3D_ORTHO_Z_HALF,
+      renderScale: CHARACTER_3D_RENDER_SCALE,
+      fxaa: CHARACTER_3D_FXAA,
+    });
+    expect(state.framebufferStatusChecks).toBeGreaterThan(0);
+    expect(renderer.status).toBe('failed');
+    expect(renderer.diagnostics.some((d) => d.includes('framebuffer'))).toBe(true);
+    // 失败即零提交
+    renderer.beginFrame();
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
+    expect(state.drawElementsCalls).toHaveLength(0);
+  });
+
+  it('FBO 完整时正常 ready，且确实做过完整性检查', () => {
+    const { renderer, state } = makeRenderer({ antialias: false });
+    expect(renderer.status).toBe('ready');
+    expect(state.framebufferStatusChecks).toBeGreaterThan(0);
+  });
+
+  it('native-MSAA 分支无需 FBO ⇒ 不做完整性检查', () => {
+    const { renderer, state } = makeRenderer({ antialias: true });
+    expect(renderer.status).toBe('ready');
+    expect(state.framebufferStatusChecks).toBe(0);
+  });
+});
+
+describe('B5 · 固定方向光必须随 facing 变换（语义：光在世界空间固定）', () => {
+  const expectVec = (actual: Float32Array | null, expected: number[], label: string): void => {
+    expect(actual, `${label} 未上传光向`).not.toBeNull();
+    const v = actual as Float32Array;
+    for (let i = 0; i < 3; i++) expect(v[i], `${label} 分量 ${i}`).toBeCloseTo(expected[i], 5);
+  };
+
+  it('right / rightup / left 逐向断言（模型空间光向 = R_y(−yaw) · 世界光向，归一）', () => {
+    const { renderer, state } = makeRenderer();
+    const cases: [CharacterRenderCommand['facing'], number[]][] = [
+      ['right', [-0.291536, 0.619514, 0.728841]],
+      ['rightup', [0.309221, 0.619514, 0.721515]],
+      ['left', [0.291536, 0.619514, -0.728841]],
+    ];
+    for (const [facing, expected] of cases) {
+      renderer.beginFrame();
+      renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, yawDegForFacing(facing));
+      renderer.endFrame();
+      expectVec(state.lastUniform3fv[1], expected, facing);
+    }
+  });
+
+  it('六个朝向的光向互不相同（right 与 left 必须反号 y/z 分量）', () => {
+    const { renderer, state } = makeRenderer();
+    const seen = new Map<string, number[]>();
+    for (const facing of ['right', 'rightup', 'leftup', 'left', 'leftdown', 'rightdown'] as const) {
+      renderer.beginFrame();
+      renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, yawDegForFacing(facing));
+      renderer.endFrame();
+      seen.set(facing, Array.from(state.lastUniform3fv[1] as Float32Array));
+    }
+    expect(new Set([...seen.values()].map((v) => v.map((x) => x.toFixed(4)).join(','))).size).toBe(6);
+    const right = seen.get('right') as number[];
+    const left = seen.get('left') as number[];
+    expect(left[0]).toBeCloseTo(-right[0], 5);
+    expect(left[2]).toBeCloseTo(-right[2], 5);
+    expect(left[1]).toBeCloseTo(right[1], 6); // y 分量不随绕 Y 旋转变化
+  });
+
+  it('世界空间不变性：dot(n_model, L_model) === dot(R_y(yaw)·n_model, L_world)', () => {
+    const { renderer, state } = makeRenderer();
+    const n0 = [0.3, 0.8, 0.5];
+    const nNorm = Math.hypot(n0[0], n0[1], n0[2]);
+    const n = n0.map((v) => v / nNorm);
+    const dot = (a: number[], b: ArrayLike<number>): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const rotY = (v: number[], deg: number): number[] => {
+      const h = (deg * Math.PI) / 180;
+      const c = Math.cos(h);
+      const s = Math.sin(h);
+      return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c];
+    };
+    const lNorm = Math.hypot(...CHARACTER_3D_LIGHT.direction);
+    const worldLight = CHARACTER_3D_LIGHT.direction.map((v) => v / lNorm);
+    for (const facing of ['right', 'rightup', 'left'] as const) {
+      const yaw = yawDegForFacing(facing);
+      renderer.beginFrame();
+      renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, yaw);
+      renderer.endFrame();
+      const lModel = state.lastUniform3fv[1] as Float32Array;
+      expect(dot(n, lModel), facing).toBeCloseTo(dot(rotY(n, yaw), worldLight), 6);
+    }
   });
 });
 

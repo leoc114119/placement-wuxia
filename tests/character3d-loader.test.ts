@@ -46,6 +46,8 @@ interface FakePlatformOptions {
   /** 预置缓存条目内容（模拟 last-known-good 或热缓存） */
   initialCache?: Character3DCacheEntry;
   initialCacheBytes?: Uint8Array;
+  /** true = 索引写了但文件不在（模拟上次写盘只成功一半的冷启动） */
+  initialCacheFileMissing?: boolean;
   /** 结构门 */
   structureRejects?: boolean;
   /** sha256File 不支持（返回 null ⇒ loader 退回 sha256Bytes） */
@@ -60,7 +62,9 @@ function createFakePlatform(options: FakePlatformOptions = {}) {
 
   if (options.initialCache) {
     cache.set(options.initialCache.assetId, options.initialCache);
-    files.set(options.initialCache.savedPath, options.initialCacheBytes ?? PAYLOAD);
+    if (!options.initialCacheFileMissing) {
+      files.set(options.initialCache.savedPath, options.initialCacheBytes ?? PAYLOAD);
+    }
   }
 
   const platform: Character3DPlatform = {
@@ -104,7 +108,10 @@ function createFakePlatform(options: FakePlatformOptions = {}) {
       return await sha256Hex(bytes);
     },
     async cacheGet(assetId) {
-      return cache.get(assetId) ? { ...(cache.get(assetId) as Character3DCacheEntry) } : null;
+      const entry = cache.get(assetId);
+      if (!entry) return null;
+      // 索引与文件必须同时存在（真实 adapter 同口径；冷启动坏索引的负例在 platform-wx 用例里）
+      return files.has(entry.savedPath) ? { ...entry } : null;
     },
     async cachePut(input: Character3DCachePutInput) {
       counters.cachePut++;
@@ -428,6 +435,47 @@ describe('结构门与缓存写失败', () => {
     expect(res.savedPath).toBeNull();
     expect(res.diagnostics.some((d) => d.startsWith('cache-write-failed'))).toBe(true);
     expect(loader.stats().cacheWriteFailures).toBe(1);
+  });
+
+  it('B3 · cachePut 失败必须删除临时文件（零残留）且不留半成品索引', async () => {
+    const ref = await validRef();
+    const fake = createFakePlatform({ cachePutFails: true });
+    const loader = createCharacterAssetLoader({
+      platform: fake.platform,
+      cdnBaseUrl: 'https://cdn/x',
+      sleep: async () => undefined,
+    });
+    const res = await loader.load(ref);
+    expect(res.status).toBe('downloaded');
+    expect(res.savedPath).toBeNull();
+    // 零残留：临时文件不得留在「盘」上（否则每次进战斗都攒一份 4MB）
+    expect([...fake.files.keys()].filter((k) => k.startsWith('tmp:'))).toEqual([]);
+    // 不得留下半成品缓存条目（下一轮不能被它命中）
+    expect(fake.cache.size).toBe(0);
+    const again = await loader.load(ref);
+    expect(again.status).toBe('downloaded');
+    expect(fake.counters.downloads).toBe(2); // 确实重新下载，而不是命中半成品
+  });
+
+  it('B3 · 冷启动坏索引：索引在但文件不可用 ⇒ 视为未命中并重新下载', async () => {
+    const ref = await validRef();
+    // 索引记录指向一个不存在的 savedPath（模拟上次写盘只成功了一半）
+    const fake = createFakePlatform({
+      initialCache: {
+        assetId: ref.id, sha256: ref.sha256, savedPath: 'cache:missing',
+        byteLength: ref.byteLength, lastUsedAt: 1,
+      },
+      initialCacheFileMissing: true,
+    });
+    const loader = createCharacterAssetLoader({
+      platform: fake.platform,
+      cdnBaseUrl: 'https://cdn/x',
+      sleep: async () => undefined,
+    });
+    const res = await loader.load(ref);
+    expect(res.status).toBe('downloaded');
+    expect(fake.counters.downloads).toBe(1);
+    expect(loader.stats().cacheHits).toBe(0);
   });
 
   it('sha256File 不可用（旧基础库）⇒ 退回 sha256Bytes 仍能校验通过', async () => {
