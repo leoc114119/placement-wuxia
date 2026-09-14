@@ -1,0 +1,133 @@
+{
+ "schemaVersion": "t31-s0-1.0",
+ "commitSha": "f5ac3c7fd48151fe90149f728f072cdb3ad65655",
+ "probeBaselineNote": "commitSha = probe 工程基线提交；PM 用分支 tip 交叉核对（见 README「结果字段」）",
+ "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
+ "device": {
+  "brand": "browser",
+  "model": "MacIntel",
+  "system": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "platform": "browser",
+  "SDKVersion": null,
+  "benchmarkLevel": null,
+  "pixelRatio": 2,
+  "screenWidth": 390,
+  "screenHeight": 844,
+  "windowWidth": 390,
+  "windowHeight": 844,
+  "renderer": "WebKit WebGL",
+  "vendor": "WebKit",
+  "glVersion": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "glslVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+  "maxTextureSize": 16384,
+  "maxVertexAttribs": 16,
+  "deviceHash": "wvx13b"
+ },
+ "canvas": {
+  "backbufferWidth": 780,
+  "backbufferHeight": 1688,
+  "screenCanvasWidth": 780,
+  "screenCanvasHeight": 1688,
+  "requestedBackbuffer": [
+   780,
+   1688
+  ],
+  "renderScale": 1,
+  "dprCappedAt": 3,
+  "contextAttributes": {
+   "alpha": true,
+   "antialias": true,
+   "depth": true,
+   "desynchronized": false,
+   "failIfMajorPerformanceCaveat": false,
+   "powerPreference": "default",
+   "premultipliedAlpha": true,
+   "preserveDrawingBuffer": true,
+   "stencil": false,
+   "xrCompatible": false
+  },
+  "requestedContextAttributes": {
+   "alpha": true,
+   "antialias": true,
+   "premultipliedAlpha": true,
+   "preserveDrawingBuffer": true
+  }
+ },
+ "a1": {
+  "assertions": [],
+  "errors": [],
+  "mode": "maincontrol",
+  "nonce": "6zbvl7oj",
+  "mainCanvasWebgl2Control": "PASS",
+  "mainCanvasControlDetail": {
+   "maxVertexUniformVectors": 1024,
+   "renderer": "WebKit WebGL",
+   "contextLost": false,
+   "readback": {
+    "nonClearPixels": 16,
+    "glError": 0
+   }
+  },
+  "webgl2Context": true,
+  "maxVertexUniformVectors": 1024,
+  "offscreenFailed": null,
+  "devicePassCandidate": false,
+  "allAssertionsPass": null,
+  "sdkVersionApplicable": false,
+  "sdkVersionOk": null,
+  "compositeProof": "not-run",
+  "note": "主画布正控模式：用于区分\"离屏专属失败\"与\"设备无 WebGL2\"，本模式自身不出 A1/A2 判定（方案 §4.3）",
+  "webgl1Diagnostic": null,
+  "sdkVersionMin": "2.24.0",
+  "sdkVersionCompare": null,
+  "sdkVersionMethod": "整数分段语义版本比较（禁字符串字典序）；< 2.24.0 直接 UNSUPPORTED，不参与 A 路线 PASS",
+  "screenshots": [
+   {
+    "tag": "maincontrol",
+    "name": "probe_wvx13b_nosdk_maincontrol_run0.png",
+    "path": "dataurl:probe_wvx13b_nosdk_maincontrol_run0.png",
+    "ok": true
+   }
+  ]
+ },
+ "a2": [],
+ "coldRuns": null,
+ "env": {
+  "browser": true,
+  "a2Profile": "browser-short",
+  "a2SpecProfile": false,
+  "a2Trigger": null,
+  "a2Skipped": null,
+  "screenshots": [
+   {
+    "tag": "maincontrol",
+    "name": "probe_wvx13b_nosdk_maincontrol_run0.png",
+    "path": "dataurl:probe_wvx13b_nosdk_maincontrol_run0.png",
+    "ok": true
+   }
+  ],
+  "asset": null,
+  "modelByteLength": null,
+  "modelSha256Source": "injected",
+  "modelAccountBaseline": {
+   "triangleCount": 48419,
+   "jointCount": 41,
+   "primitiveCount": 1,
+   "textureCount": 3,
+   "bufferBytes": 3974376
+  },
+  "probe": "proto/webgl2_probe",
+  "specCommit": "f5ac3c7f",
+  "profileNote": "A2 为浏览器层短采样（仅证明代码路径通，四档出数）；容量结论必须用真机 spec 档数字"
+ },
+ "verdict": {
+  "device": "NOT_APPLICABLE",
+  "architecture": "SEE_OFFSCREEN_RESULT",
+  "capacity20": "NOT_RUN",
+  "capacity20Engine": null,
+  "capacity20Reasons": null
+ },
+ "notes": [
+  "主画布 WebGL2 正控 PASS：若同设备离屏链 FAIL ⇒ 判\"双 canvas A 路线失败\"（方案 §4.3/§9.1）"
+ ]
+}

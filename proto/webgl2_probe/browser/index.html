@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>T31 · WebGL2 S0 probe（浏览器 + wx shim）</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; background:#05070b; overflow:hidden; }
+  /* 画布 backbuffer 由 probe 设为 windowWidth×windowHeight×min(dpr,3)，CSS 铺满视口 ⇒ 1:1 呈现 */
+  #probe-screen-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+</style>
+</head>
+<body>
+<canvas id="probe-screen-canvas"></canvas>
+<!--
+  装载顺序即模块依赖顺序（classic script，file:// 与 http:// 都可直开；ESM 在 file:// 下被 CORS 拦）：
+  1) platform-browser 先装 wx shim（installWxShim 需要 #probe-screen-canvas 已存在）
+  2) src/* 各模块挂到 globalThis.PWProbe
+  3) game.js 注册 PWProbe.run（浏览器里有 shim 标记 ⇒ 不自动启动）
+  4) probe-browser.js 读 URL 参数并显式启动
+-->
+<script src="../src/platform-browser.js"></script>
+<script src="../src/math.js"></script>
+<script src="../src/glb-loader.js"></script>
+<script src="../src/anim-loader.js"></script>
+<script src="../src/skinning-renderer.js"></script>
+<script src="../src/metrics.js"></script>
+<script src="../src/result.js"></script>
+<script src="../game.js"></script>
+<script src="probe-browser.js"></script>
+</body>
+</html>

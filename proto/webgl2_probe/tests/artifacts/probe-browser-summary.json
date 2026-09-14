@@ -1,0 +1,1118 @@
+{
+ "at": "2026-09-14T04:11:16.162Z",
+ "repo": "/private/tmp/pw-t31-probe",
+ "head": "f5ac3c7fd48151fe90149f728f072cdb3ad65655",
+ "profile": "spec",
+ "runs": 3,
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "deviceScaleFactor": 2,
+ "shotsPolicy": "last",
+ "checks": [
+  {
+   "name": "模型副本 SHA-256 == 基线",
+   "ok": true,
+   "detail": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0"
+  },
+  {
+   "name": "run1 无致命错误",
+   "ok": true,
+   "detail": "0.5s"
+  },
+  {
+   "name": "run1 console 单行 __WEBGL2_PROBE_RESULT__ 可解析",
+   "ok": true,
+   "detail": "schemaVersion=t31-s0-1.0"
+  },
+  {
+   "name": "run1 A1-01..05 全过",
+   "ok": true,
+   "detail": "A1-01:OK A1-02:OK A1-03:OK A1-04:OK A1-05:OK"
+  },
+  {
+   "name": "run1 模型账 48419/41 对上",
+   "ok": true,
+   "detail": "tri=48419 joints=41 verts=29281 tex=3"
+  },
+  {
+   "name": "run1 模型字节数 == 4,040,728",
+   "ok": true,
+   "detail": "4040728"
+  },
+  {
+   "name": "run1 模型 SHA-256 实测 == 基线",
+   "ok": true,
+   "detail": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0 (computed)"
+  },
+  {
+   "name": "run1 A1-03 最小 shader 41 骨一次上传可读回",
+   "ok": true,
+   "detail": "{\"nonClearPixels\":16,\"alphaMax\":255,\"glError\":0}"
+  },
+  {
+   "name": "run1 A1-04 蒙皮在动（连续两帧摘要不同）",
+   "ok": true,
+   "detail": "px=226879 bbox=359x927 A=3792254555 B=3285704009"
+  },
+  {
+   "name": "run1 41 骨整块 palette 上传自证（getUniform 回读）",
+   "ok": true,
+   "detail": "[{\"index\":0,\"located\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
+  },
+  {
+   "name": "run1 A1-05 合成走程序化 readback（非 visualProof 假写）",
+   "ok": true,
+   "detail": "proof=readback"
+  },
+  {
+   "name": "run1 冷启动计数 runIndex=1",
+   "ok": true,
+   "detail": "green=1/1"
+  },
+  {
+   "name": "run1 无 GL error / 无 context lost",
+   "ok": true,
+   "detail": "errors=0"
+  },
+  {
+   "name": "run1 截图按方案 §8 命名产出",
+   "ok": true,
+   "detail": "probe 记录 3 张（期望 ≥3）"
+  },
+  {
+   "name": "run1 未满足 Device-PASS 时不跑 A2（方案 §5 触发口径）",
+   "ok": true,
+   "detail": "skipped-not-device-pass / 本机 A1 尚未 Device-PASS（连续 3 次冷启动全绿）—— 方案 §5：A2 只在 Device-PASS 后运行；冷启动进度 1/3；工程师复测可显式 a2=run"
+  },
+  {
+   "name": "run2 无致命错误",
+   "ok": true,
+   "detail": "0.3s"
+  },
+  {
+   "name": "run2 console 单行 __WEBGL2_PROBE_RESULT__ 可解析",
+   "ok": true,
+   "detail": "schemaVersion=t31-s0-1.0"
+  },
+  {
+   "name": "run2 A1-01..05 全过",
+   "ok": true,
+   "detail": "A1-01:OK A1-02:OK A1-03:OK A1-04:OK A1-05:OK"
+  },
+  {
+   "name": "run2 模型账 48419/41 对上",
+   "ok": true,
+   "detail": "tri=48419 joints=41 verts=29281 tex=3"
+  },
+  {
+   "name": "run2 模型字节数 == 4,040,728",
+   "ok": true,
+   "detail": "4040728"
+  },
+  {
+   "name": "run2 模型 SHA-256 实测 == 基线",
+   "ok": true,
+   "detail": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0 (computed)"
+  },
+  {
+   "name": "run2 A1-03 最小 shader 41 骨一次上传可读回",
+   "ok": true,
+   "detail": "{\"nonClearPixels\":16,\"alphaMax\":255,\"glError\":0}"
+  },
+  {
+   "name": "run2 A1-04 蒙皮在动（连续两帧摘要不同）",
+   "ok": true,
+   "detail": "px=226879 bbox=359x927 A=3792254555 B=3285704009"
+  },
+  {
+   "name": "run2 41 骨整块 palette 上传自证（getUniform 回读）",
+   "ok": true,
+   "detail": "[{\"index\":0,\"located\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
+  },
+  {
+   "name": "run2 A1-05 合成走程序化 readback（非 visualProof 假写）",
+   "ok": true,
+   "detail": "proof=readback"
+  },
+  {
+   "name": "run2 冷启动计数 runIndex=2",
+   "ok": true,
+   "detail": "green=2/2"
+  },
+  {
+   "name": "run2 无 GL error / 无 context lost",
+   "ok": true,
+   "detail": "errors=0"
+  },
+  {
+   "name": "run2 截图按方案 §8 命名产出",
+   "ok": true,
+   "detail": "probe 记录 3 张（期望 ≥3）"
+  },
+  {
+   "name": "run2 未满足 Device-PASS 时不跑 A2（方案 §5 触发口径）",
+   "ok": true,
+   "detail": "skipped-not-device-pass / 本机 A1 尚未 Device-PASS（连续 3 次冷启动全绿）—— 方案 §5：A2 只在 Device-PASS 后运行；冷启动进度 2/3；工程师复测可显式 a2=run"
+  },
+  {
+   "name": "run3 无致命错误",
+   "ok": true,
+   "detail": "190.6s"
+  },
+  {
+   "name": "run3 console 单行 __WEBGL2_PROBE_RESULT__ 可解析",
+   "ok": true,
+   "detail": "schemaVersion=t31-s0-1.0"
+  },
+  {
+   "name": "run3 A1-01..05 全过",
+   "ok": true,
+   "detail": "A1-01:OK A1-02:OK A1-03:OK A1-04:OK A1-05:OK"
+  },
+  {
+   "name": "run3 模型账 48419/41 对上",
+   "ok": true,
+   "detail": "tri=48419 joints=41 verts=29281 tex=3"
+  },
+  {
+   "name": "run3 模型字节数 == 4,040,728",
+   "ok": true,
+   "detail": "4040728"
+  },
+  {
+   "name": "run3 模型 SHA-256 实测 == 基线",
+   "ok": true,
+   "detail": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0 (computed)"
+  },
+  {
+   "name": "run3 A1-03 最小 shader 41 骨一次上传可读回",
+   "ok": true,
+   "detail": "{\"nonClearPixels\":16,\"alphaMax\":255,\"glError\":0}"
+  },
+  {
+   "name": "run3 A1-04 蒙皮在动（连续两帧摘要不同）",
+   "ok": true,
+   "detail": "px=226879 bbox=359x927 A=3792254555 B=3285704009"
+  },
+  {
+   "name": "run3 41 骨整块 palette 上传自证（getUniform 回读）",
+   "ok": true,
+   "detail": "[{\"index\":0,\"located\":true,\"tx\":0,\"m00\":1,\"ok\":true},{\"index\":7,\"located\":true,\"tx\":7,\"m00\":1.0700000524520874,\"ok\":true},{\"index\":20,\"located\":true,\"tx\":20,\"m00\":1.2000000476837158,\"ok\":true},{\"index\":40,\"located\":true,\"tx\":40,\"m00\":1.399999976158142,\"ok\":true}]"
+  },
+  {
+   "name": "run3 A1-05 合成走程序化 readback（非 visualProof 假写）",
+   "ok": true,
+   "detail": "proof=readback"
+  },
+  {
+   "name": "run3 冷启动计数 runIndex=3",
+   "ok": true,
+   "detail": "green=3/3"
+  },
+  {
+   "name": "run3 无 GL error / 无 context lost",
+   "ok": true,
+   "detail": "errors=0"
+  },
+  {
+   "name": "run3 截图按方案 §8 命名产出",
+   "ok": true,
+   "detail": "probe 记录 7 张（期望 ≥7）"
+  },
+  {
+   "name": "run3 截图落库",
+   "ok": true,
+   "detail": "7 张（期望 ≥7）"
+  },
+  {
+   "name": "run3 第 3 次冷启动后自动跑 A2（trigger=spec-device-pass）",
+   "ok": true,
+   "detail": "a2 档数=4 trigger=spec-device-pass"
+  },
+  {
+   "name": "run3 A2 四档齐全 1/5/10/20",
+   "ok": true,
+   "detail": "1,5,10,20"
+  },
+  {
+   "name": "run3 A2 1u：每帧 draw/palette 次数 == 单位数",
+   "ok": true,
+   "detail": "draw=1 palette=1"
+  },
+  {
+   "name": "run3 A2 1u：采样量达标（≥1800 帧且达秒数）",
+   "ok": true,
+   "detail": "samples=1801 dur=30.015s truncated=false"
+  },
+  {
+   "name": "run3 A2 1u：角色全部在屏且不重叠",
+   "ok": true,
+   "detail": "解析={\"visible\":1,\"total\":1,\"allInside\":true,\"overlapPairs\":0,\"noOverlap\":true} 像素={\"per\":1,\"fill\":0.6441}"
+  },
+  {
+   "name": "run3 A2 1u：像素覆盖率合理（非\"丝带式\"塌缩）",
+   "ok": true,
+   "detail": "fillRatio=0.6441 覆盖像素=503300"
+  },
+  {
+   "name": "run3 A2 1u：gpuMs 口径诚实（null 或真查询值）",
+   "ok": true,
+   "detail": "gpuMs=1.2349 source=EXT_disjoint_timer_query_webgl2"
+  },
+  {
+   "name": "run3 A2 5u：每帧 draw/palette 次数 == 单位数",
+   "ok": true,
+   "detail": "draw=5 palette=5"
+  },
+  {
+   "name": "run3 A2 5u：采样量达标（≥1800 帧且达秒数）",
+   "ok": true,
+   "detail": "samples=1801 dur=30.014s truncated=false"
+  },
+  {
+   "name": "run3 A2 5u：角色全部在屏且不重叠",
+   "ok": true,
+   "detail": "解析={\"visible\":5,\"total\":5,\"allInside\":true,\"overlapPairs\":0,\"noOverlap\":true} 像素={\"per\":5,\"fill\":0.6471}"
+  },
+  {
+   "name": "run3 A2 5u：像素覆盖率合理（非\"丝带式\"塌缩）",
+   "ok": true,
+   "detail": "fillRatio=0.6471 覆盖像素=434366"
+  },
+  {
+   "name": "run3 A2 5u：gpuMs 口径诚实（null 或真查询值）",
+   "ok": true,
+   "detail": "gpuMs=1.9784 source=EXT_disjoint_timer_query_webgl2"
+  },
+  {
+   "name": "run3 A2 10u：每帧 draw/palette 次数 == 单位数",
+   "ok": true,
+   "detail": "draw=10 palette=10"
+  },
+  {
+   "name": "run3 A2 10u：采样量达标（≥1800 帧且达秒数）",
+   "ok": true,
+   "detail": "samples=1801 dur=30.015s truncated=false"
+  },
+  {
+   "name": "run3 A2 10u：角色全部在屏且不重叠",
+   "ok": true,
+   "detail": "解析={\"visible\":10,\"total\":10,\"allInside\":true,\"overlapPairs\":0,\"noOverlap\":true} 像素={\"per\":10,\"fill\":0.6503}"
+  },
+  {
+   "name": "run3 A2 10u：像素覆盖率合理（非\"丝带式\"塌缩）",
+   "ok": true,
+   "detail": "fillRatio=0.6503 覆盖像素=491042"
+  },
+  {
+   "name": "run3 A2 10u：gpuMs 口径诚实（null 或真查询值）",
+   "ok": true,
+   "detail": "gpuMs=3.0423 source=EXT_disjoint_timer_query_webgl2"
+  },
+  {
+   "name": "run3 A2 20u：每帧 draw/palette 次数 == 单位数",
+   "ok": true,
+   "detail": "draw=20 palette=20"
+  },
+  {
+   "name": "run3 A2 20u：采样量达标（≥1800 帧且达秒数）",
+   "ok": true,
+   "detail": "samples=3601 dur=60.013s truncated=false"
+  },
+  {
+   "name": "run3 A2 20u：角色全部在屏且不重叠",
+   "ok": true,
+   "detail": "解析={\"visible\":20,\"total\":20,\"allInside\":true,\"overlapPairs\":0,\"noOverlap\":true} 像素={\"per\":20,\"fill\":0.6517}"
+  },
+  {
+   "name": "run3 A2 20u：像素覆盖率合理（非\"丝带式\"塌缩）",
+   "ok": true,
+   "detail": "fillRatio=0.6517 覆盖像素=629891"
+  },
+  {
+   "name": "run3 A2 20u：gpuMs 口径诚实（null 或真查询值）",
+   "ok": true,
+   "detail": "gpuMs=5.3344 source=EXT_disjoint_timer_query_webgl2"
+  },
+  {
+   "name": "run3 A2 四档出数（fps/P95/P99）",
+   "ok": true,
+   "detail": "1u:59.88fps/17.5ms 5u:59.88fps/17.7ms 10u:59.88fps/17.2ms 20u:59.88fps/17.5ms"
+  },
+  {
+   "name": "run3 verdict 三档字段齐",
+   "ok": true,
+   "detail": "{\"device\":\"BROWSER_SHIM_PASS\",\"architecture\":\"BROWSER_ONLY_NOT_DEVICE_EVIDENCE\",\"capacity20\":\"BROWSER_SHIM_CAPACITY_PASS\",\"capacity20Engine\":\"CAPACITY_PASS\",\"capacity20Reasons\":[]}"
+  },
+  {
+   "name": "正控模式：主画布能取 webgl2 并画出可读回三角形（= PASS）",
+   "ok": true,
+   "detail": "{\"maxVertexUniformVectors\":1024,\"renderer\":\"WebKit WebGL\",\"contextLost\":false,\"readback\":{\"nonClearPixels\":16,\"glError\":0}}"
+  },
+  {
+   "name": "正控模式不出 A1/A2 判定（device=NOT_APPLICABLE）",
+   "ok": true,
+   "detail": "{\"device\":\"NOT_APPLICABLE\",\"architecture\":\"SEE_OFFSCREEN_RESULT\",\"capacity20\":\"NOT_RUN\",\"capacity20Engine\":null,\"capacity20Reasons\":null}"
+  }
+ ],
+ "verdicts": [
+  {
+   "run": 1,
+   "verdict": {
+    "device": "BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE",
+    "architecture": "BROWSER_ONLY_NOT_DEVICE_EVIDENCE",
+    "capacity20": "NOT_RUN",
+    "capacity20Engine": null,
+    "capacity20Reasons": null
+   },
+   "a1": {
+    "coldRunIndex": 1,
+    "allAssertionsPass": true,
+    "compositeProof": "readback"
+   },
+   "a2": 0
+  },
+  {
+   "run": 2,
+   "verdict": {
+    "device": "BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE",
+    "architecture": "BROWSER_ONLY_NOT_DEVICE_EVIDENCE",
+    "capacity20": "NOT_RUN",
+    "capacity20Engine": null,
+    "capacity20Reasons": null
+   },
+   "a1": {
+    "coldRunIndex": 2,
+    "allAssertionsPass": true,
+    "compositeProof": "readback"
+   },
+   "a2": 0
+  },
+  {
+   "run": 3,
+   "verdict": {
+    "device": "BROWSER_SHIM_PASS",
+    "architecture": "BROWSER_ONLY_NOT_DEVICE_EVIDENCE",
+    "capacity20": "BROWSER_SHIM_CAPACITY_PASS",
+    "capacity20Engine": "CAPACITY_PASS",
+    "capacity20Reasons": []
+   },
+   "a1": {
+    "coldRunIndex": 3,
+    "allAssertionsPass": true,
+    "compositeProof": "readback"
+   },
+   "a2": 4
+  }
+ ],
+ "renderer": {
+  "renderer": "WebKit WebGL",
+  "vendor": "WebKit",
+  "maxVertexUniformVectors": 1024
+ },
+ "a2": [
+  {
+   "unitCount": 1,
+   "durationSec": 30.015,
+   "sampleCount": 1801,
+   "fpsMean": 60.05,
+   "fpsMedian": 59.88,
+   "onePercentLowFps": 56.33,
+   "frameMsMedian": 16.7,
+   "frameMsP95": 17.5,
+   "frameMsP99": 17.6,
+   "over33msRatio": 0,
+   "over50msRatio": 0,
+   "jsAnimMs": 0.1,
+   "glSubmitMs": 0.1,
+   "compositeCpuMs": 0.4,
+   "jsAnimMsMean": 0.0863,
+   "glSubmitMsMean": 0.0591,
+   "compositeCpuMsMean": 0.3651,
+   "twoDTotalMsMean": 0.4537,
+   "gpuMs": 1.2349,
+   "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
+   "glErrorProbeHz": 1,
+   "truncated": false,
+   "truncateReason": null,
+   "drawCallsPerFrame": 1,
+   "skinPalettesPerFrame": 1,
+   "contextLostCount": 0,
+   "glErrorCount": 0,
+   "timerResolutionMs": 0.1,
+   "visibleUnitCount": 1,
+   "unitsVisibleByPixels": 1,
+   "allUnitsOnScreen": true,
+   "visibility": {
+    "visible": 1,
+    "total": 1,
+    "allInside": true,
+    "overlapPairs": 0,
+    "noOverlap": true
+   },
+   "pixelCoverage": {
+    "unitCount": 1,
+    "canvasPixels": [
+     780,
+     1688
+    ],
+    "coveredPixels": 503300,
+    "analyticAreaPixels": 781444,
+    "fillRatio": 0.6441,
+    "unitsVisibleByPixels": 1,
+    "minUnitFill": 0.6432,
+    "perUnit": [
+     {
+      "index": 0,
+      "pixels": 503300,
+      "area": 782525,
+      "fill": 0.6432
+     }
+    ],
+    "glError": 0,
+    "note": "整幅 readPixels 只在采样窗口外做一次；fillRatio 远低于 ~0.2 说明网格被裁剪/塌缩（\"丝带\"缺陷的特征）"
+   },
+   "canvasPixels": [
+    780,
+    1688
+   ],
+   "unitScreenRects": [
+    {
+     "x0": 130.3,
+     "y0": 177.7,
+     "x1": 694.8,
+     "y1": 1561.8
+    }
+   ],
+   "a2Profile": "spec",
+   "specProfile": true,
+   "profileNote": "按方案 §5.1 原文口径：预热 10s、本档 30s 且 ≥1800 帧",
+   "note": "readPixels 不进 A2 循环（A1 专用）；GL error 以 1Hz 采样以避免每帧强制同步"
+  },
+  {
+   "unitCount": 5,
+   "durationSec": 30.014,
+   "sampleCount": 1801,
+   "fpsMean": 60.11,
+   "fpsMedian": 59.88,
+   "onePercentLowFps": 52.85,
+   "frameMsMedian": 16.7,
+   "frameMsP95": 17.7,
+   "frameMsP99": 18.6,
+   "over33msRatio": 0,
+   "over50msRatio": 0,
+   "jsAnimMs": 0.2,
+   "glSubmitMs": 0.1,
+   "compositeCpuMs": 0.4,
+   "jsAnimMsMean": 0.2345,
+   "glSubmitMsMean": 0.0748,
+   "compositeCpuMsMean": 0.3767,
+   "twoDTotalMsMean": 0.4728,
+   "gpuMs": 1.9784,
+   "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
+   "glErrorProbeHz": 1,
+   "truncated": false,
+   "truncateReason": null,
+   "drawCallsPerFrame": 5,
+   "skinPalettesPerFrame": 5,
+   "contextLostCount": 0,
+   "glErrorCount": 0,
+   "timerResolutionMs": 0.1,
+   "visibleUnitCount": 5,
+   "unitsVisibleByPixels": 5,
+   "allUnitsOnScreen": true,
+   "visibility": {
+    "visible": 5,
+    "total": 5,
+    "allInside": true,
+    "overlapPairs": 0,
+    "noOverlap": true
+   },
+   "pixelCoverage": {
+    "unitCount": 5,
+    "canvasPixels": [
+     780,
+     1688
+    ],
+    "coveredPixels": 434366,
+    "analyticAreaPixels": 671238,
+    "fillRatio": 0.6471,
+    "unitsVisibleByPixels": 5,
+    "minUnitFill": 0.6425,
+    "perUnit": [
+     {
+      "index": 0,
+      "pixels": 86883,
+      "area": 135125,
+      "fill": 0.643
+     },
+     {
+      "index": 1,
+      "pixels": 86883,
+      "area": 135125,
+      "fill": 0.643
+     },
+     {
+      "index": 2,
+      "pixels": 86909,
+      "area": 135125,
+      "fill": 0.6432
+     },
+     {
+      "index": 3,
+      "pixels": 86877,
+      "area": 135125,
+      "fill": 0.6429
+     },
+     {
+      "index": 4,
+      "pixels": 86814,
+      "area": 135125,
+      "fill": 0.6425
+     }
+    ],
+    "glError": 0,
+    "note": "整幅 readPixels 只在采样窗口外做一次；fillRatio 远低于 ~0.2 说明网格被裁剪/塌缩（\"丝带\"缺陷的特征）"
+   },
+   "canvasPixels": [
+    780,
+    1688
+   ],
+   "unitScreenRects": [
+    {
+     "x0": 22.4,
+     "y0": 206.5,
+     "x1": 256.4,
+     "y1": 780.2
+    },
+    {
+     "x0": 282.4,
+     "y0": 206.5,
+     "x1": 516.4,
+     "y1": 780.2
+    },
+    {
+     "x0": 542.4,
+     "y0": 206.5,
+     "x1": 776.4,
+     "y1": 780.2
+    },
+    {
+     "x0": 22.4,
+     "y0": 1050.5,
+     "x1": 256.4,
+     "y1": 1624.2
+    },
+    {
+     "x0": 282.4,
+     "y0": 1050.5,
+     "x1": 516.4,
+     "y1": 1624.2
+    }
+   ],
+   "a2Profile": "spec",
+   "specProfile": true,
+   "profileNote": "按方案 §5.1 原文口径：预热 10s、本档 30s 且 ≥1800 帧",
+   "note": "readPixels 不进 A2 循环（A1 专用）；GL error 以 1Hz 采样以避免每帧强制同步"
+  },
+  {
+   "unitCount": 10,
+   "durationSec": 30.015,
+   "sampleCount": 1801,
+   "fpsMean": 60.03,
+   "fpsMedian": 59.88,
+   "onePercentLowFps": 55.95,
+   "frameMsMedian": 16.7,
+   "frameMsP95": 17.2,
+   "frameMsP99": 17.6,
+   "over33msRatio": 0,
+   "over50msRatio": 0,
+   "jsAnimMs": 0.4,
+   "glSubmitMs": 0.1,
+   "compositeCpuMs": 0.4,
+   "jsAnimMsMean": 0.4057,
+   "glSubmitMsMean": 0.0881,
+   "compositeCpuMsMean": 0.4797,
+   "twoDTotalMsMean": 0.6207,
+   "gpuMs": 3.0423,
+   "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
+   "glErrorProbeHz": 1,
+   "truncated": false,
+   "truncateReason": null,
+   "drawCallsPerFrame": 10,
+   "skinPalettesPerFrame": 10,
+   "contextLostCount": 0,
+   "glErrorCount": 0,
+   "timerResolutionMs": 0.1,
+   "visibleUnitCount": 10,
+   "unitsVisibleByPixels": 10,
+   "allUnitsOnScreen": true,
+   "visibility": {
+    "visible": 10,
+    "total": 10,
+    "allInside": true,
+    "overlapPairs": 0,
+    "noOverlap": true
+   },
+   "pixelCoverage": {
+    "unitCount": 10,
+    "canvasPixels": [
+     780,
+     1688
+    ],
+    "coveredPixels": 491042,
+    "analyticAreaPixels": 755143,
+    "fillRatio": 0.6503,
+    "unitsVisibleByPixels": 10,
+    "minUnitFill": 0.6406,
+    "perUnit": [
+     {
+      "index": 0,
+      "pixels": 49019,
+      "area": 76287,
+      "fill": 0.6426
+     },
+     {
+      "index": 1,
+      "pixels": 49017,
+      "area": 76287,
+      "fill": 0.6425
+     },
+     {
+      "index": 2,
+      "pixels": 49054,
+      "area": 76287,
+      "fill": 0.643
+     },
+     {
+      "index": 3,
+      "pixels": 49029,
+      "area": 76287,
+      "fill": 0.6427
+     },
+     {
+      "index": 4,
+      "pixels": 48986,
+      "area": 76464,
+      "fill": 0.6406
+     },
+     {
+      "index": 5,
+      "pixels": 49084,
+      "area": 76464,
+      "fill": 0.6419
+     },
+     {
+      "index": 6,
+      "pixels": 49156,
+      "area": 76464,
+      "fill": 0.6429
+     },
+     {
+      "index": 7,
+      "pixels": 49240,
+      "area": 76464,
+      "fill": 0.644
+     },
+     {
+      "index": 8,
+      "pixels": 49238,
+      "area": 76287,
+      "fill": 0.6454
+     },
+     {
+      "index": 9,
+      "pixels": 49219,
+      "area": 76287,
+      "fill": 0.6452
+     }
+    ],
+    "glError": 0,
+    "note": "整幅 readPixels 只在采样窗口外做一次；fillRatio 远低于 ~0.2 说明网格被裁剪/塌缩（\"丝带\"缺陷的特征）"
+   },
+   "canvasPixels": [
+    780,
+    1688
+   ],
+   "unitScreenRects": [
+    {
+     "x0": 16.8,
+     "y0": 90.1,
+     "x1": 192.3,
+     "y1": 520.4
+    },
+    {
+     "x0": 211.8,
+     "y0": 90.1,
+     "x1": 387.3,
+     "y1": 520.4
+    },
+    {
+     "x0": 406.8,
+     "y0": 90.1,
+     "x1": 582.3,
+     "y1": 520.4
+    },
+    {
+     "x0": 601.8,
+     "y0": 90.1,
+     "x1": 777.3,
+     "y1": 520.4
+    },
+    {
+     "x0": 16.8,
+     "y0": 652.8,
+     "x1": 192.3,
+     "y1": 1083.1
+    },
+    {
+     "x0": 211.8,
+     "y0": 652.8,
+     "x1": 387.3,
+     "y1": 1083.1
+    },
+    {
+     "x0": 406.8,
+     "y0": 652.8,
+     "x1": 582.3,
+     "y1": 1083.1
+    },
+    {
+     "x0": 601.8,
+     "y0": 652.8,
+     "x1": 777.3,
+     "y1": 1083.1
+    },
+    {
+     "x0": 16.8,
+     "y0": 1215.5,
+     "x1": 192.3,
+     "y1": 1645.7
+    },
+    {
+     "x0": 211.8,
+     "y0": 1215.5,
+     "x1": 387.3,
+     "y1": 1645.7
+    }
+   ],
+   "a2Profile": "spec",
+   "specProfile": true,
+   "profileNote": "按方案 §5.1 原文口径：预热 10s、本档 30s 且 ≥1800 帧",
+   "note": "readPixels 不进 A2 循环（A1 专用）；GL error 以 1Hz 采样以避免每帧强制同步"
+  },
+  {
+   "unitCount": 20,
+   "durationSec": 60.013,
+   "sampleCount": 3601,
+   "fpsMean": 60.06,
+   "fpsMedian": 59.88,
+   "onePercentLowFps": 56.4,
+   "frameMsMedian": 16.7,
+   "frameMsP95": 17.5,
+   "frameMsP99": 17.7,
+   "over33msRatio": 0,
+   "over50msRatio": 0,
+   "jsAnimMs": 0.8,
+   "glSubmitMs": 0.1,
+   "compositeCpuMs": 0.5,
+   "jsAnimMsMean": 0.7388,
+   "glSubmitMsMean": 0.1098,
+   "compositeCpuMsMean": 0.4605,
+   "twoDTotalMsMean": 0.6067,
+   "gpuMs": 5.3344,
+   "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
+   "glErrorProbeHz": 1,
+   "truncated": false,
+   "truncateReason": null,
+   "drawCallsPerFrame": 20,
+   "skinPalettesPerFrame": 20,
+   "contextLostCount": 0,
+   "glErrorCount": 0,
+   "timerResolutionMs": 0.1,
+   "visibleUnitCount": 20,
+   "unitsVisibleByPixels": 20,
+   "allUnitsOnScreen": true,
+   "visibility": {
+    "visible": 20,
+    "total": 20,
+    "allInside": true,
+    "overlapPairs": 0,
+    "noOverlap": true
+   },
+   "pixelCoverage": {
+    "unitCount": 20,
+    "canvasPixels": [
+     780,
+     1688
+    ],
+    "coveredPixels": 629891,
+    "analyticAreaPixels": 966583,
+    "fillRatio": 0.6517,
+    "unitsVisibleByPixels": 20,
+    "minUnitFill": 0.6393,
+    "perUnit": [
+     {
+      "index": 0,
+      "pixels": 31441,
+      "area": 48645,
+      "fill": 0.6463
+     },
+     {
+      "index": 1,
+      "pixels": 31446,
+      "area": 48645,
+      "fill": 0.6464
+     },
+     {
+      "index": 2,
+      "pixels": 31474,
+      "area": 48645,
+      "fill": 0.647
+     },
+     {
+      "index": 3,
+      "pixels": 31464,
+      "area": 48645,
+      "fill": 0.6468
+     },
+     {
+      "index": 4,
+      "pixels": 31440,
+      "area": 48645,
+      "fill": 0.6463
+     },
+     {
+      "index": 5,
+      "pixels": 31501,
+      "area": 48645,
+      "fill": 0.6476
+     },
+     {
+      "index": 6,
+      "pixels": 31559,
+      "area": 48645,
+      "fill": 0.6488
+     },
+     {
+      "index": 7,
+      "pixels": 31591,
+      "area": 48645,
+      "fill": 0.6494
+     },
+     {
+      "index": 8,
+      "pixels": 31609,
+      "area": 48645,
+      "fill": 0.6498
+     },
+     {
+      "index": 9,
+      "pixels": 31597,
+      "area": 48645,
+      "fill": 0.6495
+     },
+     {
+      "index": 10,
+      "pixels": 31618,
+      "area": 48645,
+      "fill": 0.65
+     },
+     {
+      "index": 11,
+      "pixels": 31660,
+      "area": 48645,
+      "fill": 0.6508
+     },
+     {
+      "index": 12,
+      "pixels": 31656,
+      "area": 48645,
+      "fill": 0.6508
+     },
+     {
+      "index": 13,
+      "pixels": 31621,
+      "area": 48645,
+      "fill": 0.65
+     },
+     {
+      "index": 14,
+      "pixels": 31591,
+      "area": 48645,
+      "fill": 0.6494
+     },
+     {
+      "index": 15,
+      "pixels": 31573,
+      "area": 48645,
+      "fill": 0.649
+     },
+     {
+      "index": 16,
+      "pixels": 31447,
+      "area": 48645,
+      "fill": 0.6465
+     },
+     {
+      "index": 17,
+      "pixels": 31303,
+      "area": 48645,
+      "fill": 0.6435
+     },
+     {
+      "index": 18,
+      "pixels": 31192,
+      "area": 48645,
+      "fill": 0.6412
+     },
+     {
+      "index": 19,
+      "pixels": 31098,
+      "area": 48645,
+      "fill": 0.6393
+     }
+    ],
+    "glError": 0,
+    "note": "整幅 readPixels 只在采样窗口外做一次；fillRatio 远低于 ~0.2 说明网格被裁剪/塌缩（\"丝带\"缺陷的特征）"
+   },
+   "canvasPixels": [
+    780,
+    1688
+   ],
+   "unitScreenRects": [
+    {
+     "x0": 13.4,
+     "y0": 46.2,
+     "x1": 153.8,
+     "y1": 390.4
+    },
+    {
+     "x0": 169.4,
+     "y0": 46.2,
+     "x1": 309.8,
+     "y1": 390.4
+    },
+    {
+     "x0": 325.4,
+     "y0": 46.2,
+     "x1": 465.8,
+     "y1": 390.4
+    },
+    {
+     "x0": 481.4,
+     "y0": 46.2,
+     "x1": 621.8,
+     "y1": 390.4
+    },
+    {
+     "x0": 637.4,
+     "y0": 46.2,
+     "x1": 777.8,
+     "y1": 390.4
+    },
+    {
+     "x0": 13.4,
+     "y0": 468.2,
+     "x1": 153.8,
+     "y1": 812.4
+    },
+    {
+     "x0": 169.4,
+     "y0": 468.2,
+     "x1": 309.8,
+     "y1": 812.4
+    },
+    {
+     "x0": 325.4,
+     "y0": 468.2,
+     "x1": 465.8,
+     "y1": 812.4
+    },
+    {
+     "x0": 481.4,
+     "y0": 468.2,
+     "x1": 621.8,
+     "y1": 812.4
+    },
+    {
+     "x0": 637.4,
+     "y0": 468.2,
+     "x1": 777.8,
+     "y1": 812.4
+    },
+    {
+     "x0": 13.4,
+     "y0": 890.2,
+     "x1": 153.8,
+     "y1": 1234.4
+    },
+    {
+     "x0": 169.4,
+     "y0": 890.2,
+     "x1": 309.8,
+     "y1": 1234.4
+    },
+    {
+     "x0": 325.4,
+     "y0": 890.2,
+     "x1": 465.8,
+     "y1": 1234.4
+    },
+    {
+     "x0": 481.4,
+     "y0": 890.2,
+     "x1": 621.8,
+     "y1": 1234.4
+    },
+    {
+     "x0": 637.4,
+     "y0": 890.2,
+     "x1": 777.8,
+     "y1": 1234.4
+    },
+    {
+     "x0": 13.4,
+     "y0": 1312.2,
+     "x1": 153.8,
+     "y1": 1656.4
+    },
+    {
+     "x0": 169.4,
+     "y0": 1312.2,
+     "x1": 309.8,
+     "y1": 1656.4
+    },
+    {
+     "x0": 325.4,
+     "y0": 1312.2,
+     "x1": 465.8,
+     "y1": 1656.4
+    },
+    {
+     "x0": 481.4,
+     "y0": 1312.2,
+     "x1": 621.8,
+     "y1": 1656.4
+    },
+    {
+     "x0": 637.4,
+     "y0": 1312.2,
+     "x1": 777.8,
+     "y1": 1656.4
+    }
+   ],
+   "a2Profile": "spec",
+   "specProfile": true,
+   "profileNote": "按方案 §5.1 原文口径：预热 10s、本档 60s 且 ≥1800 帧",
+   "note": "readPixels 不进 A2 循环（A1 专用）；GL error 以 1Hz 采样以避免每帧强制同步",
+   "capacity20": {
+    "pass": true,
+    "reasons": [],
+    "verdict": "CAPACITY_PASS"
+   }
+  }
+ ]
+}

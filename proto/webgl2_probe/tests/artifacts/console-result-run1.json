@@ -1,0 +1,568 @@
+{
+ "schemaVersion": "t31-s0-1.0",
+ "commitSha": "f5ac3c7fd48151fe90149f728f072cdb3ad65655",
+ "probeBaselineNote": "commitSha = probe 工程基线提交；PM 用分支 tip 交叉核对（见 README「结果字段」）",
+ "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
+ "device": {
+  "brand": "browser",
+  "model": "MacIntel",
+  "system": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "platform": "browser",
+  "SDKVersion": null,
+  "benchmarkLevel": null,
+  "pixelRatio": 2,
+  "screenWidth": 390,
+  "screenHeight": 844,
+  "windowWidth": 390,
+  "windowHeight": 844,
+  "renderer": "WebKit WebGL",
+  "vendor": "WebKit",
+  "glVersion": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "glslVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+  "maxTextureSize": 16384,
+  "maxVertexAttribs": 16,
+  "deviceHash": "wvx13b"
+ },
+ "canvas": {
+  "backbufferWidth": 780,
+  "backbufferHeight": 1688,
+  "screenCanvasWidth": 780,
+  "screenCanvasHeight": 1688,
+  "requestedBackbuffer": [
+   780,
+   1688
+  ],
+  "renderScale": 1,
+  "dprCappedAt": 3,
+  "contextAttributes": {
+   "alpha": true,
+   "antialias": true,
+   "depth": true,
+   "desynchronized": false,
+   "failIfMajorPerformanceCaveat": false,
+   "powerPreference": "default",
+   "premultipliedAlpha": true,
+   "preserveDrawingBuffer": true,
+   "stencil": false,
+   "xrCompatible": false
+  },
+  "requestedContextAttributes": {
+   "alpha": true,
+   "antialias": true,
+   "premultipliedAlpha": true,
+   "preserveDrawingBuffer": true
+  }
+ },
+ "a1": {
+  "assertions": [
+   {
+    "id": "A1-01",
+    "name": "Canvas 身份：第 1 张能取 2d / 第 2 张是不同对象 / 宽高可独立设置",
+    "pass": true,
+    "detail": {
+     "screenCtx2d": true,
+     "sameObject": false,
+     "screenUntouched": true,
+     "screenSize": [
+      780,
+      1688
+     ],
+     "offscreenSize": [
+      780,
+      1688
+     ]
+    }
+   },
+   {
+    "id": "A1-02",
+    "name": "WebGL2 context：非 null / 未丢上下文 / 初始无 GL error / MAX_VERTEX_UNIFORM_VECTORS ≥ 180",
+    "pass": true,
+    "detail": {
+     "contextLost": false,
+     "initialGlError": 0,
+     "maxVertexUniformVectors": 1024,
+     "renderer": "WebKit WebGL"
+    }
+   },
+   {
+    "id": "A1-03",
+    "name": "最小 shader：uBones[41] 编译/link + 41 个 identity **一次** uniformMatrix4fv 上传 + 红绿三角形 readPixels 中心 4×4",
+    "pass": true,
+    "detail": {
+     "nonClearPixels": 16,
+     "alphaMax": 255,
+     "glError": 0
+    }
+   },
+   {
+    "id": "A1-04",
+    "name": "真实模型：非透明像素 > 100 / bbox 宽高均 > 10 / 连续两帧像素摘要不同",
+    "pass": true,
+    "detail": {
+     "nonTransparentPixels": 226879,
+     "bboxW": 359,
+     "bboxH": 927,
+     "digestFrameA": 3792254555,
+     "digestFrameB": 3285704009,
+     "framesDiffer": true,
+     "touchesReadRegionEdge": false,
+     "glError": 0,
+     "region": {
+      "x": 191,
+      "y": 105,
+      "w": 427,
+      "h": 977
+     }
+    }
+   },
+   {
+    "id": "A1-05",
+    "name": "合成：WebGL 离屏 drawImage 到 2D 主画布 + 固定区域颜色校验（两块上下分置 ⇒ 顺带验没有上下颠倒）",
+    "pass": true,
+    "detail": {
+     "proof": "readback",
+     "reason": null,
+     "glError": 0,
+     "drawImageError": null,
+     "expectedTop": [
+      103,
+      116,
+      113
+     ],
+     "expectedBottom": [
+      93,
+      92,
+      104
+     ],
+     "readbackTop": [
+      103,
+      116,
+      113,
+      255
+     ],
+     "readbackBottom": [
+      93,
+      92,
+      104,
+      255
+     ],
+     "nonce": "2vh5u9ij"
+    }
+   }
+  ],
+  "errors": [],
+  "mode": "offscreen",
+  "nonce": "2vh5u9ij",
+  "webgl2Context": true,
+  "maxVertexUniformVectors": 1024,
+  "webgl1Diagnostic": null,
+  "timerResolutionMs": 0.1,
+  "coldRunIndex": 1,
+  "shaderLink": true,
+  "triangleReadback": {
+   "nonClearPixels": 16,
+   "alphaMax": 255,
+   "glError": 0
+  },
+  "hudSnapshot": {
+   "at": 1789358884761,
+   "phase": "boot",
+   "lines": [
+    "T31 S0 · BROWSER(shim) · browser/MacIntel",
+    "SDK (无) · dpr 2 · bb 780x1688",
+    "A1 5/5 · webgl2 OK · UV 1024 · 冷启动 1/3",
+    "档位 0 · 实时FPS - · GLerr 0 · ctxLost 0",
+    "nonce 2vh5u9ij · boot",
+    "A2 0/4 档",
+    "verdict 待出"
+   ],
+   "currentRecord": null
+  },
+  "asset": {
+   "stages": {
+    "subpackageMs": 0,
+    "readFileMs": 15,
+    "glbParseMs": 7.7,
+    "animParseMs": 4.2,
+    "textureDecodeMs": 3.7,
+    "firstGpuUploadMs": 160.2,
+    "meshUploadMs": 1.8,
+    "textureUploadMs": 156.7
+   },
+   "resolved": {
+    "subpackage": {
+     "name": "probe-model",
+     "ms": 0,
+     "ok": true,
+     "simulated": true
+    },
+    "modelPath": "../subpackages/probe-model/hero_48k_20260914.glb",
+    "animPath": "../subpackages/probe-model/idle_v4.json"
+   },
+   "errors": [],
+   "modelByteLength": 4040728,
+   "modelByteLengthOk": true,
+   "anim": {
+    "fps": 30,
+    "nFrames": 200,
+    "duration": 6.666666666666667,
+    "rootMode": "y",
+    "tracks": 40,
+    "coveredJoints": 40,
+    "jointCount": 41
+   },
+   "textures": [
+    {
+     "width": 4096,
+     "height": 4096,
+     "mimeType": "image/jpeg"
+    },
+    {
+     "width": 4096,
+     "height": 4096,
+     "mimeType": "image/jpeg"
+    },
+    {
+     "width": 4096,
+     "height": 4096,
+     "mimeType": "image/jpeg"
+    }
+   ],
+   "gpu": {
+    "maxVertexUniformVectors": 1024,
+    "jointCount": 41,
+    "vertexCount": 29281,
+    "indexCount": 145257
+   },
+   "stagesNote": "以上各段（分包/读取/解析/解码/首传 GPU）分别计时，**不计入**稳态 A2 FPS（方案 §6）",
+   "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
+   "modelSha256Source": "computed",
+   "animatedBounds": {
+    "min": [
+     -0.186,
+     -0.0064,
+     -0.1395
+    ],
+    "max": [
+     0.2184,
+     0.9851,
+     0.2161
+    ],
+    "height": 0.9915,
+    "width": 0.4044
+   }
+  },
+  "modelAccount": {
+   "triangleCount": 48419,
+   "vertexCount": 29281,
+   "jointCount": 41,
+   "primitiveCount": 1,
+   "textureCount": 3,
+   "bufferBytes": 3974376,
+   "nodeCount": 43,
+   "generator": "Tripo"
+  },
+  "modelAccountOk": true,
+  "boneUploadCheck": {
+   "glError": 0,
+   "jointCount": 41,
+   "samples": [
+    {
+     "index": 0,
+     "located": true,
+     "tx": 0,
+     "m00": 1,
+     "ok": true
+    },
+    {
+     "index": 7,
+     "located": true,
+     "tx": 7,
+     "m00": 1.0700000524520874,
+     "ok": true
+    },
+    {
+     "index": 20,
+     "located": true,
+     "tx": 20,
+     "m00": 1.2000000476837158,
+     "ok": true
+    },
+    {
+     "index": 40,
+     "located": true,
+     "tx": 40,
+     "m00": 1.399999976158142,
+     "ok": true
+    }
+   ],
+   "arraysize": 7,
+   "ok": true
+  },
+  "modelReadback": {
+   "region": {
+    "x": 191,
+    "y": 105,
+    "w": 427,
+    "h": 977
+   },
+   "nonTransparentPixels": 226879,
+   "alphaMax": 255,
+   "bboxW": 359,
+   "bboxH": 927,
+   "bbox": {
+    "minX": 35,
+    "minY": 24,
+    "maxX": 393,
+    "maxY": 950,
+    "w": 359,
+    "h": 927
+   },
+   "touchesReadRegionEdge": false,
+   "digestFrameA": 3792254555,
+   "digestFrameB": 3285704009,
+   "framesDiffer": true,
+   "glError": 0,
+   "drawCalls": 2,
+   "pass": true,
+   "passDetail": {
+    "nonTransparentPixels": 226879,
+    "bboxW": 359,
+    "bboxH": 927,
+    "framesDiffer": true,
+    "glError": 0
+   }
+  },
+  "composite": {
+   "proof": "readback",
+   "glError": 0,
+   "drawImageError": null,
+   "nonce": "2vh5u9ij",
+   "expectedTop": [
+    103,
+    116,
+    113
+   ],
+   "expectedBottom": [
+    93,
+    92,
+    104
+   ],
+   "topRect": [
+    16,
+    324,
+    48,
+    48
+   ],
+   "bottomRect": [
+    708,
+    1616,
+    48,
+    48
+   ],
+   "readback": {
+    "top": {
+     "mean": [
+      103,
+      116,
+      113,
+      255
+     ],
+     "n": 16
+    },
+    "bottom": {
+     "mean": [
+      93,
+      92,
+      104,
+      255
+     ],
+     "n": 16
+    }
+   },
+   "visualProof": false,
+   "pass": true,
+   "note": "两块色块上下分置：既验\"合成过去了\"，也验没有上下颠倒；色值由本次 nonce 派生"
+  },
+  "compositeProof": "readback",
+  "coldRunsTotal": 1,
+  "coldRunsGreen": 1,
+  "coldRunsRequired": 3,
+  "coldRunDetail": [
+   {
+    "index": 1,
+    "a1Ok": true,
+    "ts": 1789358884761,
+    "assertionsPass": 5,
+    "assertionsTotal": 5
+   }
+  ],
+  "coldRunNote": "Device-PASS 需\"完全杀微信/重新扫码\"连续 3 次全绿（方案 §4.2 A1-06）；浏览器端由测试 harness 连续 3 次加载等价模拟",
+  "allAssertionsPass": true,
+  "offscreenFailed": false,
+  "devicePassCandidate": false,
+  "webgl1FallbackUsed": false,
+  "a2Skipped": "本机 A1 尚未 Device-PASS（连续 3 次冷启动全绿）—— 方案 §5：A2 只在 Device-PASS 后运行；冷启动进度 1/3；工程师复测可显式 a2=run",
+  "sdkVersionApplicable": false,
+  "sdkVersionOk": null,
+  "sdkVersionMin": "2.24.0",
+  "sdkVersionCompare": null,
+  "sdkVersionMethod": "整数分段语义版本比较（禁字符串字典序）；< 2.24.0 直接 UNSUPPORTED，不参与 A 路线 PASS",
+  "screenshots": [
+   {
+    "tag": "a1-03-triangle",
+    "name": "probe_wvx13b_nosdk_a1-03-triangle_run1.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-03-triangle_run1.png",
+    "ok": true
+   },
+   {
+    "tag": "a1-04-model",
+    "name": "probe_wvx13b_nosdk_a1-04-model_run1.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-04-model_run1.png",
+    "ok": true
+   },
+   {
+    "tag": "a1-05-composite",
+    "name": "probe_wvx13b_nosdk_a1-05-composite_run1.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-05-composite_run1.png",
+    "ok": true
+   }
+  ]
+ },
+ "a2": [],
+ "coldRuns": [
+  {
+   "index": 1,
+   "ts": 1789358884761,
+   "deviceHash": "wvx13b",
+   "a1Ok": true,
+   "sdkVersion": null,
+   "assertionsPass": 5,
+   "assertionsTotal": 5
+  }
+ ],
+ "env": {
+  "browser": true,
+  "a2Profile": "spec",
+  "a2SpecProfile": true,
+  "a2Trigger": "skipped-not-device-pass",
+  "a2Skipped": "本机 A1 尚未 Device-PASS（连续 3 次冷启动全绿）—— 方案 §5：A2 只在 Device-PASS 后运行；冷启动进度 1/3；工程师复测可显式 a2=run",
+  "screenshots": [
+   {
+    "tag": "a1-03-triangle",
+    "name": "probe_wvx13b_nosdk_a1-03-triangle_run1.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-03-triangle_run1.png",
+    "ok": true
+   },
+   {
+    "tag": "a1-04-model",
+    "name": "probe_wvx13b_nosdk_a1-04-model_run1.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-04-model_run1.png",
+    "ok": true
+   },
+   {
+    "tag": "a1-05-composite",
+    "name": "probe_wvx13b_nosdk_a1-05-composite_run1.png",
+    "path": "dataurl:probe_wvx13b_nosdk_a1-05-composite_run1.png",
+    "ok": true
+   }
+  ],
+  "asset": {
+   "stages": {
+    "subpackageMs": 0,
+    "readFileMs": 15,
+    "glbParseMs": 7.7,
+    "animParseMs": 4.2,
+    "textureDecodeMs": 3.7,
+    "firstGpuUploadMs": 160.2,
+    "meshUploadMs": 1.8,
+    "textureUploadMs": 156.7
+   },
+   "resolved": {
+    "subpackage": {
+     "name": "probe-model",
+     "ms": 0,
+     "ok": true,
+     "simulated": true
+    },
+    "modelPath": "../subpackages/probe-model/hero_48k_20260914.glb",
+    "animPath": "../subpackages/probe-model/idle_v4.json"
+   },
+   "errors": [],
+   "modelByteLength": 4040728,
+   "modelByteLengthOk": true,
+   "anim": {
+    "fps": 30,
+    "nFrames": 200,
+    "duration": 6.666666666666667,
+    "rootMode": "y",
+    "tracks": 40,
+    "coveredJoints": 40,
+    "jointCount": 41
+   },
+   "textures": [
+    {
+     "width": 4096,
+     "height": 4096,
+     "mimeType": "image/jpeg"
+    },
+    {
+     "width": 4096,
+     "height": 4096,
+     "mimeType": "image/jpeg"
+    },
+    {
+     "width": 4096,
+     "height": 4096,
+     "mimeType": "image/jpeg"
+    }
+   ],
+   "gpu": {
+    "maxVertexUniformVectors": 1024,
+    "jointCount": 41,
+    "vertexCount": 29281,
+    "indexCount": 145257
+   },
+   "stagesNote": "以上各段（分包/读取/解析/解码/首传 GPU）分别计时，**不计入**稳态 A2 FPS（方案 §6）",
+   "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
+   "modelSha256Source": "computed",
+   "animatedBounds": {
+    "min": [
+     -0.186,
+     -0.0064,
+     -0.1395
+    ],
+    "max": [
+     0.2184,
+     0.9851,
+     0.2161
+    ],
+    "height": 0.9915,
+    "width": 0.4044
+   }
+  },
+  "modelByteLength": 4040728,
+  "modelSha256Source": "computed",
+  "modelAccountBaseline": {
+   "triangleCount": 48419,
+   "jointCount": 41,
+   "primitiveCount": 1,
+   "textureCount": 3,
+   "bufferBytes": 3974376
+  },
+  "probe": "proto/webgl2_probe",
+  "specCommit": "f5ac3c7f",
+  "profileNote": "A2 按方案 §5.1 原文口径采样"
+ },
+ "verdict": {
+  "device": "BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE",
+  "architecture": "BROWSER_ONLY_NOT_DEVICE_EVIDENCE",
+  "capacity20": "NOT_RUN",
+  "capacity20Engine": null,
+  "capacity20Reasons": null
+ },
+ "notes": [
+  "浏览器 + wx shim 结果只证明核心代码路径通，不证明微信/安卓能力；不得据此写 A 方案成立（方案 §7.1）",
+  "本次 A1 断言全过，但冷启动系列仅 1/3 次 ⇒ 尚未构成 Device-PASS（不是失败）"
+ ]
+}
