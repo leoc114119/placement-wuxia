@@ -42,6 +42,8 @@ const OUT = path.join(DEMO, 'bundle.js');
 const CHECK_ONLY = process.argv.includes('--check');
 const CDN_SOURCE_ROOT = path.join(ROOT, 'proto/battle_demo/cdn');
 const SUBPACKAGE_ROOT = path.join(DEMO, 'subpackages/char3d-assets');
+/** 包内载荷后缀（R2）：urlPath + 本后缀 ⇒ 分包里的原样字节文件。本地适配器按此顺序命中。 */
+const PACKAGED_PAYLOAD_SUFFIX = '.bin';
 
 /** 解析相对导入 → 仓库根相对无扩展名 key（与注册 key 同式）。 */
 function resolveId(fromKey, spec) {
@@ -88,10 +90,24 @@ function collect(entryKey) {
   return { seen, order };
 }
 
+function gitHead() {
+  try {
+    return require('node:child_process').execSync('git rev-parse HEAD', { cwd: ROOT }).toString().trim();
+  } catch { return 'unknown'; }
+}
+
 function buildBundle() {
   const { seen, order } = collect('proto/character3d_runtime_demo/main');
   const parts = [];
   parts.push('/* character3d_runtime_demo bundle —— 由 proto/character3d_runtime_demo/build.mjs 生成，勿手改 */');
+  // ★【R2】把构建标识**编进产物**：真机结果里 `env.build` 即可回答「这份产物出自哪个 commit」
+  //   （此前靠 devtools storage 手设 `char3d-commit-sha`，run10 为空 ⇒ 版本映射断链）
+  parts.push('var __CHAR3D_BUILD__ = ' + JSON.stringify({
+    commitSha: gitHead(),
+    builtAt: new Date().toISOString(),
+    payloadSuffix: PACKAGED_PAYLOAD_SUFFIX,
+  }) + ';');
+  parts.push('if (typeof globalThis !== "undefined") { globalThis.__CHAR3D_BUILD__ = __CHAR3D_BUILD__; }');
   parts.push('(function () {');
   parts.push('  var __mods = Object.create(null);');
   parts.push('  function __def(id, fn) { __mods[id] = { fn: fn, exp: null }; }');
@@ -268,7 +284,11 @@ function staticGate() {
   let copiedBytes = 0;
   for (const ref of refs) {
     const from = path.join(CDN_SOURCE_ROOT, ref.urlPath);
-    const to = path.join(SUBPACKAGE_ROOT, ref.urlPath);
+    // ★【T31-FE-C R2】包内载荷一律落 **原样 .bin**：真机实测微信打包/预览管线会改写包内 `.json`
+    //   （见 evidence/SUMMARY.md §B.6 的字节指纹），而 `.bin` 形态与 GLB 一样按不透明资产处理。
+    //   生产 CDN 清单里的 `.json` urlPath **保持不变**（CDN 不受包管线影响；arch 裁决：正式 CDN 严格 byteLength+SHA）。
+    //   本地适配器按 `urlPath + '.bin'` 命中（见 adapter-local 的候选顺序）。
+    const to = path.join(SUBPACKAGE_ROOT, ref.urlPath + PACKAGED_PAYLOAD_SUFFIX);
     if (!fs.existsSync(from)) {
       problems.push(`源资产缺失：proto/battle_demo/cdn/${ref.urlPath}`);
       continue;
@@ -278,13 +298,25 @@ function staticGate() {
       const needCopy = !fs.existsSync(to) || fs.statSync(to).size !== ref.byteLength;
       if (needCopy) fs.copyFileSync(from, to);
     }
-    if (!fs.existsSync(to)) { problems.push(`分包资产未落地：subpackages/char3d-assets/${ref.urlPath}`); continue; }
+    if (!fs.existsSync(to)) { problems.push(`分包载荷未落地：subpackages/char3d-assets/${ref.urlPath}${PACKAGED_PAYLOAD_SUFFIX}`); continue; }
     const bytes = fs.readFileSync(to);
     copiedBytes += bytes.length;
     if (bytes.length !== ref.byteLength) problems.push(`${ref.id} byteLength ${bytes.length} != 清单 ${ref.byteLength}`);
     const sha = sha256Hex(bytes);
-    if (sha !== ref.sha256) problems.push(`${ref.id} SHA-256 不符（分包副本 ${sha.slice(0, 12)}… != 清单 ${ref.sha256.slice(0, 12)}…）`);
+    if (sha !== ref.sha256) problems.push(`${ref.id} SHA-256 不符（分包载荷副本 ${sha.slice(0, 12)}… != 清单 ${ref.sha256.slice(0, 12)}…）`);
   }
+
+  // ★ R2 门：分包里**不得**再有 `.json` 载荷（否则会被微信管线改写、又回到"字节不可比"的老路）
+  const strayJson = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (/\.json$/i.test(e.name)) strayJson.push(path.relative(SUBPACKAGE_ROOT, full));
+    }
+  };
+  if (fs.existsSync(SUBPACKAGE_ROOT)) walk(SUBPACKAGE_ROOT);
+  if (strayJson.length) problems.push('分包内出现 .json 载荷（会被微信管线改写，须以 .bin 落地）：' + strayJson.join(' / '));
 
   // 5) 入包文件命名 ASCII + 语法（node --check）——主包只有 game.js/bundle.js/game.json
   const mainFiles = fs.readdirSync(DEMO, { withFileTypes: true })

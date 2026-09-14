@@ -1,7 +1,7 @@
 {
- "generatedAt": "2026-09-14T13:07:17.471Z",
- "commitSha": "6c63e4b773691ec7dc9367bfc8c1c3e18fee84e6",
- "scenario": "rewritejson（复刻真机 P0-4：平台改写包内文本资产 ⇒ 结构不变量放行）",
+ "generatedAt": "2026-09-14T14:00:12.148Z",
+ "commitSha": "76698ca001a84aa2860a5b22c91857098784afaa",
+ "scenario": "rewritejson（复刻真机 P0-4：`.bin` 载荷未被包管线改写 ⇒ 严格字节身份通过）",
  "aa": "fxaa",
  "profile": "sim",
  "viewport": {
@@ -38,44 +38,59 @@
    "detail": "#1:cold/dl=5 #2:cold/dl=5 #3:cold/dl=5"
   },
   {
-   "name": "P0-4：模拟平台改写后，4 个文本资产按结构不变量放行（integrityMode=structural + structuralOk + 结构账）",
+   "name": "R2：分包里已无 `.json` 载荷（全部 .bin 落地）",
    "ok": true,
-   "detail": "hero-clip-idle-v4:structural/ok=true hero-clip-atk-v4:structural/ok=true hero-clip-cast-v4:structural/ok=true hero-clip-jump-v6-1p5s:structural/ok=true"
+   "detail": "hero-model-48k-20260914:.bin hero-clip-idle-v4:.bin hero-clip-atk-v4:.bin hero-clip-cast-v4:.bin hero-clip-jump-v6-1p5s:.bin"
   },
   {
-   "name": "P0-4：如实记录 observed≠expected（诊断可用：长度/摘要/头尾 hex/读取来源）",
+   "name": "R2：shim 的\"平台改写\"钩子零命中（`.bin` 不被管线改写）",
    "ok": true,
-   "detail": "hero-clip-idle-v4:685959≠726299 hero-clip-atk-v4:153780≠162924 hero-clip-cast-v4:462699≠490227 hero-clip-jump-v6-1p5s:156804≠166799"
+   "detail": "rewriteStats=[0,0,0,0]"
   },
   {
-   "name": "P0-4：GLB 仍走严格口径且字节相符（未被结构性放行波及）",
+   "name": "R2：4 个文本资产字节与清单**逐字节一致**（byteLengthMatches + sha256Matches + observed 实测）",
    "ok": true,
-   "detail": "hero-model-48k-20260914:strict/4040728"
+   "detail": "hero-clip-idle-v4:726299/0d326238 hero-clip-atk-v4:162924/546ec94f hero-clip-cast-v4:490227/3bca2412 hero-clip-jump-v6-1p5s:166799/28956125"
   },
   {
-   "name": "P0-4：资源门放行后整轮继续（boot 阶段 ok，且非 DEVICE_FAIL）",
+   "name": "R2：身份口径恒 strict（无结构性旁路）",
+   "ok": true,
+   "detail": "strict"
+  },
+  {
+   "name": "R2：结构校验为**纯诊断**（structuralDiagnostic 有账、motionStatic=false）",
+   "ok": true,
+   "detail": "结构化：fps=30 nFrames=200 duration=6. | 结构化：fps=30 nFrames=45 duration=1.5 | 结构化：fps=30 nFrames=136 duration=4. | 结构化：fps=30 nFrames=46 duration=1.5"
+  },
+  {
+   "name": "R2：GLB 同样严格且字节相符",
+   "ok": true,
+   "detail": "hero-model-48k-20260914:4040728"
+  },
+  {
+   "name": "R2：结果带构建标识 + 资产清单版本（版本映射）",
+   "ok": true,
+   "detail": "commit=76698ca001a8 manifest=manifest-d46b9ed5-324assets"
+  },
+  {
+   "name": "R2：资源门放行后整轮继续（boot 阶段 ok，且非 DEVICE_FAIL）",
    "ok": true,
    "detail": "#1:boot=ok #2:boot=ok #3:boot=ok #4:boot=ok"
   },
   {
-   "name": "P0-4：notes 点明结构放行 + 字节漂移",
+   "name": "R2：诊断单行 __CHAR3D_INTEGRITY__ 已打出（含 structuralDiagnostic/readSource/head·tail hex）",
    "ok": true,
    "detail": ""
   },
   {
-   "name": "P0-4：诊断单行 __CHAR3D_INTEGRITY__ 已打出（含 observed/expected/readSource/head·tail hex）",
-   "ok": true,
-   "detail": ""
-  },
-  {
-   "name": "P0-4：首装观测未被重建/重试覆盖（assetIntegrity=首装行，重建行单独在 rebuildIntegrity）",
+   "name": "R2：首装观测未被重建/重试覆盖（assetIntegrity=首装行，重建行单独在 rebuildIntegrity）",
    "ok": true,
    "detail": "assetIntegrity=5 rebuild=5"
   },
   {
-   "name": "P0-5：改写资产在**第二次启动**判为 cacheHit（4 个文本资产 source=cache-hit）",
+   "name": "P0-5/R2：第二次启动判为 cacheHit（4 个文本资产 source=cache-hit 且摘要为实测值）",
    "ok": true,
-   "detail": "hero-clip-idle-v4:cache-hit hero-clip-atk-v4:cache-hit hero-clip-cast-v4:cache-hit hero-clip-jump-v6-1p5s:cache-hit"
+   "detail": "hero-clip-idle-v4:cache-hit/0d326238 hero-clip-atk-v4:cache-hit/546ec94f hero-clip-cast-v4:cache-hit/3bca2412 hero-clip-jump-v6-1p5s:cache-hit/28956125"
   },
   {
    "name": "P0-5：第二次启动 downloads 归零（热命中不再重读）",
@@ -83,9 +98,9 @@
    "detail": "#1(dl=5,hits=0) → #2(dl=5,hits=0) → #3(dl=5,hits=0) → #4(dl=0,hits=5)"
   },
   {
-   "name": "P0-5：命中仍是 structural 口径且如实标注 observed≠清单",
+   "name": "P0-5/R2：命中口径为 strict 且字节与清单一致（observed == expected）",
    "ok": true,
-   "detail": "685959≠726299 153780≠162924 462699≠490227 156804≠166799"
+   "detail": "726299==726299 162924==162924 490227==490227 166799==166799"
   },
   {
    "name": "P0-5：热缓存计数能推进（运行历史出现 cacheState=hot）",
@@ -100,7 +115,7 @@
   {
    "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
    "ok": true,
-   "detail": "{\"subpackageMs\":0,\"loaderMs\":5,\"glbParseMs\":8,\"animParseMs\":2,\"textureDecodeMs\":2,\"firstGpuUploadMs\":59}"
+   "detail": "{\"subpackageMs\":0,\"loaderMs\":9,\"glbParseMs\":6,\"animParseMs\":2,\"textureDecodeMs\":2,\"firstGpuUploadMs\":53}"
   },
   {
    "name": "六向 6 行且逐向 expected==activeClipKey",
@@ -195,7 +210,7 @@
   {
    "name": "20u 档：屏上 20 个角色全部可见",
    "ok": true,
-   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18553,perf-1:20505,perf-2:20236,perf-3:20541,perf-4:19101,perf-5:18706,…"
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18551,perf-1:20503,perf-2:20232,perf-3:20541,perf-4:19102,perf-5:18705,…"
   },
   {
    "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
@@ -215,7 +230,7 @@
   {
    "name": "结果回收：剪贴板成功（字符数 > 0）",
    "ok": true,
-   "detail": "25822"
+   "detail": "27260"
   },
   {
    "name": "结果回收：分享被调起",
@@ -238,6 +253,6 @@
    "detail": "runs=4 / 启动次数=4"
   }
  ],
- "passCount": 45,
- "total": 45
+ "passCount": 48,
+ "total": 48
 }

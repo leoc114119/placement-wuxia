@@ -38,8 +38,8 @@ const SHOTS = arg('shots', 'last');
 /** `--norestore=1`：复刻微信模拟器「restoreContext 被平台拒绝」的场景（压真重建路径）。
  *  产物文件名加 `norestore` 前缀，与常规 sim 结果并存不覆盖。 */
 const NO_RESTORE = arg('norestore', '0') === '1';
-/** `--rewritejson=1`：复刻真机 P0-4（平台改写包内文本资产 ⇒ 字节与清单不符但结构合法）
- *  —— 验证「结构不变量放行」让整轮继续跑，而不是资源门拒收。 */
+/** `--rewritejson=1`：复刻真机 P0-4（微信包管线改写包内 `.json`）—— 验证 **`.bin` 载荷不被改写**、
+ *  字节身份严格通过（R2 由"结构放行"改为"字节保真"）。shim 的改写钩子只匹配 `.json`，故 `.bin` 应零改写。 */
 const REWRITE_JSON = arg('rewritejson', '0') === '1';
 const TAG = REWRITE_JSON ? 'sim-rewritejson' : NO_RESTORE ? 'sim-norestore' : 'sim';
 
@@ -129,10 +129,11 @@ async function runOnce(context, baseUrl, runIndex, commit, preseed) {
   const fileNames = await page.evaluate(() => window.__WX_SHIM.fileNames());
   const userFiles = await page.evaluate(() => window.__WX_SHIM.dumpUserFiles());
   const preseedCount = await page.evaluate(() => window.__WX_SHIM.preseedCount());
+  const rewriteStats = await page.evaluate(() => window.__WX_SHIM.rewriteStats());
   // 页面级截图存 JPEG（控体积；取景证据用上面的逐项截图）
   await page.screenshot({ path: path.join(OUT, `${TAG}-page-run${runIndex}.jpg`), type: 'jpeg', quality: 72 });
   await page.close();
-  return { result, consoleLines, screenshots, clipboardLen, shares, fileCount, fileNames, userFiles, preseedCount };
+  return { result, consoleLines, screenshots, clipboardLen, shares, fileCount, fileNames, userFiles, preseedCount, rewriteStats };
 }
 
 /** 截图压缩：50% 尺寸 + JPEG（默认；`--shots=full` 保留原 PNG）。 */
@@ -239,33 +240,42 @@ try {
       JSON.stringify(last.resource.reloadStats));
   }
   if (REWRITE_JSON) {
-    // P0-4 核心：平台改写包内文本 ⇒ 必须结构放行 + 整轮继续（不得资源门拒收）
-    // 注：本场景会跑多次启动（冷 3 + 首个热），P0-4 的"首装观测"断言用**第 1 次启动**的证据；
-    //     热缓存推进断言（P0-5）用**最后一次启动**的证据。
+    // R2 核心：`.bin` 载荷绕过包管线 ⇒ 字节与清单**逐字节一致** + 零改写
     const launch1 = runs[0].result;
     const rows = launch1.resource.assetIntegrity;
     const textRows = rows.filter((r) => r.mediaType === 'application/json');
     const glbRows = rows.filter((r) => r.mediaType === 'model/gltf-binary');
-    check('P0-4：模拟平台改写后，4 个文本资产按结构不变量放行（integrityMode=structural + structuralOk + 结构账）',
-      textRows.length === 4 && textRows.every((r) => r.integrityMode === 'structural' && r.structuralOk === true && !!r.structuralSummary),
-      textRows.map((r) => `${r.assetId}:${r.integrityMode}/ok=${r.structuralOk}`).join(' '));
-    check('P0-4：如实记录 observed≠expected（诊断可用：长度/摘要/头尾 hex/读取来源）',
-      textRows.every((r) => r.observedByteLength > 0 && r.observedByteLength !== r.expectedByteLength &&
-        r.byteLengthMatches === false && !!r.observedSha256 && !!r.headHex64 && !!r.tailHex64 && !!r.readSource),
-      textRows.map((r) => `${r.assetId}:${r.observedByteLength}≠${r.expectedByteLength}`).join(' '));
-    check('P0-4：GLB 仍走严格口径且字节相符（未被结构性放行波及）',
-      glbRows.length === 1 && glbRows[0].integrityMode === 'strict' && glbRows[0].byteLengthMatches === true,
-      glbRows.map((r) => `${r.assetId}:${r.integrityMode}/${r.observedByteLength}`).join(' '));
-    check('P0-4：资源门放行后整轮继续（boot 阶段 ok，且非 DEVICE_FAIL）',
+    check('R2：分包里已无 `.json` 载荷（全部 .bin 落地）',
+      rows.every((r) => r.readSource.includes('.bin')),
+      rows.map((r) => `${r.assetId}:${r.readSource.includes('.bin') ? '.bin' : '?'}`).join(' '));
+    check('R2：shim 的"平台改写"钩子零命中（`.bin` 不被管线改写）',
+      runs.every((r) => r.rewriteStats.length === 0),
+      `rewriteStats=${JSON.stringify(runs.map((r) => r.rewriteStats.length))}`);
+    check('R2：4 个文本资产字节与清单**逐字节一致**（byteLengthMatches + sha256Matches + observed 实测）',
+      textRows.length === 4 && textRows.every((r) => r.byteLengthMatches && r.sha256Matches &&
+        r.observedByteLength === r.expectedByteLength && r.observedSha256 === r.expectedSha256),
+      textRows.map((r) => `${r.assetId}:${r.observedByteLength}/${r.observedSha256.slice(0, 8)}`).join(' '));
+    check('R2：身份口径恒 strict（无结构性旁路）',
+      rows.every((r) => r.integrityMode === 'strict' && r.mode === 'strict'),
+      [...new Set(rows.map((r) => r.integrityMode))].join(','));
+    check('R2：结构校验为**纯诊断**（structuralDiagnostic 有账、motionStatic=false）',
+      textRows.every((r) => r.structuralDiagnostic !== null && r.structuralDiagnostic.motionStatic === false &&
+        r.structuralDiagnostic.summary.includes('fps=')),
+      textRows.map((r) => r.structuralDiagnostic?.summary.slice(0, 34)).join(' | '));
+    check('R2：GLB 同样严格且字节相符',
+      glbRows.length === 1 && glbRows[0].byteLengthMatches && glbRows[0].sha256Matches,
+      glbRows.map((r) => `${r.assetId}:${r.observedByteLength}`).join(' '));
+    check('R2：结果带构建标识 + 资产清单版本（版本映射）',
+      !!launch1.env.build && !!launch1.env.build.commitSha && launch1.env.build.payloadSuffix === '.bin' &&
+        String(launch1.env.assetManifestVersion).startsWith('manifest-'),
+      `commit=${String(launch1.env.build?.commitSha).slice(0, 12)} manifest=${launch1.env.assetManifestVersion}`);
+    check('R2：资源门放行后整轮继续（boot 阶段 ok，且非 DEVICE_FAIL）',
       runs.every((r) => r.result.phases.find((p) => p.name === 'boot')?.status === 'ok') &&
         !String(launch1.verdict.device).endsWith('FAIL'),
       runs.map((r) => `#${r.result.runs.length}:boot=${r.result.phases.find((p) => p.name === 'boot')?.status}`).join(' '));
-    check('P0-4：notes 点明结构放行 + 字节漂移',
-      last.notes.join(' ').includes('integrityMode=structural') &&
-        last.notes.join(' ').includes('结构账见 resource.assetIntegrity'));
-    check('P0-4：诊断单行 __CHAR3D_INTEGRITY__ 已打出（含 observed/expected/readSource/head·tail hex）',
-      runs.some((r) => r.consoleLines.some((l) => l.startsWith('__CHAR3D_INTEGRITY__=') && l.includes('headHex64') && l.includes('readSource'))));
-    check('P0-4：首装观测未被重建/重试覆盖（assetIntegrity=首装行，重建行单独在 rebuildIntegrity）',
+    check('R2：诊断单行 __CHAR3D_INTEGRITY__ 已打出（含 structuralDiagnostic/readSource/head·tail hex）',
+      runs.some((r) => r.consoleLines.some((l) => l.startsWith('__CHAR3D_INTEGRITY__=') && l.includes('structuralDiagnostic') && l.includes('headHex64'))));
+    check('R2：首装观测未被重建/重试覆盖（assetIntegrity=首装行，重建行单独在 rebuildIntegrity）',
       rows.length === 5 && textRows.every((r) => r.source === 'download'),
       `assetIntegrity=${rows.length} rebuild=${String(launch1.resource.rebuildIntegrity?.length ?? null)}`);
 
@@ -274,15 +284,16 @@ try {
     if (RUNS >= 4) {
       const launch2 = last.resource;
       const text2 = launch2.assetIntegrity.filter((r) => r.mediaType === 'application/json');
-      check('P0-5：改写资产在**第二次启动**判为 cacheHit（4 个文本资产 source=cache-hit）',
-        text2.length === 4 && text2.every((r) => r.source === 'cache-hit'),
-        text2.map((r) => `${r.assetId}:${r.source}`).join(' '));
+      check('P0-5/R2：第二次启动判为 cacheHit（4 个文本资产 source=cache-hit 且摘要为实测值）',
+        text2.length === 4 && text2.every((r) => r.source === 'cache-hit' && !!r.observedSha256 &&
+          r.observedSha256 === r.expectedSha256),
+        text2.map((r) => `${r.assetId}:${r.source}/${String(r.observedSha256).slice(0, 8)}`).join(' '));
       check('P0-5：第二次启动 downloads 归零（热命中不再重读）',
         (launch2.loaderStats.downloads ?? -1) === 0 && (launch2.loaderStats.cacheHits ?? 0) >= 4,
         runs.map((r, idx) => `#${idx + 1}(dl=${r.result.resource.loaderStats.downloads},hits=${r.result.resource.loaderStats.cacheHits})`).join(' → '));
-      check('P0-5：命中仍是 structural 口径且如实标注 observed≠清单',
-        text2.every((r) => r.integrityMode === 'structural' && r.byteLengthMatches === false && !!r.note),
-        text2.map((r) => `${r.observedByteLength}≠${r.expectedByteLength}`).join(' '));
+      check('P0-5/R2：命中口径为 strict 且字节与清单一致（observed == expected）',
+        text2.every((r) => r.integrityMode === 'strict' && r.byteLengthMatches === true && r.sha256Matches === true),
+        text2.map((r) => `${r.observedByteLength}==${r.expectedByteLength}`).join(' '));
       check('P0-5：热缓存计数能推进（运行历史出现 cacheState=hot）',
         last.runs.filter((r) => r.cacheState === 'hot').length >= 1,
         last.runs.map((r) => `#${r.runIndex}:${r.cacheState}`).join(' '));
@@ -380,7 +391,7 @@ try {
     generatedAt: new Date().toISOString(),
     commitSha: commit,
     scenario: REWRITE_JSON
-      ? 'rewritejson（复刻真机 P0-4：平台改写包内文本资产 ⇒ 结构不变量放行）'
+      ? 'rewritejson（复刻真机 P0-4：`.bin` 载荷未被包管线改写 ⇒ 严格字节身份通过）'
       : NO_RESTORE ? 'norestore（复刻微信模拟器：restoreContext 被拒 ⇒ 真重建路径）' : 'standard（事件快路径）',
     aa: AA, profile: PROFILE, viewport: VIEWPORT, deviceScaleFactor: DSF,
     deviceEvidence: false,

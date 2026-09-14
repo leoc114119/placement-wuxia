@@ -167,6 +167,14 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
 }
 
 /** 用真实 SHA 构造 ref（避免「SHA 永远不符」把冷下载用例变成失败用例）。 */
+/** 模拟「上一版内容」（last-known-good）：与现役 PAYLOAD **等长但内容不同**、自身摘要自洽。
+ *  R2 起 LKG 也做「长度 + 实测摘要」双重校验 ⇒ 用等长的旧版本内容才能测出「回退成功」这条路径。 */
+const OLD_PAYLOAD = ((): Uint8Array => {
+  const b = new Uint8Array(PAYLOAD);
+  b[b.byteLength - 1] ^= 0xff;
+  return b;
+})();
+
 async function validRef(overrides: Partial<Character3DAssetRef> = {}): Promise<Character3DAssetRef> {
   return refOf({ sha256: await sha256Hex(PAYLOAD), ...overrides });
 }
@@ -303,16 +311,18 @@ describe('重试恰 2 次（间隔 1s / 3s）与失败回退（方案 §6.2）',
     const ref = await validRef();
     const lkg: Character3DCacheEntry = {
       assetId: ref.id,
-      sha256: 'b'.repeat(64),
+      // R2：LKG 也做「长度 + **实测摘要**」校验 ⇒ fixture 用"上一版内容"（等长、内容不同、摘要自洽）。
+      //（旧 fixture 的占位串 'b'*64 与盘上内容不自洽：在旧实现（只比长度）下能过，新实现会正确判为坏条目）
+      sha256: await sha256Hex(OLD_PAYLOAD),
       savedPath: 'cache:lkg',
-      byteLength: PAYLOAD.byteLength,
+      byteLength: OLD_PAYLOAD.byteLength,
       lastUsedAt: 1,
     };
     const fake = createFakePlatform({
       corruptOnDownload: true,
       downloadBehaviors: ['ok', 'ok', 'ok'],
       initialCache: lkg,
-      initialCacheBytes: PAYLOAD,
+      initialCacheBytes: OLD_PAYLOAD,
     });
     const loader = createCharacterAssetLoader({
       platform: fake.platform,
@@ -335,14 +345,15 @@ describe('重试恰 2 次（间隔 1s / 3s）与失败回退（方案 §6.2）',
   it('SHA 不符后有 LKG ⇒ 用旧 3D 内容并打 stale-3d-cache 诊断（不允许切 2D）', async () => {
     const ref = await validRef();
     const lkg: Character3DCacheEntry = {
-      assetId: ref.id, sha256: 'b'.repeat(64), savedPath: 'cache:lkg',
-      byteLength: PAYLOAD.byteLength, lastUsedAt: 1,
+      // 同上：用"上一版内容"（等长、内容不同、摘要自洽）——R2 的读盘完整性校验要求摘要与盘上一致
+      assetId: ref.id, sha256: await sha256Hex(OLD_PAYLOAD), savedPath: 'cache:lkg',
+      byteLength: OLD_PAYLOAD.byteLength, lastUsedAt: 1,
     };
     const { loader } = makeLoader({
       corruptOnDownload: true,
       downloadBehaviors: ['ok', 'ok', 'ok'],
       initialCache: lkg,
-      initialCacheBytes: PAYLOAD,
+      initialCacheBytes: OLD_PAYLOAD,
     });
     const res = await loader.load(ref);
     expect(res.status).toBe('stale-3d-cache');

@@ -38,11 +38,18 @@ export interface ClipStructureAccount {
 }
 
 export interface ClipStructureResult {
-  /** 错误清单（空 = 通过） */
+  /** 错误清单（**纯诊断**：身份判定看字节，这里只记录） */
   errors: string[];
   account: ClipStructureAccount | null;
-  /** 人读一行（进 structuralDetail，便于把「设备读回的是哪种规格」抄给平台方） */
+  /** 人读一行（进 structuralDiagnostic.summary，便于把「设备读回的是哪种规格」抄给平台方） */
   summary: string;
+  /** ★ 动作存活（arch seq=424 反例：结构全对但姿态恒定/全零 ⇒ 必须判失败） */
+  motionStatic: boolean;
+  /** ★ 硬失败原因（非空即判失败）：不是合法 JSON / 不符合生产解析器契约。
+   *  与 `errors`（纯诊断）**分开**：诊断为"记"，fatal 为"拦"。 */
+  fatalReason: string | null;
+  /** 动作存活的实测账（最大帧间偏差等） */
+  motionDetail: string;
 }
 
 /** assetId → clip 槽位（用清单反查，避免把 key 写死在调用处）。 */
@@ -83,6 +90,10 @@ export function validateClipJsonStructure(bytes: Uint8Array, ref: Character3DAss
         ' · tail=' + text.slice(-32).replace(/\s+/g, ' ')],
       account: null,
       summary: 'JSON 不可解析',
+      // 解析不了 ⇒ 无法判动作存活；但字节身份门（SHA/长度）已经会拦下这类文件
+      motionStatic: false,
+      motionDetail: 'JSON 不可解析，未评估',
+      fatalReason: 'JSON 解析失败',
     };
   }
   const key = clipKeyOfAsset(ref);
@@ -94,6 +105,9 @@ export function validateClipJsonStructure(bytes: Uint8Array, ref: Character3DAss
       errors: ['生产解析器拒绝：' + (error instanceof Error ? error.message : String(error))],
       account: null,
       summary: '结构不符（生产解析器 fail-fast）',
+      motionStatic: false,
+      motionDetail: '结构不符，未评估',
+      fatalReason: '不符合生产解析器契约',
     };
   }
   // 只有走 CDN 的动作槽位才有源时长清单真值（walk 是 GLB 内嵌预设，不在本表）
@@ -143,9 +157,49 @@ export function validateClipJsonStructure(bytes: Uint8Array, ref: Character3DAss
     rootMode: clip.rootMode,
     samplerDurationSec: clip.samplerDurationSec,
   };
+  // ★ 动作存活：全帧姿态是否恒定/全零（四元数恒为单位 + root 恒为零 ⇒ 动作是死的）
+  const motion = measureMotion(clip);
+  if (motion.motionStatic) errors.push('动作静态化：' + motion.motionDetail);
+
   const summary =
     '结构化：fps=' + clip.fps + ' nFrames=' + clip.nFrames + ' duration=' + clip.declaredDurationSec +
     '（清单 ' + String(expected) + '）骨轨道=' + boneTrackCount + ' rootTrack=' + clip.rootTrack.length +
-    ' rootMode=' + clip.rootMode + ' 值有限=' + allFinite;
-  return { errors, account, summary };
+    ' rootMode=' + clip.rootMode + ' 值有限=' + allFinite + ' · ' + motion.motionDetail;
+  return {
+    errors,
+    account,
+    summary,
+    motionStatic: motion.motionStatic,
+    motionDetail: motion.motionDetail,
+    fatalReason: motion.motionStatic ? '动作静态化' : null,
+  };
+}
+
+/** 动作存活实测：骨四元数与单位四元数的最大偏差 + root 位移的最大绝对值。 */
+function measureMotion(clip: {
+  boneTracks: Record<string, number[][]>;
+  rootTrack: number[][];
+}): { motionStatic: boolean; motionDetail: string } {
+  const EPS = 1e-6;
+  let maxQuatDev = 0;
+  for (const name of Object.keys(clip.boneTracks)) {
+    for (const row of clip.boneTracks[name]) {
+      // 与单位四元数 (0,0,0,1) 的偏差（含 ±w 两种朝向）
+      const dev = Math.min(
+        Math.hypot(row[0], row[1], row[2], row[3] - 1),
+        Math.hypot(row[0], row[1], row[2], row[3] + 1),
+      );
+      if (dev > maxQuatDev) maxQuatDev = dev;
+    }
+  }
+  let maxRootAbs = 0;
+  for (const row of clip.rootTrack) {
+    for (const v of row) if (Math.abs(v) > maxRootAbs) maxRootAbs = Math.abs(v);
+  }
+  const motionStatic = maxQuatDev <= EPS && maxRootAbs <= EPS;
+  return {
+    motionStatic,
+    motionDetail: 'maxQuatDev=' + maxQuatDev.toExponential(3) + ' maxRootAbs=' + maxRootAbs.toExponential(3) +
+      (motionStatic ? '（动作静态化）' : ''),
+  };
 }

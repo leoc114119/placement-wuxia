@@ -50,6 +50,7 @@ import * as M from './metrics';
 import * as S from './scenarios';
 import { SUBPACKAGE_NAME, createResourcePlatform, resolveResourceChainPlan, type ReadSourceTracker, type ResourceChainPlan } from './adapter-local';
 import { validateClipJsonStructure } from './text-assets';
+
 import { BUTTON_LABELS, computeLayout, drawHud, hitTest, paginate, type HudLayout, type HudView } from './hud';
 
 // ===== 宿主能力面（最小声明；本文件是宿主适配层，允许触 wx.*） =====
@@ -556,11 +557,15 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
         structureValidator: (bytes, ref) => {
           if (ref.mediaType === 'model/gltf-binary') createModelStructureValidator(HERO_3D_MODEL_ACCOUNT)(bytes, ref);
         },
-        // ★ P0-4：**只有包内（local-subpackage）文本资产**改走结构不变量；CDN 下载路径与 GLB 保持严格。
-        textIntegrityMode: resourcePlan.mode === 'local-subpackage' ? 'structural' : 'strict',
-        textStructureValidator: (bytes, ref) => {
+        // ★ R2：身份**一律严格**（包内载荷 .bin 已字节保真）；结构校验降级为**纯诊断 + 动作存活门**。
+        textStructureDiagnostic: (bytes, ref) => {
           const structural = validateClipJsonStructure(bytes, ref);
-          return { errors: structural.errors, summary: structural.summary };
+          return {
+            errors: structural.errors,
+            summary: structural.summary,
+            motionStatic: structural.motionStatic,
+            fatalReason: structural.fatalReason,
+          };
         },
       });
       const tLoad = nowMs();
@@ -1000,9 +1005,8 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
         readSource: row.readSource,
         headHex64: row.headHex64,
         tailHex64: row.tailHex64,
-        structuralOk: row.structuralOk,
+        structuralDiagnostic: row.structuralDiagnostic,
         structuralSummary: row.structuralSummary,
-        structuralDetail: row.structuralDetail,
         note: row.note,
       })),
       diagnostics: evidence.diagnostics.slice(0, 12),
@@ -1174,6 +1178,23 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
     });
   }
 
+  /** 构建标识（由 build.mjs 编进产物；真机结果里即可回答"这份产物出自哪个 commit"） */
+  const buildStamp: { commitSha: string; builtAt: string; payloadSuffix: string } =
+    (safeCall(() => (globalThis as unknown as {
+      __CHAR3D_BUILD__?: { commitSha: string; builtAt: string; payloadSuffix: string };
+    }).__CHAR3D_BUILD__, null)) ?? { commitSha: '', builtAt: '', payloadSuffix: '' };
+
+  /** 资产清单版本：模型 + 4 条 clip 的清单 SHA 摘要（版本映射用；清单变 ⇒ 版本变）。 */
+  function assetManifestVersion(): string {
+    const parts = [HERO_3D_MODEL_REF.sha256, ...profileClipRefs().map((r) => r.sha256)].join('|');
+    let h1 = 0x811c9dc5;
+    for (let i = 0; i < parts.length; i++) {
+      h1 ^= parts.charCodeAt(i);
+      h1 = Math.imul(h1, 0x01000193);
+    }
+    return 'manifest-' + (h1 >>> 0).toString(16).padStart(8, '0') + '-' + parts.length + 'assets';
+  }
+
   let resource: E.ResourceChainEvidence | null = null;
   let resolvedResult: E.RuntimeResult | null = null;
   /** 压测后先落的 precontext 快照文件名（最终结果里注明，便于"自测失败但测量结果完好"时取证） */
@@ -1251,7 +1272,10 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       runs: readRuns(),
       env: {
         sim: state.sim,
-        commitSha: options.commitShaOverride ?? (safeCall(() => host.getStorageSync('char3d-commit-sha'), '') as string) ?? '',
+        commitSha: buildStamp.commitSha || options.commitShaOverride ||
+          (safeCall(() => host.getStorageSync('char3d-commit-sha'), '') as string) || '',
+        build: buildStamp,
+        assetManifestVersion: assetManifestVersion(),
         profile: options.shortProfile === true ? 'sim-short' : 'spec',
         screenshots: parts.screenshots.slice(),
         notes: [

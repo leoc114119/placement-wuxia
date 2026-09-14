@@ -162,8 +162,8 @@ export function contextEvidenceOk(c: ContextInjectionEvidence): boolean {
 export interface AssetIntegrityRow extends CharacterAssetIntegrity {
   assetId: string;
   mediaType: string;
-  /** 与 `mode` 同值的显式别名：任务要求结果里直接可读的 `integrityMode` 字段名 */
-  integrityMode: 'strict' | 'structural';
+  /** 身份口径（R2 起**恒为 `'strict'`**：包内载荷 `.bin` 字节保真 ⇒ 恢复严格 byteLength+SHA） */
+  integrityMode: 'strict';
   /** 该资产本次的装载状态（cache-hit / downloaded / stale-3d-cache / failed） */
   loadStatus: string;
   /** 文本资产的结构校验实测账（GLB = null）：把「设备读回的那份东西是什么规格」写在结果里 */
@@ -264,6 +264,10 @@ export interface RuntimeResultContext {
   env: {
     /** true = 浏览器 sim（非微信/安卓能力证据） */
     sim: boolean;
+    /** 构建标识（由 build.mjs 编进产物）——版本映射的唯一可靠来源（不再依赖手设 storage） */
+    build: { commitSha: string; builtAt: string; payloadSuffix: string };
+    /** 资产清单版本（模型 + clips 的清单 SHA 摘要；清单变则版本变） */
+    assetManifestVersion: string;
     commitSha: string;
     profile: string;
     screenshots: string[];
@@ -390,6 +394,13 @@ export function runtimeVerdicts(ctx: RuntimeResultContext): { verdict: RuntimeVe
   if (sim) {
     notes.push('本次为浏览器 sim：只证明同一份 bundle 的代码路径通，**不是**微信/安卓能力证据（方案 §9.3）');
   }
+  if (ctx.env.build && ctx.env.build.payloadSuffix) {
+    notes.push(
+      '包内载荷形态：`urlPath + ' + ctx.env.build.payloadSuffix + '`（R2：绕过微信包管线对 `.json` 的处理）；' +
+        '构建标识 ' + (ctx.env.build.commitSha ? ctx.env.build.commitSha.slice(0, 12) : '（空：产物未编入 commit）') +
+        ' · 资产清单版本 ' + ctx.env.assetManifestVersion,
+    );
+  }
   const notOk = ctx.phases.filter((p) => p.status !== 'ok');
   if (notOk.length > 0) {
     notes.push(
@@ -398,34 +409,26 @@ export function runtimeVerdicts(ctx: RuntimeResultContext): { verdict: RuntimeVe
         ' —— 已产出的阶段结果照常导出，不影响其余判定',
     );
   }
-  const structuralRows = ctx.resource.assetIntegrity.filter((r) => r.integrityMode === 'structural');
-  if (structuralRows.length > 0) {
-    const drifted = structuralRows.filter((r) => !r.byteLengthMatches || !r.sha256Matches);
+  // R2：身份一律 strict；结构校验只是**诊断**（不作为 Device-PASS 依据）
+  const textRows = ctx.resource.assetIntegrity.filter((r) => r.mediaType === 'application/json');
+  const notMeasured = ctx.resource.assetIntegrity.filter((r) => r.observedSha256 === null);
+  if (notMeasured.length > 0) {
     notes.push(
-      '包内文本资产按**结构不变量**放行（integrityMode=structural）：' + structuralRows.length + ' 个' +
-        (drifted.length
-          ? '，其中 ' + drifted.length + ' 个字节与清单不符（observedByteLength=' +
-            drifted.map((r) => r.assetId + ':' + r.observedByteLength + '(清单 ' + r.expectedByteLength + ')').join(' / ') +
-            '）—— 平台改写导致字节不可比，结构账见 resource.assetIntegrity[].structuralSummary'
-          : '（字节与清单一致）'),
+      '摘要未实测的资产（observedSha256=null / not-measured）：' +
+        notMeasured.map((r) => r.assetId).join(' / ') + ' —— 该平台两条摘要路径都不可用；**不得**用索引值顶替 observed。',
     );
   }
-  if (structuralRows.some((r) => !r.byteLengthMatches)) {
-    const hotDrift = structuralRows.filter((r) => !r.byteLengthMatches && r.source === 'cache-hit');
+  if (textRows.length > 0) {
+    const withDiag = textRows.filter((r) => r.structuralDiagnostic !== null);
     notes.push(
-      '结构性放行资产的字节与清单不符（平台改写导致字节不可比），' +
-        (hotDrift.length > 0
-          ? '其中 ' + hotDrift.length + ' 个本次是**热命中**（P0-5：缓存索引以「盘上事实」observedByteLength/' +
-            'observedSha256 为基准，命中判定=索引命中且盘上文件与索引一致，**不以与清单相等为条件**）——' +
-            '清单值只用于结构校验与资产身份判断。'
-          : '本次为读包登记（冷系列）；下次启动即按索引热命中（P0-5）。'),
-    );
-    notes.push(
-      '提示：升级前写入的旧索引（按清单值登记）会在下一次启动因长度不符被摘除一次，随后按盘上事实重建（自愈，仅多读一次）。',
+      '包内文本资产身份口径 = **strict**（byteLength + SHA-256 严格相等）：' + textRows.length + ' 个，' +
+        '字节与清单相符 ' + textRows.filter((r) => r.byteLengthMatches && r.sha256Matches).length + '/' + textRows.length +
+        '；结构校验为**纯诊断**（' + withDiag.length + ' 个有结构账，见 resource.assetIntegrity[].structuralDiagnostic），' +
+        '**不作为 Device-PASS 依据**；动作存活门（motionStatic）是硬门。',
     );
   }
   const strictDrift = ctx.resource.assetIntegrity.filter(
-    (r) => r.integrityMode === 'strict' && (!r.byteLengthMatches || !r.sha256Matches),
+    (r) => !r.byteLengthMatches || !r.sha256Matches,
   );
   if (strictDrift.length > 0) {
     notes.push(

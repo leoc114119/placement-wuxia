@@ -178,47 +178,6 @@ CDN 服务端内容版本化与回源/404、真实断网下的重试间隔（1s/
 切 CDN 模式（域名备案后）：devtools 控制台执行一次 `wx.setStorageSync('char3d-cdn-base', 'https://<你的域名>/<路径>')`
 再重扫；`verdict`/`resource.mode` 会变成 `cdn`，`executedBranches` 随之更新。
 
-### 7.2 资源完整性口径（P0-4：包内文本 vs 二进制 vs CDN）
-
-| 资产 | 口径 | 说明 |
-|---|---|---|
-| **包内文本**（`application/json`，local-subpackage 模式） | **结构不变量**（`integrityMode=structural`） | 真机实测设备读回的 `idle_v4.json` 与仓库不同（`685411≠726299`，仓库侧无该字节数的版本、纯压缩 693640、文件纯 ASCII ⇒ 机制未定）。故字节不可比时用结构校验放行：JSON 可解析 → 生产解析器 `parseCharacter3DClipJson` 全过 → 时长与 `config/character-3d` 清单真值一致 → nFrames/时长自洽 → 轨道值有限 → coveredJoints 非空。**失败关闭**：任一条不成立即拒收、不覆盖 LKG |
-| **二进制 GLB** | **严格** byteLength + SHA-256 | 模型字节可比且是安全边界，**不因本轮改动放宽**（若也出现不符：只记诊断，不放行） |
-| **CDN 下载路径** | **严格** byteLength + SHA-256 | 线上路径口径不变（`textIntegrityMode` 只对包内文本生效） |
-
-诊断字段怎么读（一次真机运行即可判定平台改写 vs 读取截断）：
-
-```
-__CHAR3D_INTEGRITY__={...}     ← console 单行（真机把这一行抄回来即可定位）
-resource.assetIntegrity[]      ← 结果 JSON 里的完整版
-  integrityMode      strict | structural     本次该资产适用的完整性口径
-  observedByteLength / observedSha256        设备实际读回的长度与摘要
-  expectedByteLength / expectedSha256        清单期望（config/character-3d 真值）
-  readSource                                 读回来的字节走哪条路（分包 readFile 候选命中 / 缓存 readFileBytes / downloadFile）
-  headHex64 / tailHex64                      首尾各 64 字节 hex：与仓库对照可判「前缀截断 / 中段丢失 / 整体重排」
-  structuralOk / structuralSummary / structuralDetail   结构账（fps/nFrames/时长/骨轨道/rootTrack/值有限）
-  source / loadStatus                        download | cache-hit | stale-lkg
-resource.readSourceTrail[]     ← 适配器读取轨迹（readFile 候选 / writeTempFile / getFileInfo digest / cachePut 逐条）
-```
-
-### 7.3 缓存索引的自洽基准 = 「盘上事实」（P0-5）
-
-> 病灶：结构性放行的资产曾按**清单值**登记索引 ⇒ 下次启动「盘上文件长度 ≠ 索引长度」⇒ 索引被摘除重读
-> ⇒ `cacheHits` 永远 0、**热缓存序列无法推进**（真机实测「冷 3/3 后热缓存恒 0/3」）。
-
-修法（口径写死，别再漂）：
-
-| 项 | structural（包内文本） | strict（GLB / CDN） |
-|---|---|---|
-| `cachePut` 登记值 | **observedByteLength / observedSha256**（盘上真实文件） | 清单值（= 清单，行为不变） |
-| **cacheHit 判定** | 索引命中 **且** 盘上文件与**索引**一致（长度相等）+ 过文本结构校验 | 索引命中 **且** 索引=清单 **且** 盘上长度一致（原口径） |
-| 清单值的用途 | 结构校验 + 资产身份判断（**不再用于命中比对**） | 命中比对（不变） |
-| LKG 回退 | 额外过文本结构校验（坏内容不回流） | 不变 |
-
-- **`cacheHit` 的定义**：索引命中且**盘上文件与索引记录一致**；**不以「与清单相等」为条件**。
-- 旧索引（升级前按清单值写的）会在下一次启动因长度不符被摘掉一次，随后按盘上事实重建（**自愈，仅多读一次**）。
-- GLB 与 CDN 路径的严格校验**不放宽**（`types`/`integrityMode` 上都看得出是 strict）。
-
 ## 6. 浏览器 sim（导进微信之前的自检，**不是真机证据**）
 
 ```bash
@@ -281,11 +240,87 @@ boot（资源门装配）→ sixdir（六向）→ states（全状态）→ jump
   · **`--rewritejson=1 --runs=4`** → `evidence/sim-rewritejson-*`（复刻真机 P0-4 + P0-5：平台改写包内文本资产
     ⇒ 结构不变量放行；且**冷 3 次后第 4 次必须热命中**——断言 `#4(downloads=0, cacheHits=5)` 且运行历史出现 `cacheState=hot`）
 
+### 7.2 资源完整性口径（P0-4：包内文本 vs 二进制 vs CDN）
+
+**R2 定版口径（改 `.bin` 之后，一律严格身份）**：
+
+| 资产 | 身份口径 | 说明 |
+|---|---|---|
+| **包内载荷（全部，含 clip 与 GLB）** | **严格 byteLength + SHA-256**（`integrityMode` 恒 `'strict'`） | 包内以 `urlPath + '.bin'` 落盘（绕过微信包管线对 `.json` 的处理；见 §7.2.1），字节与清单**逐字节可比** ⇒ 恢复严格身份。**无任何结构性旁路** |
+| **结构校验** | **纯诊断**（`structuralDiagnostic`） | JSON 可解析 → 生产解析器 `parseCharacter3DClipJson` 全过 → 时长与 `config/character-3d` 清单真值一致 → nFrames/时长自洽 → 轨道值有限 → coveredJoints 非空；结果只**记录**，**不作为 Device-PASS 依据** |
+| **动作存活门** | **硬门** | `motionStatic=true`（四元数恒单位 + root 恒零 ⇒ 动作是死的）⇒ **判失败**（arch seq=424 反例）；`fatalReason` 非空（不是合法 JSON / 不符合生产解析器契约）也判失败 |
+| **CDN 下载路径** | **严格** byteLength + SHA-256 | 线上路径口径不变（CDN 侧文件名仍是 `.json`） |
+
+诊断字段怎么读（一次真机运行即可判定平台改写 vs 读取截断）：
+
+```
+__CHAR3D_INTEGRITY__={...}     ← console 单行（真机把这一行抄回来即可定位）
+resource.assetIntegrity[]      ← 结果 JSON 里的完整版
+  integrityMode      strict | structural     本次该资产适用的完整性口径
+  observedByteLength / observedSha256        设备实际读回的长度与摘要
+  expectedByteLength / expectedSha256        清单期望（config/character-3d 真值）
+  readSource                                 读回来的字节走哪条路（分包 readFile 候选命中 / 缓存 readFileBytes / downloadFile）
+  headHex64 / tailHex64                      首尾各 64 字节 hex：与仓库对照可判「前缀截断 / 中段丢失 / 整体重排」
+  structuralOk / structuralSummary / structuralDetail   结构账（fps/nFrames/时长/骨轨道/rootTrack/值有限）
+  source / loadStatus                        download | cache-hit | stale-lkg
+resource.readSourceTrail[]     ← 适配器读取轨迹（readFile 候选 / writeTempFile / getFileInfo digest / cachePut 逐条）
+```
+
+### 7.2.1 平台改写结案（P0-4 · 真机 run10 证据）
+
+**能证的**：真机（run10）读回的 4 个 clip **不是损坏/截断**，而是语义等价、逐项符合 JS `JSON.stringify` 输出形态
+的字节（三类指纹同时在 4 个文件复现）；同轮 GLB 字节与 SHA **与清单逐字一致** ⇒ 被改写的只有 `.json` 类文件。
+**不能证的**：「包管线重跑 `JSON.stringify`」是**假设**——本机复现只有 685959B，设备读回 685411B，**两者不等**
+⇒ 机制未证（arch seq=424）。**本卡不拿机制当依据**，改为让字节保真（下方 R2 处置）。
+
+三类指纹（真机 `headHex64/tailHex64` 与仓库文件对照得出，均可在 Node/Chrome 用 `JSON.parse`+`JSON.stringify` 复现）：
+
+1. 空白压缩：`{"source": "…` → `{"source":"…`、`, 0], [0, ` → `,0],[0,`；
+2. JS 数字格式化：`1.2074321069956486e-05` → `0.000012074321069956487`、`8.818787402599554e-07` → `8.818787402599554e-7`、
+   `-0.16920790351992107` → `-0.16920790351992108`；
+3. `\uXXXX` 转义还原为原字符（`JSON.stringify` 默认不转义非 ASCII）。
+
+字节账（仓库 → 设备）：idle `726299 → 685411`、atk `162924 → 153664`、cast `490227 → 462266`、jump `166799 → 156861`、
+GLB `4040728 → 4040728`（0 变化）。逐资产证据见 `evidence/SUMMARY.md` §B.6。
+
+**R2 处置（已落地）**：包内载荷一律 `urlPath + '.bin'`（`build.mjs` 落盘 + `adapter-local` 候选优先），
+CDN 侧文件名不变（仍 `.json`）⇒ 身份校验回到**严格 byteLength+SHA**，结构校验降为纯诊断，另加动作存活硬门。
+静态门同时禁止分包里再出现 `.json` 载荷（`build.mjs` 会 exit 1）。
+
+**对契约的含义（只记录与提候选，契约改动由主架构裁；本卡不改契约）**：现行契约把 `.json` 的 `sha256`+`byteLength`
+当字节级真值（方案 §6.1），这条在**包内路径**上不成立 ⇒ **需要字节级 SHA 校验的资产不宜以 `.json` 走包内路径**。候选：
+
+1. 换非 `.json` 扩展名（`.bin`）随包走 —— **本卡已采用**（sim 侧已证 `.bin` 零改写 + 逐字节一致；真机复测进行中）；
+2. 走 CDN（线上路径本就是严格 SHA）—— **09-15 真机验**（见 §9）；
+3. 其余（`.dat` 等）等价方案，如需更换扩展名在此登记。
+
+### 7.3 缓存索引的自洽基准 = 「盘上事实」（P0-5）
+
+> 病灶：结构性放行的资产曾按**清单值**登记索引 ⇒ 下次启动「盘上文件长度 ≠ 索引长度」⇒ 索引被摘除重读
+> ⇒ `cacheHits` 永远 0、**热缓存序列无法推进**（真机实测「冷 3/3 后热缓存恒 0/3」）。
+
+修法（口径写死，别再漂）：
+
+| 项 | R2 口径（一律 strict） |
+|---|---|
+| `cachePut` 登记值 | **清单值**（`sha256` + `byteLength`）= **内容版本**；版本不符**不得**当热命中 |
+| **cacheHit 判定** | 索引命中 **且 索引 = 清单**（版本绑定）**且** 盘上文件长度一致 **且** **实测摘要** = 清单 |
+| `observedSha256` | **只在真的算过时才写**；两条摘要路径都不可用 ⇒ `null` + note `not-measured`，且**不当热命中**（失败关闭） |
+| 读盘完整性 | 缓存文件被**截断**（长度不符）或**篡改**（长度相同、内容变了）⇒ 一律检出、摘掉条目并重读（`cache-length-mismatch` / `cache-digest-mismatch`） |
+| LKG 回退 | 同样「长度 + 实测摘要」双校验；坏 LKG 不回流（拒绝后摘掉条目）。修法：版本不符时**先不摘**条目，留给 LKG 兜底（历史 bug：早摘会导致 LKG 读不到文件） |
+
+- **`cacheHit` 的定义**：索引命中且**盘上文件与索引记录一致**（长度 + 实测摘要）；**不以"看起来像"为条件**。
+- 旧索引（上一版口径写的）在下一次启动会被摘掉一次并按新口径重建（自愈，仅多读一次）。
+
 ## 8. 已知缺口与不确定项（交付时如实登记）
 
 1. **CDN 未跑**（见 §5）——需要已备案域名才能补；不影响本卡其它判定。
 2. **第二台异品牌安卓未采**（并行补采，不阻塞本卡；A1 升格仍需 ≥2 台 × 各 3 次冷启动）。
-3. **真机证据待 Leo 扫码回填**：本目录交付时点，`evidence/` 里只有 **浏览器 sim** 产物（`SIM_*`）与
-   `SUMMARY.md` 的待回填表格；真机 JSON/截图需扫码运行后回传（PM 收齐后归档）。
-4. `wx.canvasToTempFilePath` 在部分基础库不可用 ⇒ 截图需手动（屏上判定行 + 分页页脚可自证同一轮）。
-5. 分相 `animMs/submitMs` 是**时间代理**测的（§4.2），与 S0 自带插桩不完全同源，只用于横向看趋势。
+3. **真机证据已回填**：`evidence/device_honor_ptpan20_result_run10.json`（Leo 真机 run10）+
+   `SUMMARY.md` 的 B 块。**未取项**（如实留白，不许拿别的数据顶替）：六向/全状态截图（`screenshot=null`）、
+   `wx.canvasToTempFilePath` 可用性、结果回传各通道可用性、`__CHAR3D_TAP__` 样本、逐轮 downloads/cacheHits。
+4. **契约待裁（平台改写，P0-4 结案）**：包内 `.json` 会被微信打包/预览管线重跑 `JSON.stringify`（证据见 §7.2.1），
+   现行"字节级 SHA 清单"在包内路径上不成立；三条候选已列，**本卡不改契约**，等主架构裁。
+5. `wx.canvasToTempFilePath` 在部分基础库不可用 ⇒ 截图可能需手动（真机 run10 该项未取得）。
+6. 分相 `animMs/submitMs` 是**时间代理**测的（§4.2），与 S0 自带插桩不完全同源，只用于横向看趋势。
+7. `runs[]` 未逐轮留存 downloads/cacheHits（只存"本次启动"的 `loaderStats`）⇒ B.2 表的这两列只能留白。

@@ -1,4 +1,6 @@
 /* character3d_runtime_demo bundle —— 由 proto/character3d_runtime_demo/build.mjs 生成，勿手改 */
+var __CHAR3D_BUILD__ = {"commitSha":"76698ca001a84aa2860a5b22c91857098784afaa","builtAt":"2026-09-14T13:57:44.224Z","payloadSuffix":".bin"};
+if (typeof globalThis !== "undefined") { globalThis.__CHAR3D_BUILD__ = __CHAR3D_BUILD__; }
 (function () {
   var __mods = Object.create(null);
   function __def(id, fn) { __mods[id] = { fn: fn, exp: null }; }
@@ -137,7 +139,7 @@ function createTimingRenderer(real, sink) {
     };
 }
 function startRuntimeDemo(options = {}) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     if (options.now)
         clock = options.now;
     const host = resolveWx();
@@ -502,10 +504,14 @@ function startRuntimeDemo(options = {}) {
                     if (ref.mediaType === 'model/gltf-binary')
                         (0, glb_1.createModelStructureValidator)(character_3d_1.HERO_3D_MODEL_ACCOUNT)(bytes, ref);
                 },
-                textIntegrityMode: resourcePlan.mode === 'local-subpackage' ? 'structural' : 'strict',
-                textStructureValidator: (bytes, ref) => {
+                textStructureDiagnostic: (bytes, ref) => {
                     const structural = (0, text_assets_1.validateClipJsonStructure)(bytes, ref);
-                    return { errors: structural.errors, summary: structural.summary };
+                    return {
+                        errors: structural.errors,
+                        summary: structural.summary,
+                        motionStatic: structural.motionStatic,
+                        fatalReason: structural.fatalReason,
+                    };
                 },
             });
             const tLoad = nowMs();
@@ -928,9 +934,8 @@ function startRuntimeDemo(options = {}) {
                 readSource: row.readSource,
                 headHex64: row.headHex64,
                 tailHex64: row.tailHex64,
-                structuralOk: row.structuralOk,
+                structuralDiagnostic: row.structuralDiagnostic,
                 structuralSummary: row.structuralSummary,
-                structuralDetail: row.structuralDetail,
                 note: row.note,
             })),
             diagnostics: evidence.diagnostics.slice(0, 12),
@@ -1106,6 +1111,16 @@ function startRuntimeDemo(options = {}) {
             }
         });
     }
+    const buildStamp = (_d = (safeCall(() => globalThis.__CHAR3D_BUILD__, null))) !== null && _d !== void 0 ? _d : { commitSha: '', builtAt: '', payloadSuffix: '' };
+    function assetManifestVersion() {
+        const parts = [character_3d_1.HERO_3D_MODEL_REF.sha256, ...profileClipRefs().map((r) => r.sha256)].join('|');
+        let h1 = 0x811c9dc5;
+        for (let i = 0; i < parts.length; i++) {
+            h1 ^= parts.charCodeAt(i);
+            h1 = Math.imul(h1, 0x01000193);
+        }
+        return 'manifest-' + (h1 >>> 0).toString(16).padStart(8, '0') + '-' + parts.length + 'assets';
+    }
     let resource = null;
     let resolvedResult = null;
     let preContextSnapshot = null;
@@ -1142,7 +1157,7 @@ function startRuntimeDemo(options = {}) {
         return device;
     }
     function buildResultNow(parts) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e;
         const r = runtime3d;
         const eff = (_a = r === null || r === void 0 ? void 0 : r.renderer.contextAttributes) !== null && _a !== void 0 ? _a : null;
         const ctx = {
@@ -1179,7 +1194,10 @@ function startRuntimeDemo(options = {}) {
             runs: readRuns(),
             env: {
                 sim: state.sim,
-                commitSha: (_g = (_f = options.commitShaOverride) !== null && _f !== void 0 ? _f : safeCall(() => host.getStorageSync('char3d-commit-sha'), '')) !== null && _g !== void 0 ? _g : '',
+                commitSha: buildStamp.commitSha || options.commitShaOverride ||
+                    safeCall(() => host.getStorageSync('char3d-commit-sha'), '') || '',
+                build: buildStamp,
+                assetManifestVersion: assetManifestVersion(),
                 profile: options.shortProfile === true ? 'sim-short' : 'spec',
                 screenshots: parts.screenshots.slice(),
                 notes: [
@@ -2370,66 +2388,52 @@ function createCharacterAssetLoader(options) {
         inflight.set(ref.id, task);
         return task;
     }
-    async function loadOnceAfterBadCache(ref, diags) {
-        const rest = await loadOnceBody(ref, diags, true);
-        return rest;
-    }
     async function loadOnce(ref) {
-        return loadOnceBody(ref, [], false);
-    }
-    async function loadOnceBody(ref, diagsIn, cacheAlreadyRemoved) {
-        const diags = diagsIn;
-        const cached = cacheAlreadyRemoved ? null : await safeCacheGet(ref.id, diags);
-        const cacheStructural = policyModeOf(ref) === 'structural';
-        const cachedForManifest = cached !== null &&
-            (cacheStructural || (cached.sha256 === ref.sha256 && cached.byteLength === ref.byteLength));
-        if (cached && cachedForManifest) {
+        const diags = [];
+        const cached = await safeCacheGet(ref.id, diags);
+        if (cached && cached.sha256 === ref.sha256 && cached.byteLength === ref.byteLength) {
             try {
                 const bytes = await platform.readFileBytes(cached.savedPath);
-                if (bytes.byteLength === cached.byteLength) {
-                    let cacheStructuralOk = null;
-                    const cacheStructuralDetail = [
-                        '索引命中：盘上文件长度 = 索引长度 ' + cached.byteLength + '（索引=盘上事实' +
-                            (cacheStructural && cached.byteLength !== ref.byteLength ? '；与清单 ' + ref.byteLength + ' 不符，属平台改写' : '') + '）',
-                    ];
-                    if (cacheStructural) {
-                        const verdict = options.textStructureValidator
-                            ? options.textStructureValidator(bytes, ref)
-                            : { errors: ['缺少 textStructureValidator：结构性命中必须由结构校验把关'] };
-                        const errs = Array.isArray(verdict) ? verdict : verdict.errors;
-                        if (!Array.isArray(verdict) && verdict.summary)
-                            cacheStructuralDetail.push(verdict.summary);
-                        cacheStructuralOk = errs.length === 0;
-                        cacheStructuralDetail.push(...errs);
-                        if (!cacheStructuralOk) {
-                            stats.structureRejects++;
-                            diags.push('cache-text-structure-reject:' + errs[0]);
-                            await safeCacheRemove(ref.id, diags);
-                            return loadOnceAfterBadCache(ref, diags);
-                        }
-                    }
+                const lengthOk = bytes.byteLength === ref.byteLength;
+                const measured = await measureDigest(bytes, cached.savedPath, diags);
+                const digestOk = measured.sha256 !== null && measured.sha256 === ref.sha256;
+                if (lengthOk && digestOk) {
                     stats.cacheHits++;
                     const edges = hexEdges(bytes);
                     return result(ref, 'cache-hit', bytes, cached.savedPath, 0, diags, null, {
-                        source: 'cache-hit', mode: policyModeOf(ref),
-                        byteLengthMatches: cached.byteLength === ref.byteLength,
-                        sha256Matches: cached.sha256 === ref.sha256,
-                        observedByteLength: bytes.byteLength, observedSha256: cached.sha256,
-                        expectedByteLength: ref.byteLength, expectedSha256: ref.sha256,
-                        readSource: readSourceOf(), headHex64: edges.head, tailHex64: edges.tail,
-                        structuralOk: cacheStructuralOk, structuralDetail: cacheStructuralDetail,
-                        note: cacheStructural && cached.byteLength !== ref.byteLength
-                            ? '热命中（索引=盘上事实：observed ' + cached.byteLength + ' ≠ 清单 ' + ref.byteLength +
-                                '，平台改写导致字节不可比；清单值只用于结构校验与身份判断）'
+                        source: 'cache-hit',
+                        mode: 'strict',
+                        byteLengthMatches: true,
+                        sha256Matches: true,
+                        observedByteLength: bytes.byteLength,
+                        observedSha256: measured.sha256,
+                        expectedByteLength: ref.byteLength,
+                        expectedSha256: ref.sha256,
+                        readSource: readSourceOf(),
+                        headHex64: edges.head,
+                        tailHex64: edges.tail,
+                        structuralDiagnostic: computeTextDiagnostic(bytes, ref, diags).diagnostic,
+                        note: measured.via === 'sha256File' || measured.via === 'sha256Bytes'
+                            ? '热命中（盘上文件与清单逐字节一致：长度 + 实测摘要双重校验通过）'
                             : '',
                     });
                 }
-                diags.push('cache-length-mismatch:' + bytes.byteLength + '!=index ' + cached.byteLength);
+                if (!lengthOk) {
+                    stats.byteLengthMismatches++;
+                    diags.push('cache-length-mismatch:' + bytes.byteLength + '!=manifest ' + ref.byteLength);
+                }
+                else {
+                    stats.shaMismatches++;
+                    diags.push('cache-digest-mismatch:' + String(measured.sha256) + '!=manifest ' + ref.sha256);
+                }
             }
             catch (error) {
                 diags.push('cache-read-failed:' + messageOf(error));
             }
             await safeCacheRemove(ref.id, diags);
+        }
+        if (cached && (cached.sha256 !== ref.sha256 || cached.byteLength !== ref.byteLength)) {
+            diags.push('cache-version-mismatch:index=' + cached.sha256.slice(0, 12) + '!=manifest=' + ref.sha256.slice(0, 12));
         }
         const maxAttempts = 1 + retryDelays.length;
         let attempts = 0;
@@ -2451,32 +2455,38 @@ function createCharacterAssetLoader(options) {
         if (lkg && lkg.sha256 !== ref.sha256) {
             try {
                 const bytes = await platform.readFileBytes(lkg.savedPath);
-                const lkgTextOk = !cacheStructural
-                    ? true
-                    : (() => {
-                        const verdict = options.textStructureValidator
-                            ? options.textStructureValidator(bytes, ref)
-                            : { errors: ['缺少 textStructureValidator'] };
-                        const errs = Array.isArray(verdict) ? verdict : verdict.errors;
-                        if (errs.length)
-                            diags.push('stale-lkg-text-reject:' + errs[0]);
-                        return errs.length === 0;
-                    })();
-                if (bytes.byteLength === lkg.byteLength && lkgTextOk && structureOk(bytes, ref, diags)) {
+                const lkgDigest = await measureDigest(bytes, lkg.savedPath, diags);
+                const lkgBytesOk = bytes.byteLength === lkg.byteLength && lkgDigest.sha256 === lkg.sha256;
+                let lkgDiag = null;
+                let lkgFatal = null;
+                if (lkgBytesOk) {
+                    const diag = computeTextDiagnostic(bytes, ref, diags);
+                    lkgDiag = diag.diagnostic;
+                    lkgFatal = diag.fatal;
+                    if (lkgFatal)
+                        diags.push('stale-lkg-rejected:' + lkgFatal);
+                }
+                else if (bytes.byteLength !== lkg.byteLength) {
+                    diags.push('stale-lkg-length-mismatch:' + bytes.byteLength + '!=' + lkg.byteLength);
+                }
+                else {
+                    diags.push('stale-lkg-digest-mismatch:' + String(lkgDigest.sha256));
+                }
+                if (lkgBytesOk && lkgFatal === null && structureOk(bytes, ref, diags)) {
                     stats.staleFallbacks++;
                     diags.push('stale-3d-cache');
                     const edges = hexEdges(bytes);
                     return result(ref, 'stale-3d-cache', bytes, lkg.savedPath, attempts, diags, null, {
-                        source: 'stale-lkg', mode: policyModeOf(ref), byteLengthMatches: true, sha256Matches: false,
-                        observedByteLength: bytes.byteLength, observedSha256: lkg.sha256,
+                        source: 'stale-lkg', mode: 'strict', byteLengthMatches: bytes.byteLength === ref.byteLength, sha256Matches: false,
+                        observedByteLength: bytes.byteLength, observedSha256: lkgDigest.sha256,
                         expectedByteLength: ref.byteLength, expectedSha256: ref.sha256,
                         readSource: readSourceOf(), headHex64: edges.head, tailHex64: edges.tail,
-                        structuralOk: null,
-                        structuralDetail: ['LKG 回退：用的是上一版已登记内容（sha=' + lkg.sha256.slice(0, 12) + '…），与本次清单不符'],
-                        note: 'stale-3d-cache：网络/资产失败时回退到 LKG（不切 2D 帧）',
+                        structuralDiagnostic: lkgDiag,
+                        note: 'stale-3d-cache：网络/资产失败时回退到 LKG（不切 2D 帧；LKG 摘要已实测核对）',
                     });
                 }
                 diags.push('stale-lkg-rejected');
+                await safeCacheRemove(ref.id, diags);
             }
             catch (error) {
                 diags.push('stale-lkg-read-failed:' + messageOf(error));
@@ -2485,8 +2495,51 @@ function createCharacterAssetLoader(options) {
         stats.failures++;
         return result(ref, 'failed', null, null, attempts, diags, lastError, lastIntegrity);
     }
-    function policyModeOf(ref) {
-        return options.textIntegrityMode === 'structural' && ref.mediaType === 'application/json' ? 'structural' : 'strict';
+    function computeTextDiagnostic(bytes, ref, diags) {
+        if (ref.mediaType !== 'application/json' || !options.textStructureDiagnostic) {
+            return { diagnostic: null, fatal: null };
+        }
+        let verdict;
+        try {
+            verdict = options.textStructureDiagnostic(bytes, ref);
+        }
+        catch (error) {
+            return { diagnostic: { summary: '诊断器抛错', errors: [messageOf(error)], motionStatic: false }, fatal: null };
+        }
+        const diagnostic = { summary: verdict.summary, errors: verdict.errors, motionStatic: verdict.motionStatic };
+        if (verdict.errors.length > 0)
+            diags.push('text-structure-diag:' + verdict.errors[0]);
+        if (verdict.motionStatic) {
+            return { diagnostic, fatal: '动作静态化（姿态恒定/全零）：' + ref.id + '（' + verdict.summary + '）' };
+        }
+        if (verdict.fatalReason) {
+            return { diagnostic, fatal: '载荷不可用：' + verdict.fatalReason };
+        }
+        return { diagnostic, fatal: null };
+    }
+    function applyFatal(fatal, ref, diags) {
+        if (!fatal)
+            return;
+        stats.structureRejects++;
+        diags.push((fatal.indexOf('动作静态化') === 0 ? 'motion-static:' : 'text-fatal:') + ref.id);
+        throw new Error(fatal);
+    }
+    async function measureDigest(bytes, savedPath, diags) {
+        try {
+            const fromFile = await platform.sha256File(savedPath);
+            if (fromFile)
+                return { sha256: fromFile, via: 'sha256File' };
+        }
+        catch (error) {
+            diags.push('digest-file-failed:' + messageOf(error));
+        }
+        try {
+            return { sha256: await platform.sha256Bytes(bytes), via: 'sha256Bytes' };
+        }
+        catch (error) {
+            diags.push('digest-bytes-failed:' + messageOf(error));
+            return { sha256: null, via: 'not-measured' };
+        }
     }
     function readSourceOf() {
         const p = platform;
@@ -2513,10 +2566,8 @@ function createCharacterAssetLoader(options) {
         let observedSha = null;
         let digestError = null;
         let readSource = 'unknown';
-        let structuralMode = false;
-        let structuralOk = null;
-        const structuralDetail = [];
-        let note = '';
+        let structuralDiagnostic = null;
+        const note = '';
         try {
             bytes = await withTimeout(platform.downloadArrayBuffer(url, { timeoutMs: downloadTimeoutMs }), downloadTimeoutMs, () => { stats.timeouts++; });
             readSource = readSourceOf();
@@ -2530,38 +2581,22 @@ function createCharacterAssetLoader(options) {
             }
             const byteLengthMatches = bytes.byteLength === ref.byteLength;
             const sha256Matches = observedSha !== null && observedSha === ref.sha256;
-            structuralMode = policyModeOf(ref) === 'structural';
-            if (structuralMode) {
-                const verdict = options.textStructureValidator
-                    ? options.textStructureValidator(bytes, ref)
-                    : { errors: ['缺少 textStructureValidator：结构性放行必须由结构校验把关'] };
-                const errs = Array.isArray(verdict) ? verdict : verdict.errors;
-                if (!Array.isArray(verdict) && verdict.summary)
-                    structuralDetail.push(verdict.summary);
-                structuralOk = errs.length === 0;
-                structuralDetail.push(...errs);
-                if (!structuralOk) {
-                    stats.structureRejects++;
-                    diags.push('text-structure-reject:' + errs[0]);
-                    throw new Error('文本结构不符（' + ref.id + '）: ' + errs.join(' | '));
-                }
-                structuralDetail.push('observedByteLength=' + bytes.byteLength + ' expected=' + ref.byteLength +
-                    (byteLengthMatches ? '（相等）' : '（不等 ⇒ 平台改写导致字节不可比）'));
-                note = '平台改写导致字节不可比：按结构不变量放行（integrityMode=structural）';
+            if (!byteLengthMatches) {
+                stats.byteLengthMismatches++;
+                diags.push('byteLength-mismatch:' + bytes.byteLength + '!=' + ref.byteLength);
+                throw new Error('byteLength ' + bytes.byteLength + ' != ' + ref.byteLength);
             }
-            else {
-                if (!byteLengthMatches) {
-                    stats.byteLengthMismatches++;
-                    diags.push('byteLength-mismatch:' + bytes.byteLength + '!=' + ref.byteLength);
-                    throw new Error('byteLength ' + bytes.byteLength + ' != ' + ref.byteLength);
-                }
-                if (digestError !== null)
-                    throw digestError;
-                if (!sha256Matches) {
-                    stats.shaMismatches++;
-                    diags.push('sha256-mismatch');
-                    throw new Error('sha256 ' + String(observedSha) + ' != ' + ref.sha256);
-                }
+            if (digestError !== null)
+                throw digestError;
+            if (!sha256Matches) {
+                stats.shaMismatches++;
+                diags.push('sha256-mismatch');
+                throw new Error('sha256 ' + String(observedSha) + ' != ' + ref.sha256);
+            }
+            {
+                const diag = computeTextDiagnostic(bytes, ref, diags);
+                structuralDiagnostic = diag.diagnostic;
+                applyFatal(diag.fatal, ref, diags);
             }
             if (!structureOk(bytes, ref, diags)) {
                 throw new Error('结构不符（' + ref.id + '）');
@@ -2570,8 +2605,8 @@ function createCharacterAssetLoader(options) {
             try {
                 const entry = await platform.cachePut({
                     assetId: ref.id,
-                    sha256: structuralMode && observedSha !== null ? observedSha : ref.sha256,
-                    byteLength: structuralMode ? bytes.byteLength : ref.byteLength,
+                    sha256: ref.sha256,
+                    byteLength: ref.byteLength,
                     tempPath,
                 });
                 savedPath = entry.savedPath;
@@ -2602,14 +2637,16 @@ function createCharacterAssetLoader(options) {
         function makeIntegrity(failure) {
             const edges = bytes ? hexEdges(bytes) : { head: '', tail: '' };
             const observedLen = bytes ? bytes.byteLength : -1;
-            const detail = structuralDetail.slice();
+            const notes = [];
+            if (observedSha === null)
+                notes.push('observedSha256=not-measured（该平台两条摘要路径都不可用）');
             if (digestError !== null)
-                detail.push('sha 摘要不可用：' + messageOf(digestError));
+                notes.push('sha 摘要不可用：' + messageOf(digestError));
             if (failure)
-                detail.push('失败原因：' + failure);
+                notes.push('失败原因：' + failure);
             return {
                 source: 'download',
-                mode: structuralMode ? 'structural' : 'strict',
+                mode: 'strict',
                 byteLengthMatches: observedLen === ref.byteLength,
                 sha256Matches: observedSha !== null && observedSha === ref.sha256,
                 observedByteLength: observedLen,
@@ -2619,9 +2656,8 @@ function createCharacterAssetLoader(options) {
                 readSource,
                 headHex64: edges.head,
                 tailHex64: edges.tail,
-                structuralOk,
-                structuralDetail: detail,
-                note: note || (failure ? '' : ''),
+                structuralDiagnostic,
+                note: note || notes.join('；'),
             };
         }
     }
@@ -4967,33 +5003,31 @@ function runtimeVerdicts(ctx) {
     if (sim) {
         notes.push('本次为浏览器 sim：只证明同一份 bundle 的代码路径通，**不是**微信/安卓能力证据（方案 §9.3）');
     }
+    if (ctx.env.build && ctx.env.build.payloadSuffix) {
+        notes.push('包内载荷形态：`urlPath + ' + ctx.env.build.payloadSuffix + '`（R2：绕过微信包管线对 `.json` 的处理）；' +
+            '构建标识 ' + (ctx.env.build.commitSha ? ctx.env.build.commitSha.slice(0, 12) : '（空：产物未编入 commit）') +
+            ' · 资产清单版本 ' + ctx.env.assetManifestVersion);
+    }
     const notOk = ctx.phases.filter((p) => p.status !== 'ok');
     if (notOk.length > 0) {
         notes.push('未完成的阶段（phasesOrder=' + exports.PHASES_ORDER.join(' → ') + '）：' +
             notOk.map((p) => p.name + '(' + p.status + (p.detail ? '：' + p.detail : '') + ')').join(' / ') +
             ' —— 已产出的阶段结果照常导出，不影响其余判定');
     }
-    const structuralRows = ctx.resource.assetIntegrity.filter((r) => r.integrityMode === 'structural');
-    if (structuralRows.length > 0) {
-        const drifted = structuralRows.filter((r) => !r.byteLengthMatches || !r.sha256Matches);
-        notes.push('包内文本资产按**结构不变量**放行（integrityMode=structural）：' + structuralRows.length + ' 个' +
-            (drifted.length
-                ? '，其中 ' + drifted.length + ' 个字节与清单不符（observedByteLength=' +
-                    drifted.map((r) => r.assetId + ':' + r.observedByteLength + '(清单 ' + r.expectedByteLength + ')').join(' / ') +
-                    '）—— 平台改写导致字节不可比，结构账见 resource.assetIntegrity[].structuralSummary'
-                : '（字节与清单一致）'));
+    const textRows = ctx.resource.assetIntegrity.filter((r) => r.mediaType === 'application/json');
+    const notMeasured = ctx.resource.assetIntegrity.filter((r) => r.observedSha256 === null);
+    if (notMeasured.length > 0) {
+        notes.push('摘要未实测的资产（observedSha256=null / not-measured）：' +
+            notMeasured.map((r) => r.assetId).join(' / ') + ' —— 该平台两条摘要路径都不可用；**不得**用索引值顶替 observed。');
     }
-    if (structuralRows.some((r) => !r.byteLengthMatches)) {
-        const hotDrift = structuralRows.filter((r) => !r.byteLengthMatches && r.source === 'cache-hit');
-        notes.push('结构性放行资产的字节与清单不符（平台改写导致字节不可比），' +
-            (hotDrift.length > 0
-                ? '其中 ' + hotDrift.length + ' 个本次是**热命中**（P0-5：缓存索引以「盘上事实」observedByteLength/' +
-                    'observedSha256 为基准，命中判定=索引命中且盘上文件与索引一致，**不以与清单相等为条件**）——' +
-                    '清单值只用于结构校验与资产身份判断。'
-                : '本次为读包登记（冷系列）；下次启动即按索引热命中（P0-5）。'));
-        notes.push('提示：升级前写入的旧索引（按清单值登记）会在下一次启动因长度不符被摘除一次，随后按盘上事实重建（自愈，仅多读一次）。');
+    if (textRows.length > 0) {
+        const withDiag = textRows.filter((r) => r.structuralDiagnostic !== null);
+        notes.push('包内文本资产身份口径 = **strict**（byteLength + SHA-256 严格相等）：' + textRows.length + ' 个，' +
+            '字节与清单相符 ' + textRows.filter((r) => r.byteLengthMatches && r.sha256Matches).length + '/' + textRows.length +
+            '；结构校验为**纯诊断**（' + withDiag.length + ' 个有结构账，见 resource.assetIntegrity[].structuralDiagnostic），' +
+            '**不作为 Device-PASS 依据**；动作存活门（motionStatic）是硬门。');
     }
-    const strictDrift = ctx.resource.assetIntegrity.filter((r) => r.integrityMode === 'strict' && (!r.byteLengthMatches || !r.sha256Matches));
+    const strictDrift = ctx.resource.assetIntegrity.filter((r) => !r.byteLengthMatches || !r.sha256Matches);
     if (strictDrift.length > 0) {
         notes.push('严格口径资产出现字节/摘要不符（**未放宽**，如实记录）：' +
             strictDrift.map((r) => r.assetId + ' observed=' + r.observedByteLength + ' expected=' + r.expectedByteLength).join(' / '));
@@ -5351,7 +5385,7 @@ exports.UNIT_PHASE_STEP_SEC = 0.137;
   __def("proto/character3d_runtime_demo/adapter-local", function (require, module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SUBPACKAGE_ROOT = exports.SUBPACKAGE_NAME = exports.LOCAL_BASE_URL = void 0;
+exports.PACKAGED_PAYLOAD_SUFFIX = exports.SUBPACKAGE_ROOT = exports.SUBPACKAGE_NAME = exports.LOCAL_BASE_URL = void 0;
 exports.resolveResourceChainPlan = resolveResourceChainPlan;
 exports.codePackageCandidates = codePackageCandidates;
 exports.stripLocalBase = stripLocalBase;
@@ -5411,8 +5445,13 @@ function resolveResourceChainPlan(input) {
             : '未配置 cdnBaseUrl ⇒ 分包本地路径模式：同一条 loader 状态机，但「下载」一步读的是分包资产',
     };
 }
-function codePackageCandidates(relativePath, root = exports.SUBPACKAGE_ROOT) {
-    return [root + '/' + relativePath, '/' + root + '/' + relativePath];
+exports.PACKAGED_PAYLOAD_SUFFIX = '.bin';
+function codePackageCandidates(relativePath, root = exports.SUBPACKAGE_ROOT, suffix = exports.PACKAGED_PAYLOAD_SUFFIX) {
+    const payload = relativePath + suffix;
+    return [
+        root + '/' + payload, '/' + root + '/' + payload,
+        root + '/' + relativePath, '/' + root + '/' + relativePath,
+    ];
 }
 function stripLocalBase(url) {
     const prefix = exports.LOCAL_BASE_URL + '/';
@@ -5485,7 +5524,8 @@ function createLocalSubpackagePlatform(options = {}) {
                 return Promise.reject(new Error('[local-subpackage] 非本地资产 URL，本地 adapter 拒绝: ' + url));
             }
             return readCodeFile(rel, downloadOptions).then((bytes) => {
-                tracker.note('local-subpackage.readCodeFile(' + rel + ') → ' + bytes.byteLength + ' bytes');
+                tracker.note('local-subpackage.readCodeFile(' + rel + ') → ' + bytes.byteLength + ' bytes via ' +
+                    (resolvedCodePaths[rel] || '?'));
                 return bytes;
             });
         },
@@ -5939,6 +5979,9 @@ function validateClipJsonStructure(bytes, ref) {
                     ' · tail=' + text.slice(-32).replace(/\s+/g, ' ')],
             account: null,
             summary: 'JSON 不可解析',
+            motionStatic: false,
+            motionDetail: 'JSON 不可解析，未评估',
+            fatalReason: 'JSON 解析失败',
         };
     }
     const key = clipKeyOfAsset(ref);
@@ -5951,6 +5994,9 @@ function validateClipJsonStructure(bytes, ref) {
             errors: ['生产解析器拒绝：' + (error instanceof Error ? error.message : String(error))],
             account: null,
             summary: '结构不符（生产解析器 fail-fast）',
+            motionStatic: false,
+            motionDetail: '结构不符，未评估',
+            fatalReason: '不符合生产解析器契约',
         };
     }
     const expected = key !== null && key in character_3d_1.HERO_3D_CLIP_SOURCE_SEC
@@ -6009,10 +6055,43 @@ function validateClipJsonStructure(bytes, ref) {
         rootMode: clip.rootMode,
         samplerDurationSec: clip.samplerDurationSec,
     };
+    const motion = measureMotion(clip);
+    if (motion.motionStatic)
+        errors.push('动作静态化：' + motion.motionDetail);
     const summary = '结构化：fps=' + clip.fps + ' nFrames=' + clip.nFrames + ' duration=' + clip.declaredDurationSec +
         '（清单 ' + String(expected) + '）骨轨道=' + boneTrackCount + ' rootTrack=' + clip.rootTrack.length +
-        ' rootMode=' + clip.rootMode + ' 值有限=' + allFinite;
-    return { errors, account, summary };
+        ' rootMode=' + clip.rootMode + ' 值有限=' + allFinite + ' · ' + motion.motionDetail;
+    return {
+        errors,
+        account,
+        summary,
+        motionStatic: motion.motionStatic,
+        motionDetail: motion.motionDetail,
+        fatalReason: motion.motionStatic ? '动作静态化' : null,
+    };
+}
+function measureMotion(clip) {
+    const EPS = 1e-6;
+    let maxQuatDev = 0;
+    for (const name of Object.keys(clip.boneTracks)) {
+        for (const row of clip.boneTracks[name]) {
+            const dev = Math.min(Math.hypot(row[0], row[1], row[2], row[3] - 1), Math.hypot(row[0], row[1], row[2], row[3] + 1));
+            if (dev > maxQuatDev)
+                maxQuatDev = dev;
+        }
+    }
+    let maxRootAbs = 0;
+    for (const row of clip.rootTrack) {
+        for (const v of row)
+            if (Math.abs(v) > maxRootAbs)
+                maxRootAbs = Math.abs(v);
+    }
+    const motionStatic = maxQuatDev <= EPS && maxRootAbs <= EPS;
+    return {
+        motionStatic,
+        motionDetail: 'maxQuatDev=' + maxQuatDev.toExponential(3) + ' maxRootAbs=' + maxRootAbs.toExponential(3) +
+            (motionStatic ? '（动作静态化）' : ''),
+    };
 }
 
   });

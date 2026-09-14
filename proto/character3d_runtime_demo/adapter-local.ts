@@ -95,9 +95,27 @@ export function resolveResourceChainPlan(input: { cdnBaseUrl?: string | null }):
   };
 }
 
-/** wx.readFile 的代码包路径候选（S0 probe 实测口径：先相对路径，再带前导斜杠）。 */
-export function codePackageCandidates(relativePath: string, root = SUBPACKAGE_ROOT): string[] {
-  return [root + '/' + relativePath, '/' + root + '/' + relativePath];
+/** 包内载荷后缀（R2）：`urlPath + 后缀` = 分包里的**原样字节**文件（见 build.mjs 的同名常量）。
+ *  为什么要有它：真机实测微信打包/预览管线会改写包内 `.json`（字节与清单不符），改落 `.bin` 让包管线
+ *  按不透明资产处理（与 GLB 同类）。 */
+export const PACKAGED_PAYLOAD_SUFFIX = '.bin';
+
+/**
+ * wx.readFile 的代码包路径候选，**按优先级**：
+ *   ① `urlPath + '.bin'`（R2 首选：包内原样载荷）
+ *   ② `urlPath`（兼容：包内直接放了同名文件，例如历史上按 `.json` 落的分包）
+ * 每一形态各带一次前导斜杠变体（S0 probe 实测的路径形态差异）。
+ */
+export function codePackageCandidates(
+  relativePath: string,
+  root = SUBPACKAGE_ROOT,
+  suffix = PACKAGED_PAYLOAD_SUFFIX,
+): string[] {
+  const payload = relativePath + suffix;
+  return [
+    root + '/' + payload, '/' + root + '/' + payload,
+    root + '/' + relativePath, '/' + root + '/' + relativePath,
+  ];
 }
 
 /** 分包路径去掉哨兵 base 后的相对路径。 */
@@ -192,7 +210,11 @@ export function createLocalSubpackagePlatform(options: LocalSubpackagePlatformOp
         return Promise.reject(new Error('[local-subpackage] 非本地资产 URL，本地 adapter 拒绝: ' + url));
       }
       return readCodeFile(rel, downloadOptions).then((bytes) => {
-        tracker.note('local-subpackage.readCodeFile(' + rel + ') → ' + bytes.byteLength + ' bytes');
+        // 诊断要点：连**实际命中的代码包路径**一起记（R2 后通常是 `urlPath + '.bin'`）
+        tracker.note(
+          'local-subpackage.readCodeFile(' + rel + ') → ' + bytes.byteLength + ' bytes via ' +
+            (resolvedCodePaths[rel] || '?'),
+        );
         return bytes;
       });
     },

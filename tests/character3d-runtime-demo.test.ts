@@ -60,6 +60,7 @@ import {
 } from '../proto/character3d_runtime_demo/metrics';
 import { MOVE_LOCK_CASES, SPEC_PROFILE, STATE_SAMPLES, UNIT_PHASE_STEP_SEC, lockedIsJump } from '../proto/character3d_runtime_demo/scenarios';
 import { HERO_3D_PROFILE, HERO_3D_MODEL_REF, HERO_3D_CLIP_REFS } from '../config/character-3d';
+import type { Character3DAssetRef } from '../types';
 import { createCharacterAssetLoader } from '../net/character-asset-loader';
 import { validateClipJsonStructure } from '../proto/character3d_runtime_demo/text-assets';
 
@@ -72,15 +73,21 @@ const SUBPACKAGE_PATH = SUBPACKAGE_ROOT + '/' + REF_URL_PATH;
 function createFakeWx(options: { missingCodePaths?: string[]; storage?: Record<string, unknown> } = {}) {
   const files = new Map<string, Uint8Array>();
   const storage = new Map<string, unknown>(Object.entries(options.storage ?? {}));
-  const calls: { codeReads: string[] } = { codeReads: [] };
+  const calls: { codeReads: string[]; getFileInfo: number } = { codeReads: [], getFileInfo: 0 };
+  /** 置 true = 该基础库两条摘要路径都不可用（getFileInfo 不给 digest + sha256Bytes 也拿不到） */
+  const state = { digestUnavailable: false };
   const missing = new Set(options.missingCodePaths ?? []);
   const fsm = {
     mkdirSync: () => undefined,
     accessSync: (p: string) => { if (!files.has(p)) throw new Error('no such file ' + p); },
     getFileInfo: (o: { filePath: string; digestAlgorithm?: string; success: (r: { size: number; digest?: string }) => void; fail: (e: { errMsg?: string }) => void }) => {
+      calls.getFileInfo++;
       const bytes = files.get(o.filePath);
       if (!bytes) { o.fail({ errMsg: 'no such file' }); return; }
-      o.success(o.digestAlgorithm ? { size: bytes.byteLength, digest: 'a'.repeat(64) } : { size: bytes.byteLength });
+      // 常量摘要（真哈希在 character3d-platform-wx 用例里验）；digestUnavailable 时旧基础库形态=不回 digest
+      o.success(o.digestAlgorithm && !state.digestUnavailable
+        ? { size: bytes.byteLength, digest: contentDigestOf(bytes) }
+        : { size: bytes.byteLength });
     },
     readFile: (o: { filePath: string; encoding?: string; success: (r: { data: ArrayBuffer | string }) => void; fail: (e: { errMsg?: string }) => void }) => {
       calls.codeReads.push(o.filePath);
@@ -109,7 +116,7 @@ function createFakeWx(options: { missingCodePaths?: string[]; storage?: Record<s
     getStorageSync: (k: string) => storage.get(k),
     setStorageSync: (k: string, v: unknown) => { storage.set(k, v); },
   };
-  return { host, files, storage, calls };
+  return { host, files, storage, calls, state };
 }
 
 type WxRuntimeArg = NonNullable<NonNullable<Parameters<typeof createLocalSubpackagePlatform>[0]>['runtime']>;
@@ -155,7 +162,11 @@ describe('分包本地路径 adapter（只覆盖 downloadArrayBuffer）', () => 
     const bytes = await platform.downloadArrayBuffer(LOCAL_BASE_URL + '/' + REF_URL_PATH, { timeoutMs: 1000 });
     expect(Array.from(bytes)).toEqual(Array.from(PAYLOAD));
     expect(platform.resolvedCodePaths[REF_URL_PATH]).toBe(SUBPACKAGE_PATH);
-    expect(codePackageCandidates(REF_URL_PATH)).toEqual([SUBPACKAGE_PATH, '/' + SUBPACKAGE_PATH]);
+    // R2：候选顺序 = `urlPath + '.bin'`（原样载荷）优先，其次同名文件；各带前导斜杠变体
+    expect(codePackageCandidates(REF_URL_PATH)).toEqual([
+      SUBPACKAGE_PATH + '.bin', '/' + SUBPACKAGE_PATH + '.bin',
+      SUBPACKAGE_PATH, '/' + SUBPACKAGE_PATH,
+    ]);
   });
 
   it('第一个候选缺失 ⇒ 退回带前导斜杠的候选（并记录命中的那个）', async () => {
@@ -188,7 +199,7 @@ describe('分包本地路径 adapter（只覆盖 downloadArrayBuffer）', () => 
     const { platform, files } = localPlatform();
     const temp = await platform.writeTempFile('a.tmp', PAYLOAD);
     expect(files.has(temp)).toBe(true);
-    expect(await platform.sha256File(temp)).toBe('a'.repeat(64));
+    expect(await platform.sha256File(temp)).toBe(contentDigestOf(PAYLOAD));
     // 缓存登记 → 命中（cache by SHA 的持久链也在生产 adapter 里）
     const entry = await platform.cachePut({ assetId: 'x', sha256: 'a'.repeat(64), byteLength: PAYLOAD.byteLength, tempPath: temp });
     expect(entry.savedPath).toContain('/character3d/');
@@ -198,31 +209,13 @@ describe('分包本地路径 adapter（只覆盖 downloadArrayBuffer）', () => 
   });
 });
 
-// ===== 1.5 包内文本资产的完整性口径（P0-4）=====
+// ===== 1.5 包内载荷口径：`.bin` 字节保真 + 严格身份 + 结构仅诊断（R2）=====
 
-/** 一份「字节与清单不同、但结构完全合法」的动作 json（模拟平台改写：重排/压缩/换行）。
- * 真资产 idle_v4.json 是 726299 字节；这里造一个语义等价、字节数完全不同的版本。 */
-function rewrittenIdleClipJson(): Uint8Array {
-  const nFrames = 200;
-  const quat = () => Array.from({ length: nFrames }, () => [0, 0, 0, 1]);
-  const bones: Record<string, number[][]> = {};
-  for (let i = 0; i < 40; i++) bones['Bone_' + i] = quat();
-  const obj = {
-    fps: 30,
-    nFrames,
-    duration: 200 / 30,
-    rootMode: 'y',
-    boneTracks: bones,
-    rootTrack: Array.from({ length: nFrames }, () => [0, 0, 0]),
-  };
-  // 无空白（平台压缩后形态）：字节数与 726299 必然不同
-  return new TextEncoder().encode(JSON.stringify(obj));
-}
-
+/** 起一个 loader（默认接生产的结构诊断器：纯诊断 + 动作存活硬门）。 */
 function loaderWith(options: {
   bytes: Uint8Array;
-  textIntegrityMode?: 'strict' | 'structural';
   structureValidator?: (bytes: Uint8Array, ref: { mediaType: string }) => void;
+  diagnostic?: boolean;
 }) {
   const fake = createFakeWx({});
   fake.files.set(SUBPACKAGE_PATH, options.bytes);
@@ -234,252 +227,296 @@ function loaderWith(options: {
     platform,
     cdnBaseUrl: LOCAL_BASE_URL,
     sleep: async () => undefined,
-    textIntegrityMode: options.textIntegrityMode ?? 'strict',
-    textStructureValidator: (bytes, ref) => {
-      const r = validateClipJsonStructure(bytes, ref);
-      return { errors: r.errors, summary: r.summary };
-    },
+    ...(options.diagnostic === false ? {} : {
+      textStructureDiagnostic: (bytes: Uint8Array, ref: Character3DAssetRef) => {
+        const r = validateClipJsonStructure(bytes, ref);
+        return { errors: r.errors, summary: r.summary, motionStatic: r.motionStatic, fatalReason: r.fatalReason };
+      },
+    }),
     structureValidator: options.structureValidator as never,
   });
-  return { loader, platform, fake };
+  return { loader, platform, fake, state: fake.state };
 }
 
-describe('P0-4 · 包内文本资产：结构不变量放行（GLB 与 CDN 仍严格）', () => {
-  const idleRef = HERO_3D_CLIP_REFS.idle as Exclude<(typeof HERO_3D_CLIP_REFS)['idle'], { embedded: string }>;
-  // 用真实 idle 的 urlPath（保证走同一条分包读取链），但内容换成"平台改写版"
-  const ref = { ...idleRef, urlPath: REF_URL_PATH };
+/**
+ * 内容相关的伪摘要（64 位十六进制，**取值随字节变化**；真 SHA-256 在 character3d-platform-wx 用例里验）。
+ * 为什么不用常量：R2 的「同长度篡改必须被检出」只能由内容相关的摘要证明。
+ */
+function contentDigestOf(bytes: Uint8Array): string {
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
+  for (let i = 0; i < bytes.length; i++) {
+    h1 = Math.imul(h1 ^ bytes[i], 0x01000193) >>> 0;
+    h2 = Math.imul(h2 + bytes[i] + i, 0x85ebca6b) >>> 0;
+  }
+  const a = h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+  return (a + a + a + a).slice(0, 64);
+}
 
-  it('结构校验通过即放行，且如实记 integrityMode=structural + observed≠expected', async () => {
-    const bytes = rewrittenIdleClipJson();
-    expect(bytes.byteLength).not.toBe(ref.byteLength); // 前提：字节与清单不同
-    const { loader } = loaderWith({ bytes, textIntegrityMode: 'structural' });
+/** 造一份动作 json 字节：`motion=true` 时姿态逐帧变化（存活），否则四元数恒单位 + root 恒零（静态化）。 */
+function clipJsonBytes(options: { motion: boolean; nFrames?: number } = { motion: true }): Uint8Array {
+  const nFrames = options.nFrames ?? 7; // 小样即可：结构诊断只看不变量
+  const bones: Record<string, number[][]> = {};
+  for (let i = 0; i < 40; i++) {
+    bones['Bone_' + i] = Array.from({ length: nFrames }, (_, f) => {
+      if (!options.motion) return [0, 0, 0, 1]; // 恒定单位四元数
+      const a = (f / nFrames) * (Math.PI / 6); // 逐帧小幅旋转（存活）
+      return [0, Math.sin(a), 0, Math.cos(a)];
+    });
+  }
+  const rootTrack = Array.from({ length: nFrames }, (_, f) => (
+    options.motion ? [0, (f / nFrames) * 0.01, 0] : [0, 0, 0]
+  ));
+  const obj = {
+    fps: 6.666666666666667 / nFrames * nFrames / 2, // 占位，下面按清单时长重算
+    nFrames,
+    duration: 0,
+    rootMode: 'y',
+    boneTracks: bones,
+    rootTrack,
+  };
+  // 与清单时长对齐：fps = nFrames / 6.666666666666667（idle 清单时长）
+  const duration = 6.666666666666667;
+  obj.fps = nFrames / duration;
+  obj.duration = duration;
+  return new TextEncoder().encode(JSON.stringify(obj));
+}
+
+/** 字节与"清单"一致的 ref（假宿主摘要恒 CONST_DIGEST）。 */
+function faithfulRef(
+  base: Pick<Character3DAssetRef, 'id' | 'mediaType'> | Character3DAssetRef,
+  bytes: Uint8Array,
+): Character3DAssetRef {
+  return {
+    id: base.id,
+    mediaType: base.mediaType,
+    urlPath: REF_URL_PATH,
+    sha256: contentDigestOf(bytes),
+    byteLength: bytes.byteLength,
+  };
+}
+
+/** 带"平台改写"内容的 ref：沿用**真清单**的 sha/byteLength（字节与它不同 ⇒ 严格身份必失败）。 */
+function driftedRef(base: Character3DAssetRef): Character3DAssetRef {
+  return { ...base, urlPath: REF_URL_PATH };
+}
+
+describe('R2 · 包内 .bin 字节保真 + 严格身份（结构仅诊断）', () => {
+  const idleRef = HERO_3D_CLIP_REFS.idle as Exclude<(typeof HERO_3D_CLIP_REFS)['idle'], { embedded: string }>;
+
+  it('.bin 载荷字节保真 ⇒ 严格身份通过（integrityMode=strict + 实测摘要 + 结构账）', async () => {
+    const bytes = clipJsonBytes({ motion: true });
+    const ref = faithfulRef(idleRef, bytes);
+    const { loader, platform } = loaderWith({ bytes });
     const res = await loader.load(ref);
     expect(res.status).toBe('downloaded');
-    expect(String(res.integrity?.readSource)).toContain('local-subpackage');
-    expect(res.integrity?.mode).toBe('structural');
-    expect(res.integrity?.structuralOk).toBe(true);
+    expect(res.integrity?.mode).toBe('strict');
+    expect(res.integrity?.byteLengthMatches).toBe(true);
+    expect(res.integrity?.sha256Matches).toBe(true);
+    expect(res.integrity?.observedByteLength).toBe(bytes.byteLength);
+    expect(res.integrity?.observedSha256).toBe(contentDigestOf(bytes)); // 实测出来的（非索引回显）
+    expect(res.integrity?.structuralDiagnostic?.summary).toContain('fps=');
+    expect(res.integrity?.structuralDiagnostic?.motionStatic).toBe(false);
+    // 读的是 `.bin` 载荷（候选优先级：urlPath + '.bin' 在最前）
+    expect(String(res.integrity?.readSource)).toContain('.bin');
+    expect(Object.values(platform.resolvedCodePaths)[0]).toContain('.bin');
+  });
+
+  it('字节不符（平台改写形态）⇒ 严格身份**判失败**（无结构性旁路）', async () => {
+    const bytes = clipJsonBytes({ motion: true }); // 长度/摘要都与真清单不同
+    const ref = driftedRef(idleRef);
+    const { loader } = loaderWith({ bytes });
+    const res = await loader.load(ref);
+    expect(res.status).toBe('failed');
+    expect(res.diagnostics.some((d) => d.startsWith('byteLength-mismatch'))).toBe(true);
+    // 失败时观测值必须活下来（诊断主载体）
     expect(res.integrity?.observedByteLength).toBe(bytes.byteLength);
     expect(res.integrity?.expectedByteLength).toBe(ref.byteLength);
     expect(res.integrity?.byteLengthMatches).toBe(false);
-    expect(res.integrity?.note).toContain('平台改写导致字节不可比');
-    // 结构账齐（fps/nFrames/骨轨道/rootTrack/值有限）
-    expect(res.integrity?.structuralDetail.join(' ')).toContain('fps=');
-    // 严格模式的计数口径不被污染（结构性放行不算 byteLengthMismatches/shaMismatches）
-    expect(loader.stats().byteLengthMismatches).toBe(0);
-    expect(loader.stats().shaMismatches).toBe(0);
-    expect(loader.stats().structureRejects).toBe(0);
+    expect(res.integrity?.observedSha256).toBe(contentDigestOf(bytes));
   });
 
-  it('同一份内容在 strict 口径下被拒（CDN 下载路径保持严格，未被放宽）', async () => {
-    const bytes = rewrittenIdleClipJson();
-    const { loader } = loaderWith({ bytes, textIntegrityMode: 'strict' });
+  it('★ 负例①：动作静态化（姿态恒单位 + root 恒零）即使字节保真也**判失败**', async () => {
+    const bytes = clipJsonBytes({ motion: false }); // arch 反例：结构全对但动作是死的
+    const ref = faithfulRef(idleRef, bytes);
+    const { loader } = loaderWith({ bytes });
     const res = await loader.load(ref);
     expect(res.status).toBe('failed');
-    expect(res.diagnostics.some((d) => d.startsWith('byteLength-mismatch'))).toBe(true);
-    expect(res.integrity?.mode).toBe('strict');
-    // 失败时诊断必须活下来（P0-4 第一条要求）
-    expect(res.integrity?.observedByteLength).toBe(bytes.byteLength);
-    expect(res.integrity?.expectedByteLength).toBe(ref.byteLength);
+    expect(res.diagnostics.some((d) => d.startsWith('motion-static'))).toBe(true);
+    expect(res.integrity?.structuralDiagnostic?.motionStatic).toBe(true);
+    expect(res.integrity?.structuralDiagnostic?.summary).toContain('动作静态化');
+    expect(loader.stats().structureRejects).toBe(3); // 3 次尝试都被动作存活门拦下
   });
 
-  it('GLB 恒走严格 SHA：即使开了 structural 也不放宽', async () => {
-    const fakeGlb = new Uint8Array(1024); // 长度/摘要都与清单不符
+  it('载荷不是合法 JSON ⇒ 判失败（fatal：连解析都不过）', async () => {
+    const bytes = new TextEncoder().encode('{"nFrames": 7, "boneTra'); // 截断
+    const ref = faithfulRef(idleRef, bytes);
+    const { loader } = loaderWith({ bytes });
+    const res = await loader.load(ref);
+    expect(res.status).toBe('failed');
+    expect(res.diagnostics.join(' ')).toContain('JSON 解析失败');
+  });
+
+  it('GLB 恒走严格 SHA（mode 恒 strict，不被文本诊断波及）', async () => {
+    const fakeGlb = new Uint8Array(1024);
     const glbRef = { ...HERO_3D_MODEL_REF, urlPath: REF_URL_PATH };
-    const { loader } = loaderWith({ bytes: fakeGlb, textIntegrityMode: 'structural' });
+    const { loader } = loaderWith({ bytes: fakeGlb });
     const res = await loader.load(glbRef);
     expect(res.status).toBe('failed');
     expect(res.integrity?.mode).toBe('strict');
-    expect(res.diagnostics.some((d) => d.startsWith('byteLength-mismatch'))).toBe(true);
+    expect(res.integrity?.structuralDiagnostic).toBeNull(); // GLB 不做文本诊断
     expect(loader.stats().byteLengthMismatches).toBe(3);
-    // 头尾 hex 观测在（判定平台改写 vs 读取截断用；这里两个都有值）
     expect(res.integrity?.headHex64).not.toBe('');
     expect(res.integrity?.tailHex64).not.toBe('');
   });
 
-  it('结构校验不过 ⇒ 失败关闭（截断内容不得放行）', async () => {
-    const truncated = rewrittenIdleClipJson().subarray(0, 4096); // 截断
-    const { loader } = loaderWith({ bytes: truncated, textIntegrityMode: 'structural' });
-    const res = await loader.load(ref);
-    expect(res.status).toBe('failed');
-    expect(res.diagnostics.some((d) => d.startsWith('text-structure-reject'))).toBe(true);
-    expect(res.integrity?.structuralOk).toBe(false);
-    expect(res.integrity?.structuralDetail.join(' ')).toContain('JSON 解析失败');
-  });
-
-  it('结构校验器本身：时长与清单不符 / 轨道含 NaN 都要报错', () => {
-    // 自洽但与**清单**不符：fps=30 + nFrames=100 ⇒ duration=3.3333（生产解析器会放行）
-    const bad = JSON.parse(new TextDecoder().decode(rewrittenIdleClipJson())) as {
-      nFrames: number; duration: number; boneTracks: Record<string, number[][]>; rootTrack: number[][];
+  it('结构诊断器本身：时长与清单不符 / NaN 轨道 / 静态化都要报出来', () => {
+    // 自洽但与**清单**不符：fps=15 + nFrames=100 ⇒ duration=6.6667（生产解析器会放行）
+    // 自洽（parser 过）但与**清单**时长不符：fps=30 + nFrames=100 ⇒ duration=3.3333，清单要 6.6667
+    const bad = JSON.parse(new TextDecoder().decode(clipJsonBytes({ motion: true, nFrames: 100 }))) as {
+      fps: number; nFrames: number; duration: number;
+      boneTracks: Record<string, number[][]>; rootTrack: number[][];
     };
-    bad.nFrames = 100;
+    bad.fps = 30;
     bad.duration = 100 / 30;
-    for (const k of Object.keys(bad.boneTracks)) bad.boneTracks[k] = bad.boneTracks[k].slice(0, 100);
-    bad.rootTrack = bad.rootTrack.slice(0, 100);
-    const r1 = validateClipJsonStructure(new TextEncoder().encode(JSON.stringify(bad)), ref as never);
+    const r1 = validateClipJsonStructure(new TextEncoder().encode(JSON.stringify(bad)), idleRef as never);
     expect(r1.errors.join(' ')).toContain('与清单真值');
-    const nan = JSON.parse(new TextDecoder().decode(rewrittenIdleClipJson())) as { boneTracks: Record<string, number[][]> };
-    nan.boneTracks['Bone_0'][0][0] = Number.NaN;
-    const r2 = validateClipJsonStructure(new TextEncoder().encode(JSON.stringify(nan).replace('null', 'NaN')), ref as never);
-    expect(r2.errors.length).toBeGreaterThan(0);
+    expect(r1.motionStatic).toBe(false);
+    // 静态化
+    const r2 = validateClipJsonStructure(clipJsonBytes({ motion: false }), idleRef as never);
+    expect(r2.motionStatic).toBe(true);
+    expect(r2.motionDetail).toContain('maxQuatDev=0');
   });
 
-  // ---- P0-5：热缓存必须能推进（索引以「盘上事实」为基准）----
+  // ---- 缓存：版本绑定 + observed 只实测 + 读盘完整性 ----
 
-  it('P0-5：平台改写场景下**第二次启动**判为 cacheHit（downloads=0），索引按 observed 登记', async () => {
+  it('P0-5/R2：第二次启动判为 cacheHit（downloads=0），且摘要为**实测**而非索引回显', async () => {
+    const bytes = clipJsonBytes({ motion: true });
+    const ref = faithfulRef(idleRef, bytes);
     const fake = createFakeWx({});
-    const bytes = rewrittenIdleClipJson();
     fake.files.set(SUBPACKAGE_PATH, bytes);
-    const makeLoader = () => createCharacterAssetLoader({
-      platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
-      cdnBaseUrl: LOCAL_BASE_URL,
-      sleep: async () => undefined,
-      textIntegrityMode: 'structural',
-      textStructureValidator: (b, r) => {
-        const v = validateClipJsonStructure(b, r);
-        return { errors: v.errors, summary: v.summary };
-      },
+    const platformOf = () => createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined });
+    const mk = () => createCharacterAssetLoader({
+      platform: platformOf(), cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
+      textStructureDiagnostic: (b, r) => { const v = validateClipJsonStructure(b, r); return { errors: v.errors, summary: v.summary, motionStatic: v.motionStatic }; },
     });
-    // 第一次启动：走下载链，登记索引
-    const l1 = makeLoader();
-    const r1 = await l1.load(ref);
-    expect(r1.status).toBe('downloaded');
+    const first = await mk().load(ref);
+    expect(first.status).toBe('downloaded');
     const index = fake.storage.get('character3d-cache-index-v1') as Record<string, { sha256: string; byteLength: number }>;
-    // ★ 索引记的是**盘上事实**（observed），不是清单值
-    expect(index[ref.id].byteLength).toBe(bytes.byteLength);
-    expect(index[ref.id].sha256).not.toBe(ref.sha256);
-    // 第二次启动（同一台"机器"：storage + 盘上文件都在）：必须热命中，不得再下载
-    const l2 = makeLoader();
-    const r2 = await l2.load(ref);
-    expect(r2.status).toBe('cache-hit');
-    expect(l2.stats().cacheHits).toBe(1);
+    // 索引绑定**内容版本** = 清单值
+    expect(index[ref.id].sha256).toBe(ref.sha256);
+    expect(index[ref.id].byteLength).toBe(ref.byteLength);
+    const l2 = mk();
+    const hit = await l2.load(ref);
+    expect(hit.status).toBe('cache-hit');
     expect(l2.stats().downloads).toBe(0);
-    expect(l2.stats().byteLengthMismatches).toBe(0);
-    expect(r2.integrity?.mode).toBe('structural');
-    expect(r2.integrity?.observedByteLength).toBe(bytes.byteLength);
-    expect(r2.integrity?.byteLengthMatches).toBe(false); // 与清单不符（如实），但仍算命中
-    expect(r2.integrity?.note).toContain('索引=盘上事实');
+    expect(hit.integrity?.observedSha256).toBe(contentDigestOf(bytes));
+    expect(fake.calls.getFileInfo).toBeGreaterThan(0); // ★ 真的算过摘要（不是回显索引值）
+    expect(hit.integrity?.note).toContain('逐字节一致');
   });
 
-  it('P0-5：旧索引（按清单值写）自愈 —— 摘掉一次后按 observed 重建，再下一次即热命中', async () => {
+  it('★ 负例②：索引版本不符（清单值变了）⇒ **不当**热命中', async () => {
+    const bytes = clipJsonBytes({ motion: true });
+    const ref = faithfulRef(idleRef, bytes);
     const fake = createFakeWx({});
-    fake.storage.set('character3d-cache-index-v1', {
-      [ref.id]: {
-        assetId: ref.id, sha256: ref.sha256, savedPath: '/user/character3d/legacy.bin',
-        byteLength: ref.byteLength, lastUsedAt: 1,
-      },
-    });
-    const bytes = rewrittenIdleClipJson();
     fake.files.set(SUBPACKAGE_PATH, bytes);
-    fake.files.set('/user/character3d/legacy.bin', bytes); // 盘上是改写版，索引却是清单值
-    const makeLoader = () => createCharacterAssetLoader({
-      platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
-      cdnBaseUrl: LOCAL_BASE_URL,
-      sleep: async () => undefined,
-      textIntegrityMode: 'structural',
-      textStructureValidator: (b, r) => {
-        const v = validateClipJsonStructure(b, r);
-        return { errors: v.errors, summary: v.summary };
-      },
+    const savedPath = '/user/character3d/old-version.bin';
+    fake.files.set(savedPath, bytes);
+    fake.storage.set('character3d-cache-index-v1', {
+      [ref.id]: { assetId: ref.id, sha256: 'c'.repeat(64), savedPath, byteLength: bytes.byteLength, lastUsedAt: 1 },
     });
-    const first = await makeLoader().load(ref);
-    expect(first.diagnostics.some((d) => d.startsWith('cache-length-mismatch'))).toBe(true);
-    expect(first.status).toBe('downloaded'); // 摘掉坏索引后按无缓存重走
-    const second = await makeLoader().load(ref);
-    expect(second.status).toBe('cache-hit');
-  });
-
-  it('P0-5：structural 命中前要过结构校验（盘上内容坏了不许当热命中）', async () => {
-    const fake = createFakeWx({});
-    const good = rewrittenIdleClipJson();
-    fake.files.set(SUBPACKAGE_PATH, good);
-    const platform = createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined });
-    const mkLoader = () => createCharacterAssetLoader({
-      platform, cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
-      textIntegrityMode: 'structural',
-      textStructureValidator: (b, r) => {
-        const v = validateClipJsonStructure(b, r);
-        return { errors: v.errors, summary: v.summary };
-      },
-    });
-    await mkLoader().load(ref);
-    // 把盘上/索引都改成长度一致但内容非法的字节（截断成同长度：改尾字节破坏 JSON 结构）
-    const broken = new Uint8Array(good);
-    broken[broken.length - 1] = 0x00; // 去掉结尾 '}' ⇒ JSON 解析失败，长度不变
-    const platform2 = createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined });
-    // 直接替换缓存文件内容（长度不变，只有结构坏了）
-    const index = fake.storage.get('character3d-cache-index-v1') as Record<string, { savedPath: string; byteLength: number }>;
-    // 先按新内容重建一次索引（使长度一致、内容非法）
-    fake.files.set(SUBPACKAGE_PATH, broken);
-    await createCharacterAssetLoader({
-      platform: platform2, cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
-      textIntegrityMode: 'structural',
-      textStructureValidator: (b, r) => {
-        const v = validateClipJsonStructure(b, r);
-        return { errors: v.errors, summary: v.summary };
-      },
-    }).load(ref);
-    // 现在把盘上缓存文件替换成"长度相同但内容非法"的字节，再加载 ⇒ 必须不走热命中
-    fake.files.set(index[ref.id].savedPath, broken);
-    const res = await createCharacterAssetLoader({
+    const loader = createCharacterAssetLoader({
       platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
       cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
-      textIntegrityMode: 'structural',
-      textStructureValidator: (b, r) => {
-        const v = validateClipJsonStructure(b, r);
-        return { errors: v.errors, summary: v.summary };
-      },
-    }).load(ref);
-    // 结构不过 ⇒ 不得当热命中（要么重读要么失败，但**不能**是 cache-hit）
-    expect(res.status).not.toBe('cache-hit');
+    });
+    const res = await loader.load(ref);
+    expect(loader.stats().cacheHits).toBe(0); // 版本不符 ⇒ 不算命中
+    expect(res.diagnostics.some((d) => d.startsWith('cache-version-mismatch'))).toBe(true);
   });
 
-  it('P0-5：GLB（严格模式）热命中原口径不变 —— 索引仍记清单值，命中仍要求与清单一致', async () => {
-    // 本文件假宿主的 getFileInfo 返回**常量**摘要 'a'.repeat(64)（真哈希在 character3d-platform-wx 用例里验），
-    // 故这里把"清单值"取成该常量，构造一个"内容与清单一致"的严格场景。
+  it('★ 负例③：缓存文件被截断/篡改 ⇒ 检出并按失败处理（不得当命中）', async () => {
+    const bytes = clipJsonBytes({ motion: true });
+    const ref = faithfulRef(idleRef, bytes);
+    const fake = createFakeWx({});
+    fake.files.set(SUBPACKAGE_PATH, bytes);
+    const platformOf = () => createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined });
+    const mk = () => createCharacterAssetLoader({
+      platform: platformOf(), cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
+    });
+    await mk().load(ref);
+    const index = fake.storage.get('character3d-cache-index-v1') as Record<string, { savedPath: string }>;
+    const saved = index[ref.id].savedPath;
+    // ① 截断（长度不符）
+    fake.files.set(saved, bytes.subarray(0, bytes.byteLength - 4));
+    const l1 = mk();
+    const r1 = await l1.load(ref);
+    expect(l1.stats().cacheHits).toBe(0);
+    expect(r1.diagnostics.some((d) => d.startsWith('cache-length-mismatch'))).toBe(true);
+    // ② 同长度篡改（内容变了、长度不变）⇒ 必须靠**实测摘要**检出
+    const tampered = new Uint8Array(bytes);
+    tampered[tampered.byteLength - 1] = 0x20;
+    const index2 = fake.storage.get('character3d-cache-index-v1') as Record<string, { savedPath: string }>;
+    fake.files.set(index2[ref.id].savedPath, tampered);
+    const l2 = mk();
+    const r2 = await l2.load(ref);
+    expect(l2.stats().cacheHits).toBe(0);
+    expect(r2.diagnostics.some((d) => d.startsWith('cache-digest-mismatch'))).toBe(true);
+  });
+
+  it('摘要不可测量 ⇒ 不当热命中（失败关闭：不留未验证的命中）', async () => {
+    const bytes = clipJsonBytes({ motion: true });
+    const ref = faithfulRef(idleRef, bytes);
+    const fake = createFakeWx({});
+    fake.files.set(SUBPACKAGE_PATH, bytes);
+    const mk = () => createCharacterAssetLoader({
+      platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
+      cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
+    });
+    await mk().load(ref);
+    fake.state.digestUnavailable = true; // 该平台两条摘要路径都不可用
+    const l2 = mk();
+    const res = await l2.load(ref);
+    expect(l2.stats().cacheHits).toBe(0);
+    expect(res.integrity?.observedSha256).toBeNull();
+    expect(String(res.integrity?.note)).toContain('not-measured');
+  });
+
+  it('GLB 严格模式热命中原口径不变（索引=清单值；清单变了走 §6.2 LKG 而非命中）', async () => {
     const glbBytes = new Uint8Array(2048);
     glbBytes.fill(7);
-    const constantDigest = 'a'.repeat(64);
     const fake = createFakeWx({});
     fake.files.set(SUBPACKAGE_PATH, glbBytes);
-    const mkLoader = () => createCharacterAssetLoader({
+    const mk = () => createCharacterAssetLoader({
       platform: createLocalSubpackagePlatform({ runtime: fake.host as unknown as WxRuntimeArg, logSink: () => undefined }),
-      cdnBaseUrl: LOCAL_BASE_URL,
-      sleep: async () => undefined,
-      textIntegrityMode: 'structural', // 即使开了 structural，GLB 也恒走 strict
-      textStructureValidator: () => ({ errors: [], summary: '不应被调用' }),
+      cdnBaseUrl: LOCAL_BASE_URL, sleep: async () => undefined,
     });
-    const glbRef = { ...HERO_3D_MODEL_REF, urlPath: REF_URL_PATH, sha256: constantDigest, byteLength: glbBytes.byteLength };
-    const first = await mkLoader().load(glbRef);
+    const glbRef = faithfulRef({ id: HERO_3D_MODEL_REF.id, mediaType: HERO_3D_MODEL_REF.mediaType }, glbBytes);
+    const first = await mk().load(glbRef);
     expect(first.status).toBe('downloaded');
     expect(first.integrity?.mode).toBe('strict');
-    const index = fake.storage.get('character3d-cache-index-v1') as Record<string, { sha256: string; byteLength: number }>;
-    // 严格模式：索引 = 清单值（未被 observed 改写）
-    expect(index[glbRef.id].byteLength).toBe(glbRef.byteLength);
-    expect(index[glbRef.id].sha256).toBe(glbRef.sha256);
-    // 第二次启动：热命中
-    const l2 = mkLoader();
+    const l2 = mk();
     const hit = await l2.load(glbRef);
     expect(hit.status).toBe('cache-hit');
     expect(l2.stats().downloads).toBe(0);
-    // 原口径不变：清单（sha）变了就不再**热命中**（严格模式仍以清单为判据）；
-    // 此时走的是 §6.2 的 LKG 回退（有 last-known-good 就用旧的，并打 stale-3d-cache），不是 cache-hit。
-    const changedManifest = { ...glbRef, sha256: 'b'.repeat(64) };
-    const l3 = mkLoader();
-    const miss = await l3.load(changedManifest);
+    const changed = { ...glbRef, sha256: 'b'.repeat(64) };
+    const l3 = mk();
+    const miss = await l3.load(changed);
     expect(l3.stats().cacheHits).toBe(0);
     expect(miss.status).not.toBe('cache-hit');
-    expect(miss.status).toBe('stale-3d-cache'); // §6.2：有 LKG ⇒ 用旧内容 + 诊断，不切 2D 帧
+    expect(miss.status).toBe('stale-3d-cache');
   });
 
-  it('读取来源可追溯：分包命中候选路径被记录（P0-4 诊断）', async () => {
-    const bytes = rewrittenIdleClipJson();
-    const { loader, platform } = loaderWith({ bytes, textIntegrityMode: 'structural' });
+  it('读取来源可追溯：分包命中候选路径被记录（含 .bin 优先级）', async () => {
+    const bytes = clipJsonBytes({ motion: true });
+    const ref = faithfulRef(idleRef, bytes);
+    const { loader, platform } = loaderWith({ bytes });
     await loader.load(ref);
     expect(platform.readSourceTrail().length).toBeGreaterThan(0);
     expect(platform.readSourceTrail().join(' | ')).toContain('writeTempFile');
     expect(platform.readSourceTrail().join(' | ')).toContain('getFileInfo digestAlgorithm=sha256');
+    // 候选优先级：`.bin` 在最前（第 0 号候选命中）
+    expect(codePackageCandidates(REF_URL_PATH)[0].endsWith('.bin')).toBe(true);
   });
-
 });
 
 // ===== 2. 采样与 §5.3 判定（S0 口径逐条对表） =====
@@ -762,7 +799,12 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
       capacity: [],
       phases: PHASES_ORDER.map((name) => ({ name, status: 'ok' as const, detail: '', ms: 1 })),
       runs: [run(1, 'cold'), run(2, 'cold'), run(3, 'cold'), run(4, 'hot'), run(5, 'hot'), run(6, 'hot')],
-      env: { sim: false, commitSha: 'x'.repeat(40), profile: 'spec', screenshots: [], notes: [] },
+      env: {
+        sim: false,
+        build: { commitSha: 'x'.repeat(40), builtAt: '2026-09-14T00:00:00.000Z', payloadSuffix: '.bin' },
+        assetManifestVersion: 'manifest-deadbeef-5assets',
+        commitSha: 'x'.repeat(40), profile: 'spec', screenshots: [], notes: [],
+      },
       ...overrides,
     };
   }
@@ -809,7 +851,14 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
   });
 
   it('sim ⇒ 所有结论加 SIM_ 前缀 + 明确声明非真机证据', () => {
-    const sim = buildResult(baseContext({ env: { sim: true, commitSha: '', profile: 'sim-short', screenshots: [], notes: [] } }));
+    const sim = buildResult(baseContext({
+      env: {
+        sim: true,
+        build: { commitSha: '', builtAt: '', payloadSuffix: '.bin' },
+        assetManifestVersion: 'manifest-deadbeef-5assets',
+        commitSha: '', profile: 'sim-short', screenshots: [], notes: [],
+      },
+    }));
     expect(sim.verdict.device).toBe('SIM_DEVICE_PASS');
     expect(sim.verdict.sixdir).toBe('SIM_PASS');
     expect(sim.notes.join(' ')).toContain('不是');
@@ -854,26 +903,36 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
     expect(ok.rebuildPolicy).toBe('per-loss-single-attempt');
   });
 
-  it('结果层：integrityMode=structural 写进 notes（含 observed vs expected；严格口径漂移也点名）', () => {
+  it('结果层：身份口径恒 strict + 结构诊断入结果 + 摘要未实测要点名', () => {
     const rows = [{
-      assetId: 'hero-clip-idle-v4', mediaType: 'application/json', integrityMode: 'structural' as const, mode: 'structural' as const,
+      assetId: 'hero-clip-idle-v4', mediaType: 'application/json', integrityMode: 'strict' as const, mode: 'strict' as const,
       source: 'download' as const, loadStatus: 'downloaded',
-      byteLengthMatches: false, sha256Matches: false,
-      observedByteLength: 685411, observedSha256: 'aa'.repeat(32),
-      expectedByteLength: 726299, expectedSha256: 'bb'.repeat(32),
-      readSource: 'local-subpackage.readFile(binary, candidate#0 path=subpackages/char3d-assets/…)',
-      headHex64: '7b2266707322', tailHex64: '5d7d',
-      structuralOk: true, structuralDetail: ['结构化：fps=30 nFrames=200'], note: '平台改写导致字节不可比：按结构不变量放行（integrityMode=structural）',
+      byteLengthMatches: true, sha256Matches: true,
+      observedByteLength: 726299, observedSha256: 'aa'.repeat(32),
+      expectedByteLength: 726299, expectedSha256: 'aa'.repeat(32),
+      readSource: 'local-subpackage.readFile(binary, candidate#0 path=subpackages/char3d-assets/…idle_v4.json.bin)',
+      headHex64: '7b22736f7572636522', tailHex64: '5d7d',
+      structuralDiagnostic: { summary: '结构化：fps=30 nFrames=200', errors: [], motionStatic: false },
+      note: '',
       structuralSummary: '结构化：fps=30 nFrames=200',
     }];
     const res = buildResult(baseContext({
-      resource: { ...baseContext().resource, assetIntegrity: rows, integrityNote: '包内文本走结构不变量' },
+      resource: { ...baseContext().resource, assetIntegrity: rows, integrityNote: '包内文本身份 strict' },
     }));
     const note = res.notes.join(' ');
-    expect(note).toContain('integrityMode=structural');
-    expect(note).toContain('685411');
-    expect(note).toContain('726299');
-    expect(note).toContain('结构账见 resource.assetIntegrity');
+    expect(note).toContain('strict');
+    expect(note).toContain('纯诊断');
+    expect(note).toContain('包内载荷形态');
+    expect(note).toContain('.bin');
+    expect(note).toContain('manifest-');
+    // 摘要未实测 ⇒ 必须点名（不许用索引值顶替）
+    const notMeasured = buildResult(baseContext({
+      resource: {
+        ...baseContext().resource,
+        assetIntegrity: [{ ...rows[0], observedSha256: null }],
+      },
+    }));
+    expect(notMeasured.notes.join(' ')).toContain('not-measured');
   });
 
   it('结果出口：console 单行前缀 / 分享文件名 / deviceHash 可复算', () => {
@@ -1129,7 +1188,8 @@ describe('红线：卡 C 新宿主', () => {
     const refs = [HERO_3D_MODEL_REF, ...(['idle', 'atk', 'cast', 'jump'] as const).map((k) => HERO_3D_CLIP_REFS[k])];
     for (const ref of refs) {
       if ('embedded' in ref) continue;
-      const p = 'proto/character3d_runtime_demo/subpackages/char3d-assets/' + ref.urlPath;
+      // R2：包内载荷落 `urlPath + '.bin'`（绕过微信包管线对 .json 的处理）
+      const p = 'proto/character3d_runtime_demo/subpackages/char3d-assets/' + ref.urlPath + '.bin';
       expect(existsSync(p), p).toBe(true);
       expect(byteLengthOf(p), ref.id).toBe(ref.byteLength);
       expect(ref.urlPath).toContain('characters/hero/');
@@ -1223,19 +1283,31 @@ describe('红线：卡 C 新宿主', () => {
     expect(build).toContain('parseDiagnostics');
   });
 
-  it('P0-4 分层：只有包内文本资产可结构性放行（GLB / CDN 恒严格），且 loader 默认口径是 strict', () => {
-    const loaderSrc = readFileSync('net/character-asset-loader.ts', 'utf8');
-    // 结构性放行只对 application/json 生效
-    expect(loaderSrc).toContain("options.textIntegrityMode === 'structural' && ref.mediaType === 'application/json'");
-    // 缺省（未注入选项）= strict：既有调用方与 CDN 路径行为不变
-    expect(loaderSrc).toContain("textIntegrityMode?: 'strict' | 'structural'");
-    // 严格路径的判定与计数仍在（未被结构性放行改写）
+  it('R2 分层：身份**一律严格**（无结构性旁路），结构仅诊断；`.bin` 载荷约定在 build/adapter 两处实现', () => {
+    const loaderSrc = stripComments(readFileSync('net/character-asset-loader.ts', 'utf8')); // 去注释后扫真代码
+    // 已无结构性放行分支（结构性不能再作为通过依据）
+    expect(loaderSrc).not.toContain('textIntegrityMode');
+    expect(loaderSrc).not.toContain("'structural'");
+    // 严格门的判定与计数仍在
     expect(loaderSrc).toContain("diags.push('byteLength-mismatch:'");
     expect(loaderSrc).toContain("diags.push('sha256-mismatch')");
-    // 宿主：模式分层在装配处显式决定
+    // 结构诊断是"记"，动作存活/不可用才是"拦"
+    expect(loaderSrc).toContain('computeTextDiagnostic');
+    expect(loaderSrc).toContain("diags.push((fatal.indexOf('动作静态化') === 0 ? 'motion-static:' : 'text-fatal:') + ref.id)");
+    // 缓存：版本绑定 + 实测摘要 + 读盘完整性
+    expect(loaderSrc).toContain('cache-version-mismatch');
+    expect(loaderSrc).toContain('cache-digest-mismatch');
+    expect(loaderSrc).toContain('not-measured');
     const host = readFileSync('proto/character3d_runtime_demo/host.ts', 'utf8');
-    expect(host).toContain("textIntegrityMode: resourcePlan.mode === 'local-subpackage' ? 'structural' : 'strict'");
     expect(host).toContain('__CHAR3D_INTEGRITY__');
+    expect(host).toContain('assetManifestVersion');
+    // `.bin` 约定：build 落盘 + adapter 候选（两处都在）
+    const buildSrc = readFileSync('proto/character3d_runtime_demo/build.mjs', 'utf8');
+    expect(buildSrc).toContain("const PACKAGED_PAYLOAD_SUFFIX = '.bin';");
+    expect(buildSrc).toContain('分包内出现 .json 载荷');
+    const adapterSrc = readFileSync('proto/character3d_runtime_demo/adapter-local.ts', 'utf8');
+    expect(adapterSrc).toContain("export const PACKAGED_PAYLOAD_SUFFIX = '.bin';");
+    expect(adapterSrc).toContain('relativePath + suffix');
   });
 
   it('禁碰区零改动（battle-core / systems / cloudfunctions / package.json / types.ts 由 git diff 另行核对）', () => {
