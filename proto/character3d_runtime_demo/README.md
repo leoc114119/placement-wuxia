@@ -324,3 +324,74 @@ CDN 侧文件名不变（仍 `.json`）⇒ 身份校验回到**严格 byteLength
 5. `wx.canvasToTempFilePath` 在部分基础库不可用 ⇒ 截图可能需手动（真机 run10 该项未取得）。
 6. 分相 `animMs/submitMs` 是**时间代理**测的（§4.2），与 S0 自带插桩不完全同源，只用于横向看趋势。
 7. `runs[]` 未逐轮留存 downloads/cacheHits（只存"本次启动"的 `loaderStats`）⇒ B.2 表的这两列只能留白。
+
+## 9. CDN 模式（2026-09-15 真机验收用）
+
+> 目标：把资源来源从「分包本地路径」切到**真实 CDN**（`wx.downloadFile` + 校验 + 落盘登记 + LKG），
+> 与线上路径同口径。CDN 侧文件名**保持 `.json`**（包内才是 `.bin`；包管线不影响 CDN）。
+
+### 9.1 上传清单（5 个文件 · 与 `config/character-3d.ts` 逐字一致）
+
+放到 CDN 的 **`<你的 base>/`** 下，保持如下相对路径与文件名（`<sha12>` = 该文件 SHA-256 前 12 位，已算好）：
+
+| # | urlPath（相对 base） | 文件名 | 字节数 | SHA-256（前 12） |
+|---|---|---|---|---|
+| 1 | `characters/hero/ff9202b48470/hero_48k_20260914.glb` | `hero_48k_20260914.glb` | 4,040,728 | `ff9202b48470` |
+| 2 | `characters/hero/0d3262385d45/idle_v4.json` | `idle_v4.json` | 726,299 | `0d3262385d45` |
+| 3 | `characters/hero/546ec94f9906/atk_v4.json` | `atk_v4.json` | 162,924 | `546ec94f9906` |
+| 4 | `characters/hero/3bca24123582/cast_v4.json` | `cast_v4.json` | 490,227 | `3bca24123582` |
+| 5 | `characters/hero/2895612562c2/jump_v6_1p5s.json` | `jump_v6_1p5s.json` | 166,799 | `2895612562c2` |
+
+- **必须逐字节原样上传**（CDN 走严格 `byteLength + SHA-256`；任何压缩/重排版都会被判为字节不符而拒用）。
+  源文件 = `assets/characters/hero/model/hero_48k_20260914.glb` + `assets/characters/hero/anim/*.json`
+  （与 `proto/battle_demo/cdn/` 里的镜像逐字节一致，可直接用后者上传）。
+- 全量 SHA-256 见 `config/character-3d.ts`（`HERO_3D_MODEL_REF` / `HERO_3D_CLIP_REFS`）。
+
+### 9.2 微信后台配置（Leo）
+
+1. **服务器域名** → `downloadFile 合法域名` 加入你的 CDN 域名（必须 **HTTPS**）。
+2. 该域名的证书要有效（自签/过期会被 `downloadFile` 直接拒）。
+
+### 9.3 注入 base URL（三种方式，任选；优先级从上到下）
+
+| 方式 | 怎么做 | 适用 |
+|---|---|---|
+| ① devtools 一行命令（**最快**） | 开发者工具 Console：`wx.setStorageSync('char3d-cdn-base','https://<你的域名>/<路径>')` → 重扫 | 模拟器 |
+| ② 包内文件（**真机推荐**） | 把 base URL（一行，无引号）写进导入目录里的 `cdn-base.txt` → 工具重新**预览** | 真机扫码 |
+| ③ 不配置 | `cdn-base.txt` 为空且 storage 无值 ⇒ **自动走分包本地路径**（现状行为） | 默认 |
+
+- base 里**不要**带 `characters/...`（base 只到目录，例如 `https://cdn.example.com/char3d`）。
+- 屏上第 3 行会显示当前资源源与 base（`资源 cdn · base cdn.example.com/char3d`），一眼可确认切换是否生效。
+- **屏上「切资源源」按钮**：有 base 时在 `CDN ↔ 分包本地路径` 之间来回切（写 storage 并**立即重装配**，不用重扫）；
+  无 base 时按键只给提示（"把 HTTPS 地址写进包内 cdn-base.txt"）。
+
+### 9.4 跑到什么程度算过（本轮验收看这几项）
+
+1. 面板第 3 行：`资源 cdn · base <你的域名>`；`缓存` 列随冷/热链变化；
+2. 结果 JSON 里（`resource.downloadStats`）：
+   - `sourceMode='cdn'`、`baseUrl`、`baseUrlSource`（`storage` / `package-file`）
+   - `downloads=5`、`bytes=5,586,977`（= 上表 5 个文件之和）、`ms>0`、`cacheHits=0`（首启）
+   - 每个资产 `byteLengthMatches=true`、`sha256Matches=true`、`integrityMode='strict'`
+3. **热链**：第二次启动 `cacheHits=5`、`downloads=0`（CDN 下载的内容同样会落盘登记，走 P0-5 的版本绑定命中）；
+4. console 单行 `__CHAR3D_INTEGRITY__={"downloadStats":{...}}` 可直接抄回来。
+
+### 9.5 域名/网络没配好时的预期表现（**先照这个对，别猜**）
+
+| 现象 | 屏上 | 结果 JSON | 判定 |
+|---|---|---|---|
+| 合法域名未配置 | 第 7 行 `判定 … device=DEVICE_FAIL` + 末行 `✗ 流程失败：资源门失败：…downloadFile:fail url not in domain list` | `downloadStats.domainBlocked=true`、`failureReasons[0]` 含 `url not in domain list` | **就是白名单没生效**（不是代码问题） |
+| base 路径写错 / 404 | 同上，原因含 `HTTP 404` | `domainBlocked=false`、`failureReasons[0]` 含 `HTTP 404` | URL/路径写错 |
+| 断网 / 超时 | 同上，原因含 `downloadFile 失败` / `download timeout` | `timeouts>0` 或 `networkErrors>0` | 网络问题；loader 会**重试恰 2 次**（1s、3s）后失败 |
+| 上传内容与清单不符（压缩/改排版） | 同上，原因含 `byteLength-mismatch` 或 `sha256-mismatch` | 该资产 `byteLengthMatches=false` / `sha256Matches=false` + `observedByteLength/observedSha256` | **上传件不是原样字节**（按 §9.1 重传） |
+
+- 失败时**不会**静默：一律 DEVICE_FAIL + 显式原因（资源门失败页语义见 §6.2），且**不切 2D 帧、不进入战斗**。
+- `resource.loadStatus='failed'` + `assetIntegrity[]` 里逐资产都能看到 `observedByteLength/observedSha256/headHex64/tailHex64`。
+
+### 9.6 联调自测（不用真机也能先跑一遍）
+
+```bash
+# 用仓库内的 CDN 镜像当"CDN 空间"，端到端跑真实下载链（sim）
+node proto/character3d_runtime_demo/tests/runtime-demo-browser.mjs --runs=2 --cdn=ok   # 期望全绿 + downloads=5/bytes=5586977
+node proto/character3d_runtime_demo/tests/runtime-demo-browser.mjs --runs=1 --cdn=bad  # 404 失败路径（domainBlocked=false）
+node proto/character3d_runtime_demo/tests/runtime-demo-browser.mjs --runs=1 --cdn=nodomain  # 白名单失败路径（domainBlocked=true）
+```

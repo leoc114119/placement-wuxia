@@ -196,6 +196,29 @@ export interface ResourceChainEvidence {
   rebuildReadSourceTrail: string[] | null;
   /** 文本完整性口径说明（一行） */
   integrityNote: string;
+  /** 资源获取统计（**CDN 模式的证据主体**：下载次数 / 字节 / 耗时 / 命中 / 失败原因） */
+  downloadStats: {
+    /** 本次实际使用的资源来源（与 `mode` 同源，便于单独读） */
+    sourceMode: 'local-subpackage' | 'cdn';
+    baseUrl: string;
+    /** base 从哪来：storage / 包内 cdn-base.txt / 未配置 */
+    baseUrlSource: 'storage' | 'package-file' | 'none';
+    /** true = 强制走分包本地路径（屏上「切资源源」按过） */
+    forcedLocal: boolean;
+    downloads: number;
+    downloadAttempts: number;
+    bytes: number;
+    ms: number;
+    cacheHits: number;
+    staleFallbacks: number;
+    failures: number;
+    timeouts: number;
+    networkErrors: number;
+    /** ★ true = 失败原因里出现"合法域名/domain"字样（明天域名没配好时一眼看出是白名单问题） */
+    domainBlocked: boolean;
+    /** 逐资产失败原因（最多 5 条） */
+    failureReasons: string[];
+  };
 }
 
 export interface RuntimeDevice {

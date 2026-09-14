@@ -1,5 +1,5 @@
 /* character3d_runtime_demo bundle —— 由 proto/character3d_runtime_demo/build.mjs 生成，勿手改 */
-var __CHAR3D_BUILD__ = {"commitSha":"76698ca001a84aa2860a5b22c91857098784afaa","builtAt":"2026-09-14T13:57:44.224Z","payloadSuffix":".bin"};
+var __CHAR3D_BUILD__ = {"commitSha":"8dc2e3f5bf3f70466e7d9071a0a3bb04decb601b","builtAt":"2026-09-14T14:08:26.136Z","payloadSuffix":".bin"};
 if (typeof globalThis !== "undefined") { globalThis.__CHAR3D_BUILD__ = __CHAR3D_BUILD__; }
 (function () {
   var __mods = Object.create(null);
@@ -96,6 +96,7 @@ function resolveWx() {
 const STORAGE_RUNS = 'char3d-runtime-runs-v1';
 const STORAGE_PERF_ALWAYS = 'char3d-runtime-perf-mode';
 const STORAGE_CDN_BASE = 'char3d-cdn-base';
+const STORAGE_SOURCE_FORCE = 'char3d-source-force';
 const COLD_SERIES = E.RUNS_REQUIRED;
 const PAGED_CHARS = 1200;
 const CLOCK_PAUSE_MS = 300;
@@ -156,7 +157,7 @@ function startRuntimeDemo(options = {}) {
     mainCanvas.height = Math.max(1, Math.round(winH * dprUsed));
     const bbW = mainCanvas.width;
     const bbH = mainCanvas.height;
-    const layout = (0, hud_1.computeLayout)(bbW, bbH, ['copy', 'share', 'view', 'perf', 'retry3d']);
+    const layout = (0, hud_1.computeLayout)(bbW, bbH, ['copy', 'share', 'view', 'perf', 'source', 'retry3d']);
     const view = { lines: [], footer: '', page: null };
     const state = {
         phase: 'boot',
@@ -366,7 +367,8 @@ function startRuntimeDemo(options = {}) {
             'T31-FE-C · ' + (state.sim ? 'BROWSER SIM（非真机证据）' : 'WX 真机') + ' · ' + ((_a = sys.brand) !== null && _a !== void 0 ? _a : '?') + '/' + ((_b = sys.model) !== null && _b !== void 0 ? _b : '?'),
             'SDK ' + String((_c = sys.SDKVersion) !== null && _c !== void 0 ? _c : '?') + ' · dpr ' + dpr + '(用 ' + dprUsed + ') · bb ' + bb.width + 'x' + bb.height,
             'edgeMode ' + String((_d = r === null || r === void 0 ? void 0 : r.edgeMode) !== null && _d !== void 0 ? _d : '—') + ' · aa有效 ' + String((_f = (_e = r === null || r === void 0 ? void 0 : r.renderer.contextAttributes) === null || _e === void 0 ? void 0 : _e.antialias) !== null && _f !== void 0 ? _f : '—') +
-                ' · 资源 ' + ((_g = resourcePlanCached === null || resourcePlanCached === void 0 ? void 0 : resourcePlanCached.mode) !== null && _g !== void 0 ? _g : '—') + ' · 缓存 ' + state.cacheState,
+                ' · 资源 ' + ((_g = resourcePlanCached === null || resourcePlanCached === void 0 ? void 0 : resourcePlanCached.mode) !== null && _g !== void 0 ? _g : '—') + ' · 缓存 ' + state.cacheState +
+                (cdnBaseInfo.url ? ' · base ' + cdnBaseInfo.url.replace(/^https?:\/\//, '') : ''),
             '冷启动 ' + progress.cold + '/' + progress.required + ' · 热缓存 ' + progress.hot + '/' + progress.required +
                 ' · 本轮 #' + runIndexCached + ' · 阶段 ' + state.phase,
             '命令 ' + state.commands.length + 'u · pass ' + frameTimes.passMs.toFixed(1) + 'ms（anim ' + frameTimes.animMs.toFixed(1) +
@@ -398,6 +400,7 @@ function startRuntimeDemo(options = {}) {
         (0, hud_1.drawHud)(mainCtx, layout, view);
     }
     let resourcePlanCached = null;
+    let cdnBaseInfo = { url: null, from: 'none' };
     let runIndexCached = 1;
     function readSourceTrailOf(platform) {
         const p = platform;
@@ -451,11 +454,67 @@ function startRuntimeDemo(options = {}) {
             readSourceTrail: trail,
             rebuildReadSourceTrail: null,
             integrityNote: integrityNoteOf(resourcePlan),
+            downloadStats: buildDownloadStats(resourcePlan, profileLoad.diagnostics),
+        };
+    }
+    function packagedCdnBase() {
+        for (const candidate of ['cdn-base.txt', './cdn-base.txt', 'subpackages/char3d-assets/cdn-base.txt']) {
+            try {
+                const raw = host.getFileSystemManager().readFileSync(candidate, 'utf8');
+                const url = typeof raw === 'string' ? raw.trim() : '';
+                if (url)
+                    return url;
+            }
+            catch (_a) { }
+        }
+        return null;
+    }
+    function resolveCdnBase() {
+        const fromStorage = safeCall(() => host.getStorageSync(STORAGE_CDN_BASE), null);
+        if (fromStorage && String(fromStorage).trim())
+            return { url: String(fromStorage).trim(), from: 'storage' };
+        const fromFile = packagedCdnBase();
+        if (fromFile)
+            return { url: fromFile, from: 'package-file' };
+        return { url: null, from: 'none' };
+    }
+    function forcedLocal() {
+        return safeCall(() => host.getStorageSync(STORAGE_SOURCE_FORCE), 'auto') === 'local';
+    }
+    function buildDownloadStats(resourcePlan, diagnostics) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+        const stats = lastLoaderStats !== null && lastLoaderStats !== void 0 ? lastLoaderStats : {};
+        const reasons = diagnostics
+            .filter((d) => d.includes('attempt-failed') || d.includes('downloadFile') || d.includes('失败'))
+            .slice(0, 5);
+        const domainBlocked = reasons.some((d) => /合法域名|domain|not in domain list/i.test(d));
+        return {
+            sourceMode: resourcePlan.mode,
+            baseUrl: (_a = cdnBaseInfo.url) !== null && _a !== void 0 ? _a : '',
+            baseUrlSource: cdnBaseInfo.from,
+            forcedLocal: forcedLocal(),
+            downloads: (_b = stats.downloads) !== null && _b !== void 0 ? _b : 0,
+            downloadAttempts: (_c = stats.downloadAttempts) !== null && _c !== void 0 ? _c : 0,
+            bytes: (_d = stats.downloadBytesTotal) !== null && _d !== void 0 ? _d : 0,
+            ms: (_e = stats.downloadMsTotal) !== null && _e !== void 0 ? _e : 0,
+            cacheHits: (_f = stats.cacheHits) !== null && _f !== void 0 ? _f : 0,
+            staleFallbacks: (_g = stats.staleFallbacks) !== null && _g !== void 0 ? _g : 0,
+            failures: (_h = stats.failures) !== null && _h !== void 0 ? _h : 0,
+            timeouts: (_j = stats.timeouts) !== null && _j !== void 0 ? _j : 0,
+            networkErrors: (_k = stats.networkErrors) !== null && _k !== void 0 ? _k : 0,
+            domainBlocked,
+            failureReasons: reasons,
         };
     }
     function plan() {
-        const cdn = safeCall(() => host.getStorageSync(STORAGE_CDN_BASE), null);
-        return (0, adapter_local_1.resolveResourceChainPlan)({ cdnBaseUrl: cdn });
+        const base = resolveCdnBase();
+        cdnBaseInfo = { url: base.url, from: base.from };
+        if (forcedLocal()) {
+            const local = (0, adapter_local_1.resolveResourceChainPlan)({ cdnBaseUrl: null });
+            cdnBaseInfo = { url: null, from: base.from };
+            return local;
+        }
+        return (0, adapter_local_1.resolveResourceChainPlan)({ cdnBaseUrl: base.url });
     }
     function loadSubpackage(resourcePlan) {
         if (resourcePlan.mode !== 'local-subpackage' || typeof host.loadSubpackage !== 'function')
@@ -518,6 +577,7 @@ function startRuntimeDemo(options = {}) {
             const profileLoad = await loader.loadProfile(character_3d_1.HERO_3D_PROFILE);
             stages.loaderMs = Math.round(nowMs() - tLoad);
             const stats = loader.stats();
+            lastLoaderStats = stats;
             const isPrimaryAssembly = resource === null;
             captureResourceEvidence(platform, resourcePlan, profileLoad, isPrimaryAssembly);
             if (resource && isPrimaryAssembly)
@@ -919,6 +979,7 @@ function startRuntimeDemo(options = {}) {
             mode: evidence.mode,
             integrityNote: evidence.integrityNote,
             loadStatus: evidence.loadStatus,
+            downloadStats: evidence.downloadStats,
             assets: evidence.assetIntegrity.map((row) => ({
                 assetId: row.assetId,
                 mediaType: row.mediaType,
@@ -1122,6 +1183,7 @@ function startRuntimeDemo(options = {}) {
         return 'manifest-' + (h1 >>> 0).toString(16).padStart(8, '0') + '-' + parts.length + 'assets';
     }
     let resource = null;
+    let lastLoaderStats = null;
     let resolvedResult = null;
     let preContextSnapshot = null;
     function deviceSnapshot() {
@@ -1182,6 +1244,11 @@ function startRuntimeDemo(options = {}) {
                 hotChainObserved: false, loadStatus: 'failed', diagnostics: ['未装配'],
                 assetIntegrity: [], rebuildIntegrity: null, readSourceTrail: [], rebuildReadSourceTrail: null,
                 integrityNote: '未装配（无完整性观测）',
+                downloadStats: {
+                    sourceMode: 'local-subpackage', baseUrl: '', baseUrlSource: 'none', forcedLocal: false,
+                    downloads: 0, downloadAttempts: 0, bytes: 0, ms: 0, cacheHits: 0, staleFallbacks: 0,
+                    failures: 0, timeouts: 0, networkErrors: 0, domainBlocked: false, failureReasons: [],
+                },
             },
             sixDir: parts.sixDir,
             states: parts.states,
@@ -1233,7 +1300,8 @@ function startRuntimeDemo(options = {}) {
     function handleButton(id) {
         var _a;
         state.buttonActions++;
-        if (!runtime3d && id !== 'retry3d') {
+        const recoveryOnly = id === 'copy' || id === 'share' || id === 'view' || id === 'retry3d' || id === 'source';
+        if (!runtime3d && !recoveryOnly) {
             state.footer = '▶ ' + ((_a = hud_1.BUTTON_LABELS[id]) !== null && _a !== void 0 ? _a : id) + '：运行时未就绪';
             return;
         }
@@ -1262,6 +1330,27 @@ function startRuntimeDemo(options = {}) {
         }
         if (id === 'share') {
             void shareResult();
+            return;
+        }
+        if (id === 'source') {
+            const base = resolveCdnBase();
+            if (!base.url) {
+                state.footer = '▶ 未配置 CDN base：把 HTTPS 地址写进包内 cdn-base.txt（或 devtools: ' +
+                    "wx.setStorageSync('char3d-cdn-base','https://…')）后重扫";
+                return;
+            }
+            const nextLocal = !forcedLocal();
+            safeCall(() => host.setStorageSync(STORAGE_SOURCE_FORCE, nextLocal ? 'local' : 'auto'), undefined);
+            state.footer = '▶ 资源源 → ' + (nextLocal ? '分包本地路径（忽略 cdn base）' : 'CDN（' + base.url + '）') + '，正在重装配…';
+            void (async () => {
+                try {
+                    await bootstrap3D(plan(), false);
+                    state.footer = '▶ 资源源已切：' + (nextLocal ? 'local-subpackage' : 'cdn');
+                }
+                catch (error) {
+                    state.footer = '▶ 切换后装配失败：' + messageOf(error);
+                }
+            })();
             return;
         }
         if (id === 'perf') {
@@ -2374,7 +2463,8 @@ function createCharacterAssetLoader(options) {
     const downloadTimeoutMs = (_b = options.downloadTimeoutMs) !== null && _b !== void 0 ? _b : 15000;
     const sleep = (_c = options.sleep) !== null && _c !== void 0 ? _c : ((ms) => new Promise((resolve) => { setTimeout(resolve, ms); }));
     const stats = {
-        downloadAttempts: 0, downloads: 0, cacheHits: 0, staleFallbacks: 0, failures: 0, cacheWriteFailures: 0,
+        downloadAttempts: 0, downloads: 0, downloadBytesTotal: 0, downloadMsTotal: 0,
+        cacheHits: 0, staleFallbacks: 0, failures: 0, cacheWriteFailures: 0,
         structureRejects: 0, shaMismatches: 0, byteLengthMismatches: 0, timeouts: 0, networkErrors: 0,
         tempFilesRemoved: 0,
     };
@@ -2416,6 +2506,7 @@ function createCharacterAssetLoader(options) {
                         note: measured.via === 'sha256File' || measured.via === 'sha256Bytes'
                             ? '热命中（盘上文件与清单逐字节一致：长度 + 实测摘要双重校验通过）'
                             : '',
+                        fetchMs: null,
                     });
                 }
                 if (!lengthOk) {
@@ -2483,6 +2574,7 @@ function createCharacterAssetLoader(options) {
                         readSource: readSourceOf(), headHex64: edges.head, tailHex64: edges.tail,
                         structuralDiagnostic: lkgDiag,
                         note: 'stale-3d-cache：网络/资产失败时回退到 LKG（不切 2D 帧；LKG 摘要已实测核对）',
+                        fetchMs: null,
                     });
                 }
                 diags.push('stale-lkg-rejected');
@@ -2559,6 +2651,7 @@ function createCharacterAssetLoader(options) {
     }
     async function attemptDownload(ref, diags) {
         const url = joinCdnUrl(options.cdnBaseUrl, ref.urlPath);
+        const fetchStartedAt = platform.now();
         const tempName = ref.id + '.tmp';
         let tempPath = null;
         stats.downloadAttempts++;
@@ -2566,10 +2659,14 @@ function createCharacterAssetLoader(options) {
         let observedSha = null;
         let digestError = null;
         let readSource = 'unknown';
+        let fetchMs = null;
         let structuralDiagnostic = null;
         const note = '';
         try {
             bytes = await withTimeout(platform.downloadArrayBuffer(url, { timeoutMs: downloadTimeoutMs }), downloadTimeoutMs, () => { stats.timeouts++; });
+            fetchMs = Math.max(0, Math.round(platform.now() - fetchStartedAt));
+            stats.downloadBytesTotal += bytes.byteLength;
+            stats.downloadMsTotal += fetchMs;
             readSource = readSourceOf();
             tempPath = await platform.writeTempFile(tempName, bytes);
             try {
@@ -2658,6 +2755,7 @@ function createCharacterAssetLoader(options) {
                 tailHex64: edges.tail,
                 structuralDiagnostic,
                 note: note || notes.join('；'),
+                fetchMs,
             };
         }
     }
@@ -6104,7 +6202,7 @@ exports.computeLayout = computeLayout;
 exports.hitTest = hitTest;
 exports.paginate = paginate;
 exports.drawHud = drawHud;
-exports.HUD_BUTTON_IDS = ['copy', 'share', 'view', 'perf', 'retry3d'];
+exports.HUD_BUTTON_IDS = ['copy', 'share', 'view', 'perf', 'source', 'retry3d'];
 function computeLayout(width, height, buttonIds) {
     const buttonsH = Math.max(64, Math.round(height * 0.075));
     const buttons = [];
@@ -6146,6 +6244,7 @@ exports.BUTTON_LABELS = {
     share: '分享结果',
     view: '查看结果',
     perf: '重跑压测',
+    source: '切资源源',
     retry3d: '重试3D',
 };
 const FONT = '"PingFang SC","Microsoft YaHei",monospace';

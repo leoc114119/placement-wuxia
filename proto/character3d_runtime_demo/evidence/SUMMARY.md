@@ -352,6 +352,23 @@
 
 ---
 
+## B7. CDN 模式彩排（sim，2026-09-14 夜 · 明天真机照此对表）
+
+> 目的：明天把域名配好之前，先在 sim 里把**同一条 `wx.downloadFile` 链**跑通并留下基线数字，
+> 这样真机一上就能判断"是不是白名单/上传件的问题"，而不是从零排查。
+
+| 场景 | 命令 | 结果 | 关键读数 |
+|---|---|---|---|
+| CDN 成功链 | `--runs=2 --cdn=ok`（base = 本地静态服务器上的 `proto/battle_demo/cdn` 镜像） | **36/36 PASS** | `sourceMode=cdn` · `baseUrlSource=storage` · `downloads=5` · `bytes=5,586,977` · `ms>0` · 5 个资产 `byteLengthMatches+sha256Matches` 全真 · 第二次启动 `cacheHits=5/downloads=0` |
+| 404 失败路径 | `--runs=1 --cdn=bad` | **13/13 PASS** | `loadStatus=failed` · `failures=5` · `downloadAttempts=15`（恰 2 次重试 ×5）· `failureReasons[0]` 含 `HTTP 404` · `domainBlocked=**false**` |
+| 合法域名未配 | `--runs=1 --cdn=nodomain` | **13/13 PASS** | `failureReasons[0]` 含 `url not in domain list` · `domainBlocked=**true**` |
+
+- 基线字节数 **5,586,977** = 上表 5 个 CDN 上传件之和（README §9.1）——真机 CDN 首启的 `downloadStats.bytes` 应等于它。
+- 失败路径一律：`DEVICE_FAIL` + 显式原因（屏上末行同文案）+ 逐资产观测（`observedByteLength/observedSha256/headHex64/tailHex64`）。
+- 注入方式与上传清单见 README §9；**BASE 与文件名明天由 Leo 按 §9.1 上传，代码侧无需改动**。
+
+---
+
 ## C. 已知缺口与不确定项（交付时如实登记）
 
 1. **CDN 未跑（2026-09-15 验）**：真机侧此前无已备案 HTTPS 源 ⇒ 一直走分包/本地路径 adapter（同一条 loader

@@ -1,0 +1,198 @@
+{
+ "generatedAt": "2026-09-14T14:13:24.327Z",
+ "commitSha": "8dc2e3f5bf3f70466e7d9071a0a3bb04decb601b",
+ "scenario": "cdn-ok（CDN 模式：静态服务器 CDN 镜像，走真实 downloadFile 链）",
+ "aa": "fxaa",
+ "profile": "sim",
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "deviceScaleFactor": 2,
+ "deviceEvidence": false,
+ "note": "sim（浏览器 + wx shim）只证明同一份 bundle 的代码路径通；真机能力证据必须来自 HONOR 扫码运行（方案 §9.3）",
+ "assertions": [
+  {
+   "name": "结果 schema 版本",
+   "ok": true,
+   "detail": "t31-fe-c-1.0"
+  },
+  {
+   "name": "sim 标记（非真机证据）",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "device 判定为 SIM_ 前缀",
+   "ok": true,
+   "detail": "SIM_DEVICE_INCOMPLETE"
+  },
+  {
+   "name": "CDN：资源源切到 cdn（结果里 mode + downloadStats.sourceMode 都是 cdn）",
+   "ok": true,
+   "detail": "mode=cdn base=http://127.0.0.1:61356/proto/battle_demo/cdn from=storage"
+  },
+  {
+   "name": "CDN：走真实下载链（downloads=5 + 字节/耗时都记了）",
+   "ok": true,
+   "detail": "downloads=5 bytes=5586977 ms=27 attempts=5"
+  },
+  {
+   "name": "CDN：下载后字节与清单**逐字节一致**（严格身份通过）",
+   "ok": true,
+   "detail": "hero-model-48k-20260914:4040728 hero-clip-idle-v4:726299 hero-clip-atk-v4:162924 hero-clip-cast-v4:490227 hero-clip-jump-v6-1p5s:166799"
+  },
+  {
+   "name": "CDN：读来源轨迹显示 downloadFile 链路（非分包读包）",
+   "ok": true,
+   "detail": "cacheRemove(hero-model-48k-20260914) | cacheRemove(hero-clip-idle-v4)"
+  },
+  {
+   "name": "CDN：boot ok + 无失败",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
+   "ok": true,
+   "detail": "{\"subpackageMs\":0,\"loaderMs\":48,\"glbParseMs\":2,\"animParseMs\":2,\"textureDecodeMs\":1,\"firstGpuUploadMs\":58}"
+  },
+  {
+   "name": "六向 6 行且逐向 expected==activeClipKey",
+   "ok": true,
+   "detail": "right:idle rightup:walk leftup:idle left:walk leftdown:idle rightdown:walk"
+  },
+  {
+   "name": "全状态 7 行（idle/walk/basic/charge/strike/jump/dead）且逐态一致",
+   "ok": true,
+   "detail": "idle:idle walk:walk basic:atk charge:cast strike:cast jump:jump dead:idle"
+  },
+  {
+   "name": "轻功三元 7 例：cmdIsJump 与 activeClipKey 全对（含 300ms 窗后 / 起落 hop=0 / 死亡释放）",
+   "ok": true,
+   "detail": "jump-inside-300ms-window:snap=true,cmd=true,clip=jump | jump-after-300ms-snapshot-window:snap=true,cmd=true,clip=jump | walk-normal-no-jump:snap=false,cmd=false,clip=walk | jump-endpoint-hop0:snap=true,cmd=true,clip=jump | jump-landing-hop0:snap=true,cmd=true,clip=jump | jump-released-after-duration:snap=true,cmd=false,clip=walk | jump-died-releases:snap=true,cmd=false,clip=idle"
+  },
+  {
+   "name": "三元文案含 snapIsJump/cmdIsJump/activeClipKey 三者且有口径声明",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "上下文注入：真 WEBGL_lose_context 可用",
+   "ok": true,
+   "detail": "gl-ext · restoreVia=event"
+  },
+  {
+   "name": "上下文注入：lost 被观测 + 短暂 lost 期间 session 继续",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "上下文注入：恢复成功 + 恢复首帧 dt=0（不补算停顿）",
+   "ok": true,
+   "detail": "dt=0"
+  },
+  {
+   "name": "上下文注入：sim 走 event 快路径（平台允许扩展恢复；真重建路径不得在 sim 触发回归）",
+   "ok": true,
+   "detail": "restoreVia=event rebuild=false"
+  },
+  {
+   "name": "上下文注入：暂停期间帧冻结 + 恢复 dt=0",
+   "ok": true,
+   "detail": "frozen=0 resumeDt=0"
+  },
+  {
+   "name": "上下文注入：单 RAF（峰值 ≤1）",
+   "ok": true,
+   "detail": "raf 峰值=1"
+  },
+  {
+   "name": "上下文注入：二次重建终失败 → 暂停对局 + 错误页 + 输入被忽略",
+   "ok": true,
+   "detail": "failed=true paused=true page=true inputIgnored=true"
+  },
+  {
+   "name": "上下文注入：终失败暂停后 tick 冻结",
+   "ok": true,
+   "detail": "frames=0"
+  },
+  {
+   "name": "上下文 verdict 非 FAIL",
+   "ok": true,
+   "detail": "SIM_PASS"
+  },
+  {
+   "name": "阶段顺序：context 恒在最后（测量项在前）",
+   "ok": true,
+   "detail": "boot:ok sixdir:ok states:ok jump-trio:ok perf:ok context:ok"
+  },
+  {
+   "name": "测量项阶段全部 ok（六向/全状态/轻功三元/压测）",
+   "ok": true,
+   "detail": "boot:ok sixdir:ok states:ok jump-trio:ok perf:ok context:ok"
+  },
+  {
+   "name": "压测后先落 precontext 中间快照（自测失败也不丢测量结果）",
+   "ok": true,
+   "detail": "/sim-user/char3d_hcrbug_result_run1_precontext.json /sim-user/char3d_hcrbug_result_run1.json"
+  },
+  {
+   "name": "FXAA 分支是生产分支（有效 antialias=false）",
+   "ok": true,
+   "detail": "edgeMode=fxaa aa=false"
+  },
+  {
+   "name": "20u 档：每帧 drawCall=20 / palette=20（计数器差分）",
+   "ok": true,
+   "detail": "1u:1/1 5u:5/5 10u:10/10 20u:20/20"
+  },
+  {
+   "name": "20u 档：屏上 20 个角色全部可见",
+   "ok": true,
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18556,perf-1:20507,perf-2:20233,perf-3:20541,perf-4:19099,perf-5:18700,…"
+  },
+  {
+   "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
+   "ok": true,
+   "detail": "A_COMPATIBLE_CAPACITY_FAIL → capacity20=NON_SPEC_PROFILE_NOT_APPLICABLE"
+  },
+  {
+   "name": "20u 档：记录 edgeMode/backbuffer/cacheHit",
+   "ok": true,
+   "detail": "bb={\"width\":780,\"height\":1688}"
+  },
+  {
+   "name": "结果回收：console 单行可用",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "结果回收：剪贴板成功（字符数 > 0）",
+   "ok": true,
+   "detail": "27938"
+  },
+  {
+   "name": "结果回收：分享被调起",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "tap 诊断单行（含 mapped/hit/verdict）",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "无页面异常",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "运行历史跨启动累积（第 N 次启动读到 ≥N 条记录）",
+   "ok": true,
+   "detail": "runs=1 / 启动次数=1"
+  }
+ ],
+ "passCount": 36,
+ "total": 36
+}

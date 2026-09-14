@@ -1,0 +1,83 @@
+{
+ "generatedAt": "2026-09-14T14:17:54.794Z",
+ "commitSha": "8dc2e3f5bf3f70466e7d9071a0a3bb04decb601b",
+ "scenario": "cdn-nodomain（CDN 模式：合法域名未配置失败路径）",
+ "aa": "fxaa",
+ "profile": "sim",
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "deviceScaleFactor": 2,
+ "deviceEvidence": false,
+ "note": "sim（浏览器 + wx shim）只证明同一份 bundle 的代码路径通；真机能力证据必须来自 HONOR 扫码运行（方案 §9.3）",
+ "assertions": [
+  {
+   "name": "结果 schema 版本",
+   "ok": true,
+   "detail": "t31-fe-c-1.0"
+  },
+  {
+   "name": "sim 标记（非真机证据）",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "device 判定为 SIM_ 前缀",
+   "ok": true,
+   "detail": "SIM_DEVICE_FAIL"
+  },
+  {
+   "name": "CDN 失败路径：资源门失败被如实记录（failures/attempts + 重试 2 次）",
+   "ok": true,
+   "detail": "loadStatus=failed failures=5 attempts=15"
+  },
+  {
+   "name": "CDN 失败路径：失败原因进结果（可直接看出是哪一层错）",
+   "ok": true,
+   "detail": "model:attempt-failed:[platform-wx] downloadFile 失败: downloadFile:fail url not in domain list（复刻：合法域名未配置） | model:attempt-failed:[platform-wx] downloadFile 失败: downloadFile:fail url not in domain list（复刻：合法域名未配置）"
+  },
+  {
+   "name": "CDN 失败路径：域名白名单判定与事实一致（应为 true）",
+   "ok": true,
+   "detail": "domainBlocked=true"
+  },
+  {
+   "name": "CDN 失败路径：屏上单行 + 结论行可读（DEVICE_FAIL 而非静默）",
+   "ok": true,
+   "detail": "SIM_DEVICE_FAIL"
+  },
+  {
+   "name": "结果回收：console 单行可用",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "结果回收：剪贴板成功（字符数 > 0）",
+   "ok": true,
+   "detail": "10614"
+  },
+  {
+   "name": "结果回收：分享被调起",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "tap 诊断单行（含 mapped/hit/verdict）",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "无页面异常",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "资源门失败场景：运行历史不推进是**预期**（失败启动不计入冷/热系列）",
+   "ok": true,
+   "detail": "runs=0"
+  }
+ ],
+ "passCount": 13,
+ "total": 13
+}

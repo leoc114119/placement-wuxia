@@ -80,6 +80,10 @@ export interface Character3DProfileLoadResult {
 export interface CharacterAssetLoaderStats {
   downloadAttempts: number;
   downloads: number;
+  /** 下载成功累计字节（CDN 模式证据：下载次数/字节/耗时三项之一） */
+  downloadBytesTotal: number;
+  /** 下载成功累计耗时（毫秒，平台钟；CDN 模式证据） */
+  downloadMsTotal: number;
   cacheHits: number;
   staleFallbacks: number;
   failures: number;
@@ -125,6 +129,8 @@ export interface CharacterAssetIntegrity {
   } | null;
   /** 口径说明（摘要未实测、字节不符、动作静态化等都会在这里留痕） */
   note: string;
+  /** 本次「取字节」的耗时（毫秒；平台钟，cdn 模式下即 wx.downloadFile 往返 + 读临时文件） */
+  fetchMs: number | null;
 }
 
 export interface CharacterAssetLoaderOptions {
@@ -200,7 +206,8 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
   const downloadTimeoutMs = options.downloadTimeoutMs ?? 15000;
   const sleep = options.sleep ?? ((ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); }));
   const stats: CharacterAssetLoaderStats = {
-    downloadAttempts: 0, downloads: 0, cacheHits: 0, staleFallbacks: 0, failures: 0, cacheWriteFailures: 0,
+    downloadAttempts: 0, downloads: 0, downloadBytesTotal: 0, downloadMsTotal: 0,
+    cacheHits: 0, staleFallbacks: 0, failures: 0, cacheWriteFailures: 0,
     structureRejects: 0, shaMismatches: 0, byteLengthMismatches: 0, timeouts: 0, networkErrors: 0,
     tempFilesRemoved: 0,
   };
@@ -252,6 +259,7 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
             note: measured.via === 'sha256File' || measured.via === 'sha256Bytes'
               ? '热命中（盘上文件与清单逐字节一致：长度 + 实测摘要双重校验通过）'
               : '',
+            fetchMs: null,
           });
         }
         if (!lengthOk) {
@@ -321,6 +329,7 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
             readSource: readSourceOf(), headHex64: edges.head, tailHex64: edges.tail,
             structuralDiagnostic: lkgDiag,
             note: 'stale-3d-cache：网络/资产失败时回退到 LKG（不切 2D 帧；LKG 摘要已实测核对）',
+            fetchMs: null,
           });
         }
         diags.push('stale-lkg-rejected');
@@ -424,6 +433,7 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
     | { ok: false; error: string; integrity: CharacterAssetIntegrity }
   > {
     const url = joinCdnUrl(options.cdnBaseUrl, ref.urlPath);
+    const fetchStartedAt = platform.now();
     const tempName = ref.id + '.tmp';
     let tempPath: string | null = null;
     stats.downloadAttempts++;
@@ -431,6 +441,7 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
     let observedSha: string | null = null;
     let digestError: unknown = null;
     let readSource = 'unknown';
+    let fetchMs: number | null = null;
     let structuralDiagnostic: CharacterAssetIntegrity['structuralDiagnostic'] = null;
     const note = '';
     try {
@@ -439,6 +450,9 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
         downloadTimeoutMs,
         () => { stats.timeouts++; },
       );
+      fetchMs = Math.max(0, Math.round(platform.now() - fetchStartedAt));
+      stats.downloadBytesTotal += bytes.byteLength;
+      stats.downloadMsTotal += fetchMs;
       readSource = readSourceOf();
       tempPath = await platform.writeTempFile(tempName, bytes);
       // SHA 观测：**先记后判**（失败时也要有 observedSha256 供定位）。文件 SHA 走
@@ -529,6 +543,7 @@ export function createCharacterAssetLoader(options: CharacterAssetLoaderOptions)
         tailHex64: edges.tail,
         structuralDiagnostic,
         note: note || notes.join('；'),
+        fetchMs,
       };
     }
   }

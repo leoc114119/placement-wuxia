@@ -247,8 +247,18 @@
     },
 
     downloadFile: function (o) {
-      // 本地分包模式下不会被调用；保留实现以便将来切 CDN 模式时 sim 也能跑
-      fetch(o.url).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
+      // cdn 模式下由 loader 走这条路（sim 里 = fetch 静态服务器上的 CDN 镜像）
+      // 复刻两种真机失败：① 非 200（HTTP 错误）② 合法域名未配置（errMsg 含 url not in domain list）
+      if (window.__WX_SHIM_DOWNLOAD_FAIL === 'nodomain') {
+        setTimeout(function () {
+          o.fail({ errMsg: 'downloadFile:fail url not in domain list（复刻：合法域名未配置）' });
+        }, 0);
+        return { abort: function () { } };
+      }
+      fetch(o.url).then(function (r) {
+        if (!r.ok) throw new Error('downloadFile:fail HTTP ' + r.status + ' ' + o.url);
+        return r.arrayBuffer();
+      }).then(function (buf) {
         var path = USER_DATA_PATH + '/download-' + Math.random().toString(36).slice(2);
         files.set(path, new Uint8Array(buf));
         setTimeout(function () { o.success({ statusCode: 200, tempFilePath: path }); }, 0);

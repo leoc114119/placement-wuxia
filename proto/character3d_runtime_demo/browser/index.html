@@ -22,6 +22,9 @@
     var preset = {};
     if (q.get('perf') === '1') preset['char3d-runtime-perf-mode'] = 1;
     if (q.get('commit')) preset['char3d-commit-sha'] = q.get('commit');
+    // cdn 验收：`?cdn=<https base>` 注入 CDN base（等价于真机写 cdn-base.txt / devtools storage）
+    if (q.get('cdn')) preset['char3d-cdn-base'] = q.get('cdn');
+    if (q.get('local') === '1') preset['char3d-source-force'] = 'local';
     window.__WX_SHIM_PRESET = preset;
     window.__WX_SHIM_AA = q.get('aa') || null; // 'fxaa' | 'native-msaa' | null
     window.__WX_SHIM_PROFILE = q.get('profile') || 'sim';
@@ -29,6 +32,7 @@
     window.__WX_SHIM_NO_RESTORE = q.get('norestore') === '1';
     // ?rewritejson=1：复刻真机 P0-4 现象（平台改写包内文本资产 ⇒ 字节与清单不符，但结构合法）
     window.__WX_SHIM_REWRITE_JSON = q.get('rewritejson') === '1';
+    window.__WX_SHIM_DOWNLOAD_FAIL = q.get('downloadfail') || '';
   })();
 </script>
 

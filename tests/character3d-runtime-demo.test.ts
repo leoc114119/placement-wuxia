@@ -786,6 +786,11 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
         hotChainObserved: true, loadStatus: 'ready', diagnostics: [],
         assetIntegrity: [], rebuildIntegrity: null, readSourceTrail: [], rebuildReadSourceTrail: null,
         integrityNote: '（测试构造）',
+        downloadStats: {
+          sourceMode: 'local-subpackage', baseUrl: '', baseUrlSource: 'none', forcedLocal: false,
+          downloads: 0, downloadAttempts: 0, bytes: 0, ms: 0, cacheHits: 0, staleFallbacks: 0,
+          failures: 0, timeouts: 0, networkErrors: 0, domainBlocked: false, failureReasons: [],
+        },
       },
       sixDir: ALL_FACINGS.map((facing) => ({
         facing, state: 'idle' as const, footX: 1, footY: 2, ...clip('idle', 'idle'), placed: null, screenshot: null,
@@ -913,7 +918,7 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
       readSource: 'local-subpackage.readFile(binary, candidate#0 path=subpackages/char3d-assets/…idle_v4.json.bin)',
       headHex64: '7b22736f7572636522', tailHex64: '5d7d',
       structuralDiagnostic: { summary: '结构化：fps=30 nFrames=200', errors: [], motionStatic: false },
-      note: '',
+      note: '', fetchMs: 12,
       structuralSummary: '结构化：fps=30 nFrames=200',
     }];
     const res = buildResult(baseContext({

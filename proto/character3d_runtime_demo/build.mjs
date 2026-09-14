@@ -318,6 +318,19 @@ function staticGate() {
   if (fs.existsSync(SUBPACKAGE_ROOT)) walk(SUBPACKAGE_ROOT);
   if (strayJson.length) problems.push('分包内出现 .json 载荷（会被微信管线改写，须以 .bin 落地）：' + strayJson.join(' / '));
 
+  // 4.5) CDN base 注入文件：`cdn-base.txt`（**不存在才创建空文件**；存在的绝不覆盖 —— Leo 的编辑要保住）
+  //      真机注入路径：把 HTTPS base 写进这个文件（一行）→ 工具重新预览即可；空文件 = 走分包本地路径。
+  const cdnBaseFile = path.join(DEMO, 'cdn-base.txt');
+  if (!fs.existsSync(cdnBaseFile)) {
+    if (!CHECK_ONLY) fs.writeFileSync(cdnBaseFile, '', 'utf8');
+    notes.push('已创建空的 cdn-base.txt（CDN 模式注入位；写入 HTTPS base 后重新预览即生效）');
+  } else {
+    const configured = fs.readFileSync(cdnBaseFile, 'utf8').trim();
+    notes.push(configured
+      ? 'cdn-base.txt 已配置：' + configured.replace(/\/\/[^/]*$/, '…') + '（CDN 模式将生效；屏上「切资源源」可切回分包）'
+      : 'cdn-base.txt 为空 ⇒ 走分包本地路径（明天把 HTTPS base 写进去即可切 CDN）');
+  }
+
   // 5) 入包文件命名 ASCII + 语法（node --check）——主包只有 game.js/bundle.js/game.json
   const mainFiles = fs.readdirSync(DEMO, { withFileTypes: true })
     .filter((d) => d.isFile() && /\.(js|json)$/.test(d.name)).map((d) => d.name);

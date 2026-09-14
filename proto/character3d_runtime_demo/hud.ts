@@ -27,7 +27,7 @@ export interface HudLayout {
   footerY: number;
 }
 
-export const HUD_BUTTON_IDS = ['copy', 'share', 'view', 'perf', 'retry3d'] as const;
+export const HUD_BUTTON_IDS = ['copy', 'share', 'view', 'perf', 'source', 'retry3d'] as const;
 export type HudButtonId = (typeof HUD_BUTTON_IDS)[number];
 
 /** 视图态：摘要页 or 分页查看页。 */
@@ -83,6 +83,7 @@ export const BUTTON_LABELS: Record<string, string> = {
   share: '分享结果',
   view: '查看结果',
   perf: '重跑压测',
+  source: '切资源源',
   retry3d: '重试3D',
 };
 

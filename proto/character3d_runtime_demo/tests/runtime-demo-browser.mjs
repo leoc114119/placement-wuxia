@@ -41,7 +41,9 @@ const NO_RESTORE = arg('norestore', '0') === '1';
 /** `--rewritejson=1`：复刻真机 P0-4（微信包管线改写包内 `.json`）—— 验证 **`.bin` 载荷不被改写**、
  *  字节身份严格通过（R2 由"结构放行"改为"字节保真"）。shim 的改写钩子只匹配 `.json`，故 `.bin` 应零改写。 */
 const REWRITE_JSON = arg('rewritejson', '0') === '1';
-const TAG = REWRITE_JSON ? 'sim-rewritejson' : NO_RESTORE ? 'sim-norestore' : 'sim';
+/** `--cdn=ok|bad|nodomain`：CDN 模式三态（ok = 走静态服务器上的 CDN 镜像；bad = 404；nodomain = 合法域名未配）。 */
+const CDN = arg('cdn', '');
+const TAG = CDN ? 'sim-cdn-' + CDN : REWRITE_JSON ? 'sim-rewritejson' : NO_RESTORE ? 'sim-norestore' : 'sim';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -90,7 +92,10 @@ async function runOnce(context, baseUrl, runIndex, commit, preseed) {
   page.on('pageerror', (e) => consoleLines.push('PAGEERROR ' + e.message));
 
   const url = `${baseUrl}/proto/character3d_runtime_demo/browser/index.html?aa=${AA}&profile=${PROFILE}&perf=1&commit=${commit}` +
-    (NO_RESTORE ? '&norestore=1' : '') + (REWRITE_JSON ? '&rewritejson=1' : '');
+    (NO_RESTORE ? '&norestore=1' : '') + (REWRITE_JSON ? '&rewritejson=1' : '') +
+    (CDN === 'ok' ? '&cdn=' + encodeURIComponent(baseUrl + '/proto/battle_demo/cdn') : '') +
+    (CDN === 'bad' ? '&cdn=' + encodeURIComponent(baseUrl + '/proto/battle_demo/nonexistent') : '') +
+    (CDN === 'nodomain' ? '&cdn=' + encodeURIComponent(baseUrl + '/proto/battle_demo/cdn') + '&downloadfail=nodomain' : '');
   await page.goto(url, { waitUntil: 'load' });
 
   // 宿主跑完全流程：结果句柄被赋非空值
@@ -105,7 +110,9 @@ async function runOnce(context, baseUrl, runIndex, commit, preseed) {
     const vw = window.innerWidth, vh = window.innerHeight;
     const bh = Math.max(64, Math.round(vh * 0.075));
     const y = vh - bh / 2;
-    const bx = (i) => (vw / 5) * (i + 0.5);
+    // 底部按钮顺序 = HUD_BUTTON_IDS：copy / share / view / perf / source / retry3d（共 6 个）
+    const N = 6;
+    const bx = (i) => (vw / N) * (i + 0.5);
     // 逻辑像素（shim 的 tap 与真机 wx.onTouchStart 同口径）
     return { view: [bx(2), y], copy: [bx(0), y], share: [bx(1), y], mid: [vw * 0.75, vh * 0.2] };
   });
@@ -219,16 +226,53 @@ try {
   check('结果 schema 版本', last.schemaVersion === 't31-fe-c-1.0', last.schemaVersion);
   check('sim 标记（非真机证据）', last.env.sim === true && last.notes.some((n) => n.includes('不是') && n.includes('证据')));
   check('device 判定为 SIM_ 前缀', String(last.verdict.device).startsWith('SIM_'), last.verdict.device);
-  check('资源链证据：本地分包模式 + 已执行/未执行分支都列了',
-    last.resource.mode === 'local-subpackage' && last.resource.executedBranches.length >= 5 && last.resource.notExecutedBranches.length >= 2,
-    `${last.resource.mode} · 已执行 ${last.resource.executedBranches.length} / 未执行 ${last.resource.notExecutedBranches.length}`);
-  if (!REWRITE_JSON) {
+  if (!CDN) {
+    check('资源链证据：本地分包模式 + 已执行/未执行分支都列了',
+      last.resource.mode === 'local-subpackage' && last.resource.executedBranches.length >= 5 && last.resource.notExecutedBranches.length >= 2,
+      `${last.resource.mode} · 已执行 ${last.resource.executedBranches.length} / 未执行 ${last.resource.notExecutedBranches.length}`);
+  }
+  if (CDN === 'ok') {
+    const ds = last.resource.downloadStats;
+    check('CDN：资源源切到 cdn（结果里 mode + downloadStats.sourceMode 都是 cdn）',
+      last.resource.mode === 'cdn' && ds.sourceMode === 'cdn' && ds.baseUrlSource === 'storage',
+      `mode=${last.resource.mode} base=${ds.baseUrl} from=${ds.baseUrlSource}`);
+    check('CDN：走真实下载链（downloads=5 + 字节/耗时都记了）',
+      ds.downloads === 5 && ds.cacheHits === 0 && ds.bytes === 5 * 0 + 4040728 + 726299 + 162924 + 490227 + 166799 && ds.ms >= 0,
+      `downloads=${ds.downloads} bytes=${ds.bytes} ms=${ds.ms} attempts=${ds.downloadAttempts}`);
+    check('CDN：下载后字节与清单**逐字节一致**（严格身份通过）',
+      last.resource.assetIntegrity.length === 5 &&
+        last.resource.assetIntegrity.every((r) => r.byteLengthMatches && r.sha256Matches && r.integrityMode === 'strict'),
+      last.resource.assetIntegrity.map((r) => `${r.assetId}:${r.observedByteLength}`).join(' '));
+    check('CDN：读来源轨迹显示 downloadFile 链路（非分包读包）',
+      last.resource.assetIntegrity.every((r) => !r.readSource.includes('local-subpackage.readCodeFile')),
+      last.resource.readSourceTrail.slice(0, 2).join(' | '));
+    check('CDN：boot ok + 无失败', last.resource.loadStatus === 'ready' && ds.failures === 0);
+  }
+  if (CDN === 'bad' || CDN === 'nodomain') {
+    const ds = last.resource.downloadStats;
+    check('CDN 失败路径：资源门失败被如实记录（failures/attempts + 重试 2 次）',
+      last.resource.loadStatus === 'failed' && ds.failures >= 1 && ds.downloadAttempts >= 3,
+      `loadStatus=${last.resource.loadStatus} failures=${ds.failures} attempts=${ds.downloadAttempts}`);
+    check('CDN 失败路径：失败原因进结果（可直接看出是哪一层错）',
+      ds.failureReasons.length > 0 && ds.failureReasons.some((r) => /HTTP 404|domain list/.test(r)),
+      ds.failureReasons.slice(0, 2).join(' | '));
+    check('CDN 失败路径：域名白名单判定与事实一致（' + (CDN === 'nodomain' ? '应为 true' : '应为 false') + '）',
+      ds.domainBlocked === (CDN === 'nodomain'),
+      `domainBlocked=${ds.domainBlocked}`);
+    check('CDN 失败路径：屏上单行 + 结论行可读（DEVICE_FAIL 而非静默）',
+      String(last.verdict.device).endsWith('FAIL') && last.notes.length > 0,
+      String(last.verdict.device));
+  }
+
+  if (!REWRITE_JSON && !CDN) {
     // 常规/真重建场景：末次启动即冷启动 ⇒ 冷链必然跑过；
     // 改写场景末次是**首个热启动**（downloads=0 才是期望），其冷链由「冷系列」断言覆盖。
     check('资源链证据：冷链（downloads>0）跑过', (last.resource.loaderStats.downloads ?? 0) > 0,
       JSON.stringify(last.resource.loaderStats));
   }
-  if (REWRITE_JSON) {
+  if (CDN) {
+    // CDN 场景单独断言（上面已覆盖）；不套用本地模式的冷/热链断言
+  } else if (REWRITE_JSON) {
     // 冷系列（runIndex ≤ 3）每轮启动前按 assetId 清缓存 ⇒ 必须如实「冷」
     const coldRuns = runs.slice(0, Math.min(3, runs.length));
     check('P0-5：冷系列（前 3 次启动）cacheState 全 cold + downloads>0（清缓存是按设计的）',
@@ -304,6 +348,9 @@ try {
     }
   }
 
+  // 资源门失败场景（cdn-bad / cdn-nodomain）没有可测量的运行时 ⇒ 这批断言只在 boot 成功时跑
+  const measurementsAvailable = last.resource.loadStatus === 'ready';
+  if (measurementsAvailable) {
   check('首启分段计时齐全（loader/解析/纹理解码/首传 GPU）',
     ['subpackageMs', 'loaderMs', 'glbParseMs', 'animParseMs', 'textureDecodeMs', 'firstGpuUploadMs']
       .every((k) => typeof last.resource.assetStages[k] === 'number'),
@@ -375,6 +422,8 @@ try {
   check('20u 档：记录 edgeMode/backbuffer/cacheHit', last.canvas.backbuffer !== null && last.rendererInfo.edgeMode === 'fxaa' && !!last.resource.loaderStats,
     `bb=${JSON.stringify(last.canvas.backbuffer)}`);
 
+  }
+
   check('结果回收：console 单行可用', runs.every((r) => r.consoleLines.some((l) => l.startsWith('__CHAR3D_RUNTIME_RESULT__='))));
   check('结果回收：剪贴板成功（字符数 > 0）', runs[runs.length - 1].clipboardLen > 0, String(runs[runs.length - 1].clipboardLen));
   check('结果回收：分享被调起', runs[runs.length - 1].shares.length > 0);
@@ -383,14 +432,21 @@ try {
   check('无页面异常', runs.every((r) => !r.consoleLines.some((l) => l.startsWith('PAGEERROR'))));
 
   // 运行历史跨启动累积（冷系列判定）
-  check('运行历史跨启动累积（第 N 次启动读到 ≥N 条记录）',
-    runs[runs.length - 1].result.runs.length >= runs.length && runs[runs.length - 1].result.runs.length >= 1,
-    `runs=${runs[runs.length - 1].result.runs.length} / 启动次数=${runs.length}`);
+  if (measurementsAvailable) {
+    check('运行历史跨启动累积（第 N 次启动读到 ≥N 条记录）',
+      runs[runs.length - 1].result.runs.length >= runs.length && runs[runs.length - 1].result.runs.length >= 1,
+      `runs=${runs[runs.length - 1].result.runs.length} / 启动次数=${runs.length}`);
+  } else {
+    check('资源门失败场景：运行历史不推进是**预期**（失败启动不计入冷/热系列）',
+      last.runs.length === 0, `runs=${last.runs.length}`);
+  }
 
   fs.writeFileSync(path.join(OUT, `${TAG}-summary.json`), JSON.stringify({
     generatedAt: new Date().toISOString(),
     commitSha: commit,
-    scenario: REWRITE_JSON
+    scenario: CDN
+      ? 'cdn-' + CDN + '（CDN 模式：' + (CDN === 'ok' ? '静态服务器 CDN 镜像，走真实 downloadFile 链' : CDN === 'bad' ? '404 失败路径' : '合法域名未配置失败路径') + '）'
+      : REWRITE_JSON
       ? 'rewritejson（复刻真机 P0-4：`.bin` 载荷未被包管线改写 ⇒ 严格字节身份通过）'
       : NO_RESTORE ? 'norestore（复刻微信模拟器：restoreContext 被拒 ⇒ 真重建路径）' : 'standard（事件快路径）',
     aa: AA, profile: PROFILE, viewport: VIEWPORT, deviceScaleFactor: DSF,

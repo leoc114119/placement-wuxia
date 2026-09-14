@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-14T14:02:27.604Z",
- "commitSha": "76698ca001a84aa2860a5b22c91857098784afaa",
+ "generatedAt": "2026-09-14T14:10:18.478Z",
+ "commitSha": "8dc2e3f5bf3f70466e7d9071a0a3bb04decb601b",
  "scenario": "norestore（复刻微信模拟器：restoreContext 被拒 ⇒ 真重建路径）",
  "aa": "fxaa",
  "profile": "sim",
@@ -35,17 +35,17 @@
   {
    "name": "资源链证据：冷链（downloads>0）跑过",
    "ok": true,
-   "detail": "{\"downloadAttempts\":5,\"downloads\":5,\"cacheHits\":0,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
+   "detail": "{\"downloadAttempts\":5,\"downloads\":5,\"downloadBytesTotal\":5586977,\"downloadMsTotal\":30,\"cacheHits\":0,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
   },
   {
    "name": "资源链证据：热链（cacheHits>0 且 downloads=0）跑过",
    "ok": true,
-   "detail": "{\"downloadAttempts\":0,\"downloads\":0,\"cacheHits\":5,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
+   "detail": "{\"downloadAttempts\":0,\"downloads\":0,\"downloadBytesTotal\":0,\"downloadMsTotal\":0,\"cacheHits\":5,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
   },
   {
    "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
    "ok": true,
-   "detail": "{\"subpackageMs\":0,\"loaderMs\":46,\"glbParseMs\":3,\"animParseMs\":2,\"textureDecodeMs\":2,\"firstGpuUploadMs\":58}"
+   "detail": "{\"subpackageMs\":0,\"loaderMs\":48,\"glbParseMs\":3,\"animParseMs\":2,\"textureDecodeMs\":2,\"firstGpuUploadMs\":73}"
   },
   {
    "name": "六向 6 行且逐向 expected==activeClipKey",
@@ -155,7 +155,7 @@
   {
    "name": "20u 档：屏上 20 个角色全部可见",
    "ok": true,
-   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18547,perf-1:20499,perf-2:20236,perf-3:20541,perf-4:19102,perf-5:18711,…"
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18546,perf-1:20500,perf-2:20236,perf-3:20540,perf-4:19102,perf-5:18706,…"
   },
   {
    "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
@@ -175,7 +175,7 @@
   {
    "name": "结果回收：剪贴板成功（字符数 > 0）",
    "ok": true,
-   "detail": "29047"
+   "detail": "29567"
   },
   {
    "name": "结果回收：分享被调起",

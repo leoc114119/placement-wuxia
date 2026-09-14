@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-14T14:00:12.148Z",
- "commitSha": "76698ca001a84aa2860a5b22c91857098784afaa",
+ "generatedAt": "2026-09-14T14:12:46.633Z",
+ "commitSha": "8dc2e3f5bf3f70466e7d9071a0a3bb04decb601b",
  "scenario": "rewritejson（复刻真机 P0-4：`.bin` 载荷未被包管线改写 ⇒ 严格字节身份通过）",
  "aa": "fxaa",
  "profile": "sim",
@@ -70,7 +70,7 @@
   {
    "name": "R2：结果带构建标识 + 资产清单版本（版本映射）",
    "ok": true,
-   "detail": "commit=76698ca001a8 manifest=manifest-d46b9ed5-324assets"
+   "detail": "commit=8dc2e3f5bf3f manifest=manifest-d46b9ed5-324assets"
   },
   {
    "name": "R2：资源门放行后整轮继续（boot 阶段 ok，且非 DEVICE_FAIL）",
@@ -115,7 +115,7 @@
   {
    "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
    "ok": true,
-   "detail": "{\"subpackageMs\":0,\"loaderMs\":9,\"glbParseMs\":6,\"animParseMs\":2,\"textureDecodeMs\":2,\"firstGpuUploadMs\":53}"
+   "detail": "{\"subpackageMs\":0,\"loaderMs\":9,\"glbParseMs\":6,\"animParseMs\":2,\"textureDecodeMs\":2,\"firstGpuUploadMs\":52}"
   },
   {
    "name": "六向 6 行且逐向 expected==activeClipKey",
@@ -210,7 +210,7 @@
   {
    "name": "20u 档：屏上 20 个角色全部可见",
    "ok": true,
-   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18551,perf-1:20503,perf-2:20232,perf-3:20541,perf-4:19102,perf-5:18705,…"
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18555,perf-1:20500,perf-2:20237,perf-3:20548,perf-4:19103,perf-5:18701,…"
   },
   {
    "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
@@ -230,7 +230,7 @@
   {
    "name": "结果回收：剪贴板成功（字符数 > 0）",
    "ok": true,
-   "detail": "27260"
+   "detail": "27778"
   },
   {
    "name": "结果回收：分享被调起",

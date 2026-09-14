@@ -91,6 +91,8 @@ function resolveWx(): WxRuntime {
 const STORAGE_RUNS = 'char3d-runtime-runs-v1';
 const STORAGE_PERF_ALWAYS = 'char3d-runtime-perf-mode';
 const STORAGE_CDN_BASE = 'char3d-cdn-base';
+/** 强制走分包本地路径（屏上「切资源源」写；'auto' = 有 base 就走 cdn） */
+const STORAGE_SOURCE_FORCE = 'char3d-source-force';
 const COLD_SERIES = E.RUNS_REQUIRED;
 const PAGED_CHARS = 1200;
 const CLOCK_PAUSE_MS = 300;
@@ -206,7 +208,7 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
   const bbW = mainCanvas.width;
   const bbH = mainCanvas.height;
 
-  const layout: HudLayout = computeLayout(bbW, bbH, ['copy', 'share', 'view', 'perf', 'retry3d']);
+  const layout: HudLayout = computeLayout(bbW, bbH, ['copy', 'share', 'view', 'perf', 'source', 'retry3d']);
   const view: HudView = { lines: [], footer: '', page: null };
 
   const state = {
@@ -393,7 +395,8 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       'T31-FE-C · ' + (state.sim ? 'BROWSER SIM（非真机证据）' : 'WX 真机') + ' · ' + (sys.brand ?? '?') + '/' + (sys.model ?? '?'),
       'SDK ' + String(sys.SDKVersion ?? '?') + ' · dpr ' + dpr + '(用 ' + dprUsed + ') · bb ' + bb.width + 'x' + bb.height,
       'edgeMode ' + String(r?.edgeMode ?? '—') + ' · aa有效 ' + String(r?.renderer.contextAttributes?.antialias ?? '—') +
-        ' · 资源 ' + (resourcePlanCached?.mode ?? '—') + ' · 缓存 ' + state.cacheState,
+        ' · 资源 ' + (resourcePlanCached?.mode ?? '—') + ' · 缓存 ' + state.cacheState +
+        (cdnBaseInfo.url ? ' · base ' + cdnBaseInfo.url.replace(/^https?:\/\//, '') : ''),
       '冷启动 ' + progress.cold + '/' + progress.required + ' · 热缓存 ' + progress.hot + '/' + progress.required +
         ' · 本轮 #' + runIndexCached + ' · 阶段 ' + state.phase,
       '命令 ' + state.commands.length + 'u · pass ' + frameTimes.passMs.toFixed(1) + 'ms（anim ' + frameTimes.animMs.toFixed(1) +
@@ -426,6 +429,8 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
   }
 
   let resourcePlanCached: ResourceChainPlan | null = null;
+  /** 本次装配的 base URL 信息（写进 downloadStats：明天域名没配好时一眼看出用没用 CDN） */
+  let cdnBaseInfo: { url: string | null; from: 'storage' | 'package-file' | 'none' } = { url: null, from: 'none' };
   let runIndexCached = 1;
 
   // ===== 装配（§6.2 清单校验 → 缓存 → 下载 → 校验 → 登记 → 解析 → 首传 GPU） =====
@@ -504,12 +509,78 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       readSourceTrail: trail,
       rebuildReadSourceTrail: null,
       integrityNote: integrityNoteOf(resourcePlan),
+      downloadStats: buildDownloadStats(resourcePlan, profileLoad.diagnostics),
+    };
+  }
+
+  /** 包内 `cdn-base.txt` 里的 base URL（真机注入路径：编辑该文件 → 重新预览即可，无需改代码）。 */
+  function packagedCdnBase(): string | null {
+    for (const candidate of ['cdn-base.txt', './cdn-base.txt', 'subpackages/char3d-assets/cdn-base.txt']) {
+      try {
+        const raw = host.getFileSystemManager().readFileSync(candidate, 'utf8');
+        const url = typeof raw === 'string' ? raw.trim() : '';
+        if (url) return url;
+      } catch { /* 文件不存在：继续下一个候选 */ }
+    }
+    return null;
+  }
+
+  /** base URL 的注入优先级：storage（devtools 一行命令）→ 包内 cdn-base.txt → 未配置（走分包本地路径）。 */
+  function resolveCdnBase(): { url: string | null; from: 'storage' | 'package-file' | 'none' } {
+    const fromStorage = safeCall(() => host.getStorageSync(STORAGE_CDN_BASE), null) as string | null;
+    if (fromStorage && String(fromStorage).trim()) return { url: String(fromStorage).trim(), from: 'storage' };
+    const fromFile = packagedCdnBase();
+    if (fromFile) return { url: fromFile, from: 'package-file' };
+    return { url: null, from: 'none' };
+  }
+
+  /** 屏上「切资源源」：force='local' 时强制走分包（忽略 base）；否则 auto（有 base 即 cdn）。 */
+  function forcedLocal(): boolean {
+    return safeCall(() => host.getStorageSync(STORAGE_SOURCE_FORCE), 'auto') === 'local';
+  }
+
+  /**
+   * 资源获取统计（**CDN 验收的读数主体**）：下载次数/字节/耗时/命中 + 失败原因 + 域名白名单判定。
+   * ★ 失败原因里出现"合法域名/domain"字样 ⇒ `domainBlocked=true`：明天域名没配好时，屏上单行与结果字段
+   *   都能直接指向「downloadFile 合法域名未配置」，而不用猜。
+   */
+  function buildDownloadStats(
+    resourcePlan: ResourceChainPlan,
+    diagnostics: readonly string[],
+  ): E.ResourceChainEvidence['downloadStats'] {
+    const stats = lastLoaderStats ?? ({} as CharacterAssetLoaderStats);
+    const reasons = diagnostics
+      .filter((d) => d.includes('attempt-failed') || d.includes('downloadFile') || d.includes('失败'))
+      .slice(0, 5);
+    const domainBlocked = reasons.some((d) => /合法域名|domain|not in domain list/i.test(d));
+    return {
+      sourceMode: resourcePlan.mode,
+      baseUrl: cdnBaseInfo.url ?? '',
+      baseUrlSource: cdnBaseInfo.from,
+      forcedLocal: forcedLocal(),
+      downloads: stats.downloads ?? 0,
+      downloadAttempts: stats.downloadAttempts ?? 0,
+      bytes: stats.downloadBytesTotal ?? 0,
+      ms: stats.downloadMsTotal ?? 0,
+      cacheHits: stats.cacheHits ?? 0,
+      staleFallbacks: stats.staleFallbacks ?? 0,
+      failures: stats.failures ?? 0,
+      timeouts: stats.timeouts ?? 0,
+      networkErrors: stats.networkErrors ?? 0,
+      domainBlocked,
+      failureReasons: reasons,
     };
   }
 
   function plan(): ResourceChainPlan {
-    const cdn = safeCall(() => host.getStorageSync(STORAGE_CDN_BASE), null) as string | null;
-    return resolveResourceChainPlan({ cdnBaseUrl: cdn });
+    const base = resolveCdnBase();
+    cdnBaseInfo = { url: base.url, from: base.from };
+    if (forcedLocal()) {
+      const local = resolveResourceChainPlan({ cdnBaseUrl: null });
+      cdnBaseInfo = { url: null, from: base.from };
+      return local;
+    }
+    return resolveResourceChainPlan({ cdnBaseUrl: base.url });
   }
 
   function loadSubpackage(resourcePlan: ResourceChainPlan): Promise<number> {
@@ -572,6 +643,7 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       const profileLoad = await loader.loadProfile(HERO_3D_PROFILE);
       stages.loaderMs = Math.round(nowMs() - tLoad);
       const stats = loader.stats();
+      lastLoaderStats = stats;
       // ★ 先固化证据（含逐资产完整性行 + 读取轨迹），再决定是否 throw —— 资源门拒收时诊断必须活着
       // primary = 首次装配（resource 还没有）；重建/重试走 rebuildIntegrity 分支，不污染首装证据
       const isPrimaryAssembly = resource === null;
@@ -990,6 +1062,7 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       mode: evidence.mode,
       integrityNote: evidence.integrityNote,
       loadStatus: evidence.loadStatus,
+      downloadStats: evidence.downloadStats,
       assets: evidence.assetIntegrity.map((row) => ({
         assetId: row.assetId,
         mediaType: row.mediaType,
@@ -1196,6 +1269,8 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
   }
 
   let resource: E.ResourceChainEvidence | null = null;
+  /** 最近一次装配的 loader 统计（downloadStats 用它；重建装配也会刷新） */
+  let lastLoaderStats: CharacterAssetLoaderStats | null = null;
   let resolvedResult: E.RuntimeResult | null = null;
   /** 压测后先落的 precontext 快照文件名（最终结果里注明，便于"自测失败但测量结果完好"时取证） */
   let preContextSnapshot: string | null = null;
@@ -1260,6 +1335,11 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
         hotChainObserved: false, loadStatus: 'failed', diagnostics: ['未装配'],
         assetIntegrity: [], rebuildIntegrity: null, readSourceTrail: [], rebuildReadSourceTrail: null,
         integrityNote: '未装配（无完整性观测）',
+        downloadStats: {
+          sourceMode: 'local-subpackage', baseUrl: '', baseUrlSource: 'none', forcedLocal: false,
+          downloads: 0, downloadAttempts: 0, bytes: 0, ms: 0, cacheHits: 0, staleFallbacks: 0,
+          failures: 0, timeouts: 0, networkErrors: 0, domainBlocked: false, failureReasons: [],
+        },
       },
       sixDir: parts.sixDir,
       states: parts.states,
@@ -1314,7 +1394,9 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
 
   function handleButton(id: string): void {
     state.buttonActions++;
-    if (!runtime3d && id !== 'retry3d') {
+    // ★ 结果回收类按钮（复制/分享/查看）即使运行时未就绪也必须可用 —— 资源门失败时正是最需要它们的时候
+    const recoveryOnly = id === 'copy' || id === 'share' || id === 'view' || id === 'retry3d' || id === 'source';
+    if (!runtime3d && !recoveryOnly) {
       state.footer = '▶ ' + (BUTTON_LABELS[id] ?? id) + '：运行时未就绪';
       return;
     }
@@ -1338,6 +1420,27 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
     }
     if (id === 'copy') { void copyResult(); return; }
     if (id === 'share') { void shareResult(); return; }
+    if (id === 'source') {
+      // 资源源切换（明天 CDN 验收用）：有 base 时在 auto ↔ local 之间切；无 base 只提示怎么配
+      const base = resolveCdnBase();
+      if (!base.url) {
+        state.footer = '▶ 未配置 CDN base：把 HTTPS 地址写进包内 cdn-base.txt（或 devtools: ' +
+          "wx.setStorageSync('char3d-cdn-base','https://…')）后重扫";
+        return;
+      }
+      const nextLocal = !forcedLocal();
+      safeCall(() => host.setStorageSync(STORAGE_SOURCE_FORCE, nextLocal ? 'local' : 'auto'), undefined);
+      state.footer = '▶ 资源源 → ' + (nextLocal ? '分包本地路径（忽略 cdn base）' : 'CDN（' + base.url + '）') + '，正在重装配…';
+      void (async () => {
+        try {
+          await bootstrap3D(plan(), false);
+          state.footer = '▶ 资源源已切：' + (nextLocal ? 'local-subpackage' : 'cdn');
+        } catch (error) {
+          state.footer = '▶ 切换后装配失败：' + messageOf(error);
+        }
+      })();
+      return;
+    }
     if (id === 'perf') {
       const on = safeCall(() => host.getStorageSync(STORAGE_PERF_ALWAYS), 0) !== 1;
       safeCall(() => host.setStorageSync(STORAGE_PERF_ALWAYS, on ? 1 : 0), undefined);
