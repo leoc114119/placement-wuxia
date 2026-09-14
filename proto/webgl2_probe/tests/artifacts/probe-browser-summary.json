@@ -1,7 +1,7 @@
 {
- "at": "2026-09-14T04:25:53.291Z",
+ "at": "2026-09-14T04:57:37.793Z",
  "repo": "/private/tmp/pw-t31-probe",
- "head": "bc8d156987c7026bc3f3ba091031022045a84b15",
+ "head": "d047df0dd73eef676c52ffc66fe8f6f7cd208158",
  "profile": "spec",
  "runs": 3,
  "viewport": {
@@ -19,7 +19,7 @@
   {
    "name": "run1 无致命错误",
    "ok": true,
-   "detail": "0.5s"
+   "detail": "0.4s"
   },
   {
    "name": "run1 console 单行 __WEBGL2_PROBE_RESULT__ 可解析",
@@ -244,7 +244,7 @@
   {
    "name": "run3 A2 1u：采样量达标（≥1800 帧且达秒数）",
    "ok": true,
-   "detail": "samples=1801 dur=30.015s truncated=false"
+   "detail": "samples=1801 dur=30.016s truncated=false"
   },
   {
    "name": "run3 A2 1u：角色全部在屏且不重叠",
@@ -254,12 +254,12 @@
   {
    "name": "run3 A2 1u：像素覆盖率合理（非\"丝带式\"塌缩）",
    "ok": true,
-   "detail": "fillRatio=0.6441 覆盖像素=503300"
+   "detail": "fillRatio=0.6441 覆盖像素=503300 unsupported=false"
   },
   {
    "name": "run3 A2 1u：gpuMs 口径诚实（null 或真查询值）",
    "ok": true,
-   "detail": "gpuMs=1.0656 source=EXT_disjoint_timer_query_webgl2"
+   "detail": "gpuMs=1.11 source=EXT_disjoint_timer_query_webgl2"
   },
   {
    "name": "run3 A2 5u：每帧 draw/palette 次数 == 单位数",
@@ -269,7 +269,7 @@
   {
    "name": "run3 A2 5u：采样量达标（≥1800 帧且达秒数）",
    "ok": true,
-   "detail": "samples=1801 dur=30.016s truncated=false"
+   "detail": "samples=1801 dur=30.015s truncated=false"
   },
   {
    "name": "run3 A2 5u：角色全部在屏且不重叠",
@@ -279,12 +279,12 @@
   {
    "name": "run3 A2 5u：像素覆盖率合理（非\"丝带式\"塌缩）",
    "ok": true,
-   "detail": "fillRatio=0.6471 覆盖像素=434366"
+   "detail": "fillRatio=0.6471 覆盖像素=434366 unsupported=false"
   },
   {
    "name": "run3 A2 5u：gpuMs 口径诚实（null 或真查询值）",
    "ok": true,
-   "detail": "gpuMs=2.4281 source=EXT_disjoint_timer_query_webgl2"
+   "detail": "gpuMs=1.91 source=EXT_disjoint_timer_query_webgl2"
   },
   {
    "name": "run3 A2 10u：每帧 draw/palette 次数 == 单位数",
@@ -294,7 +294,7 @@
   {
    "name": "run3 A2 10u：采样量达标（≥1800 帧且达秒数）",
    "ok": true,
-   "detail": "samples=1801 dur=30.015s truncated=false"
+   "detail": "samples=1801 dur=30.014s truncated=false"
   },
   {
    "name": "run3 A2 10u：角色全部在屏且不重叠",
@@ -304,12 +304,12 @@
   {
    "name": "run3 A2 10u：像素覆盖率合理（非\"丝带式\"塌缩）",
    "ok": true,
-   "detail": "fillRatio=0.6503 覆盖像素=491042"
+   "detail": "fillRatio=0.6503 覆盖像素=491042 unsupported=false"
   },
   {
    "name": "run3 A2 10u：gpuMs 口径诚实（null 或真查询值）",
    "ok": true,
-   "detail": "gpuMs=2.9854 source=EXT_disjoint_timer_query_webgl2"
+   "detail": "gpuMs=3.1797 source=EXT_disjoint_timer_query_webgl2"
   },
   {
    "name": "run3 A2 20u：每帧 draw/palette 次数 == 单位数",
@@ -329,22 +329,62 @@
   {
    "name": "run3 A2 20u：像素覆盖率合理（非\"丝带式\"塌缩）",
    "ok": true,
-   "detail": "fillRatio=0.6517 覆盖像素=629891"
+   "detail": "fillRatio=0.6517 覆盖像素=629891 unsupported=false"
   },
   {
    "name": "run3 A2 20u：gpuMs 口径诚实（null 或真查询值）",
    "ok": true,
-   "detail": "gpuMs=5.1092 source=EXT_disjoint_timer_query_webgl2"
+   "detail": "gpuMs=7.6689 source=EXT_disjoint_timer_query_webgl2"
   },
   {
    "name": "run3 A2 四档出数（fps/P95/P99）",
    "ok": true,
-   "detail": "1u:59.88fps/17.5ms 5u:59.88fps/17.1ms 10u:59.88fps/17.4ms 20u:59.88fps/17.4ms"
+   "detail": "1u:59.88fps/17.4ms 5u:59.88fps/17.3ms 10u:59.88fps/17.5ms 20u:59.88fps/17.3ms"
   },
   {
    "name": "run3 verdict 三档字段齐",
    "ok": true,
    "detail": "{\"device\":\"BROWSER_SHIM_PASS\",\"architecture\":\"BROWSER_ONLY_NOT_DEVICE_EVIDENCE\",\"capacity20\":\"BROWSER_SHIM_CAPACITY_PASS\",\"capacity20Engine\":\"CAPACITY_PASS\",\"capacity20Reasons\":[]}"
+  },
+  {
+   "name": "run3 结果回收按钮齐（复制/分享/查看/重跑/切正控）",
+   "ok": true,
+   "detail": "[\"copy:复制结果\",\"share:分享结果\",\"view:查看结果\",\"rerun:重跑压测\",\"mode:切正控模式\"]"
+  },
+  {
+   "name": "run3 复制结果：成功/失败都留痕（console 单行 + 屏上文案）",
+   "ok": true,
+   "detail": "console=__PROBE_CLIPBOARD__={\"ok\":true,\"chars\":19112,\"errMsg\":null,\"at\":1789361855222,\"platform\":\"browser\"} toast=复制：成功（19112 字符）"
+  },
+  {
+   "name": "run3 复制失败时带原因（不吃掉错误）",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "name": "run3 分享结果文件：fail 分支屏上可见且带原因（浏览器如实报不支持）",
+   "ok": true,
+   "detail": "__PROBE_SHARE__={\"ok\":false,\"fileName\":\"probe_wvx13b_run3.json\",\"filePath\":\"wxfile://probe-user-data/probe-result.json\",\"errMsg\":\"browser: 无 wx.shareFileMessage（浏览器层请用 tests/artifacts/probe_wvx13b_run3.json，或直接取 vfs 里的 wxfile://probe-user-data/probe-result.json）\",\"at\":1789361855385}"
+  },
+  {
+   "name": "run3 查看结果：第 1 页是人读摘要（含 nonce/verdict），后续页为 JSON 分片",
+   "ok": true,
+   "detail": "pages=17 head=T31 S0 结果摘要（第 1 页＝人读版，后续页＝原始 JSON 分片）\nnonce qgkrofhq · runIndex 3/3 · 冷启动绿 3/3\ndevice browser/MacIntel · browser · SDK n"
+  },
+  {
+   "name": "run3 查看结果：点右半下一页 / 左半上一页",
+   "ok": true,
+   "detail": "next→1 prev→0"
+  },
+  {
+   "name": "run3 查看结果：点「返回」退回正常渲染",
+   "ok": true,
+   "detail": "true"
+  },
+  {
+   "name": "run3 重跑压测：写入强制 a2=run 开关（重启后按 storage 生效）",
+   "ok": true,
+   "detail": "[\"pw-probe:pw-probe-a2-mode=\\\"run\\\"\"]"
   },
   {
    "name": "正控模式：主画布能取 webgl2 并画出可读回三角形（= PASS）",
@@ -355,6 +395,66 @@
    "name": "正控模式不出 A1/A2 判定（device=NOT_APPLICABLE）",
    "ok": true,
    "detail": "{\"device\":\"NOT_APPLICABLE\",\"architecture\":\"SEE_OFFSCREEN_RESULT\",\"capacity20\":\"NOT_RUN\",\"capacity20Engine\":null,\"capacity20Reasons\":null}"
+  },
+  {
+   "name": "真机冷启动 1/3（A1 全过）→ 未完成，不是 FAIL",
+   "ok": true,
+   "detail": "DEVICE_A1_PASS_COLD_INCOMPLETE|PENDING"
+  },
+  {
+   "name": "真机冷启动 2/3（A1 全过）→ 未完成，不是 FAIL",
+   "ok": true,
+   "detail": "DEVICE_A1_PASS_COLD_INCOMPLETE|PENDING"
+  },
+  {
+   "name": "真机冷启动 3/3 全绿 → DEVICE_PASS / PARTIAL_PASS",
+   "ok": true,
+   "detail": "DEVICE_PASS|PARTIAL_PASS"
+  },
+  {
+   "name": "真机 A1 真失败仍判红（DEVICE_FAIL / ARCHITECTURE_FAIL）",
+   "ok": true,
+   "detail": "DEVICE_FAIL|ARCHITECTURE_FAIL"
+  },
+  {
+   "name": "SDK 2.9.1 < 2.24.0 → UNSUPPORTED（语义版本，非字典序）",
+   "ok": true,
+   "detail": "UNSUPPORTED"
+  },
+  {
+   "name": "浏览器冷启动未满 → BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE（路径行为未变）",
+   "ok": true,
+   "detail": "BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE"
+  },
+  {
+   "name": "降级模拟：run 不中断、仍产出结果 JSON（真机\"无结果行\"缺陷已修）",
+   "ok": true,
+   "detail": "ok"
+  },
+  {
+   "name": "降级模拟：boneUploadCheck 标 unsupported 且不计入 errors",
+   "ok": true,
+   "detail": "{\"ok\":false,\"unsupported\":true,\"err\":\"getUniform not support\"}"
+  },
+  {
+   "name": "降级模拟：像素硬判据不受影响（A1-01..05 全过）",
+   "ok": true,
+   "detail": "A1-01:OK A1-02:OK A1-03:OK A1-04:OK A1-05:OK"
+  },
+  {
+   "name": "降级模拟：MAX_VERTEX_UNIFORM_VECTORS 取不到时记 unknown、不判死",
+   "ok": true,
+   "detail": "{\"id\":\"A1-02\",\"name\":\"WebGL2 context：非 null / 未丢上下文 / 初始无 GL error / MAX_VERTEX_UNIFORM_VECTORS ≥ 180\",\"pass\":true,\"detail\":{\"contextLost\":false,\"initialGlError\":0,\"maxVertexUniformVectors\":null,\"capabilityCheck\":\"unknown（宿主不返回该常量 ⇒ 硬判据转为 shader link 成功，方案 §4.2）\",\"renderer\":\"WebKit WebGL\"}}"
+  },
+  {
+   "name": "降级模拟：判定不误报 FAIL（冷启动未满 → 未完成态）",
+   "ok": true,
+   "detail": "BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE"
+  },
+  {
+   "name": "降级模拟：带原因的 console 单行仍在（可远程诊断）",
+   "ok": true,
+   "detail": "console 行数=2"
   }
  ],
  "verdicts": [
@@ -415,24 +515,24 @@
  "a2": [
   {
    "unitCount": 1,
-   "durationSec": 30.015,
+   "durationSec": 30.016,
    "sampleCount": 1801,
-   "fpsMean": 60.05,
+   "fpsMean": 60.04,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.43,
+   "onePercentLowFps": 56.25,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.5,
+   "frameMsP95": 17.4,
    "frameMsP99": 17.7,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0,
-   "glSubmitMs": 0,
-   "compositeCpuMs": 0.1,
-   "jsAnimMsMean": 0.0364,
-   "glSubmitMsMean": 0.0298,
-   "compositeCpuMsMean": 0.1304,
-   "twoDTotalMsMean": 0.1708,
-   "gpuMs": 1.0656,
+   "jsAnimMs": 0.1,
+   "glSubmitMs": 0.1,
+   "compositeCpuMs": 0.3,
+   "jsAnimMsMean": 0.0792,
+   "glSubmitMsMean": 0.067,
+   "compositeCpuMsMean": 0.2879,
+   "twoDTotalMsMean": 0.3637,
+   "gpuMs": 1.11,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -493,24 +593,24 @@
   },
   {
    "unitCount": 5,
-   "durationSec": 30.016,
+   "durationSec": 30.015,
    "sampleCount": 1801,
-   "fpsMean": 60.01,
+   "fpsMean": 60.03,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.97,
+   "onePercentLowFps": 56.38,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.1,
-   "frameMsP99": 17.4,
+   "frameMsP95": 17.3,
+   "frameMsP99": 17.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0.1,
+   "jsAnimMs": 0.2,
    "glSubmitMs": 0.1,
    "compositeCpuMs": 0.2,
-   "jsAnimMsMean": 0.1319,
-   "glSubmitMsMean": 0.0583,
-   "compositeCpuMsMean": 0.2037,
-   "twoDTotalMsMean": 0.2685,
-   "gpuMs": 2.4281,
+   "jsAnimMsMean": 0.1647,
+   "glSubmitMsMean": 0.0711,
+   "compositeCpuMsMean": 0.24,
+   "twoDTotalMsMean": 0.3065,
+   "gpuMs": 1.91,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -619,24 +719,24 @@
   },
   {
    "unitCount": 10,
-   "durationSec": 30.015,
+   "durationSec": 30.014,
    "sampleCount": 1801,
-   "fpsMean": 60.04,
+   "fpsMean": 60.06,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.2,
+   "onePercentLowFps": 56.23,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.4,
+   "frameMsP95": 17.5,
    "frameMsP99": 17.7,
    "over33msRatio": 0,
    "over50msRatio": 0,
-   "jsAnimMs": 0.1,
-   "glSubmitMs": 0,
-   "compositeCpuMs": 0.1,
-   "jsAnimMsMean": 0.1544,
-   "glSubmitMsMean": 0.0384,
-   "compositeCpuMsMean": 0.1416,
-   "twoDTotalMsMean": 0.1816,
-   "gpuMs": 2.9854,
+   "jsAnimMs": 0.3,
+   "glSubmitMs": 0.1,
+   "compositeCpuMs": 0.2,
+   "jsAnimMsMean": 0.272,
+   "glSubmitMsMean": 0.0635,
+   "compositeCpuMsMean": 0.2065,
+   "twoDTotalMsMean": 0.2605,
+   "gpuMs": 3.1797,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,
@@ -807,22 +907,22 @@
    "unitCount": 20,
    "durationSec": 60.014,
    "sampleCount": 3601,
-   "fpsMean": 60.04,
+   "fpsMean": 60.03,
    "fpsMedian": 59.88,
-   "onePercentLowFps": 56.47,
+   "onePercentLowFps": 56.6,
    "frameMsMedian": 16.7,
-   "frameMsP95": 17.4,
+   "frameMsP95": 17.3,
    "frameMsP99": 17.6,
    "over33msRatio": 0,
    "over50msRatio": 0,
    "jsAnimMs": 0.2,
    "glSubmitMs": 0,
    "compositeCpuMs": 0.1,
-   "jsAnimMsMean": 0.2054,
-   "glSubmitMsMean": 0.0305,
-   "compositeCpuMsMean": 0.1059,
-   "twoDTotalMsMean": 0.1391,
-   "gpuMs": 5.1092,
+   "jsAnimMsMean": 0.2354,
+   "glSubmitMsMean": 0.0312,
+   "compositeCpuMsMean": 0.0944,
+   "twoDTotalMsMean": 0.1201,
+   "gpuMs": 7.6689,
    "gpuMsSource": "EXT_disjoint_timer_query_webgl2",
    "glErrorProbeHz": 1,
    "truncated": false,

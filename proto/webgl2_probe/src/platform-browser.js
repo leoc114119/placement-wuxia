@@ -195,9 +195,32 @@
       readUserFile: function (name) { return vfs.read(USER_DATA_PATH + '/' + name); },
       getStorage: function (key) { return wxShim.getStorageSync(key); },
       setStorage: function (key, value) { wxShim.setStorageSync(key, value); return true; },
+      /**
+       * 复制 → {ok, errMsg}。与 wx 端同口径：**带超时 + 必带原因**。
+       * （headless Chrome 实测 navigator.clipboard.writeText 会**永不 settle**：
+       *   不是 reject 而是挂着 —— 没有超时就会像真机那样"点了没反应且没有任何反馈"。）
+       */
       setClipboard: function (text) {
         return new Promise(function (resolve) {
-          wxShim.setClipboardData({ data: text, success: function () { resolve(true); }, fail: function () { resolve(false); } });
+          let done = false;
+          const finish = function (ok, errMsg) { if (!done) { done = true; resolve({ ok: ok, errMsg: errMsg || null }); } };
+          const timer = setTimeout(function () { finish(false, 'navigator.clipboard 2s 未 settle（无焦点/权限）'); }, 2000);
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+              navigator.clipboard.writeText(text).then(function () { clearTimeout(timer); finish(true, null); },
+                function (e) { clearTimeout(timer); finish(false, (e && e.message) || 'clipboard rejected'); });
+            } catch (e) { clearTimeout(timer); finish(false, (e && e.message) || String(e)); }
+          } else { clearTimeout(timer); finish(false, 'navigator.clipboard 不可用（非安全上下文）'); }
+        });
+      },
+      /**
+       * 兜底 A 的浏览器版：浏览器没有"分享文件到聊天"，如实报不支持
+       * （浏览器层的文件回收走 tests/artifacts 落盘，见 README）。
+       */
+      shareFile: function (filePath, fileName) {
+        return Promise.resolve({
+          ok: false,
+          errMsg: 'browser: 无 wx.shareFileMessage（浏览器层请用 tests/artifacts/' + fileName + '，或直接取 vfs 里的 ' + filePath + '）',
         });
       },
       canvasToTempFilePath: function (canvas, name) {

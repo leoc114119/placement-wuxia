@@ -181,8 +181,9 @@ async function main() {
           check(`run${run} A2 ${rec.unitCount}u：角色全部在屏且不重叠`, rec.allUnitsOnScreen === true,
             `解析=${JSON.stringify(rec.visibility)} 像素=${JSON.stringify(rec.pixelCoverage && { per: rec.pixelCoverage.unitsVisibleByPixels, fill: rec.pixelCoverage.fillRatio })}`);
           check(`run${run} A2 ${rec.unitCount}u：像素覆盖率合理（非"丝带式"塌缩）`,
-            !!(rec.pixelCoverage && rec.pixelCoverage.fillRatio >= 0.2 && rec.pixelCoverage.unitsVisibleByPixels === rec.unitCount),
-            rec.pixelCoverage ? `fillRatio=${rec.pixelCoverage.fillRatio} 覆盖像素=${rec.pixelCoverage.coveredPixels}` : 'null');
+            !!(rec.pixelCoverage && (rec.pixelCoverage.unsupported === true
+              || (rec.pixelCoverage.fillRatio >= 0.2 && rec.pixelCoverage.unitsVisibleByPixels === rec.unitCount))),
+            rec.pixelCoverage ? `fillRatio=${rec.pixelCoverage.fillRatio} 覆盖像素=${rec.pixelCoverage.coveredPixels} unsupported=${!!rec.pixelCoverage.unsupported}` : 'null');
           check(`run${run} A2 ${rec.unitCount}u：gpuMs 口径诚实（null 或真查询值）`, rec.gpuMs === null || typeof rec.gpuMs === 'number',
             `gpuMs=${rec.gpuMs} source=${rec.gpuMsSource}`);
         }
@@ -192,6 +193,90 @@ async function main() {
       }
       console.log(`  A2 汇总：` + (a2.length ? a2.map((x) => `${x.unitCount}u fps${x.fpsMedian}/p95 ${x.frameMsP95}/p99 ${x.frameMsP99}/js ${x.jsAnimMs}/gl ${x.glSubmitMs}/2d ${x.compositeCpuMs}`).join('\n            ') : '(本档未采样)'));
       runs.push(r);
+
+      // ── 结果回收四路兜底（复制/分享/查看/重跑）—— 只在最后一次冷启动（结果含 A2 四档）上核 ──
+      if (run === RUNS) {
+        const btnList = await page.evaluate(() => (window.__probe.hud.buttons || []).map((b) => ({ id: b.id, label: b.label })));
+        check(`run${run} 结果回收按钮齐（复制/分享/查看/重跑/切正控）`,
+          ['copy', 'share', 'view', 'rerun', 'mode'].every((id) => btnList.some((b) => b.id === id)),
+          JSON.stringify(btnList.map((b) => b.id + ':' + b.label)));
+
+        // 把按钮中心（backbuffer 像素）换算成 CSS 坐标再点（canvas 铺满视口，dpr=2）
+        const tapBtn = async (id) => {
+          const pos = await page.evaluate((bid) => {
+            const b = (window.__probe.hud.buttons || []).find((x) => x.id === bid);
+            const cv = document.getElementById('probe-screen-canvas');
+            const rect = cv.getBoundingClientRect();
+            return b ? { x: rect.left + (b.x + b.w / 2) * rect.width / cv.width, y: rect.top + (b.y + b.h / 2) * rect.height / cv.height } : null;
+          }, id);
+          if (!pos) return false;
+          await page.mouse.click(pos.x, pos.y);
+          await page.waitForTimeout(160);
+          return true;
+        };
+        const tapCanvasFrac = async (fx) => {
+          const rect = await page.evaluate(() => document.getElementById('probe-screen-canvas').getBoundingClientRect());
+          await page.mouse.click(rect.left + rect.width * fx, rect.top + rect.height * 0.5);
+          await page.waitForTimeout(160);
+        };
+
+        consoleLines.length = 0;
+        await tapBtn('copy');
+        // 复制在宿主里可能"永不 settle" ⇒ 平台侧 2s 超时兜底；这里等 toast 出现再断言
+        await page.waitForFunction(() => window.__probe.toast && /^复制：/.test(window.__probe.toast.text), null, { timeout: 8000 }).catch(() => {});
+        const clipLine = consoleLines.map((l) => l.slice(l.indexOf('__PROBE_CLIPBOARD__='))).find((l) => l.startsWith('__PROBE_CLIPBOARD__='));
+        const clip = clipLine ? JSON.parse(clipLine.slice('__PROBE_CLIPBOARD__='.length)) : null;
+        const toastCopy = await page.evaluate(() => (window.__probe.toast && window.__probe.toast.text) || null);
+        check(`run${run} 复制结果：成功/失败都留痕（console 单行 + 屏上文案）`,
+          !!clip && typeof clip.ok === 'boolean' && clip.chars > 0 && /^复制：/.test(String(toastCopy)),
+          `console=${clipLine} toast=${toastCopy}`);
+        check(`run${run} 复制失败时带原因（不吃掉错误）`,
+          !!clip && (clip.ok === true || !!clip.errMsg), clip && clip.errMsg);
+
+        consoleLines.length = 0;
+        await tapBtn('share');
+        const shareLine = consoleLines.map((l) => l.slice(l.indexOf('__PROBE_SHARE__='))).find((l) => l.startsWith('__PROBE_SHARE__='));
+        const share = shareLine ? JSON.parse(shareLine.slice('__PROBE_SHARE__='.length)) : null;
+        check(`run${run} 分享结果文件：fail 分支屏上可见且带原因（浏览器如实报不支持）`,
+          !!share && share.ok === false && !!share.errMsg && !!share.fileName,
+          shareLine);
+
+        await tapBtn('view');
+        const vs = await page.evaluate(() => {
+          const v = window.__probe.viewer;
+          return v ? { pages: v.pages.length, page: v.page, first: v.pages[0] } : null;
+        });
+        const nonce = r.a1 && r.a1.nonce;
+        check(`run${run} 查看结果：第 1 页是人读摘要（含 nonce/verdict），后续页为 JSON 分片`,
+          !!vs && vs.pages >= 2 && vs.first.indexOf('结果摘要') >= 0 && vs.first.indexOf(nonce) >= 0
+            && vs.first.indexOf('capacity20') >= 0 && vs.first.indexOf('device ') >= 0,
+          vs ? `pages=${vs.pages} head=${vs.first.slice(0, 120)}` : 'null');
+        await page.screenshot({ path: path.join(OUT, 'browser-viewer-run3.png') });
+        await tapCanvasFrac(0.85);
+        const p2 = await page.evaluate(() => window.__probe.viewer && window.__probe.viewer.page);
+        await tapCanvasFrac(0.15);
+        const p1 = await page.evaluate(() => window.__probe.viewer && window.__probe.viewer.page);
+        check(`run${run} 查看结果：点右半下一页 / 左半上一页`, p2 === 1 && p1 === 0, `next→${p2} prev→${p1}`);
+        const back = await page.evaluate(() => {
+          const cv = document.getElementById('probe-screen-canvas');
+          const s = window.__probe, fs = Math.max(10, Math.round(s.W * 0.030)), pad = Math.round(s.W * 0.03);
+          return { x: s.W - pad - Math.round(s.W * 0.3) / 2, y: s.H - Math.round(fs * 2.1) - fs * 0.6 + Math.round(fs * 2.1) / 2, rect: cv.getBoundingClientRect(), cw: cv.width, ch: cv.height };
+        });
+        await page.mouse.click(back.rect.left + back.x * back.rect.width / back.cw, back.rect.top + back.y * back.rect.height / back.ch);
+        await page.waitForTimeout(200);
+        const closed = await page.evaluate(() => window.__probe.viewer === null);
+        check(`run${run} 查看结果：点「返回」退回正常渲染`, closed === true, String(closed));
+
+        // 重跑压测：写 storage 并重启（重启会刷新页面，故核完立刻离开，不进新的一轮采样）
+        await tapBtn('rerun');
+        await page.waitForTimeout(600);
+        const a2Store = await page.evaluate(() => {
+          const hit = Object.keys(window.localStorage).filter((k) => k.indexOf('pw-probe-a2-mode') >= 0);
+          return hit.map((k) => k + '=' + window.localStorage.getItem(k));
+        });
+        check(`run${run} 重跑压测：写入强制 a2=run 开关（重启后按 storage 生效）`,
+          a2Store.some((s) => s.indexOf('run') >= 0), JSON.stringify(a2Store));
+      }
     }
 
     // ── 附加：主画布 WebGL2 正控模式（方案 §4.3 的定位实验，独立于 A1/A2 判定） ──
@@ -215,7 +300,75 @@ async function main() {
       check('正控模式不出 A1/A2 判定（device=NOT_APPLICABLE）',
         !!(mc.result && mc.result.verdict.device === 'NOT_APPLICABLE' && (mc.result.a2 || []).length === 0),
         JSON.stringify(mc.result && mc.result.verdict));
+
+      // ── 真机判定矩阵回归门 ──────────────────────────────────────────────
+      // 为什么要有这段：真机"冷启动 2/3"时曾误判 DEVICE_FAIL（与同屏 A1 5/5 自相矛盾）——
+      // 而浏览器套件跑不到真机分支。这里在页面里直接调 result.verdicts，把真机分支的四种
+      // 关键状态钉成回归门，避免同类"未完成 vs 失败"混淆再复发。
+      const dv = await page.evaluate(() => {
+        const R = window.PWProbe.result;
+        const dev = { brand: 'TestBrand', model: 'TestModel', system: 'Android 13', platform: 'android', SDKVersion: '3.16.2', pixelRatio: 3, renderer: 'WebKit WebGL' };
+        const base = { assertions: [{ pass: true }], allAssertionsPass: true, sdkVersionApplicable: true, sdkVersionOk: true, offscreenFailed: false, webgl2Context: true };
+        const f = (a1) => { const v = R.verdicts({ device: dev, a1: a1, a2: [], env: { browser: false } }).verdict; return v.device + '|' + v.architecture; };
+        return {
+          cold13: f(Object.assign({}, base, { devicePassCandidate: false, coldRunsTotal: 1, coldRunsRequired: 3 })),
+          cold23: f(Object.assign({}, base, { devicePassCandidate: false, coldRunsTotal: 2, coldRunsRequired: 3 })),
+          cold33: f(Object.assign({}, base, { devicePassCandidate: true, coldRunsTotal: 3, coldRunsRequired: 3 })),
+          realFail: f(Object.assign({}, base, { assertions: [{ pass: false }], allAssertionsPass: false, offscreenFailed: true, mainCanvasWebgl2Control: 'PASS' })),
+          // 语义版本判定：2.9.1 < 2.24.0（字符串字典序会错判成"更新"）
+          sdkLow: (function () {
+            const v = R.verdicts({ device: Object.assign({}, dev, { SDKVersion: '2.9.1' }), a1: Object.assign({}, base, { sdkVersionOk: false }), a2: [], env: { browser: false } }).verdict;
+            return v.device;
+          })(),
+        };
+      });
+      check('真机冷启动 1/3（A1 全过）→ 未完成，不是 FAIL', dv.cold13 === 'DEVICE_A1_PASS_COLD_INCOMPLETE|PENDING', dv.cold13);
+      check('真机冷启动 2/3（A1 全过）→ 未完成，不是 FAIL', dv.cold23 === 'DEVICE_A1_PASS_COLD_INCOMPLETE|PENDING', dv.cold23);
+      check('真机冷启动 3/3 全绿 → DEVICE_PASS / PARTIAL_PASS', dv.cold33 === 'DEVICE_PASS|PARTIAL_PASS', dv.cold33);
+      check('真机 A1 真失败仍判红（DEVICE_FAIL / ARCHITECTURE_FAIL）', dv.realFail === 'DEVICE_FAIL|ARCHITECTURE_FAIL', dv.realFail);
+      check('SDK 2.9.1 < 2.24.0 → UNSUPPORTED（语义版本，非字典序）', dv.sdkLow === 'UNSUPPORTED', dv.sdkLow);
+      check('浏览器冷启动未满 → BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE（路径行为未变）',
+        !!(runs[0] && runs[0].verdict.device === 'BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE'),
+        runs[0] && runs[0].verdict.device);
     }
+
+    // ── 补丁四回归门：模拟安卓 magicbrush「getUniform not support」+ 宿主不返回 MAX_VERTEX_UNIFORM_VECTORS ──
+    // 真机实测：该引擎 getUniform 抛错，若不自证降级会**中断整个 A1**（Leo console 里没有任何结果行可回收）。
+    // 这里把这两个宿主差异钉成回归门：回读自证降级、像素硬判据不受影响、判定不得误报 FAIL。
+    console.log('\n=== 补丁四回归：模拟 getUniform 不支持 + MAX_VERTEX_UNIFORM_VECTORS 缺失 ===');
+    await context.addInitScript(() => {
+      const proto = WebGL2RenderingContext.prototype;
+      const origGetParameter = proto.getParameter;
+      proto.getUniform = function () { throw new Error('getUniform not support'); };
+      proto.getParameter = function (pname) {
+        if (pname === WebGL2RenderingContext.prototype.MAX_VERTEX_UNIFORM_VECTORS) return null;
+        return origGetParameter.call(this, pname);
+      };
+    });
+    consoleLines.length = 0;
+    await page.goto(`http://127.0.0.1:${port}/proto/webgl2_probe/browser/index.html?a2=skip&commit=${head}&sha=${modelSha}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.__probeDone === true, null, { timeout: 5 * 60 * 1000 });
+    const deg = await page.evaluate(() => ({ error: window.__probeError, r: window.__probeResult }));
+    fs.writeFileSync(path.join(OUT, 'probe-result-degraded.json'), JSON.stringify(deg.r || { error: deg.error }, null, 1));
+    await page.screenshot({ path: path.join(OUT, 'browser-degraded.png') });
+    check('降级模拟：run 不中断、仍产出结果 JSON（真机"无结果行"缺陷已修）',
+      !deg.error && !!deg.r, deg.error || (deg.r ? 'ok' : 'null'));
+    check('降级模拟：boneUploadCheck 标 unsupported 且不计入 errors',
+      !!(deg.r && deg.r.a1.boneUploadCheck && deg.r.a1.boneUploadCheck.unsupported === true
+        && (deg.r.a1.errors || []).filter((e) => /palette 上传自证/.test(e)).length === 0),
+      JSON.stringify(deg.r && deg.r.a1.boneUploadCheck && { ok: deg.r.a1.boneUploadCheck.ok, unsupported: deg.r.a1.boneUploadCheck.unsupported, err: deg.r.a1.boneUploadCheck.error }));
+    check('降级模拟：像素硬判据不受影响（A1-01..05 全过）',
+      !!(deg.r && deg.r.a1.assertions.length >= 5 && deg.r.a1.assertions.every((x) => x.pass === true)),
+      deg.r ? deg.r.a1.assertions.map((x) => x.id + ':' + (x.pass ? 'OK' : 'NG')).join(' ') : 'null');
+    check('降级模拟：MAX_VERTEX_UNIFORM_VECTORS 取不到时记 unknown、不判死',
+      !!(deg.r && deg.r.a1.assertions.find((x) => x.id === 'A1-02' && x.detail && String(x.detail.capabilityCheck).indexOf('unknown') >= 0)),
+      JSON.stringify(deg.r && deg.r.a1.assertions.find((x) => x.id === 'A1-02')));
+    check('降级模拟：判定不误报 FAIL（冷启动未满 → 未完成态）',
+      !!(deg.r && deg.r.verdict.device === 'BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE'),
+      deg.r && deg.r.verdict.device);
+    check('降级模拟：带原因的 console 单行仍在（可远程诊断）',
+      consoleLines.some((l) => l.indexOf('__WEBGL2_PROBE_RESULT__=') >= 0),
+      `console 行数=${consoleLines.length}`);
   } finally {
     await context.close();
     await browser.close();

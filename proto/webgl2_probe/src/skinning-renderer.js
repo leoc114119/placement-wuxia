@@ -226,10 +226,14 @@
   function createSkinningRenderer(gl, model, decodedImages, opts) {
     opts = opts || {};
     const jointCount = model.jointNodes.length;
-    const maxVec = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
-    if (jointCount * 4 + 8 > maxVec) {
-      fail(gl, 'MAX_VERTEX_UNIFORM_VECTORS=' + maxVec + ' 装不下 ' + jointCount + ' 骨（需 ≥' + (jointCount * 4 + 8) + '）', 'capability');
+    const maxVecRaw = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
+    const maxVecKnown = typeof maxVecRaw === 'number' && maxVecRaw > 0;
+    // ★ 宿主不返回该常量（null）时**不判死**：方案 §4.2 原文"最终以 shader compile/link 成功为硬判据"。
+    //   （踩过：null 会被 `>` 当 0 用 ⇒ 误报"装不下 41 骨"直接把资产装载打挂。）
+    if (maxVecKnown && jointCount * 4 + 8 > maxVecRaw) {
+      fail(gl, 'MAX_VERTEX_UNIFORM_VECTORS=' + maxVecRaw + ' 装不下 ' + jointCount + ' 骨（需 ≥' + (jointCount * 4 + 8) + '）', 'capability');
     }
+    const maxVec = maxVecKnown ? maxVecRaw : null;
     const program = link(gl, glslVertex(jointCount), FRAG_SRC, 'skin');
     const u = {
       projection: gl.getUniformLocation(program, 'uProjection'),
@@ -314,6 +318,7 @@
       vertexCount: vcount,
       indexCount: model.indices.length,
       maxVertexUniformVectors: maxVec,
+      maxVertexUniformVectorsKnown: maxVecKnown,
       meshUploadMs: meshUploadMs,
       textureUploadMs: textureUploadMs,
       textures: textures,
@@ -364,34 +369,58 @@
       /**
        * 自证："41 个 mat4 一次 uniformMatrix4fv 真的落到 GPU" —— 上传一块带标记的 palette，
        * 再用 getUniform 逐点核回读值。只验上传通路，不做像素断言（像素断言在 A1-03/A1-04）。
-       * （为什么要有这条：一次上传若被驱动缩容/静默丢弃，A1-03 的三角形照样能过 —— 实测踩过类同坑。）
+       *
+       * ★ 平台差异（安卓真机实测）：部分引擎（magicbrush）**不支持 getUniform**（console 报
+       *   `getUniform not support`，可能抛异常）。这是**额外自证**，不是蒙皮正确性的硬判据 ——
+       *   硬判据是方案 §4.2 的 A1-03/04/05 像素三件套（readPixels），它们不依赖 getUniform。
+       *   因此这里**全程 try/catch、绝不抛出**，不支持时返回 `{ok:false, unsupported:true}`，
+       *   由调用方按"平台不支持"如实记录，**不计入 errors、不影响 Device-PASS**。
        */
       verifyBoneUpload: function () {
-        const probe = new Float32Array(jointCount * 16);
-        for (let j = 0; j < jointCount; j++) {
-          probe[j * 16] = 1 + j * 0.01; probe[j * 16 + 5] = 1; probe[j * 16 + 10] = 1; probe[j * 16 + 15] = 1;
-          probe[j * 16 + 12] = j;
-        }
-        // getUniform 读的是"当前 program 的 uniform 状态"，先 useProgram 更稳（ANGLE 实测需要）
-        gl.useProgram(program);
-        gl.uniformMatrix4fv(u.bones, false, probe);
-        const err = gl.getError();
         const samples = [];
-        const probeIdx = [0, 7, 20, jointCount - 1];
-        for (let k = 0; k < probeIdx.length; k++) {
-          const j = probeIdx[k];
-          // 注意：WebGL 的 getUniform 只接受 WebGLUniformLocation（不是 GL 那种字符串名）
-          const loc = gl.getUniformLocation(program, 'uBones[' + j + ']');
-          const v = loc ? gl.getUniform(program, loc) : null;
-          samples.push({
-            index: j, located: !!loc, tx: v ? v[12] : null, m00: v ? v[0] : null,
-            ok: !!v && Math.abs(v[12] - j) < 1e-6 && Math.abs(v[0] - (1 + j * 0.01)) < 1e-6,
-          });
+        let err = null;
+        let located = false;
+        try {
+          const probe = new Float32Array(jointCount * 16);
+          for (let j = 0; j < jointCount; j++) {
+            probe[j * 16] = 1 + j * 0.01; probe[j * 16 + 5] = 1; probe[j * 16 + 10] = 1; probe[j * 16 + 15] = 1;
+            probe[j * 16 + 12] = j;
+          }
+          // getUniform 读的是"当前 program 的 uniform 状态"，先 useProgram 更稳（ANGLE 实测需要）
+          gl.useProgram(program);
+          gl.uniformMatrix4fv(u.bones, false, probe);
+          err = gl.getError();
+          const probeIdx = [0, 7, 20, jointCount - 1];
+          for (let k = 0; k < probeIdx.length; k++) {
+            const j = probeIdx[k];
+            // 注意：WebGL 的 getUniform 只接受 WebGLUniformLocation（不是 GL 那种字符串名）
+            const loc = gl.getUniformLocation(program, 'uBones[' + j + ']');
+            if (loc) located = true;
+            const v = loc ? gl.getUniform(program, loc) : null;
+            samples.push({
+              index: j, located: !!loc, tx: v ? v[12] : null, m00: v ? v[0] : null,
+              ok: !!v && Math.abs(v[12] - j) < 1e-6 && Math.abs(v[0] - (1 + j * 0.01)) < 1e-6,
+            });
+          }
+        } catch (e) {
+          // 引擎不支持 getUniform（magicbrush 实测）/ 任何回读异常 ⇒ 降级，不中断 A1
+          return {
+            ok: false, unsupported: true, platform: 'getUniform-not-support',
+            error: (e && e.message) || String(e), located: located, jointCount: jointCount, samples: samples,
+            note: '回读自证在部分安卓引擎不可用（硬判据 = A1-03/04/05 像素三件套，方案 §4.2）',
+          };
+        }
+        const readbackOk = located && samples.length > 0;
+        if (!readbackOk) {
+          return {
+            ok: false, unsupported: true, platform: 'getUniform-not-support',
+            located: located, jointCount: jointCount, samples: samples,
+            note: 'getUniformLocation/getUniform 未返回可用值 ⇒ 视为平台不回读；硬判据 = A1-03/04/05 像素三件套',
+          };
         }
         return {
-          glError: err, jointCount: jointCount, samples: samples,
-          arraysize: gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS),
           ok: err === gl.NO_ERROR && samples.every(function (s) { return s.ok; }),
+          unsupported: false, glError: err, jointCount: jointCount, samples: samples,
         };
       },
       resetCounters: function () { counters.drawCalls = 0; counters.paletteUploads = 0; counters.frames = 0; },

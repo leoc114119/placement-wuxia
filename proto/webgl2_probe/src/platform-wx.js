@@ -146,13 +146,39 @@
       setStorage: function (key, value) {
         try { wx.setStorageSync(key, value); return true; } catch (e) { return false; }
       },
+      /**
+       * 复制到剪贴板 → {ok, errMsg}。
+       * ★ 必须带超时：真机实测"点复制没反应"就是**宿主既不 success 也不 fail**（Promise 永挂），
+       *   那时屏上什么都看不到、远程无从诊断。超时后如实报原因，让人转用「分享结果」。
+       */
       setClipboard: function (text) {
         return new Promise(function (resolve) {
-          wx.setClipboardData({
-            data: text,
-            success: function () { resolve(true); },
-            fail: function () { resolve(false); },
-          });
+          let done = false;
+          const finish = function (ok, errMsg) { if (!done) { done = true; resolve({ ok: ok, errMsg: errMsg || null }); } };
+          const timer = setTimeout(function () { finish(false, 'wx.setClipboardData 3s 未回调（宿主无响应）'); }, 3000);
+          try {
+            wx.setClipboardData({
+              data: text,
+              success: function () { clearTimeout(timer); finish(true, null); },
+              fail: function (e) { clearTimeout(timer); finish(false, (e && e.errMsg) || 'setClipboardData fail'); },
+            });
+          } catch (e) { clearTimeout(timer); finish(false, (e && e.message) || String(e)); }
+        });
+      },
+      /**
+       * 兜底 A：把结果当**文件**分享出去（真机实测「复制结果」可能拿不到内容 ⇒ 必须有第二条路）。
+       * 不吞失败原因：fail 的 errMsg 要原样回传给屏上/console，否则远程没法诊断。
+       */
+      shareFile: function (filePath, fileName) {
+        return new Promise(function (resolve) {
+          if (typeof wx.shareFileMessage !== 'function') { resolve({ ok: false, errMsg: 'wx.shareFileMessage 不存在（基础库不支持）' }); return; }
+          try {
+            wx.shareFileMessage({
+              filePath: filePath, fileName: fileName,
+              success: function () { resolve({ ok: true }); },
+              fail: function (e) { resolve({ ok: false, errMsg: (e && e.errMsg) || 'shareFileMessage fail' }); },
+            });
+          } catch (e) { resolve({ ok: false, errMsg: (e && e.message) || String(e) }); }
         });
       },
       /** 真机截图导出（feature-detect；小游戏侧若不提供该 API 则返回 null，靠 README 手动命名兜底）。 */

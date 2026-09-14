@@ -38,6 +38,7 @@
   const COLD_RUNS_REQUIRED = 3;
   const STORAGE_COLD = 'pw-probe-cold-runs';
   const STORAGE_MODE = 'pw-probe-mode';
+  const STORAGE_A2_MODE = 'pw-probe-a2-mode';          // 'run' = 每轮都跑 A2（「重跑压测」按钮写）
   const HUD_FONT = '"PingFang SC","Microsoft YaHei",monospace';
   const GL_ERROR_PROBE_HZ = 1;
   // 采样档（spec = 方案 §5.1 原文；browser-short 只用于浏览器层"代码通不通"的证据，
@@ -89,6 +90,9 @@
       screenCanvas.width = W; screenCanvas.height = H;
 
       const mode = opts.mode || (platform.getStorage(STORAGE_MODE) === 'maincontrol' ? 'maincontrol' : 'offscreen');
+      // A2 触发模式：显式入参 > storage（「重跑压测」按钮写 'run'，解决"冷启动满 3 次后 A2 不再自动跑"）
+      const a2Mode = opts.a2 || (platform.getStorage(STORAGE_A2_MODE) === 'run' ? 'run' : 'auto');
+      state.a2Forced = a2Mode === 'run';
       if (mode === 'maincontrol') {
         const control = await runMainCanvasControl(state, info);
         return finalize(state, control);
@@ -122,9 +126,18 @@
         const gpu = queryGpuInfo(gl);
         const lost = gl.isContextLost();
         const err0 = gl.getError();
-        a1_02 = !lost && err0 === gl.NO_ERROR && gpu.maxVertexUniformVectors >= MIN_MAX_VERTEX_UNIFORM_VECTORS;
+        // MAX_VERTEX_UNIFORM_VECTORS：宿主不返回（null）时**不判死** —— 方案 §4.2 原文
+        // "最终以 shader compile/link 成功为硬判据"，故能力项记 unknown，由 A1-03 的 link 结果兜底。
+        const capOk = gpu.maxVertexUniformVectors === null || gpu.maxVertexUniformVectors === undefined
+          ? null : gpu.maxVertexUniformVectors >= MIN_MAX_VERTEX_UNIFORM_VECTORS;
+        a1_02 = !lost && err0 === gl.NO_ERROR && capOk !== false;
         record(a1, 'A1-02', 'WebGL2 context：非 null / 未丢上下文 / 初始无 GL error / MAX_VERTEX_UNIFORM_VECTORS ≥ ' + MIN_MAX_VERTEX_UNIFORM_VECTORS,
-          a1_02, { contextLost: lost, initialGlError: err0, maxVertexUniformVectors: gpu.maxVertexUniformVectors, renderer: gpu.renderer });
+          a1_02, {
+            contextLost: lost, initialGlError: err0, maxVertexUniformVectors: gpu.maxVertexUniformVectors,
+            capabilityCheck: capOk === null ? 'unknown（宿主不返回该常量 ⇒ 硬判据转为 shader link 成功，方案 §4.2）' : capOk,
+            renderer: gpu.renderer,
+          });
+        if (capOk === null) (a1.notes = a1.notes || []).push('MAX_VERTEX_UNIFORM_VECTORS 取不到（宿主不返回）⇒ 记 unknown，不判死；41 骨 shader 的 compile/link 结果即硬判据');
         trackContextLoss(state, offscreen, gl);
       } else {
         record(a1, 'A1-02', 'WebGL2 context', false, { reason: 'getContext("webgl2") 返回 null' });
@@ -191,8 +204,15 @@
           + '）/ jointCount=' + posed.model.account.jointCount + '（基线 ' + MODEL_ACCOUNT.jointCount + '）');
       }
       if (posed) {
+        // 回读自证：平台不支持（如安卓 magicbrush 的 getUniform）⇒ 如实标注、**不算失败、不计入 errors**
         a1.boneUploadCheck = posed.renderer.verifyBoneUpload();
-        if (!a1.boneUploadCheck.ok) a1.errors.push('41 骨整块 palette 上传自证失败: ' + JSON.stringify(a1.boneUploadCheck));
+        if (a1.boneUploadCheck.unsupported) {
+          a1.notes = a1.notes || [];
+          a1.notes.push('41 骨 palette 回读自证在本平台不可用（' + (a1.boneUploadCheck.error || a1.boneUploadCheck.platform)
+            + '）⇒ 不计入错误；蒙皮正确性的硬判据 = A1-03/04/05 像素三件套（方案 §4.2）');
+        } else if (!a1.boneUploadCheck.ok) {
+          a1.errors.push('41 骨整块 palette 上传自证失败（回读可用但值不符）: ' + JSON.stringify(a1.boneUploadCheck));
+        }
       }
 
       // ── A1-04 真实模型 ───────────────────────────────────────────────
@@ -244,8 +264,8 @@
       //   run  → 强制：本次 A1 全过即可（工程师复测用；JSON 记 a2Trigger=forced，PM 可据此区分）；
       //   skip → 不跑。
       // 两种模式都**不会**在 A1 未全过时跑 A2。
-      const a2Trigger = opts.a2 === 'skip' ? 'skipped-by-option'
-        : (opts.a2 === 'run' ? (a1.allAssertionsPass ? 'forced' : 'skipped-a1-not-pass')
+      const a2Trigger = a2Mode === 'skip' ? 'skipped-by-option'
+        : (a2Mode === 'run' ? (a1.allAssertionsPass ? 'forced' : 'skipped-a1-not-pass')
           : (a1.devicePassCandidate ? 'spec-device-pass' : 'skipped-not-device-pass'));
       state.a2Trigger = a2Trigger;
       if ((a2Trigger === 'spec-device-pass' || a2Trigger === 'forced') && posed) {
@@ -289,6 +309,11 @@
     return { ok: resizable && screenUntouched, resizable: resizable, screenUntouched: screenUntouched };
   }
 
+  /** getParameter 的安全包装：宿主不认识的常量如实返回 null，不抛（同"回读不可用"= fail-open 口径）。 */
+  function safeParam(gl, pname) {
+    try { return gl.getParameter(pname); } catch (e) { return null; }
+  }
+
   function queryGpuInfo(gl) {
     let attrs = null;
     try { attrs = gl.getContextAttributes ? gl.getContextAttributes() : null; } catch (e) { attrs = null; }
@@ -299,15 +324,15 @@
       if (dbg) unmasked = { vendor: str(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL)), renderer: str(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) };
     } catch (e) { unmasked = null; }
     return {
-      version: str(gl.getParameter(gl.VERSION)),
-      shadingLanguageVersion: str(gl.getParameter(gl.SHADING_LANGUAGE_VERSION)),
-      vendor: str(gl.getParameter(gl.VENDOR)),
-      renderer: str(gl.getParameter(gl.RENDERER)),
+      version: str(safeParam(gl, gl.VERSION)),
+      shadingLanguageVersion: str(safeParam(gl, gl.SHADING_LANGUAGE_VERSION)),
+      vendor: str(safeParam(gl, gl.VENDOR)),
+      renderer: str(safeParam(gl, gl.RENDERER)),
       unmaskedVendor: unmasked ? unmasked.vendor : null,
       unmaskedRenderer: unmasked ? unmasked.renderer : null,
-      maxVertexUniformVectors: gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS),
-      maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
-      maxVertexAttribs: gl.getParameter(gl.MAX_VERTEX_ATTRIBS),
+      maxVertexUniformVectors: safeParam(gl, gl.MAX_VERTEX_UNIFORM_VECTORS),
+      maxTextureSize: safeParam(gl, gl.MAX_TEXTURE_SIZE),
+      maxVertexAttribs: safeParam(gl, gl.MAX_VERTEX_ATTRIBS),
       contextAttributes: attrs,
     };
   }
@@ -745,7 +770,11 @@
     rec.timerResolutionMs = a1.timerResolutionMs === undefined ? null : a1.timerResolutionMs;
     rec.visibleUnitCount = vis.visible;
     rec.unitsVisibleByPixels = coverage.unitsVisibleByPixels;
-    rec.allUnitsOnScreen = vis.allInside && vis.noOverlap && coverage.unitsVisibleByPixels === plan.u;
+    rec.allUnitsOnScreen = vis.allInside && vis.noOverlap
+      && (coverage.unsupported ? true : coverage.unitsVisibleByPixels === plan.u);
+    if (coverage.unsupported) {
+      rec.visibilityNote = '像素级可见性不可用（' + (coverage.error || 'readPixels unsupported') + '）⇒ 该档"全部可见"依据解析式包围盒 + A1 像素证据';
+    }
     rec.visibility = vis;
     rec.pixelCoverage = coverage;
     rec.canvasPixels = [W, H];
@@ -928,6 +957,19 @@
    * 只做一次、且在采样窗口之外（readPixels 会强制同步，严禁进 A2 循环）。
    */
   function pixelCoverageCheck(state, posed, units, unitCount) {
+    try {
+      return pixelCoverageCheckInner(state, posed, units, unitCount);
+    } catch (e) {
+      // 自证项：引擎不支持整幅 readPixels 时**不中断 A2**，如实标注并回落到解析式可见性
+      return {
+        unitCount: unitCount, unsupported: true, error: (e && e.message) || String(e),
+        unitsVisibleByPixels: null, fillRatio: null, coveredPixels: null,
+        note: '整幅 readPixels 在本平台不可用 ⇒ 覆盖率/逐单位像素可见性记 unsupported，回落解析式包围盒（方案 §5.3 的像素证据仍以 A1-03/04/05 为准）',
+      };
+    }
+  }
+
+  function pixelCoverageCheckInner(state, posed, units, unitCount) {
     const gl = state.gl, canvas = state.glCanvas, W = canvas.width, H = canvas.height;
     posed.renderer.resetCounters();
     // ★ 必须先采样：createPose 出来的 palette 是**全零**，直接画会把整块网格塌到原点
@@ -991,6 +1033,25 @@
 
   function hudFontSize(W) { return Math.max(11, Math.round(W * 0.036)); }
 
+  /**
+   * HUD 上的 device 判定短名（JSON 里仍写完整枚举 —— 屏上是给人一眼读的：
+   * 真机 1080px 宽的 backbuffer 上，完整枚举 DEVICE_A1_PASS_COLD_INCOMPLETE 会超出屏宽被截）。
+   */
+  function shortDeviceVerdict(r) {
+    const d = r.verdict.device;
+    const a1 = r.a1 || {};
+    if (d === 'DEVICE_A1_PASS_COLD_INCOMPLETE' || d === 'BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE') {
+      return 'A1 全过·冷启动 ' + (a1.coldRunsTotal || 0) + '/' + (a1.coldRunsRequired || COLD_RUNS_REQUIRED) + ' 未满（非失败，继续冷启动）';
+    }
+    if (d === 'DEVICE_PASS') return 'Device-PASS（单机事实，Architecture 待主架构）';
+    if (d === 'DEVICE_FAIL') return 'DEVICE_FAIL';
+    if (d === 'UNSUPPORTED') return 'UNSUPPORTED（SDK < ' + MIN_SDK + '）';
+    if (d === 'BROWSER_SHIM_PASS') return '浏览器层 PASS（非设备证据）';
+    if (d === 'BROWSER_SHIM_FAIL') return '浏览器层 FAIL';
+    if (d === 'NOT_APPLICABLE') return 'N/A（正控模式不出判定）';
+    return String(d);
+  }
+
   /** HUD 文字面板高度（7 行口径）—— A1-05 校验块要避开它。 */
   function hudPanelHeight(state) {
     const fs = hudFontSize(state.W || 360);
@@ -1010,17 +1071,35 @@
     lines.push('nonce ' + ((state.a1 && state.a1.nonce) || '-') + ' · ' + state.phase);
     const done = state.a2.length;
     lines.push('A2 ' + done + '/' + state.profile.plan.length + ' 档' + (state.a2.length ? ' · 末档 FPS ' + state.a2[state.a2.length - 1].fpsMedian : ''));
-    if (state.result) lines.push('20u ' + state.result.verdict.capacity20 + ' · device ' + state.result.verdict.device);
+    if (state.result) lines.push('20u ' + state.result.verdict.capacity20 + ' · ' + shortDeviceVerdict(state.result));
     else lines.push('verdict 待出' + (state.error ? ' · ERROR ' + trunc(state.error, 30) : ''));
+    // toast（结果回收按钮的成败反馈）跟随 HUD 一起画：20s 内可见
+    if (state.toast && Date.now() - state.toast.at < 20000) lines.push('▶ ' + state.toast.text);
     const fs = hudFontSize(state.W), lh = fs * 1.45, pad = Math.round(state.W * 0.03);
     const boxH = lh * lines.length + pad;
-    const bw = Math.round(state.W * 0.42), bh = Math.round(fs * 2.3), gap = Math.round(state.W * 0.02);
-    const by = Math.max(boxH + 6, state.H - fs * 3.2);
-    const buttons = [
-      { id: 'copy', label: '复制结果', x: pad, y: by, w: bw, h: bh },
-      { id: 'mode', label: state.pendingMode === 'maincontrol' ? '已设正控·重启' : '切正控模式', x: pad + bw + gap, y: by, w: bw, h: bh },
-    ];
-    return { lines: lines.map(function (t) { return { text: t }; }), buttons: buttons, fs: fs, lh: lh, pad: pad, boxH: boxH };
+    // 结果回收四路兜底：只在**结果已产出**后出现（真机实测踩过"点复制没反应、也不知道为什么"）
+    const buttons = [];
+    if (state.result) {
+      buttons.push({ id: 'copy', label: '复制结果' });
+      buttons.push({ id: 'share', label: '分享结果' });
+      buttons.push({ id: 'view', label: '查看结果' });
+      buttons.push({ id: 'rerun', label: state.a2Forced ? '压测常开·点关' : '重跑压测' });
+      buttons.push({ id: 'mode', label: state.pendingMode === 'maincontrol' ? '已设正控·重启' : '切正控模式' });
+    }
+    // 每行 3 个
+    const perRow = 3, gap = Math.round(state.W * 0.02), bh = Math.round(fs * 2.3);
+    const bw = Math.floor((state.W - pad * 2 - gap * (perRow - 1)) / perRow);
+    const rows = Math.ceil(buttons.length / perRow);
+    const rowTop = Math.max(boxH + 6, state.H - (bh + gap) * rows - pad);
+    for (let i = 0; i < buttons.length; i++) {
+      const r = Math.floor(i / perRow), c = i % perRow;
+      buttons[i].x = pad + c * (bw + gap);
+      buttons[i].y = rowTop + r * (bh + gap);
+      buttons[i].w = bw;
+      buttons[i].h = bh;
+      buttons[i].fs = fs;
+    }
+    return { lines: lines.map(function (t) { return { text: t }; }), buttons: buttons, fs: fs, lh: lh, pad: pad, boxH: boxH, rows: rows, rowTop: rowTop };
   }
 
   function drawHud(ctx2d, W, H, hud) {
@@ -1035,20 +1114,195 @@
     const buttons = hud.buttons || [];
     for (let k = 0; k < buttons.length; k++) {
       const b = buttons[k];
+      const bfs = b.fs || fs;
+      ctx2d.font = 'bold ' + bfs + 'px ' + HUD_FONT;
       ctx2d.fillStyle = b.active ? '#2f6f4f' : '#22303f';
       ctx2d.fillRect(b.x, b.y, b.w, b.h);
       ctx2d.strokeStyle = '#5c7fa3'; ctx2d.lineWidth = 2;
       ctx2d.strokeRect(b.x, b.y, b.w, b.h);
       ctx2d.fillStyle = '#dbe7f5';
-      ctx2d.fillText(b.label, b.x + pad * 0.5, b.y + b.h * 0.22);
+      const tw = ctx2d.measureText(b.label).width;
+      ctx2d.fillText(b.label, b.x + Math.max(6, (b.w - tw) / 2), b.y + (b.h - bfs) / 2);
       b.active = false;
     }
+    if (hud.buttons && hud.buttons.length) ctx2d.font = 'bold ' + fs + 'px ' + HUD_FONT;
+  }
+
+  // ══ 结果回收四路兜底（真机实测：A2 全绿但「复制结果」拿不到内容）══════════════
+  //   ① 复制按钮可观测（成功/失败+原因，屏上 + console 单行）
+  //   ② 分享结果文件（wx.shareFileMessage → 直接发到聊天/文件传输助手）
+  //   ③ 屏上分页查看（逐页截图回收；第 1 页 = 人读摘要，后续页 = 原始 JSON 分片）
+  //   ④ 重跑压测（强制 a2=run 并重启，绕开"冷启动满 3 次后 A2 不再自动跑"）
+
+  const VIEWER_CHARS_PER_PAGE = 1200;
+
+  function setToast(state, text, channel) {
+    state.toast = { text: text, at: Date.now() };
+    if (channel) {
+      const line = channel.key + '=' + JSON.stringify(channel.payload);
+      try { if (typeof console !== 'undefined' && console.log) console.log(line); } catch (e) { /* ignore */ }
+    }
+    renderScreen(state, null);
+  }
+
+  async function copyResultQuiet(state) {
+    if (!state.result) { setToast(state, '复制：无结果可复制（等 A1 跑完）'); return false; }
+    const text = JSON.stringify(state.result);
+    let ok = false, errMsg = null;
+    try {
+      // setClipboard 返回 {ok, errMsg}：**必须带原因**，否则真机"点了没反应"没法远程诊断
+      const r = await state.platform.setClipboard(text);
+      ok = !!(r && r.ok);
+      errMsg = (r && r.errMsg) || (ok ? null : 'setClipboardData 返回失败（无原因）');
+    } catch (e) { errMsg = (e && e.message) || String(e); }
+    state.lastCopyOk = ok;
+    setToast(state, '复制：' + (ok ? '成功（' + text.length + ' 字符）' : '失败 · ' + errMsg), {
+      key: '__PROBE_CLIPBOARD__',
+      payload: { ok: ok, chars: text.length, errMsg: errMsg, at: Date.now(), platform: state.platform.kind },
+    });
+    return ok;
+  }
+
+  /** 兜底 A：把 probe-result.json 当**文件**分享出去（不依赖剪贴板）。 */
+  async function shareResult(state) {
+    const p = state.platform;
+    if (!state.result) { setToast(state, '分享：无结果可分享'); return false; }
+    if (typeof p.shareFile !== 'function') {
+      setToast(state, '分享：该宿主不支持（无 wx.shareFileMessage）', { key: '__PROBE_SHARE__', payload: { ok: false, errMsg: 'shareFileMessage-unsupported' } });
+      return false;
+    }
+    // 文件名按方案 §8 口径：probe_<deviceHash>_run<n>.json
+    const d = state.result.device || {};
+    const run = (state.result.a1 && state.result.a1.coldRunIndex) || 0;
+    const fileName = 'probe_' + (d.deviceHash || 'nodev') + '_run' + run + '.json';
+    const text = JSON.stringify(state.result);
+    const path = p.writeUserFile('probe-result.json', JSON.stringify(state.result, null, 1)) || p.writeUserFile(fileName, text);
+    let ok = false, errMsg = null;
+    try {
+      const r = await p.shareFile(path, fileName);
+      ok = !!(r && r.ok); errMsg = (r && r.errMsg) || null;
+    } catch (e) { errMsg = (e && e.message) || String(e); }
+    setToast(state, '分享：' + (ok ? '已调起（' + fileName + '）' : '失败 · ' + errMsg), {
+      key: '__PROBE_SHARE__',
+      payload: { ok: ok, fileName: fileName, filePath: path, errMsg: errMsg, at: Date.now() },
+    });
+    return ok;
+  }
+
+  /** 兜底 B：屏上分页查看结果（点右半下一页 / 左半上一页 / 点「返回」退出）。 */
+  function openViewer(state) {
+    if (!state.result) { setToast(state, '查看：无结果'); return; }
+    state.viewer = { pages: buildViewerPages(state.result, state.a1 && state.a1.nonce), page: 0 };
+    renderScreen(state, null);
+  }
+
+  function buildViewerPages(r, nonce) {
+    const pages = [];
+    // 第 1 页：人读摘要（Leo 逐页截图时，这一页就够回传关键结论）
+    const a1 = r.a1 || {};
+    const d = r.device || {};
+    const digits = function (v) { return v === null || v === undefined ? 'n/a' : v; };
+    const L = [];
+    L.push('T31 S0 结果摘要（第 1 页＝人读版，后续页＝原始 JSON 分片）');
+    L.push('nonce ' + (nonce || '-') + ' · runIndex ' + (a1.coldRunIndex || 0) + '/' + (a1.coldRunsRequired || 3)
+      + ' · 冷启动绿 ' + digits(a1.coldRunsGreen) + '/' + digits(a1.coldRunsTotal));
+    L.push('device ' + d.brand + '/' + d.model + ' · ' + d.platform + ' · SDK ' + digits(d.SDKVersion) + ' · dpr ' + d.pixelRatio);
+    L.push('backbuffer ' + digits(r.canvas && (r.canvas.backbufferWidth + 'x' + r.canvas.backbufferHeight)) + ' · renderScale ' + digits(r.canvas && r.canvas.renderScale));
+    L.push('renderer ' + (d.unmaskedRenderer || d.renderer || '-'));
+    L.push('deviceHash ' + digits(d.deviceHash) + ' · modelSHA ' + String(r.modelSha256 || '').slice(0, 16) + '…');
+    L.push('A1 ' + (a1.assertions || []).filter(function (x) { return x.pass; }).length + '/' + (a1.assertions || []).length
+      + ' · webgl2 ' + (a1.webgl2Context ? 'OK' : 'NO') + ' · UV ' + digits(a1.maxVertexUniformVectors)
+      + ' · composite ' + digits(a1.compositeProof) + ' · GLerr ' + digits((a1.assertions || []).length ? state0(a1) : '-'));
+    (r.a2 || []).forEach(function (x) {
+      L.push(x.unitCount + 'u fps ' + x.fpsMedian + ' p95 ' + x.frameMsP95 + ' p99 ' + x.frameMsP99
+        + ' js ' + x.jsAnimMsMean + ' gl ' + x.glSubmitMsMean + ' 2d ' + x.compositeCpuMsMean
+        + ' gpu ' + digits(x.gpuMs) + ' draw ' + x.drawCallsPerFrame + ' n ' + x.sampleCount);
+    });
+    if (!(r.a2 || []).length) L.push('A2 未跑：' + (r.env && r.env.a2Skipped ? r.env.a2Skipped : '-'));
+    L.push('capacity20 ' + (r.verdict && r.verdict.capacity20) + ' (engine ' + digits(r.verdict && r.verdict.capacity20Engine) + ')');
+    L.push('device ' + (r.verdict && r.verdict.device) + ' · architecture ' + (r.verdict && r.verdict.architecture));
+    (r.notes || []).slice(0, 2).forEach(function (n) { L.push('note: ' + n); });
+    pages.push(L.join('\n'));
+
+    // 后续页：原始 JSON 分片（便于 PM 取完整证据）
+    const json = JSON.stringify(r);
+    for (let i = 0; i < json.length; i += VIEWER_CHARS_PER_PAGE) pages.push(json.slice(i, i + VIEWER_CHARS_PER_PAGE));
+    return pages;
+  }
+
+  function state0(a1) {
+    const gl = a1.assertions.filter(function (x) { return x.detail && x.detail.glError !== undefined; });
+    return gl.length ? gl[0].detail.glError : 0;
+  }
+
+  function drawViewer(ctx2d, state) {
+    const W = state.W, H = state.H, v = state.viewer;
+    const pad = Math.round(W * 0.03), fs = Math.max(10, Math.round(W * 0.030));
+    ctx2d.fillStyle = '#070a10';
+    ctx2d.fillRect(0, 0, W, H);
+    ctx2d.font = 'bold ' + fs + 'px ' + HUD_FONT;
+    ctx2d.textBaseline = 'top';
+    ctx2d.fillStyle = '#dfe8f5';
+    const lines = wrapText(ctx2d, v.pages[v.page] || '', W - pad * 2);
+    const lh = fs * 1.35;
+    const maxLines = Math.floor((H - pad * 2 - fs * 4) / lh);
+    for (let i = 0; i < Math.min(lines.length, maxLines); i++) ctx2d.fillText(lines[i], pad, pad + i * lh);
+    if (lines.length > maxLines) ctx2d.fillText('…（本页还有 ' + (lines.length - maxLines) + ' 行，见下一页）', pad, pad + maxLines * lh);
+    // 页脚
+    const footY = H - fs * 3;
+    ctx2d.fillStyle = 'rgba(4,6,10,0.85)';
+    ctx2d.fillRect(0, footY - fs * 0.4, W, H - footY + fs * 0.4);
+    ctx2d.fillStyle = '#ffe9b8';
+    ctx2d.fillText('第 ' + (v.page + 1) + '/' + v.pages.length + ' 页 · nonce ' + ((state.a1 && state.a1.nonce) || '-')
+      + ' · 点右半下一页 / 左半上一页', pad, footY);
+    const b = viewerBackButton(state);
+    ctx2d.fillStyle = '#22303f'; ctx2d.fillRect(b.x, b.y, b.w, b.h);
+    ctx2d.strokeStyle = '#5c7fa3'; ctx2d.lineWidth = 2; ctx2d.strokeRect(b.x, b.y, b.w, b.h);
+    ctx2d.fillStyle = '#dbe7f5';
+    ctx2d.fillText('返回', b.x + (b.w - ctx2d.measureText('返回').width) / 2, b.y + (b.h - fs * 1.35) / 2);
+  }
+
+  function viewerBackButton(state) {
+    const fs = Math.max(10, Math.round(state.W * 0.030)), pad = Math.round(state.W * 0.03);
+    const w = Math.round(state.W * 0.3), h = Math.round(fs * 2.1);
+    return { x: state.W - pad - w, y: state.H - h - fs * 0.6, w: w, h: h };
+  }
+
+  /** 简单按测量宽度折行（含长 token 硬切）。 */
+  function wrapText(ctx2d, text, maxWidth) {
+    const out = [];
+    const paras = String(text).split('\n');
+    for (let p = 0; p < paras.length; p++) {
+      let cur = '';
+      const chars = paras[p];
+      for (let i = 0; i < chars.length; i++) {
+        const next = cur + chars[i];
+        if (ctx2d.measureText(next).width > maxWidth && cur.length) { out.push(cur); cur = chars[i]; }
+        else cur = next;
+      }
+      out.push(cur);
+    }
+    return out;
+  }
+
+  /** 兜底 C：强制 a2=run（压测常开）并重启 —— 解决"冷启动满 3 次后 A2 不再自动跑"。 */
+  async function rerunA2(state) {
+    const p = state.platform;
+    const next = state.a2Forced ? 'auto' : 'run';
+    p.setStorage(STORAGE_A2_MODE, next);
+    state.a2Forced = next === 'run';
+    state.pendingA2 = next;
+    const restarted = p.restartApp();
+    setToast(state, next === 'run'
+      ? '重跑压测：已设「A2 每轮都跑」' + (restarted ? '，正在重启…' : '；请手动杀掉微信后重新扫码')
+      : '已关「A2 每轮都跑」' + (restarted ? '，正在重启…' : '；请手动杀掉微信后重新扫码'));
   }
 
   /** 画整屏（背景 → 合成 → 文字）。A2 采样结束后调用，不在采样循环内。 */
   function renderScreen(state, currentRec) {
     const ctx2d = state.ctx2d;
     if (!ctx2d) return;
+    if (state.viewer) { drawViewer(ctx2d, state); state.lastRenderAt = Date.now(); return; }   // 分页查看态
     if (state.a1) {
       const a1 = state.a1;
       a1.hudSnapshot = {
@@ -1067,11 +1321,24 @@
     if (!state.touchBound) {
       state.touchBound = true;
       state.platform.onTouchStart(function (x, y) {
+        // ① 分页查看模式：右半下一页 / 左半上一页 / 「返回」退出
+        if (state.viewer) {
+          const b = viewerBackButton(state);
+          if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { state.viewer = null; renderScreen(state, null); return; }
+          const n = state.viewer.pages.length;
+          state.viewer.page = (x > state.W / 2) ? Math.min(n - 1, state.viewer.page + 1) : Math.max(0, state.viewer.page - 1);
+          renderScreen(state, null);
+          return;
+        }
+        // ② 正常模式：按钮命中
         const bs = (state.hud && state.hud.buttons) || [];
         for (let k = 0; k < bs.length; k++) {
           const b = bs[k];
           if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
             if (b.id === 'copy') copyResultQuiet(state);
+            else if (b.id === 'share') shareResult(state);
+            else if (b.id === 'view') openViewer(state);
+            else if (b.id === 'rerun') rerunA2(state);
             else if (b.id === 'mode') switchToControlMode(state);
             return;
           }
@@ -1086,23 +1353,14 @@
     const next = p.getStorage(STORAGE_MODE) === 'maincontrol' ? '' : 'maincontrol';
     p.setStorage(STORAGE_MODE, next);
     state.pendingMode = next;
-    const restarted = next === 'maincontrol' ? p.restartApp() : p.restartApp();
+    const restarted = p.restartApp();
+    setToast(state, '已切换模式为 ' + (next || '离屏（默认）') + (restarted ? '，正在重启…' : '；请手动杀掉微信后重新扫码'));
     if (state.a1) {
       state.a1.modeSwitch = {
         requested: next || 'offscreen', restarted: !!restarted,
         note: restarted ? '已请求重启' : '该宿主不支持自动重启 ⇒ 请手动杀掉微信后重新扫码（模式已存 storage，下次启动生效）',
       };
     }
-  }
-
-  async function copyResultQuiet(state) {
-    if (!state.result) return false;
-    let ok = false;
-    try { ok = await state.platform.setClipboard(JSON.stringify(state.result)); } catch (e) { ok = false; }
-    state.lastCopyOk = ok;
-    const bs = (state.hud && state.hud.buttons) || [];
-    for (let k = 0; k < bs.length; k++) if (bs[k].id === 'copy') bs[k].active = ok;
-    return ok;
   }
 
   /**

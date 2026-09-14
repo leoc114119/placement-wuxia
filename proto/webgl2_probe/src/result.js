@@ -97,6 +97,17 @@
       device = 'DEVICE_PASS';
       architecture = 'PARTIAL_PASS';
       notes.push('单台设备 Device-PASS ⇒ 记 PARTIAL_PASS；Architecture-PASS 需 ≥2 台异品牌/异 renderer 安卓各 3 次冷启动（方案 §4.4），由主架构签字');
+    } else if (a1.allAssertionsPass) {
+      // ★ 中间态：本次 A1 全过、但冷启动系列还没满 3 次 ⇒ 是"未完成"，**不是失败**
+      //   （真机实测踩过：冷启动 2/3 时屏幕打出 DEVICE_FAIL，与同屏 A1 5/5 自相矛盾）
+      //   与浏览器档 BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE 同族命名。
+      device = 'DEVICE_A1_PASS_COLD_INCOMPLETE';
+      architecture = 'PENDING';
+      notes.push('本次 A1 断言全过（A1-01..05 绿、零 context lost / GL error），但冷启动仅 '
+        + (a1.coldRunsTotal || 0) + '/' + (a1.coldRunsRequired || 3)
+        + ' 次，**未构成 Device-PASS —— 这不是失败**（方案 §4.4：Device-PASS = 连续 3 次冷启动全绿）；'
+        + '继续「完全杀微信 → 重新扫码」凑满 3 次即可，第 3 次会自动接着跑 A2');
+      notes.push('A2 按方案 §5 只在 Device-PASS 后运行，故本次 capacity20 记 NOT_RUN');
     } else {
       device = 'DEVICE_FAIL';
       if (a1.offscreenFailed && a1.mainCanvasWebgl2Control === 'PASS') {

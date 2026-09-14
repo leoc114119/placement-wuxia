@@ -1,6 +1,6 @@
 {
  "schemaVersion": "t31-s0-1.0",
- "commitSha": "bc8d156987c7026bc3f3ba091031022045a84b15",
+ "commitSha": "d047df0dd73eef676c52ffc66fe8f6f7cd208158",
  "probeBaselineNote": "commitSha = probe 工程基线提交；PM 用分支 tip 交叉核对（见 README「结果字段」）",
  "modelSha256": "ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0",
  "device": {
@@ -81,6 +81,7 @@
      "contextLost": false,
      "initialGlError": 0,
      "maxVertexUniformVectors": 1024,
+     "capabilityCheck": true,
      "renderer": "WebKit WebGL"
     }
    },
@@ -125,34 +126,34 @@
      "glError": 0,
      "drawImageError": null,
      "expectedTop": [
-      81,
       107,
-      95
+      99,
+      118
      ],
      "expectedBottom": [
-      122,
-      103,
-      88
+      104,
+      109,
+      75
      ],
      "readbackTop": [
-      81,
       107,
-      95,
+      99,
+      118,
       255
      ],
      "readbackBottom": [
-      122,
-      103,
-      88,
+      104,
+      109,
+      75,
       255
      ],
-     "nonce": "lolr3jyi"
+     "nonce": "qgcbvdad"
     }
    }
   ],
   "errors": [],
   "mode": "offscreen",
-  "nonce": "lolr3jyi",
+  "nonce": "qgcbvdad",
   "webgl2Context": true,
   "maxVertexUniformVectors": 1024,
   "webgl1Diagnostic": null,
@@ -165,14 +166,14 @@
    "glError": 0
   },
   "hudSnapshot": {
-   "at": 1789359762165,
+   "at": 1789361664336,
    "phase": "boot",
    "lines": [
     "T31 S0 · BROWSER(shim) · browser/MacIntel",
     "SDK (无) · dpr 2 · bb 780x1688",
     "A1 5/5 · webgl2 OK · UV 1024 · 冷启动 2/3",
     "档位 0 · 实时FPS - · GLerr 0 · ctxLost 0",
-    "nonce lolr3jyi · boot",
+    "nonce qgcbvdad · boot",
     "A2 0/4 档",
     "verdict 待出"
    ],
@@ -181,13 +182,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 10.5,
-    "glbParseMs": 5.9,
-    "animParseMs": 3.1,
-    "textureDecodeMs": 2.1,
-    "firstGpuUploadMs": 116.8,
-    "meshUploadMs": 1,
-    "textureUploadMs": 114.6
+    "readFileMs": 11.1,
+    "glbParseMs": 5.6,
+    "animParseMs": 4.4,
+    "textureDecodeMs": 2.7,
+    "firstGpuUploadMs": 117.7,
+    "meshUploadMs": 1.1,
+    "textureUploadMs": 115.1
    },
    "resolved": {
     "subpackage": {
@@ -264,6 +265,8 @@
   },
   "modelAccountOk": true,
   "boneUploadCheck": {
+   "ok": true,
+   "unsupported": false,
    "glError": 0,
    "jointCount": 41,
    "samples": [
@@ -295,9 +298,7 @@
      "m00": 1.399999976158142,
      "ok": true
     }
-   ],
-   "arraysize": 7,
-   "ok": true
+   ]
   },
   "modelReadback": {
    "region": {
@@ -337,16 +338,16 @@
    "proof": "readback",
    "glError": 0,
    "drawImageError": null,
-   "nonce": "lolr3jyi",
+   "nonce": "qgcbvdad",
    "expectedTop": [
-    81,
     107,
-    95
+    99,
+    118
    ],
    "expectedBottom": [
-    122,
-    103,
-    88
+    104,
+    109,
+    75
    ],
    "topRect": [
     16,
@@ -363,18 +364,18 @@
    "readback": {
     "top": {
      "mean": [
-      81,
       107,
-      95,
+      99,
+      118,
       255
      ],
      "n": 16
     },
     "bottom": {
      "mean": [
-      122,
-      103,
-      88,
+      104,
+      109,
+      75,
       255
      ],
      "n": 16
@@ -392,14 +393,14 @@
    {
     "index": 1,
     "a1Ok": true,
-    "ts": 1789359761831,
+    "ts": 1789361664020,
     "assertionsPass": 5,
     "assertionsTotal": 5
    },
    {
     "index": 2,
     "a1Ok": true,
-    "ts": 1789359762165,
+    "ts": 1789361664336,
     "assertionsPass": 5,
     "assertionsTotal": 5
    }
@@ -440,7 +441,7 @@
  "coldRuns": [
   {
    "index": 1,
-   "ts": 1789359761831,
+   "ts": 1789361664020,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -449,7 +450,7 @@
   },
   {
    "index": 2,
-   "ts": 1789359762165,
+   "ts": 1789361664336,
    "deviceHash": "wvx13b",
    "a1Ok": true,
    "sdkVersion": null,
@@ -486,13 +487,13 @@
   "asset": {
    "stages": {
     "subpackageMs": 0,
-    "readFileMs": 10.5,
-    "glbParseMs": 5.9,
-    "animParseMs": 3.1,
-    "textureDecodeMs": 2.1,
-    "firstGpuUploadMs": 116.8,
-    "meshUploadMs": 1,
-    "textureUploadMs": 114.6
+    "readFileMs": 11.1,
+    "glbParseMs": 5.6,
+    "animParseMs": 4.4,
+    "textureDecodeMs": 2.7,
+    "firstGpuUploadMs": 117.7,
+    "meshUploadMs": 1.1,
+    "textureUploadMs": 115.1
    },
    "resolved": {
     "subpackage": {

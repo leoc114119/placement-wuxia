@@ -111,16 +111,30 @@ A2 4/4 档 · 末档 FPS 41.2
 > 冷启动计数存在本机 storage（键 `pw-probe-cold-runs`），满 3 次后自动开新一组。
 > 看不到 `3/3` 就不要下 Device-PASS 结论 —— 证据不足不许写 PASS。
 
-### 2.4 结果回传（三选一或全给）
+### 2.4 结果回传（**四种方式，任一种通就够**）
 
-1. **复制结果**：点「复制结果」→ 结果 JSON 进剪贴板 → 粘贴到「文件传输助手」发回。
-2. **结果文件**：同时写入 `wx.env.USER_DATA_PATH/probe-result.json`（devtools 的 Storage 面板可查看）。
-3. **截图**：每档结束探针会尝试自动存 PNG（`wx.canvasToTempFilePath`，文件名见 §3.3）；
-   若该基础库不提供该 API，则**手动截屏**并按下节命名。
+真机实测踩过：A2 四档全绿、但点「复制结果」拿不到内容，而且失败是**无声的**（远程没法诊断）。
+因此屏上底部有五个按钮，四条独立的回收路径 + 一个强制重跑开关；**每条的成败都写在屏上**
+（HUD 末行 `▶ …`），同时 console 打单行便于远程取日志：
+
+| 按钮（屏上文案） | 做法 | 屏上反馈 / console 单行 |
+|---|---|---|
+| **复制结果** | `wx.setClipboardData` 整份 JSON | `▶ 复制：成功（N 字符）` / `▶ 复制：失败 · <原因>`；console `__PROBE_CLIPBOARD__={"ok":…,"chars":…,"errMsg":…}` |
+| **分享结果** | `wx.shareFileMessage` 把 `probe-result.json` 当**文件**发到聊天/文件传输助手，文件名 `probe_<deviceHash>_run<n>.json` | `▶ 分享：已调起（文件名）` / `▶ 分享：失败 · <原因>`；console `__PROBE_SHARE__={…}` |
+| **查看结果** | 屏上**分页查看**：第 1 页＝人读摘要（nonce / 设备 / A1 / A2 四档关键数 / verdict），后续页＝原始 JSON 分片（每页 1200 字符）。**点右半下一页、点左半上一页、点右下「返回」退出** | 页脚 `第 x/y 页 · nonce <n> · 点右半下一页 / 左半上一页`；逐页截图即可回收 |
+| **重跑压测** | 写开关 `pw-probe-a2-mode='run'` 并重启 ⇒ **A2 每轮都跑**（解决"冷启动满 3 次后计数开新组、A2 不再自动跑"⇒ 数据不可复得）。再点一次变 `压测常开·点关` 复原 | `▶ 重跑压测：已设「A2 每轮都跑」，正在重启…`（宿主不支持自动重启时提示手动杀进程重扫） |
+| **切正控模式** | §2.5 的主画布正控模式开关 | `▶ 已切换模式为 …` |
+
+按钮只在**结果产出后**出现（A1 跑完即有；A2 未跑也照常可回收）。另外三个仍然有效的回收口：
+
+- 结果同时写入 `wx.env.USER_DATA_PATH/probe-result.json`（devtools 的 Storage 面板可查看）。
+- console 单行 `__WEBGL2_PROBE_RESULT__=<JSON>` 可在 devtools Console 直接复制。
+- 每档结束探针会尝试自动存 PNG（`wx.canvasToTempFilePath`，命名见 §3.3）；该 API 不可用时**手动截屏**。
 
 **人眼确认合成（A1-05）**：若主画布回读不可用，A1-05 记 `compositeProof="visualProof"`，
 此时必须用截图确认两件事 —— ① 人物**可见且贴合背景**（不是全透明、不是倒过来）② 屏上 `nonce`
 与你截图里的一致（nonce 每次运行随机，防"拿旧图冒充本次"）。
+`查看结果` 每一页页脚也带 nonce，逐页截图同样能自证是同一轮。
 
 ### 2.5 若离屏链失败：跑一次主画布正控
 
@@ -132,6 +146,21 @@ A2 4/4 档 · 末档 FPS 41.2
 - 主画布**也 FAIL** ⇒ 该设备/SDK 无 WebGL2，A、B 都不成立（方案 §4.3）
 
 再点一次同一按钮可切回离屏模式。
+
+### 2.6 部分安卓引擎「回读不可用」时的判定口径（重要）
+
+安卓真机实测（magicbrush 引擎）不支持 `getUniform`。本 probe 按下面的口径处理，**不把平台差异当设备失败**：
+
+| 项 | 属于 | 引擎不支持时 |
+|---|---|---|
+| A1-03/04/05 的 `readPixels` | **方案 §4.2 硬判据** | **不降级** —— 连 readPixels 都不支持 ⇒ 真 FAIL（照方案判） |
+| `MAX_VERTEX_UNIFORM_VECTORS` | 能力预检 | 取不到 ⇒ 记 `unknown`，**不判死**；硬判据转为 41 骨 shader 的 compile/link 成功（方案 §4.2 原文） |
+| `verifyBoneUpload`（41 骨 palette 回读自证） | **额外自证** | `{ok:false, unsupported:true, platform:'getUniform-not-support'}`，**不计入 errors、不影响 Device-PASS**，只在 `a1.boneUploadCheck` + notes 如实留痕 |
+| `EXT_disjoint_timer_query_webgl2` / `gpuMs` | 分相指标 | 不可用 ⇒ `gpuMs:null`（禁用 `performance.now` 冒充） |
+| `pixelCoverage`（整幅 readPixels 覆盖率） | 额外自证（A2 期） | 不可用 ⇒ `pixelCoverage.unsupported=true`，"全部可见"回落解析式包围盒，并记 `visibilityNote` |
+| `WEBGL_debug_renderer_info`（未掩码 GPU 串） | 设备矩阵用 | 取不到 ⇒ null（掩码串仍记录） |
+
+一句话：**平台不支持"自证手段" ≠ 蒙皮失败 ≠ 设备失败**；反之**像素硬判据从不降级**。
 
 ## 3. 结果字段（`probe-result.json` / console 单行）
 
@@ -155,14 +184,26 @@ console 会输出**单行** `__WEBGL2_PROBE_RESULT__=<JSON>`（devtools 的 Cons
 
 ### 3.2 verdict 语义（谁签字）
 
-- `verdict.device ∈ {DEVICE_PASS, DEVICE_FAIL, UNSUPPORTED, BROWSER_SHIM_PASS/FAIL, NOT_APPLICABLE}`
-  —— 单设备事实。
+- `verdict.device` 取值与含义：
+
+| 值 | 含义 |
+|---|---|
+| `DEVICE_A1_PASS_COLD_INCOMPLETE` | **本次 A1 全过、冷启动系列未满 3 次 ⇒ 未完成（不是失败）**。屏上短名会写「A1 全过·冷启动 x/3 未满（非失败）」。继续冷启动凑满 3 次即可，第 3 次会自动接着跑 A2 |
+| `DEVICE_PASS` | 连续 3 次冷启动全绿（单设备事实） |
+| `DEVICE_FAIL` | A1 真有断言红 / 离屏链失败（仍判红） |
+| `UNSUPPORTED` | `SDKVersion < 2.24.0`，不参与 A 路线 PASS |
+| `BROWSER_SHIM_PASS` / `BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE` / `BROWSER_SHIM_FAIL` | 浏览器 + wx shim 三态（前者=本次即满 3 次冷启动的等价模拟） |
+| `NOT_APPLICABLE` | 主画布正控模式（该模式自身不出 A1/A2 判定） |
+
 - `verdict.architecture` —— **单机最多给 `PARTIAL_PASS`**；Architecture-PASS 需「≥2 台异品牌/异 renderer 安卓 ×
   各 3 次冷启动」，由**主架构签字**，本 probe 不越级判。
 - `verdict.capacity20` —— 真机 spec 档按 §5.3 自动生成：
   `CAPACITY_PASS` / `A_COMPATIBLE_CAPACITY_FAIL`。浏览器运行会写成 `BROWSER_SHIM_*`（并附
   `capacity20Engine` 的机械判定），明确标注**非容量结论**。
 - `SDKVersion < 2.24.0` ⇒ `UNSUPPORTED`（**整数分段语义版本比较**，禁字符串字典序），不参与 A 路线 PASS。
+- 真机判定矩阵已被浏览器套件**钉成回归门**（`tests/probe-browser.mjs` 末尾「真机判定矩阵回归门」）：
+  冷启动 1/3、2/3 → 未完成（非 FAIL）；3/3 → DEVICE_PASS/PARTIAL_PASS；A1 真失败 → DEVICE_FAIL/ARCHITECTURE_FAIL；
+  `2.9.1 < 2.24.0` → UNSUPPORTED。这套门就是为"未完成 vs 失败"这类混淆复发设的。
 
 ### 3.3 截图命名（方案 §8）
 
@@ -248,10 +289,14 @@ python3 -m http.server 8231 --directory .   # 然后开 http://127.0.0.1:8231/pr
 | 5 | 阈值/采样量口径 | `isDone` 曾写死 1800 帧，忽略 `requiredMinSamples` | 改为读 `requiredMinSamples`；`a2Profile`/`specProfile` 一并写入结果，短采样档的结论会被降级标注 |
 | 6 | **微信开发者工具导入被拦**：`[game.json 文件内容错误] … 未找到 ["subpackages"][0]["root"] 对应的 /subpackages/probe-model/game.js 文件` | 方案与首版实现都漏了"每个分包根目录必须有 `game.js` 入口"这条微信硬要求（本分包只放资产、没有逻辑，所以当时没建这个文件） | 补 `subpackages/probe-model/game.js`（**纯注释占位**，文件头写明缘由与"勿删/勿加代码"）；README §1.1 建静态校验清单，§2.1 与文件树同步标注 |
 | 7 | 未使用的 `game.json` 字段可能引发工具告警 | 首版多写了 `networkTimeout`（本 probe 不发 `wx.request`，纯冗余） | 移除；`game.json` 只留确定支持的 `deviceOrientation`/`showStatusBar`/`subpackages`（官方字段页在线 404，无法核的字段不写） |
+| 9 | **安卓真机（magicbrush / 基础库 3.17.3）`getUniform not support`**：console 报 4 次、**整个 A1 没有任何结果行可回收** | `verifyBoneUpload`（41 骨 palette 回读自证）直接调 `gl.getUniform`，该引擎**抛异常** ⇒ 异常冒泡出 run()，整轮中断 | `verifyBoneUpload` **全程 try/catch**：抛错/返回空/`located:false` 一律返回 `{ok:false, unsupported:true, platform:'getUniform-not-support'}`，**绝不抛出**；调用侧对 `unsupported` **不计入 a1.errors、不影响 A1-03/04/05 与 Device-PASS**，只如实记录 + notes 写明「硬判据 = 像素三件套（方案 §4.2）」；套件加**回读降级模拟回归门**（patch `getUniform` 抛错 + `MAX_VERTEX_UNIFORM_VECTORS` 返回 null，断言 run 不中断、A1 全过、不误报 FAIL） |
+| 10 | 同一次审计连带发现：宿主**不返回** `MAX_VERTEX_UNIFORM_VECTORS` 时 `null` 被 `>` 当 0 用 ⇒ 误报「装不下 41 骨」**把资产装载打挂** | `skinning-renderer` 的能力预检 `jointCount*4+8 > maxVec` 未区分"未知"与"已知且太小" | 只在**已知且确实不够**时 FAIL；未知则记 `maxVertexUniformVectorsKnown:false`，硬判据转为 shader compile/link 成功（方案 §4.2 原文）；A1-02 同样口径（`capabilityCheck:'unknown'`，不判死） |
+| 11 | 真机「复制结果」点下去**无任何反馈**（拿不到内容、也不知为何） | ① 复制结果只写剪贴板、成败都不留痕；② 更硬的一条：`navigator.clipboard.writeText` 在无焦点上下文**永不 settle**（不是 reject 而是挂着）⇒ 等待链永久挂起，连"失败"都不会显示；③ 施工中一度存在**重复的 `copyResultQuiet` 定义**（旧定义覆盖新定义，把埋点整段吞掉） | 复制改成 `{ok, errMsg}` + **超时兜底**（wx 3s / 浏览器 2s）⇒ 必出原因；屏上 `▶ 复制：…` + console `__PROBE_CLIPBOARD__`；套件加**交互回归门**（点按钮 → 断言 console 单行 + 屏上文案 + 失败带原因）；并清理重复定义（`node -e` 全文查重已纳入自查） |
+| 8 | **真机冷启动 2/3 时屏上打 `device DEVICE_FAIL`**，与同屏 `A1 5/5 · GLerr 0` 自相矛盾（Leo 真机实测抓到） | 真机路径只写了 `DEVICE_PASS` / else 兜底 `DEVICE_FAIL` 两档，**漏了"本次 A1 全过、冷启动系列未满 3 次 ⇒ 未完成"的中间态**（浏览器路径早有 `BROWSER_SHIM_A1_PASS_COLD_INCOMPLETE`，真机路径没对齐） | 真机路径补 `DEVICE_A1_PASS_COLD_INCOMPLETE` + `architecture=PENDING` + notes 写明"不是失败、继续凑满 3 次"；**真失败仍判 DEVICE_FAIL**；屏上短名改「A1 全过·冷启动 x/3 未满（非失败）」（完整枚举在 1080px 宽 backbuffer 上会超屏宽被截）；浏览器套件新增**真机判定矩阵回归门**（见 §3.2），防止同类混淆复发 |
 
 ## 9. 本仓库当前的浏览器层证据（最近一次全跑）
 
-命令：`node proto/webgl2_probe/tests/probe-browser.mjs --runs=3 --profile=spec` → **69/69 PASS**（约 3.5 分钟）。
+命令：`node proto/webgl2_probe/tests/probe-browser.mjs --runs=3 --profile=spec` → **89/89 PASS**（主检查 + 真机判定矩阵回归门 + 结果回收四兜底交互 + **回读降级模拟**；约 3.5 分钟）。
 环境：headless Chrome 153 · ANGLE Metal（Apple M4）· viewport 390×844 @2x ⇒ backbuffer **780×1688**（`dprCappedAt:3`，未降 renderScale）。
 
 | 档 | fpsMedian | 1% low | P95 | P99 | over50ms | jsAnimMs(mean) | glSubmitMs(mean) | compositeCpuMs(mean) | gpuMs | draw/palette 每帧 | 采样帧数 | 像素覆盖率 | 可见单位 |
