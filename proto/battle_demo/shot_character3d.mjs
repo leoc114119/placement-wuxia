@@ -9,6 +9,9 @@
 //   ⑤ 脚底对格心误差量测（§9.2 ≤2 物理像素）：离屏人物层渲染像素包围盒底边 = 实测脚底，
 //      dpr=1/2/3 各测一次；真值锚 = __demo.cellPx（与 3D 命令同一条 hexToWorld→camera→×dpr 换算）。
 //      另附合成落屏证明（?char3d=loading 参照 vs 正常，盒内强差异像素）
+//   ⑥ 【R1】轻功逐帧时间线（c3d_jump_timeline.json，**不只存图片**）：每帧记录快照 isJump /
+//      3D 命令 isJump / 控制器 activeClipKey / hop / moveProgress —— 锁「300ms 快照窗关闭后
+//      顶点与降段仍为 jump，落地演出结束才释放」。
 //
 // 白盒说明（与 shot_sixdir.mjs 同惯例）：六向/演出态经 __demo.session._debug.units 直写快照出口字段
 // （facing/animState/isJump/moveT 全真值链路），隔离「快照→命令→yaw/动作」的观测噪声；真实交互链路
@@ -52,6 +55,8 @@ const browser = await chromium.launch({
 
 const written = [];
 const jumpEvidence = {}; // tag → {rise, desc}：轻功升/降段真值采样（交付证据）
+const jumpTimelines = {}; // tag → {samples, summary}：轻功逐帧时间线（【R1】快照/命令/activeClipKey 三层）
+const timelineAttempts = {}; // tag → 时间线重录次数（首录漏掉升段/降段时重录）
 const errors = [];
 const checks = [];
 const check = (name, ok, detail = '') => {
@@ -111,6 +116,73 @@ const flightSample = (page) =>
     const h = window.__demo.session.snapshot().actors.find((a) => a.id === 'hero');
     return { hop: window.__demo.sampleHeroDraw().hop, isJump: h.isJump, state: h.animState };
   });
+
+/** 【R1 证据】轻功时间线逐帧录制（**不只存图片**）：同一帧对照三层——快照 isJump（session 300ms 窗）/
+ * 3D 命令 isJump（MoveAnim 锁定的意图）/ 控制器 activeClipKey（动作层实际消费的槽位）。
+ * 采样方式与既有 waitFlight 同源（Node 侧轮询 page.evaluate，每帧一次短调用）：**不在页内挂长时
+ * rAF 录制器**——实测页内 1.5s rAF 录制会让无头页在长任务后失联（run 中止在 evaluate 上），而既有
+ * 轮询路径在本脚本已长期稳定。采样点=每次轮询当时的帧（view 演出钟 viewT 为准）。
+ * 返回 { samples, summary }：summary 给出「起跳 / 窗关闭点 / 窗后仍 jump 样本 / 顶点 / 落地释放」。 */
+const jumpSample = (page) =>
+  page.evaluate(() => {
+    const snap = window.__demo.session.snapshot();
+    const h = snap.actors.find((a) => a.id === 'hero');
+    const c = window.__demo.character3d;
+    const cmd = (c.lastCommands ?? []).find((x) => x.actorId === 'hero') ?? null;
+    return {
+      viewT: +window.__demo.getView().time.toFixed(3),
+      hop: window.__demo.sampleHeroDraw().hop,
+      snapIsJump: h ? h.isJump : null,
+      snapState: h ? h.animState : null,
+      cmdIsJump: cmd ? cmd.isJump : null,
+      cmdState: cmd ? cmd.state : null,
+      moveProgress: cmd ? cmd.moveProgress : null,
+      clip: c.activeClipKey,
+      runtime: window.__demo.runtimeState.status,
+    };
+  });
+
+const summarizeTimeline = (samples) => {
+  const takeoffIdx = samples.findIndex((s) => s.cmdIsJump === true);
+  const takeoff = takeoffIdx >= 0 ? samples[takeoffIdx] : null;
+  // 升段样本：快照窗内（session isJump=true）且命令/动作已是 jump
+  const riseCount = samples.filter((s) => s.snapIsJump === true && s.cmdIsJump === true).length;
+  // 窗关闭点 = 起跳之后首个快照 isJump=false 的样本（session ANIM_MS.walk=300ms 窗）
+  const closeIdx = takeoffIdx >= 0 ? samples.findIndex((s, i) => i > takeoffIdx && s.snapIsJump === false) : -1;
+  const windowClose = closeIdx >= 0 ? samples[closeIdx] : null;
+  // 窗关闭后仍被判为轻功的样本（R1 修订乙核心断言面：command/动作层不随 300ms 窗回落）
+  const descend = closeIdx >= 0 ? samples.slice(closeIdx).filter((s) => s.snapIsJump === false && s.cmdIsJump === true) : [];
+  // 释放点 = **最后一个降段样本之后**首个 command.isJump=false（落地演出结束/换演出才释放；
+  // 取「降段末之后」而非「窗关闭之后」——采样跨帧时窗关闭瞬间可能落在两个演出之间，会误判成已释放）
+  const afterDescend = descend.length > 0 ? samples.slice(samples.indexOf(descend[descend.length - 1]) + 1) : [];
+  const released = afterDescend.find((s) => s.cmdIsJump === false) ?? null;
+  const peak = samples.reduce((a, b) => (b.hop > a.hop ? b : a), samples[0] ?? { hop: 0 });
+  return {
+    count: samples.length,
+    takeoff,
+    riseCount,
+    windowClose,
+    windowCloseLatency: windowClose && takeoff ? +(windowClose.viewT - takeoff.viewT).toFixed(3) : null,
+    descendCount: descend.length,
+    descendFirst: descend[0] ?? null,
+    descendLast: descend[descend.length - 1] ?? null,
+    descendAllJump: descend.every((s) => s.clip === 'jump'),
+    peak,
+    released,
+    clips: [...new Set(samples.map((s) => s.clip))],
+  };
+};
+
+const jumpTimeline = async (page, durationMs) => {
+  const samples = [];
+  const t0 = Date.now();
+  while (Date.now() - t0 < durationMs) {
+    const s = await jumpSample(page);
+    samples.push({ t: +((Date.now() - t0) / 1000).toFixed(3), ...s });
+    await page.waitForTimeout(20);
+  }
+  return { samples, summary: summarizeTimeline(samples) };
+};
 
 /** 轮询直到条件满足（每 25ms，超时返回 null）——轻功升/降段窗口只有几百毫秒，靠固定 wait 不可靠 */
 const waitFlight = async (page, pred, timeoutMs) => {
@@ -259,6 +331,34 @@ for (const [vw, vh, tag] of VIEWPORTS) {
   jumpEvidence[tag] = jump;
   check(`${tag} 轻功升段 hop>0 且 isJump=true`, !!jump && jump.rise.hop > 12 && jump.rise.isJump, jump ? `hop=${jump.rise.hop} isJump=${jump.rise.isJump} state=${jump.rise.state}` : '未命中窗口');
   check(`${tag} 轻功降段 hop>0 且快照 isJump=false（升段窗 300ms 短于演出 600ms）`, !!jump && jump.desc.hop > 12 && !jump.desc.isJump, jump ? `hop=${jump.desc.hop} isJump=${jump.desc.isJump} state=${jump.desc.state}` : '未命中窗口');
+
+  // 【R1 = arch seq=419 修订乙】轻功时间线逐帧录制（记录 activeClipKey，不只存图片）：
+  // 起一段**长距**轻功（4 格 → 0.6+0.15×2=0.9s 演出 > 300ms 快照窗），逐帧采三层（快照/命令/动作）。
+  // 录制器先跑 80ms 再触发起跳（保证升段样本落进时间线）；若因首调 evaluate 排队导致漏掉升段
+  // 或降段样本不足，重录（最多 3 次）——证据必须完整覆盖「升段 → 窗关闭 → 降段 → 落地释放」。
+  let tl = null;
+  let lastTl = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await quiet(page);
+    await setHero(page, { animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1, renderQ: h2.q, renderR: h2.r, moveFromQ: h2.q, moveFromR: h2.r });
+    await page.waitForTimeout(200);
+    const timelinePromise = jumpTimeline(page, 1500);
+    await page.waitForTimeout(80);
+    await setHero(page, { animState: 'walk', animLeftMs: 9000, isJump: true, moveFromQ: h2.q - 4, moveFromR: h2.r, moveT: 0.02 });
+    const r = await timelinePromise;
+    lastTl = r;
+    timelineAttempts[tag] = attempt + 1;
+    if (r.summary.riseCount >= 2 && r.summary.descendCount >= 3 && r.summary.released) {
+      tl = r;
+      break;
+    }
+  }
+  const S = (tl ?? lastTl)?.summary ?? null;
+  jumpTimelines[tag] = tl ?? lastTl; // 完整取证优先；否则落最后一次（含 FAIL 详情，供定位）
+  check(`${tag} 时间线：升段样本（快照窗内）command.isJump=true 且 activeClipKey=jump`, !!S && S.riseCount >= 2 && S.takeoff?.cmdIsJump === true && S.takeoff?.clip === 'jump', S ? `升段样本=${S.riseCount} 起跳 viewT=${S.takeoff?.viewT} hop=${S.takeoff?.hop} clip=${S.takeoff?.clip}` : '未取得时间线');
+  check(`${tag} 时间线：快照 isJump 窗（≈300ms）关闭后 command/activeClipKey 仍为 jump（顶点/降段）`, !!S && S.descendCount >= 3 && S.descendAllJump === true && S.descendLast?.cmdIsJump === true, S ? `窗关闭样本 viewT=${S.windowClose?.viewT ?? 'n/a'} · 窗后 jump 样本=${S.descendCount}（viewT ${S.descendFirst?.viewT ?? 'n/a'}→${S.descendLast?.viewT ?? 'n/a'}）末样本 hop=${S.descendLast?.hop ?? 'n/a'} clip=${S.descendLast?.clip ?? 'n/a'}` : '未取得时间线');
+  check(`${tag} 时间线：顶点仍在 jump 且 hop 最大`, !!S && S.peak.hop > 12 && S.peak.cmdIsJump === true && S.peak.clip === 'jump', S ? `viewT=${S.peak.viewT} hop=${S.peak.hop} cmd=${S.peak.cmdIsJump} clip=${S.peak.clip}` : 'n/a');
+  check(`${tag} 时间线：落地演出结束即释放（command.isJump=false）`, !!S && S.released?.cmdIsJump === false, S ? `viewT=${S.released?.viewT} state=${S.released?.cmdState} clip=${S.released?.clip}` : '未见释放样本');
   await setHero(page, { animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1, renderQ: h2.q, renderR: h2.r, moveFromQ: h2.q, moveFromR: h2.r });
 
   // dead：idle 首帧 + 既有压扁淡出（alpha=PIECE.deadAlpha / squashY=0.3）
@@ -554,6 +654,35 @@ console.log(
       .map(([t, v]) => `${t} 升(hop=${v?.rise.hop},isJump=${v?.rise.isJump}) 降(hop=${v?.desc.hop},isJump=${v?.desc.isJump},state=${v?.desc.state})`)
       .join(' · '),
 );
+// 【R1】轻功时间线证据落盘（JSON：逐帧样本 + 摘要；证据面不止图片）
+const timelineFile = path.join(outDir, 'c3d_jump_timeline.json');
+fs.writeFileSync(
+  timelineFile,
+  JSON.stringify(
+    {
+      note: 'R1=arch seq=419 修订乙：command.isJump 取 MoveAnim 创建时锁定的意图；session 的 isJump 窗=300ms，演出 0.6~1.2s。',
+      sampling: {
+        method: 'Node 侧轮询 page.evaluate（同既有 waitFlight），每样本约 20-40ms 墙钟；不在页内挂长 rAF 录制器（实测会让无头页在长任务后失联）',
+        caveat:
+          'viewT 是浏览器内的表现钟（权威逻辑序）；墙钟与 viewT 不成严格线性（rAF 追赶时 viewT 成簇前进），故 summary.windowCloseLatency 只是采样粒度下的近似、不作时长结论——精确时长断言在 tests/battle-character3d-wiring.test.ts（固定帧步长）',
+      },
+      capturedAt: new Date().toISOString(),
+      timelines: jumpTimelines,
+      attempts: timelineAttempts,
+    },
+    null,
+    1,
+  ),
+);
+console.log(`[shot_character3d] 轻功时间线 → ${path.basename(timelineFile)}`);
+for (const [t, tl] of Object.entries(jumpTimelines)) {
+  const S = tl.summary;
+  console.log(
+    `[shot_character3d] ${t} 时间线：样本 ${S.count} · 起跳 viewT=${S.takeoff?.viewT} hop=${S.takeoff?.hop} cmd=${S.takeoff?.cmdIsJump} clip=${S.takeoff?.clip}` +
+      ` · 窗关闭 viewT=${S.windowClose?.viewT ?? 'n/a'} · 窗后 jump 样本 ${S.descendCount}（首 viewT=${S.descendFirst?.viewT} 末 viewT=${S.descendLast?.viewT} 末 hop=${S.descendLast?.hop}）` +
+      ` · 顶点 viewT=${S.peak?.viewT} hop=${S.peak?.hop} clip=${S.peak?.clip} · 释放 viewT=${S.released?.viewT ?? 'n/a'} clip=${S.released?.clip ?? 'n/a'} · clips=${JSON.stringify(S.clips)}`,
+  );
+}
 if (errors.length) {
   console.log('\n[shot_character3d] 页面错误：');
   for (const e of errors.slice(0, 20)) console.log('  ' + e);

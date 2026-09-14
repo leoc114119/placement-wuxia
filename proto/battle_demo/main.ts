@@ -55,6 +55,7 @@ import {
   type WeaponLayerImages,
 } from '../../ui/battle-hex-render';
 import { createHexBattle } from '../../systems/battle-session';
+import { createHostRuntime, type HostRuntime } from './host-runtime';
 
 // ===== 画布（逻辑分辨率自适应窗口实际比例，L 环反馈④；dpr 放大保真） =====
 // W/H 初值 = 0（未测量哨兵，09-06 补卡）：舞台 #cvWrap 为 9:16，375×667 视口下 rect 恰为
@@ -65,6 +66,14 @@ let W = 0;
 let H = 0;
 /** 【T31-FE-B】3D 人物层运行时（资源门通过后装配；null=未装配/未启用/诊断关闭） */
 let char3d: Character3DRuntime | null = null;
+/** 【T31-FE-B · R1 证据面】本帧 3D 命令镜像（last-drawn，只读）：shot 时间线要在**同一帧**对照
+ * 快照 isJump / 命令 isJump / 控制器 activeClipKey 三层；镜像只记录不参与渲染判定。 */
+let lastCmds3d: ReadonlyArray<{
+  readonly actorId: string;
+  readonly state: string;
+  readonly isJump: boolean;
+  readonly moveProgress: number | null;
+}> = [];
 const canvas = document.getElementById('cv') as HTMLCanvasElement;
 const dpr = Math.min(3, window.devicePixelRatio || 1);
 function resize(): void {
@@ -352,6 +361,9 @@ interface Character3DRuntime {
   readonly loaderStats: CharacterAssetLoaderStats;
   readonly diagnostics: readonly string[];
   readonly loadStatus: 'ready' | 'stale-3d-cache';
+  /** 【T31-FE-B · R5】释放本运行时（摘 canvas 监听 + renderer.dispose()）：重试/替换前必调，
+   * 由 host 的 disposer 链在 dispose() 时逆序执行——禁「旧 renderer 与监听跨重试常驻」。 */
+  readonly teardown: () => void;
 }
 type Character3DLoadOutcome = { ok: true; runtime: Character3DRuntime } | { ok: false; failures: string[] };
 
@@ -400,9 +412,15 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
     const baseColor = model.textureRoles.baseColor;
     if (!baseColor) return { ok: false, failures: ['模型缺 baseColor 贴图（§6.2 结构门）'] };
     const decoded = await platform.decodeImage(baseColor.bytes, baseColor.mimeType, baseColor.name);
-    // renderer 的 ortho 投影只在 resize() 内建立，而 resize 首调「尺寸未变即早退」——
-    // 故画布先以 1×1 建立，再 resize 到目标背衬尺寸，保证首调必不早退（否则投影全零=人物不可见）。
-    const canvas3d = platform.createOffscreenCanvas(1, 1);
+    // 【T31-FE-B · R3 = arch seq=418 Q2-2】按**目标背衬尺寸**直接建离屏画布（背衬 = round(逻辑 × dpr ×
+    // renderScale)，与 renderer.resize 同一式）。此处首调 resize 若尺寸已相等即早退也无妨：投影矩阵由
+    // renderer.beginFrame() 在每次上传 uProjection 前用 orthoPixel(backbufferW, backbufferH) 重建
+    //（易错点：早退不构成「投影全零」缺陷）。旧「1×1 建画布再 resize」绕过与该归因已被 arch 驳回删除。
+    const renderScale = CHARACTER_3D_RENDER_SCALE > 0 ? CHARACTER_3D_RENDER_SCALE : 1;
+    const canvas3d = platform.createOffscreenCanvas(
+      Math.max(1, Math.round(W * dpr * renderScale)),
+      Math.max(1, Math.round(H * dpr * renderScale)),
+    );
     const renderer = createCharacter3DRenderer({
       canvas: canvas3d,
       model,
@@ -416,19 +434,33 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
     });
     renderer.resize(W, H, dpr);
     if (renderer.status !== 'ready') {
+      renderer.dispose(); // 失败关闭：不留活上下文（重试会重建；旧句柄不跨装配残留）
       return { ok: false, failures: [`renderer 初始化失败：${renderer.diagnostics.join(' | ') || renderer.status}`] };
     }
-    // 上下文丢失/恢复（§6.2）：让 renderer 的既有状态机接管，不让「隐形人物战斗」继续
+    // 上下文丢失/恢复（§6.2）：让 renderer 的既有状态机接管，不让「隐形人物战斗」继续。
+    // 【T31-FE-B · R5】重建**终失败**=暂停对局：停 tick/输入推进（host.notifyContextRestored 内处置），
+    // 禁「人物不画了但战斗照跑」的隐形战斗；短暂 lost 沿方案（renderer 自持 context-lost，恢复成功即续跑）。
+    // host 为模块级变量：回调经闭包**惰性**读，装配期（listeners 先于 host 创建）不构成 TDZ 访问。
     const evtCanvas = canvas3d as unknown as {
       addEventListener?: (type: string, cb: (e: { preventDefault?: () => void }) => void) => void;
+      removeEventListener?: (type: string, cb: (e: { preventDefault?: () => void }) => void) => void;
     };
-    evtCanvas.addEventListener?.('webglcontextlost', (e) => {
+    const onContextLost = (e: { preventDefault?: () => void }): void => {
       e.preventDefault?.();
       renderer.notifyContextLost();
-    });
-    evtCanvas.addEventListener?.('webglcontextrestored', () => {
-      if (!renderer.handleContextRestored()) showCharacter3DGate(['WebGL2 上下文重建失败（已尝试一次）'], true);
-    });
+    };
+    const onContextRestored = (): void => {
+      const restored = renderer.handleContextRestored();
+      if (restored) {
+        host?.resume(); // 恢复：重置 last（首帧 dt=0，不补算重建期间停留时间）
+        return;
+      }
+      host?.notifyContextRestored(false, () =>
+        showCharacter3DGate(['WebGL2 上下文重建失败（已尝试一次）'], true),
+      );
+    };
+    evtCanvas.addEventListener?.('webglcontextlost', onContextLost);
+    evtCanvas.addEventListener?.('webglcontextrestored', onContextRestored);
     const anim: Character3DAnimConfig = {
       actionMap: HERO_3D_ACTION_MAP,
       crossFadeSec: CHARACTER_3D_CROSS_FADE_SEC,
@@ -438,10 +470,11 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
     const pass = createCharacter3DPass({
       renderer,
       // 背衬（物理像素）= 渲染器正交像素空间；命令侧同单位（battle-hex-render 接点说明）
-      viewport: { width: Math.max(1, Math.round(W * dpr)), height: Math.max(1, Math.round(H * dpr)) },
-      // ⚠ 桥接：pass 把模型缩放到 profile.screenHeightPxAtReference，而该值在 GL 的（物理像素）正交
-      // 空间里被直接消费 ⇒ 宿主须按 pixelRatio 把「逻辑参考高（沿 PIECE 定尺）」换算成物理参考高，
-      // 否则 hidpi 屏上人物只有 1/dpr 大（dpr=1 时两值相同、零差异）。config 本体不改（卡 A 冻结）。
+      viewport: { width: Math.max(1, Math.round(W * dpr * renderScale)), height: Math.max(1, Math.round(H * dpr * renderScale)) },
+      // 【T31-FE-B · R2 = arch seq=418 Q2-1】像素语义唯一换算点（宿主机一次）：
+      // config.screenHeightPxAtReference 是**逻辑**参考高（沿 PIECE 定尺），而 pass 在 GL 的
+      // **物理像素**正交空间里直接消费它 ⇒ 宿主装配运行时副本时乘一次 dpr（dpr=1 时两值相同）。
+      // 禁止在 pass 侧再加 pixelRatio（重复换算 = hidpi 下人物 ×dpr 过大）；config 本体不改（卡 A 冻结）。
       runtimes: {
         [HERO_3D_PROFILE_ID]: {
           profile: { ...HERO_3D_PROFILE, screenHeightPxAtReference: HERO_3D_PROFILE.screenHeightPxAtReference * dpr },
@@ -462,6 +495,11 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
         loaderStats: stats,
         diagnostics: [...profileLoad.diagnostics, ...renderer.diagnostics],
         loadStatus: profileLoad.status === 'stale-3d-cache' ? 'stale-3d-cache' : 'ready',
+        teardown: () => {
+          evtCanvas.removeEventListener?.('webglcontextlost', onContextLost);
+          evtCanvas.removeEventListener?.('webglcontextrestored', onContextRestored);
+          renderer.dispose();
+        },
       },
     };
   } catch (error) {
@@ -597,6 +635,8 @@ let assets: BattleHexAssets = {
 let assetsReady = false; // 【T28】资源装配完成标记（shot/e2e 时序锚；调试挂载只读）
 const input = createBattleInput({
   dispatch: (req) => {
+    // 【R5】暂停（重建终失败）时输入不推进对局：与 tick 同门控（禁「人物不画了但战斗照跑」）
+    if (!hostRunning()) return;
     const ok = session.submit(req);
     if (ok && req.type === 'toggleSpeed') speedOn = !speedOn; // 演出态：加速中可视反馈
   },
@@ -675,6 +715,7 @@ function toLogical(e: PointerEvent): { x: number; y: number } {
 // ===== 指针生命周期（A07）：同指针配对 + pointercancel/失焦重置 =====
 const ptr = createPointerTracker();
 canvas.addEventListener('pointerdown', (e) => {
+  if (!hostRunning()) return; // 【R5】暂停/未起播：指针不下发（对局冻结，避免暂停期改选中态）
   if (!ptr.down(e.pointerId)) return; // 多指交叉：非活动指忽略（同 id 重复 down=丢失 up 的自愈重锚）
   const p = toLogical(e);
   const snap = session.snapshot();
@@ -694,6 +735,7 @@ canvas.addEventListener('pointermove', (e) => {
   input.hover(view, session.snapshot(), p.x, p.y, W, H);
 });
 canvas.addEventListener('pointerup', (e) => {
+  if (!hostRunning()) return; // 【R5】暂停/未起播：抬起不下发（含「非 fighting=重开」分支一并冻结）
   if (!ptr.release(e.pointerId)) return; // 配对：id 不匹配/无活动指的 up 忽略（非配对释放不产生点击）
   const p = toLogical(e);
   const snap = session.snapshot();
@@ -756,7 +798,8 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
     return dpr;
   },
   /** 【T31-FE-B】3D 人物层只读诊断（shot/e2e 断言用；调试挂载不进正式接入）。
-   * placed=pass 返回的**本帧**锚点（与摆放矩阵同源，易错点 10）；ctx=有效上下文属性实测值。 */
+   * placed=pass 返回的**本帧**锚点（与摆放矩阵同源，易错点 10）；ctx=有效上下文属性实测值。
+   * lastCommands/activeClipKey=【R1】时间线证据面（同帧对照快照 isJump / 命令 isJump / 动作 clip）。 */
   get character3d(): {
     off: boolean;
     status: string | null;
@@ -768,6 +811,8 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
     loader: CharacterAssetLoaderStats | null;
     diagnostics: readonly string[];
     placed: ReadonlyMap<string, { cx: number; top: number; w: number; h: number }> | null;
+    lastCommands: ReadonlyArray<{ actorId: string; state: string; isJump: boolean; moveProgress: number | null }>;
+    activeClipKey: string | null;
   } {
     const r = char3d;
     return {
@@ -781,6 +826,8 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
       loader: r?.loaderStats ?? null,
       diagnostics: r?.diagnostics ?? [],
       placed: view.character3dPlaced,
+      lastCommands: lastCmds3d,
+      activeClipKey: r?.pass.controllers.get('hero')?.activeClipKey ?? null,
     };
   },
   /** 【T31-FE-B】格 → **画布物理像素**坐标（= 3D 命令 footX/footY 的同一坐标空间与同一条换算：
@@ -788,6 +835,16 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
   cellPx(q: number, r: number): { x: number; y: number } {
     const w = hexToWorld(q, r);
     return { x: (w.x - view.camera.x + W / 2) * dpr, y: (w.y - view.camera.y + H / 2) * dpr };
+  },
+  /** 【T31-FE-B · R5】宿主运行状态只读面（证据/自动化：暂停=tick 与输入推进停止）。
+   * host 为 null（未起播/装配失败）=idle；paused=「重建终失败」冻结态。 */
+  get runtimeState(): { status: string; frames: number; pendingFrames: number; reason: string | null } {
+    return {
+      status: host?.status ?? 'idle',
+      frames: host?.frames ?? 0,
+      pendingFrames: host?.pendingFrames ?? 0,
+      reason: host?.pauseReason ?? null,
+    };
   },
   /** 格 → 页面坐标（自动化点击用） */
   cellCss(q: number, r: number): CssPoint {
@@ -828,14 +885,16 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
   },
 };
 
-// ===== 主循环 =====
-let last = performance.now();
+// ===== 主循环（【T31-FE-B · R5】排程/暂停/释放统一交 host-runtime，本函数只做一帧的推进） =====
 let frameLog: Array<{ t: number; q: number; r: number; hop: number }> = [];
 let frameLogOn = false;
 const weaponGapReported = new Set<string>(); // 【T28】缺口诊断去重（每 bodySrc 只报一次）
-function loop(t: number): void {
-  const realDt = Math.min(0.05, (t - last) / 1000 || 0);
-  last = t;
+/** 宿主运行状态（唯一 RAF + tick 门控 + 释放链）。null=尚未起播（或已废弃）。
+ * 【T31-FE-B · R5 = arch seq=419】重建终失败 → `host.pause()`：本函数不再被调（tick 停），
+ * 输入推进同时由 `hostRunning()` 门控；重试前 `disposeRuntime()` 取消旧 RAF 并释放旧 renderer/监听。 */
+let host: HostRuntime | null = null;
+const hostRunning = (): boolean => host?.status === 'running';
+function step(realDt: number): void {
   // 【AS · TASK-AS-FE · 方案 §4.4】宿主逻辑 dt 唯一真源：session.tick 内部按 SPEED_FACTOR 缩放
   //（battle-session speed 段），view 演出钟必须吃同一逻辑 dt——x2 时 cast 帧循环、血条、行动条、
   // 移动演出同倍率推进，禁止只加速其一（speedOn=宿主镜像，与 session speedFast 经 toggleSpeed
@@ -893,41 +952,76 @@ function loop(t: number): void {
   fxPlayer.update(view.time);
   wfBanner.update(view.time); // 【T26 · WF-2】名条相位推进（固定 1.000s 演出钟，到点即收）
   drawFrame({ ctx, width: W, height: H, dt }, snap, assets, view);
-  requestAnimationFrame(loop);
+  // 续排由 host-runtime 统一负责（禁在此自行 requestAnimationFrame——第二循环缺陷根因）
+}
+
+/** 【T31-FE-B · R5】旧运行时释放（重试/替换前必调）：停 RAF + 逆序 disposer（摘监听/renderer.dispose）
+ * + 清 3D 接点与命令镜像，保证「重试只产生一个循环、旧 renderer 与监听不常驻」。 */
+function disposeRuntime(): void {
+  host?.dispose();
+  host = null;
+  char3d = null;
+  view.character3d = undefined; // 旧 pass 不再被消费（禁用已释放的 renderer 画半成品）
+  lastCmds3d = [];
 }
 
 // ===== 启动（资源门 → 3D 人物层装配 → 主循环）=====
 // 【T31-FE-B】顺序：2D 帧资源 → 3D 人物层（§6.2「进入战斗前」完成清单校验/缓存/解析/上传）→ 主循环。
 // 3D 失败=停在「角色资源加载失败」页 + 显式重试，**不进入战斗**、不切 2D 帧（§6.2 明文）。
+// 【R5】重试=**替换式**：先 disposeRuntime()（取消旧 RAF/释放旧 renderer/监听）再重新装配，
+// booting 守卫保证并发点击不会并行起第二条装配链/第二条循环。
+let booting = false;
 async function bootstrap(): Promise<void> {
-  hideCharacter3DGate();
-  const a = await loadAssets();
-  assets = a;
-  fxPlayer.setPack(fxPack); // 【T25】预载完成的帧包注入（稳定实例）
-  if (BG_OVERRIDE && BG_COLORS[BG_OVERRIDE]) assets.env = solidEnv(BG_COLORS[BG_OVERRIDE]); // 诊断底色
-  if (CHAR3D_OFF) {
-    view.character3d = undefined; // 诊断：整层不注入（该角色零绘制，无 2D 帧降级）
-  } else {
-    const outcome = await loadCharacter3DRuntime();
-    if (!outcome.ok) {
-      showCharacter3DGate(outcome.failures);
-      return; // 不启动主循环（§6.2：不进入战斗）
+  if (booting) return; // 单发：连点重试不并发装配（同一时刻至多一条循环）
+  booting = true;
+  try {
+    disposeRuntime();
+    hideCharacter3DGate();
+    const a = await loadAssets();
+    assets = a;
+    fxPlayer.setPack(fxPack); // 【T25】预载完成的帧包注入（稳定实例）
+    if (BG_OVERRIDE && BG_COLORS[BG_OVERRIDE]) assets.env = solidEnv(BG_COLORS[BG_OVERRIDE]); // 诊断底色
+    let teardown: (() => void) | null = null;
+    if (CHAR3D_OFF) {
+      view.character3d = undefined; // 诊断：整层不注入（该角色零绘制，无 2D 帧降级）
+    } else {
+      const outcome = await loadCharacter3DRuntime();
+      if (!outcome.ok) {
+        showCharacter3DGate(outcome.failures);
+        return; // 不启动主循环（§6.2：不进入战斗）
+      }
+      char3d = outcome.runtime;
+      teardown = outcome.runtime.teardown;
+      // 接点绑定：pixelRatio = 离屏背衬/逻辑像素（命令坐标单位，见 battle-hex-render 接点说明）
+      const layer: Character3DLayer = {
+        pixelRatio: dpr,
+        render: (commands, dtSec) => {
+          // 【R1 证据】命令镜像（last-drawn，只读诊断面）：快照/命令/动作三层可同帧对照
+          lastCmds3d = commands.map((c) => ({
+            actorId: c.actorId,
+            state: c.state,
+            isJump: c.isJump,
+            moveProgress: c.moveProgress,
+          }));
+          return outcome.runtime.pass.render(commands, dtSec);
+        },
+        composite: (target, dx, dy) => outcome.runtime.pass.composite(target, dx, dy),
+      };
+      view.character3d = layer;
+      logCharacter3DDiagnostics(outcome.runtime);
     }
-    char3d = outcome.runtime;
-    // 接点绑定：pixelRatio = 离屏背衬/逻辑像素（命令坐标单位，见 battle-hex-render 接点说明）
-    const layer: Character3DLayer = {
-      pixelRatio: dpr,
-      render: (commands, dtSec) => outcome.runtime.pass.render(commands, dtSec),
-      composite: (target, dx, dy) => outcome.runtime.pass.composite(target, dx, dy),
-    };
-    view.character3d = layer;
-    logCharacter3DDiagnostics(outcome.runtime);
+    assetsReady = true;
+    const next = createHostRuntime({
+      step,
+      raf: (cb) => requestAnimationFrame(cb),
+      cancelRaf: (id) => cancelAnimationFrame(id),
+    });
+    if (teardown) next.addDisposer(teardown); // 旧 renderer/监听随 disposeRuntime 释放（R5）
+    host = next;
+    host.start();
+  } finally {
+    booting = false;
   }
-  assetsReady = true;
-  requestAnimationFrame((t) => {
-    last = t;
-    loop(t);
-  });
 }
 
 /** §9.2 日志口径：edgeMode / 有效上下文属性 / 背衬 / 缓存命中（S1 不得把 antialias=false 隐去）。
@@ -976,7 +1070,9 @@ function exportCharacter3DDebug(runtime: Character3DRuntime): void {
 }
 
 document.getElementById('char3dRetry')?.addEventListener('click', () => {
-  // 显式重试（§6.2）：重跑资源门 + 3D 装配；成功后主循环才启动
+  // 显式重试（§6.2）：重跑资源门 + 3D 装配；成功后主循环才启动。
+  // 【R5】替换式重试：bootstrap 内先 disposeRuntime()（取消旧 RAF/释放旧 renderer+监听）再装配，
+  // booting 守卫挡并发点击 ⇒ 多次点击只产生一个循环（断言见 tests/battle-character3d-wiring.test.ts）。
   void bootstrap();
 });
 

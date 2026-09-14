@@ -402,8 +402,10 @@ export function resolveClipSource(
 
 // 状态机输入：**全部来自 CharacterRenderCommand**（快照真值的只读投影）。
 /** 状态机输入。
- * `isJump` = SnapshotActor.isJump 的**原样透传**（方案 §4.1，arch 9e824cb5）：
- * 轻功判据只认这一个字段。禁再用 hopPx 猜 —— 抛物线起点/终点 hop 恰为 0，猜会各漏一帧。
+ * `isJump` = **该次移动演出创建时锁定的轻功意图**（MoveAnim.isJumpMove，取创建当帧的
+ * SnapshotActor.isJump；arch seq=418 修订乙，替代 9e824cb5 的「每帧直读快照」要求）：
+ * 轻功判据只认这一个字段。禁再用 hopPx 猜 —— 抛物线起点/终点 hop 恰为 0，猜会各漏一帧；
+ * 也禁逐帧直读快照 isJump —— session 窗仅 300ms 而演出 0.6~1.2s，降段会被错判为普通行走。
  * 故本输入**不接收 hopPx**（垂直位移仍由 pass 的摆放矩阵消费，与动作选择无关）。 */
 export interface CharacterAnimInput {
   state: 'idle' | 'walk' | 'charge' | 'strike' | 'basic' | 'hit' | 'dead';
@@ -609,7 +611,7 @@ export class CharacterAnimController {
   private resolveActionKey(input: CharacterAnimInput): Character3DActionKey {
     if (input.state === 'hit') return this.currentActionKey === 'hit' ? 'hit' : this.currentActionKey;
     if (input.state === 'dead') return 'dead';
-    if (input.state === 'walk' && input.isJump) return 'jump'; // 轻功只认 isJump 透传
+    if (input.state === 'walk' && input.isJump) return 'jump'; // 轻功只认 isJump（命令侧=演出创建时锁定的意图）
     return input.state;
   }
 

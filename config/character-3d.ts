@@ -175,8 +175,11 @@ export const HERO_3D_PROFILE: Character3DProfile = {
   /** 模型静止姿态 bbox 高（模型单位）= accessor.min/max 的 y 跨度 0.9814453 - 0.0003661；
    * 用于把人物缩放到参考屏高，**禁**按 bbox 每帧自适应（方案 §4.1）。 */
   modelHeight: 0.98107916326262057,
-  /** 参考屏高（画布物理像素）：沿既有 PIECE 定尺——格高 TILE_H × PIECE.heightPerTile。
-   * 与观感台默认人高 123px 同档（assets/_trial_20260913/look_webgl3d 的 curH=123）。 */
+  /** 参考屏高（**逻辑像素**；= 2D 世界层的逻辑坐标口径）：沿既有 PIECE 定尺——格高 TILE_H ×
+   * PIECE.heightPerTile。与观感台默认人高 123px 同档（assets/_trial_20260913/look_webgl3d 的 curH=123）。
+   * 【T31-FE-B · R2 = arch seq=418 Q2-1】本值是**逻辑**参考高；GL 正交像素空间是物理像素，故宿主在
+   * 装配 pass 时统一乘一次 pixelRatio（运行时 profile 副本 = 物理参考高），pass 内禁再乘第二次。
+   * 旧注释「画布物理像素」是错误口径（会误导成 pass 侧重复换算 → hidpi 下人物 ×dpr 过大）。 */
   screenHeightPxAtReference: TILE_H * PIECE.heightPerTile,
   sourceViewYawDeg: HERO_3D_SOURCE_VIEW_YAW_DEG,
   attachments: HERO_3D_ATTACHMENTS,
@@ -186,7 +189,9 @@ export const HERO_3D_PROFILE: Character3DProfile = {
 
 /** 动作键 = session 的 animState ∪ {jump}。
  * jump 不是 BattleAnimState 成员：轻功移动在快照里是 `animState='walk' + SnapshotActor.isJump=true`，
- * 3D 侧由 CharacterRenderCommand 的 hopPx（= pieceHop 垂直位移）识别并**闩锁**本次移动窗口，详见 animation。 */
+ * 3D 侧由 CharacterRenderCommand 的 **isJump**（= 该次移动演出创建时锁定的意图）识别并**闩锁**本次移动
+ * 窗口，详见 animation。【T31-FE-B · R1 = arch seq=418 修订乙】旧注释「由 hopPx 识别」是错误口径——
+ * 抛物线起落两点 hop 恰为 0，且 session 的 isJump 窗（300ms）短于演出（0.6~1.2s），两者都不能当判据。 */
 export type Character3DActionKey = BattleAnimState | 'hit' | 'dead' | 'jump';
 
 /** 归一化位置的推进源（时钟一律来自 view 表现态，方案 §4.1「混合钟属于 view 表现态」）：

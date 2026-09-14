@@ -37,6 +37,8 @@ function makeRenderer(options: {
   failShaderCompile?: boolean;
   forceEdgeMode?: 'native-msaa' | 'fxaa';
   renderScale?: number;
+  /** 离屏画布初始背衬尺寸（默认 375×667）；【R3】用「画布已按目标背衬建好」的场景复现 early return */
+  canvasSize?: [number, number];
 } = {}): { renderer: Character3DRenderer; state: FakeGlState } {
   const { gl, state } = createFakeWebGL2({
     antialias: options.antialias,
@@ -45,7 +47,7 @@ function makeRenderer(options: {
     failShaderCompile: options.failShaderCompile,
   });
   const renderer = createCharacter3DRenderer({
-    canvas: createFakeCanvas(gl, 375, 667),
+    canvas: createFakeCanvas(gl, options.canvasSize?.[0] ?? 375, options.canvasSize?.[1] ?? 667),
     model,
     baseColor: fakeImage,
     platform,
@@ -240,6 +242,26 @@ describe('尺寸与 DPR（方案 §9.1）', () => {
     const after = state.createdFramebuffers;
     renderer.resize(200, 200, 1);
     expect(state.createdFramebuffers).toBe(after);
+  });
+
+  it('【R3】同尺寸首调 resize（early return）后 beginFrame 仍上传非零投影（「投影未初始化」归因已被 arch 驳回）', () => {
+    // 场景 = 宿主按目标背衬尺寸直接建画布（T31-FE-B R3）后首调 resize：尺寸已相等 ⇒ 早退
+    const { renderer, state } = makeRenderer({ canvasSize: [750, 1334] });
+    renderer.resize(375, 667, 2); // = round(375×2)×round(667×2) 与画布同尺寸 → early return
+    expect(renderer.backbuffer).toEqual({ width: 750, height: 1334 });
+    const before = state.uniformMatrix4fvCalls.length;
+    renderer.beginFrame(); // 唯一投影初始化点：上传 uProjection 前用 orthoPixel(backbuffer) 重建
+    const uploads = state.uniformMatrix4fvCalls
+      .slice(before)
+      .filter((c) => (c[2] as Float32Array).length === 16);
+    expect(uploads).toHaveLength(1); // 仅 projection（无 drawUnit ⇒ 无 model 上传）
+    const p = uploads[0][2] as Float32Array;
+    expect(p[0]).toBeCloseTo(2 / 750, 8); // 非零：x 缩放
+    expect(p[5]).toBeCloseTo(-2 / 1334, 8); // 非零：y 翻转缩放
+    expect(p[0]).not.toBe(0);
+    expect(p[5]).not.toBe(0);
+    expect(p[12]).toBeCloseTo(-1, 8);
+    expect(p[13]).toBeCloseTo(1, 8);
   });
 });
 

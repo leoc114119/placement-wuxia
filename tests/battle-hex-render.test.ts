@@ -914,7 +914,7 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
       expect(Math.abs(dq + dr)).toBeLessThanOrEqual(1);
     }
     // 分段采样连续：像素序列相邻差 ≤ 半格宽，且不进入占格中心（格中心像素）
-    const ma = { from, pos: to, path, pathPx: path.map((c) => hexToWorld(c.q, c.r)), t: 0, duration: 0.9, hopHeight: 0 };
+    const ma = { from, pos: to, path, pathPx: path.map((c) => hexToWorld(c.q, c.r)), t: 0, duration: 0.9, isJumpMove: false, hopHeight: 0 };
     const occPx = hexToWorld(5, 6); // 占格中心像素
     let last = ma.pathPx[0];
     for (let t = 0; t <= 900; t += 30) {

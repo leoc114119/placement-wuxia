@@ -2,7 +2,11 @@
 //   §5 动作状态映射 / §6.2 无 2D 降级 / §8 卡 B 明文「T29 的 2D hero 武器层对 3D hero 停用」/ §10 易错点 9·10）。
 //
 // 用例面（DoD 8）：hero 走 3D、敌方走原 profile、depth slot 正确、placed 与 HUD/热区不漂、无重复 hero、
-//   2D 武器层对 hero 零调用；另加 §5 状态映射与命令字段（isJump 原样透传 / 脚底锚=格心 / 物理像素单位）。
+//   2D 武器层对 hero 零调用；另加 §5 状态映射与命令字段（轻功意图 / 脚底锚=格心 / 物理像素单位）。
+//
+// 【T31-FE-B · 打回整改（arch seq=419 答件 A1-Q1-Q2-T31-FEB）】追加 R1（轻功意图=修订乙）真实链路回归
+//（真 session→view→command→真 pass/controller）、R2（像素语义 DPR 1/2/3 逻辑高度一致）、
+//   R3（同尺寸首调 resize 投影非零）、R5（重建终失败暂停 + 重试单一 RAF）失败注入断言。
 //
 // 关键设计（决定这些用例的形状）：3D 路由 = **宿主注入 3D 层** ∧ config 有该 spriteKey 的 profile 映射。
 //   未注入（既有 T29 用例、微信宿主 S1 未迁移）⇒ 既有 2D 路径原样生效（既有用例零改写）。
@@ -11,11 +15,26 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 declare const __dirname: string;
-import { PIECE, SPRITE_PROFILES, TILE_H, hexToWorld, type DirectionalSpriteProfile } from '../config/battle-hex';
+import { JUMP, PIECE, SPRITE_PROFILES, TILE_H, hexToWorld, jumpParamsFor, type DirectionalSpriteProfile } from '../config/battle-hex';
+import { SPEED_FACTOR } from '../config/battle';
+import {
+  CHARACTER_3D_CROSS_FADE_SEC,
+  CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+  HERO_3D_ACTION_MAP,
+  HERO_3D_PROFILE,
+  HERO_3D_PROFILE_ID,
+} from '../config/character-3d';
+import { createCharacter3DPass, type Character3DPass, type Character3DProfileRuntime } from '../ui/character3d/pass';
+import type { Character3DRenderer } from '../ui/character3d/renderer';
+import { createHostRuntime, type HostRuntime } from '../proto/battle_demo/host-runtime';
+import { createHexBattle, type HexBattleSession } from '../systems/battle-session';
+import { cubeDistance } from '../systems/hex';
+import { heroClipRegistry, heroModel } from './character3d-fixtures';
 import {
   createView,
   directionalBodySrcOf,
   drawFrame,
+  pieceHop,
   updateView,
   type BattleHexAssets,
   type BattleHexView,
@@ -23,7 +42,14 @@ import {
   type DirectionalFrameStore,
   type ImgLike,
 } from '../ui/battle-hex-render';
-import type { BattleSnapshot, Character3DPassResult, CharacterRenderCommand, SnapshotActor } from '../types';
+import type {
+  BattleSnapshot,
+  Character3DPassResult,
+  CharacterRenderCommand,
+  CombatantInput,
+  SkillDef,
+  SnapshotActor,
+} from '../types';
 
 const ROOT = path.resolve(__dirname, '..');
 const W = 375;
@@ -372,6 +398,7 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
       pathPx: [],
       t: 0.15,
       duration: 0.6,
+      isJumpMove: false,
       hopHeight: 0,
     });
     const ops: RecordedOp[] = [];
@@ -382,7 +409,7 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
     expect(cmd.isJump).toBe(false);
   });
 
-  it('轻功：isJump 原样透传（禁 hopPx 猜），hopPx 只作垂直位移且已按 pixelRatio 换算', () => {
+  it('轻功：演出起跳时锁定的意图透传（禁 hopPx 猜），hopPx 只作垂直位移且已按 pixelRatio 换算', () => {
     const { assets } = makeAssets();
     const fake = makeFakeLayer();
     const view = view3d(fake.layer);
@@ -402,17 +429,18 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
     expect(cmd.moveProgress).toBeCloseTo(0.5, 6);
   });
 
-  it('快照 isJump=false 时即便 hopPx>0 也必须是 false（arch seq=414 锁：禁 hop 推断）', () => {
+  it('【R1 修订乙】轻功意图只认 MoveAnim.isJumpMove（禁 hopPx 反推）：hop>0 但意图=走 ⇒ false', () => {
     const { assets } = makeAssets();
     const fake = makeFakeLayer();
     const view = view3d(fake.layer);
     const hero = actor({ animState: 'idle', isJump: false, pos: { q: 5, r: 8 }, renderPos: { q: 4, r: 8 } });
     const snap0 = snap([hero]);
     updateView(view, snap0, 0.016, W, H);
-    // 手工挂一个「在空中」的演出（生产里 hopHeight>0 只由 isJump 起跳产生；此处刻意造出
-    // hopPx>0 但快照 isJump=false 的组合，锁「渲染层禁由 hop 反推轻功」）
+    // 手工挂一个「在空中」的演出（生产里 hopHeight>0 只由起跳锁定产生；此处刻意造出
+    // hopPx>0 但 intent=false 的组合，锁「渲染层禁由 hop 反推轻功」）
     view.moveAnims.set('hero', {
-      from: { q: 4, r: 8 }, pos: { q: 5, r: 8 }, path: [], pathPx: [], t: 0.3, duration: 0.6, hopHeight: 88,
+      from: { q: 4, r: 8 }, pos: { q: 5, r: 8 }, path: [], pathPx: [], t: 0.3, duration: 0.6,
+      isJumpMove: false, hopHeight: 88,
     });
     const ma = view.moveAnims.get('hero')!;
     ma.t = ma.duration / 2;
@@ -422,6 +450,23 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
     expect(cmd.hopPx).toBeGreaterThan(0);
     expect(cmd.isJump).toBe(false);
     expect(cmd.state).toBe('walk'); // 演出态仍是 walk（帧组/动作都按移动走，但非轻功）
+  });
+
+  it('【R1 修订乙】反向：演出意图=跳（isJumpMove）即便 hop=0（起/落点）也必须是 true', () => {
+    const { assets } = makeAssets();
+    const fake = makeFakeLayer();
+    const view = view3d(fake.layer);
+    const snap0 = snap([actor({ animState: 'idle' })]);
+    updateView(view, snap0, 0.016, W, H);
+    view.moveAnims.set('hero', {
+      from: { q: 4, r: 8 }, pos: { q: 5, r: 8 }, path: [], pathPx: [], t: 0, duration: 0.6,
+      isJumpMove: true, hopHeight: 88,
+    });
+    const ops: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+    const cmd = fake.calls[fake.calls.length - 1][0];
+    expect(cmd.hopPx).toBe(0); // 起跳帧 hop 恰为 0
+    expect(cmd.isJump).toBe(true);
   });
 
   it('普攻保持窗：快照回 idle 仍出 basic，且进态历时连续（尾帧保持由 pass 侧归一窗负责）', () => {
@@ -485,8 +530,10 @@ describe('[T31-FE-B] 红线扫描（源码层证据）', () => {
   const render = readFileSync(path.join(ROOT, 'ui/battle-hex-render.ts'), 'utf8');
   const main = readFileSync(path.join(ROOT, 'proto/battle_demo/main.ts'), 'utf8');
 
-  it('渲染层：isJump 原样透传（禁 hopPx/时钟猜轻功）', () => {
-    expect(render).toContain('isJump: actor.isJump');
+  it('渲染层：轻功意图取 MoveAnim 锁定值（禁 hopPx/时钟猜、禁每帧直读快照）', () => {
+    expect(render).toContain('ma.isJumpMove');
+    expect(render).toContain('isJumpMove: a.isJump'); // 创建演出时一次性锁定
+    expect(render).not.toContain('isJump: actor.isJump'); // 每帧直传已废止（seq=418 修订乙）
     expect(/isJump:\s*[^,\n]*hop/i.test(render)).toBe(false);
   });
 
@@ -525,5 +572,559 @@ describe('[T31-FE-B] 红线扫描（源码层证据）', () => {
     expect(/from '[^']*battle-core/.test(render)).toBe(false);
     expect(/from '[^']*cloudfunctions/.test(render)).toBe(false);
     expect(main).toContain("from '../../systems/battle-session'"); // 宿主本来就消费真 session（未新增）
+  });
+
+  it('【R3】宿主按目标背衬尺寸建离屏画布（1×1 绕过与「投影未初始化」归因已删）', () => {
+    expect(main).not.toContain('createOffscreenCanvas(1, 1)');
+    expect(main).toContain('Math.round(W * dpr * renderScale)');
+    expect(main).toContain('Math.round(H * dpr * renderScale)');
+  });
+
+  it('【R5】宿主：终失败暂停 + 替换式重试（唯一 RAF 由 host-runtime 排程）', () => {
+    expect(main).toContain('host?.notifyContextRestored(false');
+    expect(main).toContain('function disposeRuntime()');
+    expect(main).toContain('if (booting) return;'); // 连点重试不并发装配
+    expect(main).toContain('next.addDisposer(teardown)'); // 旧 renderer/监听随 dispose 释放
+    expect(main).toContain('if (!hostRunning()) return;'); // 暂停=输入不推进
+    expect(main).not.toContain('requestAnimationFrame(loop)'); // 禁主循环自行续排（第二循环根因）
+  });
+});
+
+// ══════════════════ 6. 【R1】轻功意图真实链路（session → view → command → controller） ══════════════════
+// 纪律（arch seq=419 裁 Q1 修订乙）：意图在**创建 MoveAnim 时**从该次 SnapshotActor.isJump 锁定，
+// 演出有效期内消费它（session 的 isJump 窗只有 300ms，而演出 0.6~1.2s），结束/替换/死亡/reset 释放。
+
+const DT_REAL = 1 / 60; // 真实帧间隔（60fps；x1/x2 只改 dt 倍率，不改帧间隔语义）
+
+function realUnit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 'side'>): CombatantInput {
+  return {
+    name: over.id,
+    hp: 999999,
+    maxHp: 999999,
+    neili: 100,
+    maxNeili: 100,
+    atk: 1,
+    def: 99999,
+    neigongLevel: 0,
+    jimin: 200, // 我方条快：快速到输入态
+    danshi: 0,
+    shizhan: 0,
+    pos: { x: 0, y: 0 },
+    weapon: 'fist',
+    skills: [],
+    ...over,
+  };
+}
+/** 轻功技能（kind=qingGong，口径同 tests/battle-session.test.ts 的 qingSkill）。
+ * level=45 是**用例口径**（movePower=基础+品阶 2+⌊45/5⌋ ⇒ 跳跃半径 ≥6 格）：让真实链路能同时
+ * 取到 0.6s（≤2 格基准档）与 1.2s（≥6 格封顶档）两档演出时长，避免只测到中间档。 */
+function qingSkill(): SkillDef {
+  return { id: 'qing', name: '草上飞', kind: 'qingGong', weapon: null, grade: 1.3, growth: 1, level: 45, cooldownTurns: 0, neiliCost: 0 };
+}
+function jumpSession(): HexBattleSession {
+  return createHexBattle({
+    player: realUnit({ id: 'hero', side: 'player', skills: [qingSkill()] }),
+    enemies: [realUnit({ id: 'e1', side: 'enemy', name: 'npc-shanzei-a', jimin: 0 })],
+    mode: 'manual',
+    seed: 13,
+  });
+}
+/** 真实驱动到输入态（条满 + 手动） */
+function tickToPending(s: HexBattleSession, maxSec = 90): boolean {
+  for (let i = 0; i < maxSec * 60 && s.phase === 'fighting' && !s.snapshot().pendingInput; i++) s.tick(DT_REAL);
+  return s.snapshot().pendingInput;
+}
+const heroUnitOf = (s: HexBattleSession): { hex: { q: number; r: number } } => s._debug.units.find((u) => u.id === 'hero')!;
+
+/** 真 pass + 记录层：命令直通真 pass（真 CharacterAnimController），同时留痕本帧命令（R1 证据） */
+function makeRealPassLayer(dpr: number): { layer: Character3DLayer; pass: Character3DPass; cmds: CharacterRenderCommand[] } {
+  const model = heroModel();
+  const runtime: Character3DProfileRuntime = {
+    profile: { ...HERO_3D_PROFILE, screenHeightPxAtReference: HERO_3D_PROFILE.screenHeightPxAtReference * dpr },
+    model,
+    anim: {
+      actionMap: HERO_3D_ACTION_MAP,
+      crossFadeSec: CHARACTER_3D_CROSS_FADE_SEC,
+      jumpToIdleBlendSec: CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+      clips: heroClipRegistry(model),
+    },
+  };
+  const pass = createCharacter3DPass({
+    renderer: stubRealRenderer(model),
+    viewport: { width: Math.round(W * dpr), height: Math.round(H * dpr) },
+    runtimes: { [HERO_3D_PROFILE_ID]: runtime },
+    loadState: 'ready',
+  });
+  const cmds: CharacterRenderCommand[] = [];
+  const layer: Character3DLayer = {
+    pixelRatio: dpr,
+    render: (commands, dtSec) => {
+      cmds.length = 0;
+      for (const c of commands) cmds.push({ ...c });
+      return pass.render(commands, dtSec);
+    },
+    composite: () => true,
+  };
+  return { layer, pass, cmds };
+}
+/** 结构桩：只满足 Character3DRenderer 接口（pass 的控制器与摆放矩阵是真件） */
+function stubRealRenderer(model: ReturnType<typeof heroModel>): Character3DRenderer {
+  return {
+    canvas: { stub: 'canvas' },
+    status: 'ready',
+    edgeMode: 'fxaa',
+    jointCount: 41,
+    vertexCount: model.mesh.vertexCount,
+    indexCount: model.mesh.indexCount,
+    backbuffer: { width: Math.round(W * DPR), height: Math.round(H * DPR) },
+    contextAttributes: { antialias: false } as WebGLContextAttributes,
+    maxVertexUniformVectors: 1024,
+    counters: { drawCalls: 0, paletteUploads: 0, frames: 0 },
+    diagnostics: [],
+    beginFrame: () => {},
+    drawUnit: () => {},
+    endFrame: () => {},
+    resize: () => {},
+    notifyContextLost: () => {},
+    handleContextRestored: () => true,
+    dispose: () => {},
+  };
+}
+
+interface JumpSample {
+  /** view 表演钟（秒，逻辑） */
+  t: number;
+  snapIsJump: boolean;
+  cmdIsJump: boolean | null;
+  clip: string | null;
+  hop: number;
+  state: string | null;
+  /** view 演出进度（无有效演出=null） */
+  animT: number | null;
+  animDuration: number | null;
+}
+
+/** 按真实宿主口径跑帧：session.tick(dtReal) + view dt = dtReal × speed；每帧留痕（快照/命令/控制器三层同帧） */
+function driveFrames(
+  s: HexBattleSession,
+  view: BattleHexView,
+  pass: Character3DPass,
+  cmds: CharacterRenderCommand[],
+  assets: BattleHexAssets,
+  frames: number,
+  speed: 1 | 2 = 1,
+): JumpSample[] {
+  const ctx = makeRecordingCtx([]);
+  // 宿主口径同构：view dt = 真实帧间隔 × SPEED_FACTOR（session.tick 拿到的是未缩放的真实 dt）
+  const dtView = DT_REAL * (speed === 2 ? SPEED_FACTOR.fast : SPEED_FACTOR.normal);
+  const out: JumpSample[] = [];
+  for (let i = 0; i < frames; i++) {
+    s.tick(DT_REAL);
+    const snap = s.snapshot();
+    updateView(view, snap, dtView, W, H);
+    drawFrame({ ctx, width: W, height: H, dt: dtView }, snap, assets, view);
+    const hero = snap.actors.find((a) => a.id === 'hero')!;
+    const cmd = cmds.find((c) => c.actorId === 'hero') ?? null;
+    const ma = view.moveAnims.get('hero');
+    out.push({
+      t: view.time,
+      snapIsJump: hero.isJump,
+      cmdIsJump: cmd ? cmd.isJump : null,
+      clip: pass.controllers.get('hero')?.activeClipKey ?? null,
+      hop: pieceHop(view, hero),
+      state: cmd ? cmd.state : null,
+      animT: ma ? ma.t : null,
+      animDuration: ma ? ma.duration : null,
+    });
+  }
+  return out;
+}
+
+/** 金格挑格：far=距离最大 / short=距离最小（≥1 格） */
+function pickJumpCell(s: HexBattleSession, which: 'far' | 'short'): { q: number; r: number } {
+  const from = heroUnitOf(s).hex;
+  const cells = s.snapshot().moveCells.slice().sort((a, b) => cubeDistance(from, b) - cubeDistance(from, a));
+  if (cells.length === 0) throw new Error('轻功金格为空（用例前置失败）');
+  return which === 'far' ? cells[0] : cells[cells.length - 1];
+}
+
+describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view→command→controller', () => {
+  it('真实起跳：创建时锁定 isJumpMove；300ms 窗关闭后顶点/降段仍 jump，演出结束才释放', () => {
+    const s = jumpSession();
+    expect(tickToPending(s), '未到输入态').toBe(true);
+    const { layer, pass, cmds } = makeRealPassLayer(DPR);
+    const view = view3d(layer);
+    const { assets } = makeAssets();
+
+    // 真实受理路径：轻功态 → 点金格移动
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    expect(s.snapshot().moveKind).toBe('jump');
+    const from = { ...heroUnitOf(s).hex };
+    const to = pickJumpCell(s, 'far');
+    const dist = cubeDistance(from, to);
+    expect(s.submit({ type: 'move', to })).toBe(true);
+    expect(s.snapshot().actors.find((a) => a.id === 'hero')!.isJump).toBe(true);
+
+    updateView(view, s.snapshot(), DT_REAL, W, H); // 起跳上升沿：建演出
+    const ma = view.moveAnims.get('hero')!;
+    expect(ma, '未建移动演出').toBeTruthy();
+    expect(ma.isJumpMove).toBe(true); // 创建时从该次快照 isJump 锁定
+    expect(ma.isJumpMove).toBe(s.snapshot().actors.find((a) => a.id === 'hero')!.isJump);
+    expect(ma.duration).toBeCloseTo(jumpParamsFor(dist).duration, 10);
+
+    const samples = driveFrames(s, view, pass, cmds, assets, Math.ceil((ma.duration + 0.2) / DT_REAL));
+
+    // ① 首帧即意图=jump（起落两点的 hop=0 情形由下一条用例逐点锁死）
+    expect(samples[0].cmdIsJump).toBe(true);
+    expect(samples[0].clip).toBe('jump');
+
+    // ② session 窗（ANIM_MS.walk=300ms）先关：之后仍有 jump（顶点/降段）
+    const closed = samples.filter((x) => !x.snapIsJump);
+    expect(closed.length, '快照 isJump 窗未观测到关闭').toBeGreaterThan(0);
+    expect(closed[0].t).toBeGreaterThan(0.25);
+    expect(closed[0].t).toBeLessThan(0.38);
+    const descending = closed.filter((x) => x.cmdIsJump === true);
+    expect(descending.length, '降段未保持 jump（300ms 窗后即被判成普通行走）').toBeGreaterThan(3);
+    expect(descending.every((x) => x.clip === 'jump')).toBe(true);
+    expect(descending.every((x) => x.state === 'walk')).toBe(true);
+
+    // ③ 顶点（hop 最大）仍在 jump
+    const peak = samples.reduce((a, b) => (b.hop > a.hop ? b : a));
+    expect(peak.hop).toBeGreaterThan(50);
+    expect(peak.cmdIsJump).toBe(true);
+    expect(peak.clip).toBe('jump');
+
+    // ④ 演出有效期内恒 jump、结束后（释放）恒 false
+    for (const x of samples) {
+      if (x.animT !== null && x.animT < ma.duration) {
+        expect(x.cmdIsJump, `演出期内被释放 t=${x.t.toFixed(3)}`).toBe(true);
+      }
+      if (x.t >= ma.duration) expect(x.cmdIsJump, `演出结束未释放 t=${x.t.toFixed(3)}`).toBe(false);
+    }
+    expect(samples[samples.length - 1].cmdIsJump).toBe(false);
+    expect(samples[samples.length - 1].clip).not.toBe('jump');
+  });
+
+  it('两档演出时长（0.6s / 1.2s）× 倍速 x1/x2：view 时间口径下不变量恒成立（不拉长 session 300ms 窗）', () => {
+    const observed: Array<{ speed: number; dist: number; duration: number }> = [];
+    for (const speed of [1, 2] as const) {
+      const dtView = DT_REAL * (speed === 2 ? SPEED_FACTOR.fast : SPEED_FACTOR.normal);
+      for (const which of ['short', 'far'] as const) {
+        const s = jumpSession();
+        expect(tickToPending(s)).toBe(true);
+        const { layer, pass, cmds } = makeRealPassLayer(DPR);
+        const view = view3d(layer);
+        const { assets } = makeAssets();
+        if (speed === 2) expect(s.submit({ type: 'toggleSpeed' })).toBe(true); // x2：session 内部缩放 + view dt 同倍率
+        expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+        const from = { ...heroUnitOf(s).hex };
+        const to = pickJumpCell(s, which);
+        const dist = cubeDistance(from, to);
+        expect(s.submit({ type: 'move', to })).toBe(true);
+        updateView(view, s.snapshot(), dtView, W, H);
+        const ma = view.moveAnims.get('hero')!;
+        const expectDur = jumpParamsFor(dist).duration;
+        expect(ma.duration).toBeCloseTo(expectDur, 10);
+        expect(ma.duration).toBeGreaterThanOrEqual(JUMP.baseDuration);
+        expect(ma.duration).toBeLessThanOrEqual(JUMP.maxDuration);
+        observed.push({ speed, dist, duration: ma.duration });
+
+        const samples = driveFrames(s, view, pass, cmds, assets, Math.ceil((ma.duration + 0.25) / dtView), speed);
+        // 窗关闭点（view 时间）恒 ≈0.3s：x1/x2 只改倍率，不改演出/窗口的相对关系
+        const closed = samples.filter((x) => !x.snapIsJump);
+        expect(closed.length, `speed=${speed} ${which} 窗未关`).toBeGreaterThan(0);
+        expect(closed[0].t).toBeGreaterThan(0.25);
+        expect(closed[0].t).toBeLessThan(0.38);
+        // 窗关后到演出结束前：恒 jump
+        const afterWindow = samples.filter((x) => !x.snapIsJump && x.animT !== null && x.animT < ma.duration);
+        expect(afterWindow.length, `speed=${speed} ${which} 窗后无采样`).toBeGreaterThan(0);
+        expect(afterWindow.every((x) => x.cmdIsJump === true && x.clip === 'jump')).toBe(true);
+        // 结束即释放
+        const after = samples.filter((x) => x.t >= ma.duration);
+        expect(after.length).toBeGreaterThan(0);
+        expect(after.every((x) => x.cmdIsJump === false)).toBe(true);
+      }
+    }
+    // 两档覆盖：短距=基准 0.6s；长距≥6 格=封顶 1.2s（真实链路实测两档必须都取到）
+    const short = observed.filter((o) => o.dist <= JUMP.baseCells);
+    const far = observed.filter((o) => o.dist > JUMP.baseCells);
+    expect(short.length).toBeGreaterThan(0);
+    expect(short.every((o) => o.duration === JUMP.baseDuration)).toBe(true);
+    expect(far.some((o) => o.duration === JUMP.maxDuration), `未取到 1.2s 封顶档：${JSON.stringify(observed)}`).toBe(true);
+    expect(observed.some((o) => o.duration === JUMP.baseDuration)).toBe(true);
+    for (const o of observed) expect(o.duration).toBeCloseTo(jumpParamsFor(o.dist).duration, 10);
+  });
+
+  it('起落两点 hop=0 仍必须是 jump（禁 hop 反推）；演出结束/被替换即释放', () => {
+    const s = jumpSession();
+    expect(tickToPending(s)).toBe(true);
+    const { layer, pass, cmds } = makeRealPassLayer(DPR);
+    const view = view3d(layer);
+    const { assets } = makeAssets();
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    expect(s.submit({ type: 'move', to: pickJumpCell(s, 'far') })).toBe(true);
+    updateView(view, s.snapshot(), DT_REAL, W, H);
+    const anim = view.moveAnims.get('hero')!;
+    const draw = (): CharacterRenderCommand => {
+      const snap = s.snapshot();
+      updateView(view, snap, 0, W, H); // dt=0：不推进演出，只刷视图态与命令
+      drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: 0 }, snap, assets, view);
+      return cmds.find((c) => c.actorId === 'hero')!;
+    };
+    // 起点：hop 恰为 0（几何起点）
+    anim.t = 0;
+    const takeoff = draw();
+    expect(takeoff.hopPx).toBe(0);
+    expect(takeoff.isJump).toBe(true);
+    // 终点前一刻：hop→0（几何终点）
+    anim.t = anim.duration - 1e-9;
+    const landing = draw();
+    expect(landing.hopPx).toBeLessThan(1e-6);
+    expect(landing.isJump).toBe(true);
+    // 演出走满：释放（即便快照仍是本次移动的 walk 态）
+    anim.t = anim.duration;
+    expect(draw().isJump).toBe(false);
+    // 被替换（新的普通移动演出覆盖旧实例）：意图随之=false（不跨演出残留）
+    view.moveAnims.set('hero', {
+      from: { q: 4, r: 8 },
+      pos: { q: 5, r: 8 },
+      path: [],
+      pathPx: [],
+      t: 0,
+      duration: 0.3,
+      isJumpMove: false,
+      hopHeight: 0,
+    });
+    expect(draw().isJump).toBe(false);
+    expect(pass.controllers.get('hero')?.activeClipKey).toBe('walk');
+  });
+
+  it('普通移动 / 死亡 / reset 不串状态（意图不跨演出残留）', () => {
+    // (a) 同一真实 session：轻功演出结束后走一次普通移动（真实第二回合）
+    const s = jumpSession();
+    expect(tickToPending(s)).toBe(true);
+    const { layer, pass, cmds } = makeRealPassLayer(DPR);
+    const view = view3d(layer);
+    const { assets } = makeAssets();
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    const to = pickJumpCell(s, 'far');
+    expect(s.submit({ type: 'move', to })).toBe(true);
+    updateView(view, s.snapshot(), DT_REAL, W, H);
+    const jumpDur = view.moveAnims.get('hero')!.duration;
+    driveFrames(s, view, pass, cmds, assets, Math.ceil((jumpDur + 0.3) / DT_REAL));
+    expect(cmds.find((c) => c.actorId === 'hero')!.isJump).toBe(false); // 演出结束：已释放
+    expect(view.moveAnims.get('hero')).toBeUndefined();
+
+    // 第二回合普通移动（无选中 → 绿格）
+    expect(tickToPending(s), '第二回合未到输入态').toBe(true);
+    const walkFrom = { ...heroUnitOf(s).hex };
+    const walkCells = s.snapshot().moveCells.slice().sort((a, b) => cubeDistance(walkFrom, b) - cubeDistance(walkFrom, a));
+    expect(walkCells.length, '普通可达绿格为空').toBeGreaterThan(0);
+    expect(s.submit({ type: 'move', to: walkCells[walkCells.length - 1] })).toBe(true);
+    const walkSamples = driveFrames(s, view, pass, cmds, assets, 12);
+    expect(walkSamples.every((x) => x.cmdIsJump === false), '普通移动串入轻功意图').toBe(true);
+    expect(walkSamples.some((x) => x.clip === 'walk')).toBe(true);
+
+    // (b) 死亡：演出中途阵亡即刻释放（禁「死后仍按轻功锁帧」）
+    const s2 = jumpSession();
+    expect(tickToPending(s2)).toBe(true);
+    const { layer: layer2, pass: pass2, cmds: cmds2 } = makeRealPassLayer(DPR);
+    const view2 = view3d(layer2);
+    const { assets: assets2 } = makeAssets();
+    expect(s2.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    expect(s2.submit({ type: 'move', to: pickJumpCell(s2, 'far') })).toBe(true);
+    updateView(view2, s2.snapshot(), DT_REAL, W, H);
+    expect(view2.moveAnims.get('hero')!.isJumpMove).toBe(true);
+    driveFrames(s2, view2, pass2, cmds2, assets2, 6); // 演出仍在进行（0.1s < duration）
+    expect(view2.moveAnims.get('hero')!.t).toBeLessThan(view2.moveAnims.get('hero')!.duration);
+    const deadSnap = {
+      ...s2.snapshot(),
+      actors: s2.snapshot().actors.map((a) => (a.id === 'hero' ? { ...a, animState: 'dead' as const } : a)),
+    };
+    updateView(view2, deadSnap, DT_REAL, W, H);
+    drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: DT_REAL }, deadSnap, assets2, view2);
+    const deadCmd = cmds2.find((c) => c.actorId === 'hero')!;
+    expect(deadCmd.state).toBe('dead');
+    expect(deadCmd.isJump, '阵亡未释放轻功意图').toBe(false);
+    // dead 动作槽位=idle 首帧保持（§5 表），故判据看 actionKey 而非 clip 键
+    expect(pass2.controllers.get('hero')?.actionKey).toBe('dead');
+
+    // (c) reset（resetDemo 口径：演出态清空 + 新 session）→ 新局首帧不得残留轻功意图
+    view2.moveAnims.clear();
+    view2.moveDone.clear();
+    view2.anim.clear();
+    const fresh = jumpSession();
+    const freshSnap = fresh.snapshot();
+    updateView(view2, freshSnap, DT_REAL, W, H);
+    drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: DT_REAL }, freshSnap, assets2, view2);
+    expect(cmds2.find((c) => c.actorId === 'hero')!.isJump).toBe(false);
+  });
+});
+
+// ══════════════════ 7. 【R2】像素语义（逻辑参考高 vs 物理参考高） ══════════════════
+describe('[T31-FE-B · R2] 像素语义：宿主统一乘一次 pixelRatio，pass 不再乘', () => {
+  it('DPR 1/2/3：placed 逻辑高度恒等（=config 逻辑参考高），命令坐标随 dpr 线性放大', () => {
+    const logicalH = HERO_3D_PROFILE.screenHeightPxAtReference;
+    for (const dpr of [1, 2, 3]) {
+      const { layer, pass, cmds } = makeRealPassLayer(dpr);
+      const view = view3d(layer);
+      const { assets } = makeAssets();
+      const snap0 = snap([actor()]);
+      updateView(view, snap0, 0.016, W, H);
+      drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: 0.016 }, snap0, assets, view);
+      const cmd = cmds.find((c) => c.actorId === 'hero')!;
+      const w = hexToWorld(4, 8);
+      const logicalX = Math.round(w.x - view.camera.x + W / 2);
+      const logicalY = Math.round(w.y - view.camera.y + H / 2);
+      expect(cmd.footX, `dpr=${dpr}`).toBe(logicalX * dpr); // 命令=物理像素
+      expect(cmd.footY).toBe(logicalY * dpr);
+      const res = pass.render([cmd], 0.016);
+      const box = res.placed.get('hero')!;
+      expect(box.h, `dpr=${dpr} 物理高`).toBeCloseTo(logicalH * dpr, 6); // 物理高 = 逻辑参考高 × dpr（仅宿主乘一次）
+      expect(box.h / dpr, `dpr=${dpr} 逻辑高`).toBeCloseTo(logicalH, 6); // 逻辑高跨 DPR 恒等
+      // HUD/热区口径（逻辑像素）跨 DPR 恒等——这是「DPR 1/2/3 锁逻辑高度一致」的可观测面
+      expect(view.character3dPlaced!.get('hero')!.h).toBeCloseTo(logicalH, 6);
+      expect(view.character3dPlaced!.get('hero')!.w).toBeCloseTo(box.w / dpr, 6);
+    }
+  });
+
+  it('config 参考高注释=逻辑像素；pass 不持 pixelRatio（换算只发生在宿主一处）', () => {
+    const cfg = readFileSync(path.join(ROOT, 'config/character-3d.ts'), 'utf8');
+    expect(cfg).toContain('参考屏高（**逻辑像素**');
+    expect(cfg).not.toContain('参考屏高（画布物理像素）');
+    const passSrc = readFileSync(path.join(ROOT, 'ui/character3d/pass.ts'), 'utf8');
+    expect(passSrc).not.toContain('pixelRatio'); // 禁 pass 再乘一次
+    const mainSrc = readFileSync(path.join(ROOT, 'proto/battle_demo/main.ts'), 'utf8');
+    expect(mainSrc).toContain('HERO_3D_PROFILE.screenHeightPxAtReference * dpr'); // 宿主唯一换算点
+  });
+});
+
+// ══════════════════ 8. 【R5】宿主运行状态（失败注入） ══════════════════
+interface FakeRaf {
+  raf(cb: (t: number) => void): number;
+  cancelRaf(id: number): void;
+  readonly pendingCount: number;
+  fire(t: number): void;
+}
+function makeFakeRaf(): FakeRaf {
+  let next = 1;
+  const pending = new Map<number, (t: number) => void>();
+  return {
+    raf(cb) {
+      const id = next++;
+      pending.set(id, cb);
+      return id;
+    },
+    cancelRaf(id) {
+      pending.delete(id);
+    },
+    get pendingCount() {
+      return pending.size;
+    },
+    fire(t) {
+      const cbs = [...pending.values()];
+      pending.clear();
+      for (const cb of cbs) cb(t);
+    },
+  };
+}
+
+describe('[T31-FE-B · R5] 宿主运行状态：终失败暂停 / 单一 RAF / 释放链', () => {
+  it('重建终失败（notifyContextRestored(false)）→ tick 停止：无待排 RAF、迟到帧不推进', () => {
+    const raf = makeFakeRaf();
+    const steps: number[] = [];
+    const host = createHostRuntime({ step: (dt) => steps.push(dt), raf: raf.raf, cancelRaf: raf.cancelRaf });
+    host.start();
+    expect(host.status).toBe('running');
+    expect(host.pendingFrames).toBe(1); // 单一 RAF
+    raf.fire(1000);
+    raf.fire(1016);
+    expect(steps).toEqual([0, 0.016]); // 首帧 dt=0
+    expect(host.pendingFrames).toBe(1); // 续排恒一处
+
+    let reported: string | null = null;
+    host.notifyContextRestored(false, () => {
+      reported = 'gate';
+    });
+    expect(reported).toBe('gate');
+    expect(host.status).toBe('paused');
+    expect(host.pauseReason).toBe('context-restore-failed');
+    expect(host.pendingFrames).toBe(0); // 待排 RAF 已取消
+
+    const framesAtPause = host.frames;
+    raf.fire(2000); // 迟到帧
+    raf.fire(2100);
+    expect(host.frames).toBe(framesAtPause); // tick 停止（无新帧）
+    expect(steps).toHaveLength(2);
+    expect(host.pendingFrames).toBe(0); // 不再续排
+  });
+
+  it('短暂 lost（notifyContextRestored(true)）不打断循环；resume 重置时钟（首帧 dt=0 不补算停留）', () => {
+    const raf = makeFakeRaf();
+    const steps: number[] = [];
+    const host = createHostRuntime({ step: (dt) => steps.push(dt), raf: raf.raf, cancelRaf: raf.cancelRaf });
+    host.start();
+    raf.fire(1000);
+    host.notifyContextRestored(true);
+    expect(host.status).toBe('running'); // 短暂 lost 沿方案：不暂停
+    expect(host.pauseReason).toBeNull();
+    raf.fire(1016);
+    expect(steps).toEqual([0, 0.016]);
+
+    host.pause('manual');
+    expect(host.status).toBe('paused');
+    host.resume();
+    expect(host.status).toBe('running');
+    expect(host.pendingFrames).toBe(1);
+    raf.fire(9000); // 暂停期间停了很久（8s）：恢复首帧不得补算
+    expect(steps[steps.length - 1]).toBe(0);
+    raf.fire(9016);
+    expect(steps[steps.length - 1]).toBeCloseTo(0.016, 6);
+  });
+
+  it('多次点击重试只产生一个循环（替换式：旧 dispose + 新 start）', () => {
+    const raf = makeFakeRaf();
+    const make = (): { host: HostRuntime; steps: number[] } => {
+      const steps: number[] = [];
+      const host = createHostRuntime({ step: (dt) => steps.push(dt), raf: raf.raf, cancelRaf: raf.cancelRaf });
+      return { host, steps };
+    };
+    const a = make();
+    a.host.start();
+    const b = make(); // 第 1 次重试：main 先 disposeRuntime()
+    a.host.dispose();
+    b.host.start();
+    const c = make(); // 第 2 次重试
+    b.host.dispose();
+    c.host.start();
+    expect(raf.pendingCount).toBe(1); // 全部重试后仍只有一个待排 RAF
+    expect(a.host.status).toBe('disposed');
+    expect(b.host.status).toBe('disposed');
+
+    const before = [a.steps.length, b.steps.length, c.steps.length];
+    raf.fire(1000);
+    raf.fire(1016);
+    // 只有最新循环推进；旧循环（已 dispose）零推进 ⇒ 不存在第二条循环
+    expect([a.steps.length, b.steps.length, c.steps.length]).toEqual([before[0], before[1], before[2] + 2]);
+    expect(raf.pendingCount).toBe(1);
+    expect(c.host.frames).toBe(2);
+  });
+
+  it('dispose 逆序执行 disposer（旧 renderer/监听释放）且已释放的运行时不可复活', () => {
+    const raf = makeFakeRaf();
+    const order: string[] = [];
+    const host = createHostRuntime({ step: () => {}, raf: raf.raf, cancelRaf: raf.cancelRaf });
+    host.start();
+    host.addDisposer(() => order.push('listener')); // 先注册监听摘除
+    host.addDisposer(() => order.push('renderer')); // 后注册 renderer.dispose
+    host.dispose();
+    expect(order).toEqual(['renderer', 'listener']); // 逆序释放
+    expect(host.status).toBe('disposed');
+    expect(host.pendingFrames).toBe(0);
+    host.dispose(); // 幂等
+    expect(order).toEqual(['renderer', 'listener']);
+    host.start(); // 不可复活
+    expect(host.status).toBe('disposed');
+    expect(raf.pendingCount).toBe(0);
   });
 });

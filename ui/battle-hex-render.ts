@@ -333,6 +333,13 @@ export interface MoveAnim {
   pathPx: Array<{ x: number; y: number }>; // 像素路径点列（格中心 hexToWorld；演出插值在像素空间——恒直无锯齿）
   t: number; // 已演出时长（秒）
   duration: number; // 演出总时长（跳跃按距离插值；行走 = moveLerpSec × max(1, dist)）
+  /** 【T31-FE-B · R1 = arch seq=418 修订乙】本次移动的**轻功意图**（锁定值，非每帧派生）：
+   * 创建演出时从该次 `SnapshotActor.isJump` 抄一次；**当前有效移动演出期间** command.isJump 消费本值，
+   * 演出结束／被替换／死亡／reset 时释放（无有效 MoveAnim ⇒ command.isJump=false）。
+   * 禁止由 hopPx／距离／坐标反推——抛物线起落两点 hop 恰为 0，反推必漏起跳/落地两帧。
+   * 也禁每帧直读快照 isJump：session 的 isJump 窗仅 ANIM_MS.walk=300ms，而本演出 0.6~1.2s，
+   * 降段会被错判成普通行走（arch 9e824cb5 的每帧直传要求已由 333bb239 明文修正）。 */
+  isJumpMove: boolean;
   hopHeight: number; // 抛物线顶高（普通行走=0）
 }
 
@@ -831,6 +838,8 @@ export function updateView(
         pathPx: path.map((c) => hexToWorld(c.q, c.r)),
         t: 0,
         duration: dur,
+        // 【R1 · 修订乙】轻功意图在此**一次性锁定**（本演出期间不再读快照 isJump；见 MoveAnim 注释）
+        isJumpMove: a.isJump,
         hopHeight: a.isJump ? jp.height : 0,
       });
     }
@@ -1400,7 +1409,9 @@ function character3DPresentationOf(
 }
 
 /** 组一条 3D 人物渲染命令（方案 §3 冻结契约；坐标=物理像素，见本文件接点说明）。
- * isJump = **SnapshotActor.isJump 原样透传**（§4.1/§5；禁用 hopPx 或时钟猜——抛物线端点 hop 恰为 0）。 */
+ * 【T31-FE-B · R1 = arch seq=418 修订乙】isJump = **本次移动演出创建时锁定的 MoveAnim.isJumpMove**，
+ * 仅在当前有效演出（`ma.t < ma.duration` 且未阵亡）期间消费；无有效演出 ⇒ false。
+ * 禁 hopPx/时钟猜（抛物线起落两点 hop 恰为 0），禁每帧直读快照 isJump（300ms 窗短于 0.6~1.2s 演出）。 */
 function character3DCommandOf(
   view: BattleHexView,
   actor: SnapshotActor,
@@ -1411,6 +1422,8 @@ function character3DCommandOf(
   const pres = character3DPresentationOf(view, actor);
   const ma = view.moveAnims.get(actor.id);
   const dead = actor.animState === 'dead';
+  // 演出有效 = 未走满 + 未死亡；演出结束/被替换（Map 覆盖为新实例）/死亡/reset（Map 清空）后本值一律 false
+  const isJump = ma !== undefined && ma.t < ma.duration && !dead ? ma.isJumpMove : false;
   return {
     actorId: actor.id,
     profileKey,
@@ -1419,7 +1432,7 @@ function character3DCommandOf(
     depthKey: geo.worldY,
     facing: actor.facingHex,
     state: pres.state,
-    isJump: actor.isJump,
+    isJump,
     stateElapsedSec: pres.elapsedSec,
     // jump 专用：0→1 映射完整 jump 源（§5 末行）；无移动演出=null（状态机回落到 stateElapsed）
     moveProgress: ma ? Math.min(1, ma.t / ma.duration) : null,
