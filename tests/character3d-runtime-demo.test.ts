@@ -60,6 +60,8 @@ import {
 } from '../proto/character3d_runtime_demo/metrics';
 import { MOVE_LOCK_CASES, SPEC_PROFILE, STATE_SAMPLES, UNIT_PHASE_STEP_SEC, lockedIsJump } from '../proto/character3d_runtime_demo/scenarios';
 import { HERO_3D_PROFILE, HERO_3D_MODEL_REF, HERO_3D_CLIP_REFS } from '../config/character-3d';
+import { createCharacterAssetLoader } from '../net/character-asset-loader';
+import { validateClipJsonStructure } from '../proto/character3d_runtime_demo/text-assets';
 
 // ===== 1. 资源链：分包/本地路径 adapter（loader 真机链路的可测部分） =====
 
@@ -194,6 +196,142 @@ describe('分包本地路径 adapter（只覆盖 downloadArrayBuffer）', () => 
     await platform.cacheRemove('x');
     expect(await platform.cacheGet('x')).toBeNull();
   });
+});
+
+// ===== 1.5 包内文本资产的完整性口径（P0-4）=====
+
+/** 一份「字节与清单不同、但结构完全合法」的动作 json（模拟平台改写：重排/压缩/换行）。
+ * 真资产 idle_v4.json 是 726299 字节；这里造一个语义等价、字节数完全不同的版本。 */
+function rewrittenIdleClipJson(): Uint8Array {
+  const nFrames = 200;
+  const quat = () => Array.from({ length: nFrames }, () => [0, 0, 0, 1]);
+  const bones: Record<string, number[][]> = {};
+  for (let i = 0; i < 40; i++) bones['Bone_' + i] = quat();
+  const obj = {
+    fps: 30,
+    nFrames,
+    duration: 200 / 30,
+    rootMode: 'y',
+    boneTracks: bones,
+    rootTrack: Array.from({ length: nFrames }, () => [0, 0, 0]),
+  };
+  // 无空白（平台压缩后形态）：字节数与 726299 必然不同
+  return new TextEncoder().encode(JSON.stringify(obj));
+}
+
+function loaderWith(options: {
+  bytes: Uint8Array;
+  textIntegrityMode?: 'strict' | 'structural';
+  structureValidator?: (bytes: Uint8Array, ref: { mediaType: string }) => void;
+}) {
+  const fake = createFakeWx({});
+  fake.files.set(SUBPACKAGE_PATH, options.bytes);
+  const platform = createLocalSubpackagePlatform({
+    runtime: fake.host as unknown as WxRuntimeArg,
+    logSink: () => undefined,
+  });
+  const loader = createCharacterAssetLoader({
+    platform,
+    cdnBaseUrl: LOCAL_BASE_URL,
+    sleep: async () => undefined,
+    textIntegrityMode: options.textIntegrityMode ?? 'strict',
+    textStructureValidator: (bytes, ref) => {
+      const r = validateClipJsonStructure(bytes, ref);
+      return { errors: r.errors, summary: r.summary };
+    },
+    structureValidator: options.structureValidator as never,
+  });
+  return { loader, platform, fake };
+}
+
+describe('P0-4 · 包内文本资产：结构不变量放行（GLB 与 CDN 仍严格）', () => {
+  const idleRef = HERO_3D_CLIP_REFS.idle as Exclude<(typeof HERO_3D_CLIP_REFS)['idle'], { embedded: string }>;
+  // 用真实 idle 的 urlPath（保证走同一条分包读取链），但内容换成"平台改写版"
+  const ref = { ...idleRef, urlPath: REF_URL_PATH };
+
+  it('结构校验通过即放行，且如实记 integrityMode=structural + observed≠expected', async () => {
+    const bytes = rewrittenIdleClipJson();
+    expect(bytes.byteLength).not.toBe(ref.byteLength); // 前提：字节与清单不同
+    const { loader } = loaderWith({ bytes, textIntegrityMode: 'structural' });
+    const res = await loader.load(ref);
+    expect(res.status).toBe('downloaded');
+    expect(String(res.integrity?.readSource)).toContain('local-subpackage');
+    expect(res.integrity?.mode).toBe('structural');
+    expect(res.integrity?.structuralOk).toBe(true);
+    expect(res.integrity?.observedByteLength).toBe(bytes.byteLength);
+    expect(res.integrity?.expectedByteLength).toBe(ref.byteLength);
+    expect(res.integrity?.byteLengthMatches).toBe(false);
+    expect(res.integrity?.note).toContain('平台改写导致字节不可比');
+    // 结构账齐（fps/nFrames/骨轨道/rootTrack/值有限）
+    expect(res.integrity?.structuralDetail.join(' ')).toContain('fps=');
+    // 严格模式的计数口径不被污染（结构性放行不算 byteLengthMismatches/shaMismatches）
+    expect(loader.stats().byteLengthMismatches).toBe(0);
+    expect(loader.stats().shaMismatches).toBe(0);
+    expect(loader.stats().structureRejects).toBe(0);
+  });
+
+  it('同一份内容在 strict 口径下被拒（CDN 下载路径保持严格，未被放宽）', async () => {
+    const bytes = rewrittenIdleClipJson();
+    const { loader } = loaderWith({ bytes, textIntegrityMode: 'strict' });
+    const res = await loader.load(ref);
+    expect(res.status).toBe('failed');
+    expect(res.diagnostics.some((d) => d.startsWith('byteLength-mismatch'))).toBe(true);
+    expect(res.integrity?.mode).toBe('strict');
+    // 失败时诊断必须活下来（P0-4 第一条要求）
+    expect(res.integrity?.observedByteLength).toBe(bytes.byteLength);
+    expect(res.integrity?.expectedByteLength).toBe(ref.byteLength);
+  });
+
+  it('GLB 恒走严格 SHA：即使开了 structural 也不放宽', async () => {
+    const fakeGlb = new Uint8Array(1024); // 长度/摘要都与清单不符
+    const glbRef = { ...HERO_3D_MODEL_REF, urlPath: REF_URL_PATH };
+    const { loader } = loaderWith({ bytes: fakeGlb, textIntegrityMode: 'structural' });
+    const res = await loader.load(glbRef);
+    expect(res.status).toBe('failed');
+    expect(res.integrity?.mode).toBe('strict');
+    expect(res.diagnostics.some((d) => d.startsWith('byteLength-mismatch'))).toBe(true);
+    expect(loader.stats().byteLengthMismatches).toBe(3);
+    // 头尾 hex 观测在（判定平台改写 vs 读取截断用；这里两个都有值）
+    expect(res.integrity?.headHex64).not.toBe('');
+    expect(res.integrity?.tailHex64).not.toBe('');
+  });
+
+  it('结构校验不过 ⇒ 失败关闭（截断内容不得放行）', async () => {
+    const truncated = rewrittenIdleClipJson().subarray(0, 4096); // 截断
+    const { loader } = loaderWith({ bytes: truncated, textIntegrityMode: 'structural' });
+    const res = await loader.load(ref);
+    expect(res.status).toBe('failed');
+    expect(res.diagnostics.some((d) => d.startsWith('text-structure-reject'))).toBe(true);
+    expect(res.integrity?.structuralOk).toBe(false);
+    expect(res.integrity?.structuralDetail.join(' ')).toContain('JSON 解析失败');
+  });
+
+  it('结构校验器本身：时长与清单不符 / 轨道含 NaN 都要报错', () => {
+    // 自洽但与**清单**不符：fps=30 + nFrames=100 ⇒ duration=3.3333（生产解析器会放行）
+    const bad = JSON.parse(new TextDecoder().decode(rewrittenIdleClipJson())) as {
+      nFrames: number; duration: number; boneTracks: Record<string, number[][]>; rootTrack: number[][];
+    };
+    bad.nFrames = 100;
+    bad.duration = 100 / 30;
+    for (const k of Object.keys(bad.boneTracks)) bad.boneTracks[k] = bad.boneTracks[k].slice(0, 100);
+    bad.rootTrack = bad.rootTrack.slice(0, 100);
+    const r1 = validateClipJsonStructure(new TextEncoder().encode(JSON.stringify(bad)), ref as never);
+    expect(r1.errors.join(' ')).toContain('与清单真值');
+    const nan = JSON.parse(new TextDecoder().decode(rewrittenIdleClipJson())) as { boneTracks: Record<string, number[][]> };
+    nan.boneTracks['Bone_0'][0][0] = Number.NaN;
+    const r2 = validateClipJsonStructure(new TextEncoder().encode(JSON.stringify(nan).replace('null', 'NaN')), ref as never);
+    expect(r2.errors.length).toBeGreaterThan(0);
+  });
+
+  it('读取来源可追溯：分包命中候选路径被记录（P0-4 诊断）', async () => {
+    const bytes = rewrittenIdleClipJson();
+    const { loader, platform } = loaderWith({ bytes, textIntegrityMode: 'structural' });
+    await loader.load(ref);
+    expect(platform.readSourceTrail().length).toBeGreaterThan(0);
+    expect(platform.readSourceTrail().join(' | ')).toContain('writeTempFile');
+    expect(platform.readSourceTrail().join(' | ')).toContain('getFileInfo digestAlgorithm=sha256');
+  });
+
 });
 
 // ===== 2. 采样与 §5.3 判定（S0 口径逐条对表） =====
@@ -461,6 +599,8 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
         modelResolvedPath: 'subpackages/char3d-assets/characters/hero/x/hero.glb',
         assetStages: { loaderMs: 1 }, loaderStats: { downloads: 5 }, reloadStats: { cacheHits: 5 },
         hotChainObserved: true, loadStatus: 'ready', diagnostics: [],
+        assetIntegrity: [], rebuildIntegrity: null, readSourceTrail: [], rebuildReadSourceTrail: null,
+        integrityNote: '（测试构造）',
       },
       sixDir: ALL_FACINGS.map((facing) => ({
         facing, state: 'idle' as const, footX: 1, footY: 2, ...clip('idle', 'idle'), placed: null, screenshot: null,
@@ -564,6 +704,28 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
     // 来源标记与策略必须如实入结果（终失败路径=故障注入；重建策略写死一处口径）
     expect(ok.terminalFailureInjected).toBe(true);
     expect(ok.rebuildPolicy).toBe('per-loss-single-attempt');
+  });
+
+  it('结果层：integrityMode=structural 写进 notes（含 observed vs expected；严格口径漂移也点名）', () => {
+    const rows = [{
+      assetId: 'hero-clip-idle-v4', mediaType: 'application/json', integrityMode: 'structural' as const, mode: 'structural' as const,
+      source: 'download' as const, loadStatus: 'downloaded',
+      byteLengthMatches: false, sha256Matches: false,
+      observedByteLength: 685411, observedSha256: 'aa'.repeat(32),
+      expectedByteLength: 726299, expectedSha256: 'bb'.repeat(32),
+      readSource: 'local-subpackage.readFile(binary, candidate#0 path=subpackages/char3d-assets/…)',
+      headHex64: '7b2266707322', tailHex64: '5d7d',
+      structuralOk: true, structuralDetail: ['结构化：fps=30 nFrames=200'], note: '平台改写导致字节不可比：按结构不变量放行（integrityMode=structural）',
+      structuralSummary: '结构化：fps=30 nFrames=200',
+    }];
+    const res = buildResult(baseContext({
+      resource: { ...baseContext().resource, assetIntegrity: rows, integrityNote: '包内文本走结构不变量' },
+    }));
+    const note = res.notes.join(' ');
+    expect(note).toContain('integrityMode=structural');
+    expect(note).toContain('685411');
+    expect(note).toContain('726299');
+    expect(note).toContain('结构账见 resource.assetIntegrity');
   });
 
   it('结果出口：console 单行前缀 / 分享文件名 / deviceHash 可复算', () => {
@@ -861,8 +1023,10 @@ describe('红线：卡 C 新宿主', () => {
     expect(bundle).toContain('__def("proto/character3d_runtime_demo/host", function (require, module, exports) {');
     expect(bundle).toContain('__def("ui/character3d/renderer", function (require, module, exports) {');
     expect(bundle).toContain('__def("net/character-asset-loader", function (require, module, exports) {');
-    // 注册数 = 模块数（20）：每处都是函数字面量形态
-    expect((bundle.match(/__def\("[^"]+", function \(require, module, exports\) \{/g) ?? []).length).toBe(20);
+    // 每个模块都是函数字面量形态（注册数 = 产物内模块数；至少含入口/宿主/生产模块/文本结构校验）
+    const defs = bundle.match(/__def\("[^"]+", function \(require, module, exports\) \{/g) ?? [];
+    expect(defs.length).toBeGreaterThanOrEqual(21);
+    expect(bundle).toContain('__def("proto/character3d_runtime_demo/text-assets", function (require, module, exports) {');
     // 旧的「源码字符串变量 + 构造」形态必须彻底消失
     expect(bundle).not.toContain('new Function("require", "module", "exports"');
   });
@@ -909,6 +1073,21 @@ describe('红线：卡 C 新宿主', () => {
     expect(build).toContain('禁止入包');
     // 语法自检也不再依赖动态求值（改用 TS 解析器）
     expect(build).toContain('parseDiagnostics');
+  });
+
+  it('P0-4 分层：只有包内文本资产可结构性放行（GLB / CDN 恒严格），且 loader 默认口径是 strict', () => {
+    const loaderSrc = readFileSync('net/character-asset-loader.ts', 'utf8');
+    // 结构性放行只对 application/json 生效
+    expect(loaderSrc).toContain("options.textIntegrityMode === 'structural' && ref.mediaType === 'application/json'");
+    // 缺省（未注入选项）= strict：既有调用方与 CDN 路径行为不变
+    expect(loaderSrc).toContain("textIntegrityMode?: 'strict' | 'structural'");
+    // 严格路径的判定与计数仍在（未被结构性放行改写）
+    expect(loaderSrc).toContain("diags.push('byteLength-mismatch:'");
+    expect(loaderSrc).toContain("diags.push('sha256-mismatch')");
+    // 宿主：模式分层在装配处显式决定
+    const host = readFileSync('proto/character3d_runtime_demo/host.ts', 'utf8');
+    expect(host).toContain("textIntegrityMode: resourcePlan.mode === 'local-subpackage' ? 'structural' : 'strict'");
+    expect(host).toContain('__CHAR3D_INTEGRITY__');
   });
 
   it('禁碰区零改动（battle-core / systems / cloudfunctions / package.json / types.ts 由 git diff 另行核对）', () => {

@@ -38,7 +38,10 @@ const SHOTS = arg('shots', 'last');
 /** `--norestore=1`：复刻微信模拟器「restoreContext 被平台拒绝」的场景（压真重建路径）。
  *  产物文件名加 `norestore` 前缀，与常规 sim 结果并存不覆盖。 */
 const NO_RESTORE = arg('norestore', '0') === '1';
-const TAG = NO_RESTORE ? 'sim-norestore' : 'sim';
+/** `--rewritejson=1`：复刻真机 P0-4（平台改写包内文本资产 ⇒ 字节与清单不符但结构合法）
+ *  —— 验证「结构不变量放行」让整轮继续跑，而不是资源门拒收。 */
+const REWRITE_JSON = arg('rewritejson', '0') === '1';
+const TAG = REWRITE_JSON ? 'sim-rewritejson' : NO_RESTORE ? 'sim-norestore' : 'sim';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -83,7 +86,7 @@ async function runOnce(context, baseUrl, runIndex, commit) {
   page.on('pageerror', (e) => consoleLines.push('PAGEERROR ' + e.message));
 
   const url = `${baseUrl}/proto/character3d_runtime_demo/browser/index.html?aa=${AA}&profile=${PROFILE}&perf=1&commit=${commit}` +
-    (NO_RESTORE ? '&norestore=1' : '');
+    (NO_RESTORE ? '&norestore=1' : '') + (REWRITE_JSON ? '&rewritejson=1' : '');
   await page.goto(url, { waitUntil: 'load' });
 
   // 宿主跑完全流程：结果句柄被赋非空值
@@ -212,8 +215,46 @@ try {
     `${last.resource.mode} · 已执行 ${last.resource.executedBranches.length} / 未执行 ${last.resource.notExecutedBranches.length}`);
   check('资源链证据：冷链（downloads>0）跑过', (last.resource.loaderStats.downloads ?? 0) > 0,
     JSON.stringify(last.resource.loaderStats));
-  check('资源链证据：热链（cacheHits>0 且 downloads=0）跑过', last.resource.hotChainObserved === true,
-    JSON.stringify(last.resource.reloadStats));
+  if (REWRITE_JSON) {
+    // 平台改写的文本资产：索引按**清单值**登记 ⇒ 下次启动长度校验不符被摘掉重读
+    // （GLB 未改写 ⇒ 仍能命中）⇒ 热链整体不成立，这是**如实结果**，不是缺陷
+    const reload = last.resource.reloadStats ?? {};
+    check('P0-4：改写场景下热链如实不成立（文本被摘除重读 + GLB 仍命中）并已记进 notes',
+      last.resource.hotChainObserved === false && (reload.downloads ?? 0) > 0 &&
+        last.notes.join(' ').includes('热启动缓存退化为'),
+      `hotChainObserved=${last.resource.hotChainObserved} reload=${JSON.stringify(reload)}`);
+  } else {
+    check('资源链证据：热链（cacheHits>0 且 downloads=0）跑过', last.resource.hotChainObserved === true,
+      JSON.stringify(last.resource.reloadStats));
+  }
+  if (REWRITE_JSON) {
+    // P0-4 核心：平台改写包内文本 ⇒ 必须结构放行 + 整轮继续（不得资源门拒收）
+    const rows = last.resource.assetIntegrity;
+    const textRows = rows.filter((r) => r.mediaType === 'application/json');
+    const glbRows = rows.filter((r) => r.mediaType === 'model/gltf-binary');
+    check('P0-4：模拟平台改写后，4 个文本资产按结构不变量放行（integrityMode=structural + structuralOk + 结构账）',
+      textRows.length === 4 && textRows.every((r) => r.integrityMode === 'structural' && r.structuralOk === true && !!r.structuralSummary),
+      textRows.map((r) => `${r.assetId}:${r.integrityMode}/ok=${r.structuralOk}`).join(' '));
+    check('P0-4：如实记录 observed≠expected（诊断可用：长度/摘要/头尾 hex/读取来源）',
+      textRows.every((r) => r.observedByteLength > 0 && r.observedByteLength !== r.expectedByteLength &&
+        r.byteLengthMatches === false && !!r.observedSha256 && !!r.headHex64 && !!r.tailHex64 && !!r.readSource),
+      textRows.map((r) => `${r.assetId}:${r.observedByteLength}≠${r.expectedByteLength}`).join(' '));
+    check('P0-4：GLB 仍走严格口径且字节相符（未被结构性放行波及）',
+      glbRows.length === 1 && glbRows[0].integrityMode === 'strict' && glbRows[0].byteLengthMatches === true,
+      glbRows.map((r) => `${r.assetId}:${r.integrityMode}/${r.observedByteLength}`).join(' '));
+    check('P0-4：资源门放行后整轮继续（boot 阶段 ok，且非 DEVICE_FAIL）',
+      last.phases.find((p) => p.name === 'boot')?.status === 'ok' && !String(last.verdict.device).endsWith('FAIL'),
+      `boot=${last.phases.find((p) => p.name === 'boot')?.status} device=${last.verdict.device}`);
+    check('P0-4：notes 点明结构放行 + 字节漂移',
+      last.notes.join(' ').includes('integrityMode=structural') &&
+        last.notes.join(' ').includes('结构账见 resource.assetIntegrity'));
+    check('P0-4：诊断单行 __CHAR3D_INTEGRITY__ 已打出（含 observed/expected/readSource/head·tail hex）',
+      runs.some((r) => r.consoleLines.some((l) => l.startsWith('__CHAR3D_INTEGRITY__=') && l.includes('headHex64') && l.includes('readSource'))));
+    check('P0-4：首装观测未被重建/重试覆盖（assetIntegrity=首装行，重建行单独在 rebuildIntegrity）',
+      last.resource.assetIntegrity.length === 5 && textRows.every((r) => r.source === 'download'),
+      `assetIntegrity=${last.resource.assetIntegrity.length} rebuild=${String(last.resource.rebuildIntegrity?.length ?? null)}`);
+  }
+
   check('首启分段计时齐全（loader/解析/纹理解码/首传 GPU）',
     ['subpackageMs', 'loaderMs', 'glbParseMs', 'animParseMs', 'textureDecodeMs', 'firstGpuUploadMs']
       .every((k) => typeof last.resource.assetStages[k] === 'number'),
@@ -300,7 +341,9 @@ try {
   fs.writeFileSync(path.join(OUT, `${TAG}-summary.json`), JSON.stringify({
     generatedAt: new Date().toISOString(),
     commitSha: commit,
-    scenario: NO_RESTORE ? 'norestore（复刻微信模拟器：restoreContext 被拒 ⇒ 真重建路径）' : 'standard（事件快路径）',
+    scenario: REWRITE_JSON
+      ? 'rewritejson（复刻真机 P0-4：平台改写包内文本资产 ⇒ 结构不变量放行）'
+      : NO_RESTORE ? 'norestore（复刻微信模拟器：restoreContext 被拒 ⇒ 真重建路径）' : 'standard（事件快路径）',
     aa: AA, profile: PROFILE, viewport: VIEWPORT, deviceScaleFactor: DSF,
     deviceEvidence: false,
     note: 'sim（浏览器 + wx shim）只证明同一份 bundle 的代码路径通；真机能力证据必须来自 HONOR 扫码运行（方案 §9.3）',

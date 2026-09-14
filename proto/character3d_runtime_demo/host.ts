@@ -32,7 +32,12 @@ import {
   HERO_3D_PROFILE,
   HERO_3D_PROFILE_ID,
 } from '../../config/character-3d';
-import { createCharacterAssetLoader, type CharacterAssetLoaderStats } from '../../net/character-asset-loader';
+import {
+  createCharacterAssetLoader,
+  type CharacterAssetLoadResult,
+  type CharacterAssetLoaderStats,
+  type Character3DProfileLoadResult,
+} from '../../net/character-asset-loader';
 import { createCharacter3DRenderer, type Character3DRenderer } from '../../ui/character3d/renderer';
 import { createCharacter3DPass, type Character3DPass } from '../../ui/character3d/pass';
 import { createModelStructureValidator, decodeUtf8, loadCharacter3DModel, type Character3DModel } from '../../ui/character3d/glb';
@@ -43,7 +48,8 @@ import { createHostRuntime, type HostRuntime } from '../battle_demo/host-runtime
 import * as E from './evidence';
 import * as M from './metrics';
 import * as S from './scenarios';
-import { SUBPACKAGE_NAME, createResourcePlatform, resolveResourceChainPlan, type ResourceChainPlan } from './adapter-local';
+import { SUBPACKAGE_NAME, createResourcePlatform, resolveResourceChainPlan, type ReadSourceTracker, type ResourceChainPlan } from './adapter-local';
+import { validateClipJsonStructure } from './text-assets';
 import { BUTTON_LABELS, computeLayout, drawHud, hitTest, paginate, type HudLayout, type HudView } from './hud';
 
 // ===== 宿主能力面（最小声明；本文件是宿主适配层，允许触 wx.*） =====
@@ -423,6 +429,83 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
 
   // ===== 装配（§6.2 清单校验 → 缓存 → 下载 → 校验 → 登记 → 解析 → 首传 GPU） =====
 
+  /** 适配器上的读取轨迹（诊断用；两种模式都套了追踪装饰器） */
+  function readSourceTrailOf(platform: Character3DPlatform): string[] {
+    const p = platform as unknown as Partial<ReadSourceTracker>;
+    return typeof p.readSourceTrail === 'function' ? p.readSourceTrail() : [];
+  }
+
+  /**
+   * 逐资产完整性行（P0-4 诊断主载体）：**失败资产也收**——资源门拒收时最需要它。
+   * 文本资产顺带跑一遍结构校验，把「设备读回的那份东西是什么规格」实账写进结果。
+   */
+  function collectIntegrityRows(profileLoad: Character3DProfileLoadResult): E.AssetIntegrityRow[] {
+    const rows: E.AssetIntegrityRow[] = [];
+    const push = (res: CharacterAssetLoadResult | null | undefined): void => {
+      if (!res || !res.integrity) return;
+      // 文本资产顺带把结构账算出来（即使走了 cache-hit 也给「这份字节是什么规格」的实账）
+      let structuralSummary: string | null = null;
+      if (res.ref.mediaType === 'application/json' && res.bytes) {
+        const structural = validateClipJsonStructure(res.bytes, res.ref);
+        structuralSummary =
+          structural.summary + (structural.errors.length ? ' · 结构错误：' + structural.errors.join(' | ') : '');
+      }
+      rows.push({
+        ...res.integrity,
+        assetId: res.assetId,
+        mediaType: res.ref.mediaType,
+        integrityMode: res.integrity.mode,
+        loadStatus: res.status,
+        structuralSummary,
+      });
+    };
+    push(profileLoad.model);
+    for (const key of ['idle', 'atk', 'cast', 'jump'] as const) push(profileLoad.clips[key]);
+    return rows;
+  }
+
+  function integrityNoteOf(resourcePlan: ResourceChainPlan): string {
+    return resourcePlan.mode === 'local-subpackage'
+      ? '包内文本资产（application/json）走结构不变量放行（integrityMode=structural）；GLB 与 CDN 下载路径保持严格 byteLength+SHA'
+      : 'CDN 模式：全部资产保持严格 byteLength+SHA（不做结构性放行）';
+  }
+
+  /** 资源门拒收时也要把诊断带进结果 —— 故在 loadProfile 之后立刻固化证据（早于任何 throw）。 */
+  function captureResourceEvidence(
+    platform: Character3DPlatform,
+    resourcePlan: ResourceChainPlan,
+    profileLoad: Character3DProfileLoadResult,
+    primary: boolean,
+  ): void {
+    const rows = collectIntegrityRows(profileLoad);
+    const trail = readSourceTrailOf(platform);
+    if (resource && !primary) {
+      // 重建/重试装配：**不覆盖首装观测**（首装才是「本轮资源门是否过了、字节漂移多少」的证据），
+      // 单独记在 rebuildIntegrity/rebuildReadSourceTrail（热链与再次读包的实账不丢）。
+      resource.rebuildIntegrity = rows;
+      resource.rebuildReadSourceTrail = trail;
+      resource.diagnostics = resource.diagnostics.concat(['[rebuild] ' + profileLoad.status]).slice(0, 40);
+      return;
+    }
+    resource = {
+      mode: resourcePlan.mode,
+      executedBranches: resourcePlan.executedBranches,
+      notExecutedBranches: resourcePlan.notExecutedBranches,
+      modelResolvedPath: resolvedCodePathOf(platform),
+      assetStages: {},
+      loaderStats: {},
+      reloadStats: null,
+      hotChainObserved: false,
+      loadStatus: profileLoad.status,
+      diagnostics: profileLoad.diagnostics.slice(0, 40),
+      assetIntegrity: rows,
+      rebuildIntegrity: null,
+      readSourceTrail: trail,
+      rebuildReadSourceTrail: null,
+      integrityNote: integrityNoteOf(resourcePlan),
+    };
+  }
+
   function plan(): ResourceChainPlan {
     const cdn = safeCall(() => host.getStorageSync(STORAGE_CDN_BASE), null) as string | null;
     return resolveResourceChainPlan({ cdnBaseUrl: cdn });
@@ -473,12 +556,24 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
         structureValidator: (bytes, ref) => {
           if (ref.mediaType === 'model/gltf-binary') createModelStructureValidator(HERO_3D_MODEL_ACCOUNT)(bytes, ref);
         },
+        // ★ P0-4：**只有包内（local-subpackage）文本资产**改走结构不变量；CDN 下载路径与 GLB 保持严格。
+        textIntegrityMode: resourcePlan.mode === 'local-subpackage' ? 'structural' : 'strict',
+        textStructureValidator: (bytes, ref) => {
+          const structural = validateClipJsonStructure(bytes, ref);
+          return { errors: structural.errors, summary: structural.summary };
+        },
       });
       const tLoad = nowMs();
       const profileLoad = await loader.loadProfile(HERO_3D_PROFILE);
       stages.loaderMs = Math.round(nowMs() - tLoad);
       const stats = loader.stats();
+      // ★ 先固化证据（含逐资产完整性行 + 读取轨迹），再决定是否 throw —— 资源门拒收时诊断必须活着
+      // primary = 首次装配（resource 还没有）；重建/重试走 rebuildIntegrity 分支，不污染首装证据
+      const isPrimaryAssembly = resource === null;
+      captureResourceEvidence(platform, resourcePlan, profileLoad, isPrimaryAssembly);
+      if (resource && isPrimaryAssembly) resource.loaderStats = flattenStats(stats);
       if (profileLoad.status === 'failed' || !profileLoad.model?.bytes) {
+        emitIntegrityConsoleLine(resource);
         throw new Error('资源门失败：' + (profileLoad.diagnostics.slice(0, 4).join(' | ') || '未知'));
       }
       const tParse = nowMs();
@@ -629,18 +724,13 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
     await bootstrap3D(resourcePlan, coldSeries);
     const r = runtime3d;
     if (!r) throw new Error('装配后运行时为空');
-    resource = {
-      mode: resourcePlan.mode,
-      executedBranches: resourcePlan.executedBranches,
-      notExecutedBranches: resourcePlan.notExecutedBranches,
-      modelResolvedPath: r.modelResolvedPath,
-      assetStages: { ...r.stages },
-      loaderStats: flattenStats(r.loaderStats),
-      reloadStats: null,
-      hotChainObserved: false,
-      loadStatus: r.loadStatus,
-      diagnostics: r.diagnostics.slice(0, 20),
-    };
+    if (resource) {
+      resource.assetStages = { ...r.stages };
+      resource.loaderStats = flattenStats(r.loaderStats);
+      resource.modelResolvedPath = r.modelResolvedPath;
+      resource.loadStatus = r.loadStatus;
+    }
+    emitIntegrityConsoleLine(resource);
     state.footer = '装配完成 · ' + r.edgeMode + ' · 缓存 ' + state.cacheState;
     runs.push({
       runIndex: runIndexCached, cacheState: state.cacheState, at: Math.round(state.nowMs),
@@ -888,6 +978,38 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
     return ev;
   }
 
+  /** 诊断单行（结果 JSON 之外的**紧凑**通道：Leo 真机把这一行抄回来即可定位平台改写 vs 读取截断）。 */
+  function emitIntegrityConsoleLine(evidence: E.ResourceChainEvidence | null): void {
+    if (!evidence) return;
+    logLine('__CHAR3D_INTEGRITY__=' + JSON.stringify({
+      mode: evidence.mode,
+      integrityNote: evidence.integrityNote,
+      loadStatus: evidence.loadStatus,
+      assets: evidence.assetIntegrity.map((row) => ({
+        assetId: row.assetId,
+        mediaType: row.mediaType,
+        integrityMode: row.integrityMode,
+        source: row.source,
+        loadStatus: row.loadStatus,
+        observedByteLength: row.observedByteLength,
+        expectedByteLength: row.expectedByteLength,
+        byteLengthMatches: row.byteLengthMatches,
+        observedSha256: row.observedSha256,
+        expectedSha256: row.expectedSha256,
+        sha256Matches: row.sha256Matches,
+        readSource: row.readSource,
+        headHex64: row.headHex64,
+        tailHex64: row.tailHex64,
+        structuralOk: row.structuralOk,
+        structuralSummary: row.structuralSummary,
+        structuralDetail: row.structuralDetail,
+        note: row.note,
+      })),
+      diagnostics: evidence.diagnostics.slice(0, 12),
+      readSourceTrail: evidence.readSourceTrail.slice(-14),
+    }));
+  }
+
   function singleIdleCommand(): CharacterRenderCommand {
     return {
       actorId: 'ctx-hero', profileKey: HERO_3D_PROFILE_ID,
@@ -1115,6 +1237,8 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
         mode: 'local-subpackage', executedBranches: [], notExecutedBranches: [],
         modelResolvedPath: null, assetStages: {}, loaderStats: {}, reloadStats: null,
         hotChainObserved: false, loadStatus: 'failed', diagnostics: ['未装配'],
+        assetIntegrity: [], rebuildIntegrity: null, readSourceTrail: [], rebuildReadSourceTrail: null,
+        integrityNote: '未装配（无完整性观测）',
       },
       sixDir: parts.sixDir,
       states: parts.states,

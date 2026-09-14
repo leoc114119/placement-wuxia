@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-14T12:01:37.012Z",
- "commitSha": "faa78c21c210db3ed395711b64a614ef689879dc",
+ "generatedAt": "2026-09-14T12:32:08.821Z",
+ "commitSha": "7071c8471fe4302161b5aad2dbea03d58a9143c3",
  "scenario": "norestore（复刻微信模拟器：restoreContext 被拒 ⇒ 真重建路径）",
  "aa": "fxaa",
  "profile": "sim",
@@ -45,7 +45,7 @@
   {
    "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
    "ok": true,
-   "detail": "{\"subpackageMs\":1,\"loaderMs\":68,\"glbParseMs\":3,\"animParseMs\":2,\"textureDecodeMs\":4,\"firstGpuUploadMs\":105}"
+   "detail": "{\"subpackageMs\":0,\"loaderMs\":45,\"glbParseMs\":4,\"animParseMs\":2,\"textureDecodeMs\":1,\"firstGpuUploadMs\":91}"
   },
   {
    "name": "六向 6 行且逐向 expected==activeClipKey",
@@ -155,7 +155,7 @@
   {
    "name": "20u 档：屏上 20 个角色全部可见",
    "ok": true,
-   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18554,perf-1:20501,perf-2:20235,perf-3:20552,perf-4:19104,perf-5:18700,…"
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18546,perf-1:20499,perf-2:20235,perf-3:20540,perf-4:19102,perf-5:18705,…"
   },
   {
    "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
@@ -175,7 +175,7 @@
   {
    "name": "结果回收：剪贴板成功（字符数 > 0）",
    "ok": true,
-   "detail": "12377"
+   "detail": "26326"
   },
   {
    "name": "结果回收：分享被调起",

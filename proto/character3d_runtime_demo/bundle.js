@@ -81,6 +81,7 @@ const E = __importStar(require("./evidence"));
 const M = __importStar(require("./metrics"));
 const S = __importStar(require("./scenarios"));
 const adapter_local_1 = require("./adapter-local");
+const text_assets_1 = require("./text-assets");
 const hud_1 = require("./hud");
 function resolveWx() {
     const g = globalThis.wx;
@@ -396,6 +397,60 @@ function startRuntimeDemo(options = {}) {
     }
     let resourcePlanCached = null;
     let runIndexCached = 1;
+    function readSourceTrailOf(platform) {
+        const p = platform;
+        return typeof p.readSourceTrail === 'function' ? p.readSourceTrail() : [];
+    }
+    function collectIntegrityRows(profileLoad) {
+        const rows = [];
+        const push = (res) => {
+            if (!res || !res.integrity)
+                return;
+            let structuralSummary = null;
+            if (res.ref.mediaType === 'application/json' && res.bytes) {
+                const structural = (0, text_assets_1.validateClipJsonStructure)(res.bytes, res.ref);
+                structuralSummary =
+                    structural.summary + (structural.errors.length ? ' · 结构错误：' + structural.errors.join(' | ') : '');
+            }
+            rows.push(Object.assign(Object.assign({}, res.integrity), { assetId: res.assetId, mediaType: res.ref.mediaType, integrityMode: res.integrity.mode, loadStatus: res.status, structuralSummary }));
+        };
+        push(profileLoad.model);
+        for (const key of ['idle', 'atk', 'cast', 'jump'])
+            push(profileLoad.clips[key]);
+        return rows;
+    }
+    function integrityNoteOf(resourcePlan) {
+        return resourcePlan.mode === 'local-subpackage'
+            ? '包内文本资产（application/json）走结构不变量放行（integrityMode=structural）；GLB 与 CDN 下载路径保持严格 byteLength+SHA'
+            : 'CDN 模式：全部资产保持严格 byteLength+SHA（不做结构性放行）';
+    }
+    function captureResourceEvidence(platform, resourcePlan, profileLoad, primary) {
+        const rows = collectIntegrityRows(profileLoad);
+        const trail = readSourceTrailOf(platform);
+        if (resource && !primary) {
+            resource.rebuildIntegrity = rows;
+            resource.rebuildReadSourceTrail = trail;
+            resource.diagnostics = resource.diagnostics.concat(['[rebuild] ' + profileLoad.status]).slice(0, 40);
+            return;
+        }
+        resource = {
+            mode: resourcePlan.mode,
+            executedBranches: resourcePlan.executedBranches,
+            notExecutedBranches: resourcePlan.notExecutedBranches,
+            modelResolvedPath: resolvedCodePathOf(platform),
+            assetStages: {},
+            loaderStats: {},
+            reloadStats: null,
+            hotChainObserved: false,
+            loadStatus: profileLoad.status,
+            diagnostics: profileLoad.diagnostics.slice(0, 40),
+            assetIntegrity: rows,
+            rebuildIntegrity: null,
+            readSourceTrail: trail,
+            rebuildReadSourceTrail: null,
+            integrityNote: integrityNoteOf(resourcePlan),
+        };
+    }
     function plan() {
         const cdn = safeCall(() => host.getStorageSync(STORAGE_CDN_BASE), null);
         return (0, adapter_local_1.resolveResourceChainPlan)({ cdnBaseUrl: cdn });
@@ -447,12 +502,22 @@ function startRuntimeDemo(options = {}) {
                     if (ref.mediaType === 'model/gltf-binary')
                         (0, glb_1.createModelStructureValidator)(character_3d_1.HERO_3D_MODEL_ACCOUNT)(bytes, ref);
                 },
+                textIntegrityMode: resourcePlan.mode === 'local-subpackage' ? 'structural' : 'strict',
+                textStructureValidator: (bytes, ref) => {
+                    const structural = (0, text_assets_1.validateClipJsonStructure)(bytes, ref);
+                    return { errors: structural.errors, summary: structural.summary };
+                },
             });
             const tLoad = nowMs();
             const profileLoad = await loader.loadProfile(character_3d_1.HERO_3D_PROFILE);
             stages.loaderMs = Math.round(nowMs() - tLoad);
             const stats = loader.stats();
+            const isPrimaryAssembly = resource === null;
+            captureResourceEvidence(platform, resourcePlan, profileLoad, isPrimaryAssembly);
+            if (resource && isPrimaryAssembly)
+                resource.loaderStats = flattenStats(stats);
             if (profileLoad.status === 'failed' || !((_a = profileLoad.model) === null || _a === void 0 ? void 0 : _a.bytes)) {
+                emitIntegrityConsoleLine(resource);
                 throw new Error('资源门失败：' + (profileLoad.diagnostics.slice(0, 4).join(' | ') || '未知'));
             }
             const tParse = nowMs();
@@ -590,18 +655,13 @@ function startRuntimeDemo(options = {}) {
         const r = runtime3d;
         if (!r)
             throw new Error('装配后运行时为空');
-        resource = {
-            mode: resourcePlan.mode,
-            executedBranches: resourcePlan.executedBranches,
-            notExecutedBranches: resourcePlan.notExecutedBranches,
-            modelResolvedPath: r.modelResolvedPath,
-            assetStages: Object.assign({}, r.stages),
-            loaderStats: flattenStats(r.loaderStats),
-            reloadStats: null,
-            hotChainObserved: false,
-            loadStatus: r.loadStatus,
-            diagnostics: r.diagnostics.slice(0, 20),
-        };
+        if (resource) {
+            resource.assetStages = Object.assign({}, r.stages);
+            resource.loaderStats = flattenStats(r.loaderStats);
+            resource.modelResolvedPath = r.modelResolvedPath;
+            resource.loadStatus = r.loadStatus;
+        }
+        emitIntegrityConsoleLine(resource);
         state.footer = '装配完成 · ' + r.edgeMode + ' · 缓存 ' + state.cacheState;
         runs.push({
             runIndex: runIndexCached, cacheState: state.cacheState, at: Math.round(state.nowMs),
@@ -846,6 +906,37 @@ function startRuntimeDemo(options = {}) {
         state.footer = '上下文注入完成 · ' + ev.injectionMode + ' → ' + ev.restoreVia;
         return ev;
     }
+    function emitIntegrityConsoleLine(evidence) {
+        if (!evidence)
+            return;
+        logLine('__CHAR3D_INTEGRITY__=' + JSON.stringify({
+            mode: evidence.mode,
+            integrityNote: evidence.integrityNote,
+            loadStatus: evidence.loadStatus,
+            assets: evidence.assetIntegrity.map((row) => ({
+                assetId: row.assetId,
+                mediaType: row.mediaType,
+                integrityMode: row.integrityMode,
+                source: row.source,
+                loadStatus: row.loadStatus,
+                observedByteLength: row.observedByteLength,
+                expectedByteLength: row.expectedByteLength,
+                byteLengthMatches: row.byteLengthMatches,
+                observedSha256: row.observedSha256,
+                expectedSha256: row.expectedSha256,
+                sha256Matches: row.sha256Matches,
+                readSource: row.readSource,
+                headHex64: row.headHex64,
+                tailHex64: row.tailHex64,
+                structuralOk: row.structuralOk,
+                structuralSummary: row.structuralSummary,
+                structuralDetail: row.structuralDetail,
+                note: row.note,
+            })),
+            diagnostics: evidence.diagnostics.slice(0, 12),
+            readSourceTrail: evidence.readSourceTrail.slice(-14),
+        }));
+    }
     function singleIdleCommand() {
         return {
             actorId: 'ctx-hero', profileKey: character_3d_1.HERO_3D_PROFILE_ID,
@@ -1074,6 +1165,8 @@ function startRuntimeDemo(options = {}) {
                 mode: 'local-subpackage', executedBranches: [], notExecutedBranches: [],
                 modelResolvedPath: null, assetStages: {}, loaderStats: {}, reloadStats: null,
                 hotChainObserved: false, loadStatus: 'failed', diagnostics: ['未装配'],
+                assetIntegrity: [], rebuildIntegrity: null, readSourceTrail: [], rebuildReadSourceTrail: null,
+                integrityNote: '未装配（无完整性观测）',
             },
             sixDir: parts.sixDir,
             states: parts.states,
@@ -2285,7 +2378,16 @@ function createCharacterAssetLoader(options) {
                 const bytes = await platform.readFileBytes(cached.savedPath);
                 if (bytes.byteLength === ref.byteLength) {
                     stats.cacheHits++;
-                    return result(ref, 'cache-hit', bytes, cached.savedPath, 0, diags, null);
+                    const edges = hexEdges(bytes);
+                    const cacheMode = policyModeOf(ref);
+                    return result(ref, 'cache-hit', bytes, cached.savedPath, 0, diags, null, {
+                        source: 'cache-hit', mode: cacheMode, byteLengthMatches: true, sha256Matches: true,
+                        observedByteLength: bytes.byteLength, observedSha256: cached.sha256,
+                        expectedByteLength: ref.byteLength, expectedSha256: ref.sha256,
+                        readSource: readSourceOf(), headHex64: edges.head, tailHex64: edges.tail,
+                        structuralOk: null, structuralDetail: ['索引命中：字节长度与索引一致，未重算摘要（索引里的 SHA 即观测值）'],
+                        note: '',
+                    });
                 }
                 diags.push('cache-length-mismatch:' + bytes.byteLength);
             }
@@ -2297,14 +2399,16 @@ function createCharacterAssetLoader(options) {
         const maxAttempts = 1 + retryDelays.length;
         let attempts = 0;
         let lastError = null;
+        let lastIntegrity = null;
         for (let i = 0; i < maxAttempts; i++) {
             attempts++;
             if (i > 0)
                 await sleep(retryDelays[i - 1]);
             const outcome = await attemptDownload(ref, diags);
+            lastIntegrity = outcome.integrity;
             if (outcome.ok) {
                 stats.downloads++;
-                return result(ref, 'downloaded', outcome.bytes, outcome.savedPath, attempts, diags, null);
+                return result(ref, 'downloaded', outcome.bytes, outcome.savedPath, attempts, diags, null, outcome.integrity);
             }
             lastError = outcome.error;
         }
@@ -2315,7 +2419,16 @@ function createCharacterAssetLoader(options) {
                 if (bytes.byteLength === lkg.byteLength && structureOk(bytes, ref, diags)) {
                     stats.staleFallbacks++;
                     diags.push('stale-3d-cache');
-                    return result(ref, 'stale-3d-cache', bytes, lkg.savedPath, attempts, diags, null);
+                    const edges = hexEdges(bytes);
+                    return result(ref, 'stale-3d-cache', bytes, lkg.savedPath, attempts, diags, null, {
+                        source: 'stale-lkg', mode: policyModeOf(ref), byteLengthMatches: true, sha256Matches: false,
+                        observedByteLength: bytes.byteLength, observedSha256: lkg.sha256,
+                        expectedByteLength: ref.byteLength, expectedSha256: ref.sha256,
+                        readSource: readSourceOf(), headHex64: edges.head, tailHex64: edges.tail,
+                        structuralOk: null,
+                        structuralDetail: ['LKG 回退：用的是上一版已登记内容（sha=' + lkg.sha256.slice(0, 12) + '…），与本次清单不符'],
+                        note: 'stale-3d-cache：网络/资产失败时回退到 LKG（不切 2D 帧）',
+                    });
                 }
                 diags.push('stale-lkg-rejected');
             }
@@ -2324,27 +2437,85 @@ function createCharacterAssetLoader(options) {
             }
         }
         stats.failures++;
-        return result(ref, 'failed', null, null, attempts, diags, lastError);
+        return result(ref, 'failed', null, null, attempts, diags, lastError, lastIntegrity);
+    }
+    function policyModeOf(ref) {
+        return options.textIntegrityMode === 'structural' && ref.mediaType === 'application/json' ? 'structural' : 'strict';
+    }
+    function readSourceOf() {
+        const p = platform;
+        try {
+            const v = typeof p.lastReadSource === 'function' ? p.lastReadSource() : '';
+            return v && v.length ? v : 'unknown';
+        }
+        catch (_a) {
+            return 'unknown';
+        }
+    }
+    function hexEdges(bytes) {
+        const n = 64;
+        const head = Array.from(bytes.subarray(0, Math.min(n, bytes.byteLength))).map((b) => b.toString(16).padStart(2, '0')).join('');
+        const tail = Array.from(bytes.subarray(Math.max(0, bytes.byteLength - n))).map((b) => b.toString(16).padStart(2, '0')).join('');
+        return { head, tail };
     }
     async function attemptDownload(ref, diags) {
         const url = joinCdnUrl(options.cdnBaseUrl, ref.urlPath);
         const tempName = ref.id + '.tmp';
         let tempPath = null;
         stats.downloadAttempts++;
+        let bytes = null;
+        let observedSha = null;
+        let digestError = null;
+        let readSource = 'unknown';
+        let structuralMode = false;
+        let structuralOk = null;
+        const structuralDetail = [];
+        let note = '';
         try {
-            const bytes = await withTimeout(platform.downloadArrayBuffer(url, { timeoutMs: downloadTimeoutMs }), downloadTimeoutMs, () => { stats.timeouts++; });
-            if (bytes.byteLength !== ref.byteLength) {
-                stats.byteLengthMismatches++;
-                diags.push('byteLength-mismatch:' + bytes.byteLength + '!=' + ref.byteLength);
-                throw new Error('byteLength ' + bytes.byteLength + ' != ' + ref.byteLength);
-            }
+            bytes = await withTimeout(platform.downloadArrayBuffer(url, { timeoutMs: downloadTimeoutMs }), downloadTimeoutMs, () => { stats.timeouts++; });
+            readSource = readSourceOf();
             tempPath = await platform.writeTempFile(tempName, bytes);
-            const digest = await platform.sha256File(tempPath);
-            const sha = digest !== null && digest !== void 0 ? digest : (await platform.sha256Bytes(bytes));
-            if (sha !== ref.sha256) {
-                stats.shaMismatches++;
-                diags.push('sha256-mismatch');
-                throw new Error('sha256 ' + sha + ' != ' + ref.sha256);
+            try {
+                const digest = await platform.sha256File(tempPath);
+                observedSha = digest !== null && digest !== void 0 ? digest : (await platform.sha256Bytes(bytes));
+            }
+            catch (error) {
+                digestError = error;
+            }
+            const byteLengthMatches = bytes.byteLength === ref.byteLength;
+            const sha256Matches = observedSha !== null && observedSha === ref.sha256;
+            structuralMode = policyModeOf(ref) === 'structural';
+            if (structuralMode) {
+                const verdict = options.textStructureValidator
+                    ? options.textStructureValidator(bytes, ref)
+                    : { errors: ['缺少 textStructureValidator：结构性放行必须由结构校验把关'] };
+                const errs = Array.isArray(verdict) ? verdict : verdict.errors;
+                if (!Array.isArray(verdict) && verdict.summary)
+                    structuralDetail.push(verdict.summary);
+                structuralOk = errs.length === 0;
+                structuralDetail.push(...errs);
+                if (!structuralOk) {
+                    stats.structureRejects++;
+                    diags.push('text-structure-reject:' + errs[0]);
+                    throw new Error('文本结构不符（' + ref.id + '）: ' + errs.join(' | '));
+                }
+                structuralDetail.push('observedByteLength=' + bytes.byteLength + ' expected=' + ref.byteLength +
+                    (byteLengthMatches ? '（相等）' : '（不等 ⇒ 平台改写导致字节不可比）'));
+                note = '平台改写导致字节不可比：按结构不变量放行（integrityMode=structural）';
+            }
+            else {
+                if (!byteLengthMatches) {
+                    stats.byteLengthMismatches++;
+                    diags.push('byteLength-mismatch:' + bytes.byteLength + '!=' + ref.byteLength);
+                    throw new Error('byteLength ' + bytes.byteLength + ' != ' + ref.byteLength);
+                }
+                if (digestError !== null)
+                    throw digestError;
+                if (!sha256Matches) {
+                    stats.shaMismatches++;
+                    diags.push('sha256-mismatch');
+                    throw new Error('sha256 ' + String(observedSha) + ' != ' + ref.sha256);
+                }
             }
             if (!structureOk(bytes, ref, diags)) {
                 throw new Error('结构不符（' + ref.id + '）');
@@ -2368,7 +2539,7 @@ function createCharacterAssetLoader(options) {
                     tempPath = null;
                 }
             }
-            return { ok: true, bytes, savedPath };
+            return { ok: true, bytes, savedPath, integrity: makeIntegrity() };
         }
         catch (error) {
             if (tempPath)
@@ -2380,7 +2551,32 @@ function createCharacterAssetLoader(options) {
             if (!integrity)
                 stats.networkErrors++;
             diags.push('attempt-failed:' + msg);
-            return { ok: false, error: msg };
+            return { ok: false, error: msg, integrity: makeIntegrity(msg) };
+        }
+        function makeIntegrity(failure) {
+            const edges = bytes ? hexEdges(bytes) : { head: '', tail: '' };
+            const observedLen = bytes ? bytes.byteLength : -1;
+            const detail = structuralDetail.slice();
+            if (digestError !== null)
+                detail.push('sha 摘要不可用：' + messageOf(digestError));
+            if (failure)
+                detail.push('失败原因：' + failure);
+            return {
+                source: 'download',
+                mode: structuralMode ? 'structural' : 'strict',
+                byteLengthMatches: observedLen === ref.byteLength,
+                sha256Matches: observedSha !== null && observedSha === ref.sha256,
+                observedByteLength: observedLen,
+                observedSha256: observedSha,
+                expectedByteLength: ref.byteLength,
+                expectedSha256: ref.sha256,
+                readSource,
+                headHex64: edges.head,
+                tailHex64: edges.tail,
+                structuralOk,
+                structuralDetail: detail,
+                note: note || (failure ? '' : ''),
+            };
         }
     }
     async function removeTemp(path, diags) {
@@ -2459,11 +2655,12 @@ function createCharacterAssetLoader(options) {
         },
     };
 }
-function result(ref, status, bytes, savedPath, attempts, diagnostics, error) {
+function result(ref, status, bytes, savedPath, attempts, diagnostics, error, integrity = null) {
     return {
         assetId: ref.id,
         ref,
         status,
+        integrity,
         bytes,
         savedPath,
         attempts,
@@ -4730,6 +4927,25 @@ function runtimeVerdicts(ctx) {
             notOk.map((p) => p.name + '(' + p.status + (p.detail ? '：' + p.detail : '') + ')').join(' / ') +
             ' —— 已产出的阶段结果照常导出，不影响其余判定');
     }
+    const structuralRows = ctx.resource.assetIntegrity.filter((r) => r.integrityMode === 'structural');
+    if (structuralRows.length > 0) {
+        const drifted = structuralRows.filter((r) => !r.byteLengthMatches || !r.sha256Matches);
+        notes.push('包内文本资产按**结构不变量**放行（integrityMode=structural）：' + structuralRows.length + ' 个' +
+            (drifted.length
+                ? '，其中 ' + drifted.length + ' 个字节与清单不符（observedByteLength=' +
+                    drifted.map((r) => r.assetId + ':' + r.observedByteLength + '(清单 ' + r.expectedByteLength + ')').join(' / ') +
+                    '）—— 平台改写导致字节不可比，结构账见 resource.assetIntegrity[].structuralSummary'
+                : '（字节与清单一致）'));
+    }
+    if (structuralRows.some((r) => !r.byteLengthMatches)) {
+        notes.push('注意（结构性放行的代价）：被平台改写的文本资产，其缓存索引按**清单值**登记 ⇒ 下次启动长度校验不符，' +
+            '会被摘掉后重新读包（该资产的热启动缓存退化为「摘除+重读」，不影响正确性）。');
+    }
+    const strictDrift = ctx.resource.assetIntegrity.filter((r) => r.integrityMode === 'strict' && (!r.byteLengthMatches || !r.sha256Matches));
+    if (strictDrift.length > 0) {
+        notes.push('严格口径资产出现字节/摘要不符（**未放宽**，如实记录）：' +
+            strictDrift.map((r) => r.assetId + ' observed=' + r.observedByteLength + ' expected=' + r.expectedByteLength).join(' / '));
+    }
     if (ctx.context.restoreVia === 'rebuild') {
         notes.push('上下文恢复走**真重建**（平台不允许扩展恢复' +
             (ctx.context.fastPathError ? '：' + ctx.context.fastPathError : '') +
@@ -5088,6 +5304,7 @@ exports.resolveResourceChainPlan = resolveResourceChainPlan;
 exports.codePackageCandidates = codePackageCandidates;
 exports.stripLocalBase = stripLocalBase;
 exports.createLocalSubpackagePlatform = createLocalSubpackagePlatform;
+exports.withReadSourceTracking = withReadSourceTracking;
 exports.createResourcePlatform = createResourcePlatform;
 const platform_wx_1 = require("../../ui/character3d/platform-wx");
 exports.LOCAL_BASE_URL = 'code-package://char3d-assets';
@@ -5159,6 +5376,7 @@ function createLocalSubpackagePlatform(options = {}) {
     const root = (_b = options.root) !== null && _b !== void 0 ? _b : exports.SUBPACKAGE_ROOT;
     const resolvedCodePaths = {};
     function readCodeFile(relativePath, downloadOptions) {
+        let readBranch = 'local-subpackage.readFile(binary) candidate 未命中';
         return new Promise((resolve, reject) => {
             var _a;
             if ((_a = downloadOptions === null || downloadOptions === void 0 ? void 0 : downloadOptions.signal) === null || _a === void 0 ? void 0 : _a.aborted) {
@@ -5184,6 +5402,7 @@ function createLocalSubpackagePlatform(options = {}) {
                                 return;
                             }
                             resolvedCodePaths[relativePath] = path;
+                            readBranch = 'local-subpackage.readFile(binary, candidate#' + i + ' path=' + path + ')';
                             resolve(new Uint8Array(data));
                         },
                         fail: () => tryNext(),
@@ -5196,53 +5415,135 @@ function createLocalSubpackagePlatform(options = {}) {
             tryNext();
         });
     }
+    const tracker = makeTracker();
+    const tracked = withReadSourceTracking(inner, 'wx-local-subpackage', tracker);
+    for (const [k, v] of Object.entries(resolvedCodePaths))
+        tracker.resolvedCodePaths[k] = v;
     return {
         kind: 'wx-local-subpackage',
         resolvedCodePaths,
+        lastReadSource: () => tracker.lastReadSource(),
+        readSourceTrail: () => tracker.readSourceTrail(),
         createOffscreenCanvas(width, height) {
-            return inner.createOffscreenCanvas(width, height);
+            return tracked.createOffscreenCanvas(width, height);
         },
         downloadArrayBuffer(url, downloadOptions) {
             const rel = stripLocalBase(url);
             if (rel === null) {
                 return Promise.reject(new Error('[local-subpackage] 非本地资产 URL，本地 adapter 拒绝: ' + url));
             }
-            return readCodeFile(rel, downloadOptions);
+            return readCodeFile(rel, downloadOptions).then((bytes) => {
+                tracker.note('local-subpackage.readCodeFile(' + rel + ') → ' + bytes.byteLength + ' bytes');
+                return bytes;
+            });
         },
         sha256File(path) {
-            return inner.sha256File(path);
+            return tracked.sha256File(path);
         },
         sha256Bytes(bytes) {
-            return inner.sha256Bytes(bytes);
+            return tracked.sha256Bytes(bytes);
         },
         cacheGet(assetId) {
-            return inner.cacheGet(assetId);
+            return tracked.cacheGet(assetId);
         },
         cachePut(input) {
-            return inner.cachePut(input);
+            return tracked.cachePut(input);
         },
         cacheRemove(assetId) {
-            return inner.cacheRemove(assetId);
+            return tracked.cacheRemove(assetId);
         },
         writeTempFile(name, bytes) {
-            return inner.writeTempFile(name, bytes);
+            return tracked.writeTempFile(name, bytes);
         },
         readFileBytes(path) {
-            return inner.readFileBytes(path);
+            return tracked.readFileBytes(path);
         },
         removeFile(path) {
-            return inner.removeFile(path);
+            return tracked.removeFile(path);
         },
         decodeImage(bytes, mimeType, name) {
-            return inner.decodeImage(bytes, mimeType, name);
+            return tracked.decodeImage(bytes, mimeType, name);
         },
         now() {
-            return inner.now();
+            return tracked.now();
         },
         log(level, message, data) {
-            inner.log(level, message, data);
+            tracked.log(level, message, data);
         },
     };
+}
+function makeTracker() {
+    const trail = [];
+    return {
+        resolvedCodePaths: {},
+        readSourceTrail: () => trail.slice(),
+        lastReadSource: () => (trail.length ? trail[trail.length - 1] : 'unknown'),
+        note(line) {
+            trail.push(line);
+            if (trail.length > 30)
+                trail.shift();
+        },
+    };
+}
+function withReadSourceTracking(inner, kind, tracker = makeTracker()) {
+    return {
+        kind,
+        resolvedCodePaths: tracker.resolvedCodePaths,
+        lastReadSource: tracker.lastReadSource,
+        readSourceTrail: tracker.readSourceTrail,
+        createOffscreenCanvas: (w, h) => inner.createOffscreenCanvas(w, h),
+        downloadArrayBuffer: async (url, opts) => {
+            const bytes = await inner.downloadArrayBuffer(url, opts);
+            tracker.note('download(' + (url.length > 96 ? url.slice(0, 96) + '…' : url) + ') → ' + bytes.byteLength + ' bytes');
+            return bytes;
+        },
+        sha256File: async (path) => {
+            const digest = await inner.sha256File(path);
+            tracker.note('sha256File(getFileInfo digestAlgorithm=sha256 path=' + basename(path) + ') → ' + (digest ? digest.slice(0, 12) + '…' : 'null ⇒ 退回 sha256Bytes'));
+            return digest;
+        },
+        sha256Bytes: async (bytes) => {
+            const digest = await inner.sha256Bytes(bytes);
+            tracker.note('sha256Bytes(' + bytes.byteLength + ' bytes, 落 sha-probe 文件后借 getFileInfo) → ' + digest.slice(0, 12) + '…');
+            return digest;
+        },
+        cacheGet: async (assetId) => {
+            const entry = await inner.cacheGet(assetId);
+            tracker.note('cacheGet(' + assetId + ') → ' + (entry ? 'hit(savedPath=' + basename(entry.savedPath) + ')' : 'miss'));
+            return entry;
+        },
+        cachePut: async (input) => {
+            const entry = await inner.cachePut(input);
+            tracker.note('cachePut(assetId=' + input.assetId + ', 原子登记: rename/copyFileSync + 索引落盘) → savedPath=' + basename(entry.savedPath));
+            return entry;
+        },
+        cacheRemove: async (assetId) => {
+            tracker.note('cacheRemove(' + assetId + ')');
+            return inner.cacheRemove(assetId);
+        },
+        writeTempFile: async (name, bytes) => {
+            const path = await inner.writeTempFile(name, bytes);
+            tracker.note('writeTempFile(' + name + ', ' + bytes.byteLength + ' bytes) → ' + basename(path));
+            return path;
+        },
+        readFileBytes: async (path) => {
+            const bytes = await inner.readFileBytes(path);
+            tracker.note('readFileBytes(' + basename(path) + ') → ' + bytes.byteLength + ' bytes');
+            return bytes;
+        },
+        removeFile: (path) => inner.removeFile(path),
+        decodeImage: async (bytes, mimeType, name) => {
+            const img = await inner.decodeImage(bytes, mimeType, name);
+            tracker.note('decodeImage(' + name + ', ' + bytes.byteLength + ' bytes, ' + mimeType + ') → ' + img.width + 'x' + img.height);
+            return img;
+        },
+        now: () => inner.now(),
+        log: (level, message, data) => inner.log(level, message, data),
+    };
+}
+function basename(path) {
+    const parts = path.split('/');
+    return parts[parts.length - 1] || path;
 }
 function resolveRuntime() {
     const fromGlobal = globalThis.wx;
@@ -5257,7 +5558,8 @@ function resolveRuntime() {
 }
 function createResourcePlatform(plan, options = {}) {
     if (plan.mode === 'cdn') {
-        return (0, platform_wx_1.createWxCharacter3DPlatform)({ runtime: options.runtime, logSink: options.logSink });
+        const inner = (0, platform_wx_1.createWxCharacter3DPlatform)({ runtime: options.runtime, logSink: options.logSink });
+        return withReadSourceTracking(inner, 'wx');
     }
     return createLocalSubpackagePlatform(options);
 }
@@ -5544,6 +5846,121 @@ function createWxCharacter3DPlatform(options = {}) {
 }
 function sanitize(name) {
     return name.replace(/[^a-zA-Z0-9._-]/g, '_');
+}
+
+  });
+  // ---- proto/character3d_runtime_demo/text-assets ----
+  __def("proto/character3d_runtime_demo/text-assets", function (require, module, exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.decodeTextUtf8 = decodeTextUtf8;
+exports.validateClipJsonStructure = validateClipJsonStructure;
+const animation_1 = require("../../ui/character3d/animation");
+const character_3d_1 = require("../../config/character-3d");
+function clipKeyOfAsset(ref) {
+    for (const key of ['idle', 'walk', 'atk', 'cast', 'jump']) {
+        const entry = character_3d_1.HERO_3D_CLIP_REFS[key];
+        if (entry && !('embedded' in entry) && entry.id === ref.id)
+            return key;
+    }
+    return null;
+}
+function decodeTextUtf8(bytes) {
+    if (typeof TextDecoder !== 'undefined')
+        return new TextDecoder('utf-8').decode(bytes);
+    let out = '';
+    for (let i = 0; i < bytes.length; i += 4096) {
+        out += String.fromCharCode.apply(null, Array.prototype.slice.call(bytes.subarray(i, i + 4096)));
+    }
+    return out;
+}
+function validateClipJsonStructure(bytes, ref) {
+    const errors = [];
+    const text = decodeTextUtf8(bytes);
+    let raw;
+    try {
+        raw = JSON.parse(text);
+    }
+    catch (error) {
+        return {
+            errors: ['JSON 解析失败（疑似截断/损坏）：' + (error instanceof Error ? error.message : String(error)) +
+                    ' · tail=' + text.slice(-32).replace(/\s+/g, ' ')],
+            account: null,
+            summary: 'JSON 不可解析',
+        };
+    }
+    const key = clipKeyOfAsset(ref);
+    let clip;
+    try {
+        clip = (0, animation_1.parseCharacter3DClipJson)(raw, ref.id);
+    }
+    catch (error) {
+        return {
+            errors: ['生产解析器拒绝：' + (error instanceof Error ? error.message : String(error))],
+            account: null,
+            summary: '结构不符（生产解析器 fail-fast）',
+        };
+    }
+    const expected = key !== null && key in character_3d_1.HERO_3D_CLIP_SOURCE_SEC
+        ? character_3d_1.HERO_3D_CLIP_SOURCE_SEC[key]
+        : null;
+    if (expected !== null && Math.abs(clip.declaredDurationSec - expected) > 0.05) {
+        errors.push('duration ' + clip.declaredDurationSec + ' 与清单真值 ' + expected + ' 不符（>0.05s）');
+    }
+    const derivedFrames = Math.round(clip.samplerDurationSec * clip.fps);
+    if (Math.abs(derivedFrames - clip.nFrames) > 0) {
+        errors.push('nFrames 与 samplerDuration×fps 不自洽：' + clip.nFrames + ' vs ' + derivedFrames);
+    }
+    let allFinite = true;
+    for (const name of Object.keys(clip.boneTracks)) {
+        const track = clip.boneTracks[name];
+        for (let f = 0; f < track.length && allFinite; f++) {
+            for (let c = 0; c < track[f].length; c++) {
+                if (!Number.isFinite(track[f][c])) {
+                    allFinite = false;
+                    break;
+                }
+            }
+        }
+        if (!allFinite) {
+            errors.push('轨道 ' + name + ' 含非有限数（NaN/Infinity）');
+            break;
+        }
+    }
+    if (allFinite) {
+        for (let f = 0; f < clip.rootTrack.length; f++) {
+            for (let c = 0; c < clip.rootTrack[f].length; c++) {
+                if (!Number.isFinite(clip.rootTrack[f][c])) {
+                    allFinite = false;
+                    errors.push('rootTrack 含非有限数');
+                    break;
+                }
+            }
+            if (!allFinite)
+                break;
+        }
+    }
+    const boneTrackCount = Object.keys(clip.boneTracks).length;
+    if (boneTrackCount < 1)
+        errors.push('骨轨道为空（coveredJoints=0）');
+    if (clip.samplerDurationSec <= 0)
+        errors.push('采样器时长非正数（时间轴不单调）');
+    const account = {
+        clipKey: key,
+        fps: clip.fps,
+        nFrames: clip.nFrames,
+        declaredDurationSec: clip.declaredDurationSec,
+        expectedDurationSec: expected,
+        boneTrackCount,
+        rootTrackFrames: clip.rootTrack.length,
+        allValuesFinite: allFinite,
+        rootMode: clip.rootMode,
+        samplerDurationSec: clip.samplerDurationSec,
+    };
+    const summary = '结构化：fps=' + clip.fps + ' nFrames=' + clip.nFrames + ' duration=' + clip.declaredDurationSec +
+        '（清单 ' + String(expected) + '）骨轨道=' + boneTrackCount + ' rootTrack=' + clip.rootTrack.length +
+        ' rootMode=' + clip.rootMode + ' 值有限=' + allFinite;
+    return { errors, account, summary };
 }
 
   });

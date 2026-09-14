@@ -12,6 +12,7 @@
 //   不是微信/安卓能力证据」（probe README §0 / 方案 §9.3）。**禁止**把 sim 结果写成真机 PASS。
 
 import type { BattleFacingHex } from '../../types';
+import type { CharacterAssetIntegrity } from '../../net/character-asset-loader';
 import { judgeCapacity20, type CapacityRecord } from './metrics';
 
 export const RUNTIME_SCHEMA_VERSION = 't31-fe-c-1.0';
@@ -153,6 +154,22 @@ export function contextEvidenceOk(c: ContextInjectionEvidence): boolean {
 }
 
 
+/**
+ * 逐资产完整性观测行（P0-4 诊断主载体）。
+ * 一次真机运行即可据此判定「平台改写」还是「读取/落盘截断」：
+ *   observedByteLength/Sha256 + head/tail hex + readSource + 结构账（structuralSummary）。
+ */
+export interface AssetIntegrityRow extends CharacterAssetIntegrity {
+  assetId: string;
+  mediaType: string;
+  /** 与 `mode` 同值的显式别名：任务要求结果里直接可读的 `integrityMode` 字段名 */
+  integrityMode: 'strict' | 'structural';
+  /** 该资产本次的装载状态（cache-hit / downloaded / stale-3d-cache / failed） */
+  loadStatus: string;
+  /** 文本资产的结构校验实测账（GLB = null）：把「设备读回的那份东西是什么规格」写在结果里 */
+  structuralSummary: string | null;
+}
+
 export interface ResourceChainEvidence {
   mode: 'local-subpackage' | 'cdn';
   /** 真机实际被执行的分支（逐条如实列，不许写没跑过的） */
@@ -169,6 +186,16 @@ export interface ResourceChainEvidence {
   hotChainObserved: boolean;
   loadStatus: 'ready' | 'stale-3d-cache' | 'failed';
   diagnostics: string[];
+  /** 逐资产完整性观测（**首次装配**；含失败资产——失败时最需要它）；GLB 与 CDN 路径恒为 strict 口径 */
+  assetIntegrity: AssetIntegrityRow[];
+  /** 重建（上下文真重建 / 重试重装配）时的逐资产观测（不覆盖首装行；热链或再次读包的实账在这） */
+  rebuildIntegrity: AssetIntegrityRow[] | null;
+  /** 适配器读取来源轨迹（最近 30 条；branch/path/长度/摘要命中情况逐条留痕） */
+  readSourceTrail: string[];
+  /** 重建装配时的读取轨迹（不覆盖首装轨迹） */
+  rebuildReadSourceTrail: string[] | null;
+  /** 文本完整性口径说明（一行） */
+  integrityNote: string;
 }
 
 export interface RuntimeDevice {
@@ -369,6 +396,33 @@ export function runtimeVerdicts(ctx: RuntimeResultContext): { verdict: RuntimeVe
       '未完成的阶段（phasesOrder=' + PHASES_ORDER.join(' → ') + '）：' +
         notOk.map((p) => p.name + '(' + p.status + (p.detail ? '：' + p.detail : '') + ')').join(' / ') +
         ' —— 已产出的阶段结果照常导出，不影响其余判定',
+    );
+  }
+  const structuralRows = ctx.resource.assetIntegrity.filter((r) => r.integrityMode === 'structural');
+  if (structuralRows.length > 0) {
+    const drifted = structuralRows.filter((r) => !r.byteLengthMatches || !r.sha256Matches);
+    notes.push(
+      '包内文本资产按**结构不变量**放行（integrityMode=structural）：' + structuralRows.length + ' 个' +
+        (drifted.length
+          ? '，其中 ' + drifted.length + ' 个字节与清单不符（observedByteLength=' +
+            drifted.map((r) => r.assetId + ':' + r.observedByteLength + '(清单 ' + r.expectedByteLength + ')').join(' / ') +
+            '）—— 平台改写导致字节不可比，结构账见 resource.assetIntegrity[].structuralSummary'
+          : '（字节与清单一致）'),
+    );
+  }
+  if (structuralRows.some((r) => !r.byteLengthMatches)) {
+    notes.push(
+      '注意（结构性放行的代价）：被平台改写的文本资产，其缓存索引按**清单值**登记 ⇒ 下次启动长度校验不符，' +
+        '会被摘掉后重新读包（该资产的热启动缓存退化为「摘除+重读」，不影响正确性）。',
+    );
+  }
+  const strictDrift = ctx.resource.assetIntegrity.filter(
+    (r) => r.integrityMode === 'strict' && (!r.byteLengthMatches || !r.sha256Matches),
+  );
+  if (strictDrift.length > 0) {
+    notes.push(
+      '严格口径资产出现字节/摘要不符（**未放宽**，如实记录）：' +
+        strictDrift.map((r) => r.assetId + ' observed=' + r.observedByteLength + ' expected=' + r.expectedByteLength).join(' / '),
     );
   }
   if (ctx.context.restoreVia === 'rebuild') {

@@ -25,6 +25,7 @@
   var screenCanvas = null;
   var forceAntialiasFalse = false;
   var bootMs = Date.now();
+  var rewriteStats = [];
   var encoder = new TextEncoder();
 
   function hex(buf) {
@@ -70,6 +71,16 @@
     var codePath = resolveCode(p);
     if (codePath) {
       var bytes = await fetchCode(codePath);
+      // sim 开关：复刻真机 P0-4 现象（平台改写包内文本资产 ⇒ 字节与清单不符）。
+      // 只改 **.json**（GLB 是二进制，永远原样）；改写后仍是语义等价的合法 JSON。
+      if (window.__WX_SHIM_REWRITE_JSON && /\.json$/i.test(p)) {
+        try {
+          var text = new TextDecoder().decode(bytes);
+          var rewritten = new TextEncoder().encode(JSON.stringify(JSON.parse(text)));
+          rewriteStats.push({ path: p, from: bytes.byteLength, to: rewritten.byteLength });
+          bytes = rewritten;
+        } catch (e) { /* 解析不了就原样返回（不掩盖真实错误） */ }
+      }
       files.set(p, bytes);
       return bytes;
     }
@@ -252,6 +263,7 @@
     shares: function () { return shares.slice(); },
     fileCount: function () { return files.size; },
     fileNames: function () { return Array.from(files.keys()); },
+    rewriteStats: function () { return rewriteStats.slice(); },
     bootMs: bootMs,
   };
 })();

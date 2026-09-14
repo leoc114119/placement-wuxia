@@ -117,7 +117,7 @@ export interface LocalSubpackagePlatformOptions {
   root?: string;
 }
 
-export interface LocalSubpackagePlatform extends Character3DPlatform {
+export interface LocalSubpackagePlatform extends Character3DPlatform, ReadSourceTracker {
   /** 实际命中的代码包路径（证据用：证明「读的哪个文件」） */
   readonly resolvedCodePaths: Readonly<Record<string, string>>;
 }
@@ -134,6 +134,7 @@ export function createLocalSubpackagePlatform(options: LocalSubpackagePlatformOp
   const resolvedCodePaths: Record<string, string> = {};
 
   function readCodeFile(relativePath: string, downloadOptions?: Character3DDownloadOptions): Promise<Uint8Array> {
+    let readBranch = 'local-subpackage.readFile(binary) candidate 未命中';
     return new Promise<Uint8Array>((resolve, reject) => {
       if (downloadOptions?.signal?.aborted) {
         reject(new Error('[local-subpackage] 读取被取消: ' + relativePath));
@@ -158,6 +159,8 @@ export function createLocalSubpackagePlatform(options: LocalSubpackagePlatformOp
                 return;
               }
               resolvedCodePaths[relativePath] = path;
+              // P0-4 诊断：命中第几个候选（真机上「候选路径形态」与编码都值得留痕）
+              readBranch = 'local-subpackage.readFile(binary, candidate#' + i + ' path=' + path + ')';
               resolve(new Uint8Array(data));
             },
             fail: () => tryNext(),
@@ -170,11 +173,17 @@ export function createLocalSubpackagePlatform(options: LocalSubpackagePlatformOp
     });
   }
 
+  const tracker = makeTracker();
+  const tracked = withReadSourceTracking(inner, 'wx-local-subpackage', tracker);
+  for (const [k, v] of Object.entries(resolvedCodePaths)) tracker.resolvedCodePaths[k] = v;
+
   return {
     kind: 'wx-local-subpackage',
     resolvedCodePaths,
+    lastReadSource: () => tracker.lastReadSource(),
+    readSourceTrail: () => tracker.readSourceTrail(),
     createOffscreenCanvas(width: number, height: number): PlatformOffscreenCanvas {
-      return inner.createOffscreenCanvas(width, height);
+      return tracked.createOffscreenCanvas(width, height);
     },
     downloadArrayBuffer(url: string, downloadOptions: Character3DDownloadOptions): Promise<Uint8Array> {
       const rel = stripLocalBase(url);
@@ -182,42 +191,140 @@ export function createLocalSubpackagePlatform(options: LocalSubpackagePlatformOp
         // 哨兵 base 之外的 URL 一律拒收：本地模式不做任何真实网络请求（不给「假下载」留口子）
         return Promise.reject(new Error('[local-subpackage] 非本地资产 URL，本地 adapter 拒绝: ' + url));
       }
-      return readCodeFile(rel, downloadOptions);
+      return readCodeFile(rel, downloadOptions).then((bytes) => {
+        tracker.note('local-subpackage.readCodeFile(' + rel + ') → ' + bytes.byteLength + ' bytes');
+        return bytes;
+      });
     },
     sha256File(path: string): Promise<string | null> {
-      return inner.sha256File(path);
+      return tracked.sha256File(path);
     },
     sha256Bytes(bytes: Uint8Array): Promise<string> {
-      return inner.sha256Bytes(bytes);
+      return tracked.sha256Bytes(bytes);
     },
     cacheGet(assetId: string): Promise<Character3DCacheEntry | null> {
-      return inner.cacheGet(assetId);
+      return tracked.cacheGet(assetId);
     },
     cachePut(input: Character3DCachePutInput): Promise<Character3DCacheEntry> {
-      return inner.cachePut(input);
+      return tracked.cachePut(input);
     },
     cacheRemove(assetId: string): Promise<void> {
-      return inner.cacheRemove(assetId);
+      return tracked.cacheRemove(assetId);
     },
     writeTempFile(name: string, bytes: Uint8Array): Promise<string> {
-      return inner.writeTempFile(name, bytes);
+      return tracked.writeTempFile(name, bytes);
     },
     readFileBytes(path: string): Promise<Uint8Array> {
-      return inner.readFileBytes(path);
+      return tracked.readFileBytes(path);
     },
     removeFile(path: string): Promise<void> {
-      return inner.removeFile(path);
+      return tracked.removeFile(path);
     },
     decodeImage(bytes: Uint8Array, mimeType: string, name: string): Promise<PlatformDecodedImage> {
-      return inner.decodeImage(bytes, mimeType, name);
+      return tracked.decodeImage(bytes, mimeType, name);
     },
     now(): number {
-      return inner.now();
+      return tracked.now();
     },
     log(level: 'info' | 'warn' | 'error', message: string, data?: Record<string, unknown>): void {
-      inner.log(level, message, data);
+      tracked.log(level, message, data);
     },
   };
+}
+
+/**
+ * ★【T31-FE-C P0-4】读取来源追踪装饰器：把「这次字节是怎么来的」记成一条可读轨迹。
+ * 为什么要它：真机出现 `idle:byteLength-mismatch:685411!=726299`（设备读回的内容与仓库不同），
+ *   判定「平台改写」还是「读取/落盘截断」需要看得见**读取路径与各分支命中情况**。
+ * 本装饰器只记录、不改行为；`lastReadSource()` 供 loader 的完整性观测读取（duck-typed，不改 platform.ts 契约）。
+ */
+export interface ReadSourceTracker {
+  /** 最近一次读取来源（loader 观测用） */
+  lastReadSource(): string;
+  /** 轨迹（最近 30 条，按时序） */
+  readSourceTrail(): string[];
+  /** 分包代码包路径命中记录（candidate → path） */
+  readonly resolvedCodePaths: Record<string, string>;
+}
+
+function makeTracker(): ReadSourceTracker & { note(line: string): void } {
+  const trail: string[] = [];
+  return {
+    resolvedCodePaths: {},
+    readSourceTrail: () => trail.slice(),
+    lastReadSource: () => (trail.length ? trail[trail.length - 1] : 'unknown'),
+    note(line: string): void {
+      trail.push(line);
+      if (trail.length > 30) trail.shift();
+    },
+  };
+}
+
+/** 给任意平台适配器套上「读取来源追踪」（不改被装饰对象的行为）。 */
+export function withReadSourceTracking(
+  inner: Character3DPlatform,
+  kind: string,
+  tracker: ReadSourceTracker & { note(line: string): void } = makeTracker() as ReadSourceTracker & { note(line: string): void },
+): Character3DPlatform & ReadSourceTracker {
+  return {
+    kind,
+    resolvedCodePaths: tracker.resolvedCodePaths,
+    lastReadSource: tracker.lastReadSource,
+    readSourceTrail: tracker.readSourceTrail,
+    createOffscreenCanvas: (w, h) => inner.createOffscreenCanvas(w, h),
+    downloadArrayBuffer: async (url, opts) => {
+      const bytes = await inner.downloadArrayBuffer(url, opts);
+      tracker.note('download(' + (url.length > 96 ? url.slice(0, 96) + '…' : url) + ') → ' + bytes.byteLength + ' bytes');
+      return bytes;
+    },
+    sha256File: async (path) => {
+      const digest = await inner.sha256File(path);
+      tracker.note('sha256File(getFileInfo digestAlgorithm=sha256 path=' + basename(path) + ') → ' + (digest ? digest.slice(0, 12) + '…' : 'null ⇒ 退回 sha256Bytes'));
+      return digest;
+    },
+    sha256Bytes: async (bytes) => {
+      const digest = await inner.sha256Bytes(bytes);
+      tracker.note('sha256Bytes(' + bytes.byteLength + ' bytes, 落 sha-probe 文件后借 getFileInfo) → ' + digest.slice(0, 12) + '…');
+      return digest;
+    },
+    cacheGet: async (assetId) => {
+      const entry = await inner.cacheGet(assetId);
+      tracker.note('cacheGet(' + assetId + ') → ' + (entry ? 'hit(savedPath=' + basename(entry.savedPath) + ')' : 'miss'));
+      return entry;
+    },
+    cachePut: async (input) => {
+      const entry = await inner.cachePut(input);
+      tracker.note('cachePut(assetId=' + input.assetId + ', 原子登记: rename/copyFileSync + 索引落盘) → savedPath=' + basename(entry.savedPath));
+      return entry;
+    },
+    cacheRemove: async (assetId) => {
+      tracker.note('cacheRemove(' + assetId + ')');
+      return inner.cacheRemove(assetId);
+    },
+    writeTempFile: async (name, bytes) => {
+      const path = await inner.writeTempFile(name, bytes);
+      tracker.note('writeTempFile(' + name + ', ' + bytes.byteLength + ' bytes) → ' + basename(path));
+      return path;
+    },
+    readFileBytes: async (path) => {
+      const bytes = await inner.readFileBytes(path);
+      tracker.note('readFileBytes(' + basename(path) + ') → ' + bytes.byteLength + ' bytes');
+      return bytes;
+    },
+    removeFile: (path) => inner.removeFile(path),
+    decodeImage: async (bytes, mimeType, name) => {
+      const img = await inner.decodeImage(bytes, mimeType, name);
+      tracker.note('decodeImage(' + name + ', ' + bytes.byteLength + ' bytes, ' + mimeType + ') → ' + img.width + 'x' + img.height);
+      return img;
+    },
+    now: () => inner.now(),
+    log: (level, message, data) => inner.log(level, message, data),
+  };
+}
+
+function basename(path: string): string {
+  const parts = path.split('/');
+  return parts[parts.length - 1] || path;
 }
 
 /** 解析宿主 wx 全局（与 platform-wx 同口径；Adapter 层允许触 wx.*）。 */
@@ -234,7 +341,9 @@ function resolveRuntime(): WxRuntimeArg {
 /** 造平台：cdn 模式走生产 adapter；local 模式走分包 adapter。 */
 export function createResourcePlatform(plan: ResourceChainPlan, options: LocalSubpackagePlatformOptions = {}): Character3DPlatform {
   if (plan.mode === 'cdn') {
-    return createWxCharacter3DPlatform({ runtime: options.runtime, logSink: options.logSink });
+    // CDN 模式：生产 wx adapter（含 wx.downloadFile 链路）+ 只读的读取来源追踪
+    const inner = createWxCharacter3DPlatform({ runtime: options.runtime, logSink: options.logSink });
+    return withReadSourceTracking(inner, 'wx');
   }
   return createLocalSubpackagePlatform(options);
 }

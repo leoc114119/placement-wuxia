@@ -146,6 +146,22 @@
 
 ---
 
+## B0'''. P0-4 缺陷记录：真机资源门拒收（设备读回字节与清单不符；已加诊断 + 让运行继续）
+
+| 项 | 内容 |
+|---|---|
+| 现象 | 真机 HONOR PTP-AN20 / SDK 3.17.3 / bb 1098×2400（UI 与按钮正常渲染，挂在资源门）：`✗ 流程失败：资源门失败：idle:byteLength-mismatch:685411!=726299 \| idle:attempt-fa…`；`device=DEVICE_FAIL · ctx=NOT_RUN · 20u=NOT_RUN` |
+| 已排除（PM 本地实测） | 仓库/分支/Claw 导入目录/CDN 镜像里 idle_v4.json 均 **726299** 字节（无 685411 的旧版本）；纯压缩 **693640**、compact+sort_keys 亦 693640；文件**纯 ASCII**（非 ASCII 0）⇒ 不是 UTF-8/UTF-16 口径错；sim 走同一 loader 全绿 ⇒ 差异只在微信侧读取路径 |
+| 结论（如实） | **设备读回的内容确实与仓库不同**（平台改写或读取/落盘截断），**具体机制未知** —— 本轮不猜、不臆改，改为「一次运行带够诊断 + 让流程继续」 |
+| 修复①诊断 | 逐资产 `resource.assetIntegrity[]`（+ console 单行 `__CHAR3D_INTEGRITY__`）：`integrityMode` / `observedByteLength` / `observedSha256` / `expectedByteLength` / `expectedSha256` / `byteLengthMatches` / `sha256Matches` / `readSource`（分包 readFile 候选命中·缓存 readFileBytes·downloadFile）/ `headHex64` / `tailHex64` / `structuralOk` / `structuralSummary` / `source` / `loadStatus`；另有 `resource.readSourceTrail[]`（readFile 候选 / writeTempFile / getFileInfo digest / cachePut 逐条轨迹）。**失败路径同样产出**（资源门拒收时证据先固化，早于任何 throw） |
+| 修复②让运行继续 | **包内文本资产**（`application/json` + local-subpackage）改走**结构不变量**放行（`integrityMode=structural`）：JSON 可解析 → 生产解析器 `parseCharacter3DClipJson` 全过 → 时长与 `config/character-3d` 清单真值一致（≤0.05s）→ `nFrames`/时长自洽 → 轨道值全有限 → coveredJoints 非空 → rootTrack 帧数自洽；**失败关闭**（任一条不成立即拒收、不覆盖 LKG） |
+| 边界（未放宽） | **GLB 恒严格 byteLength+SHA**；**CDN 下载路径恒严格**（`textIntegrityMode` 只对包内文本生效，缺省 = strict ⇒ 既有调用方与线上路径行为不变） |
+| 如实记录的代价 | 被改写的文本资产，缓存索引仍按**清单值**登记 ⇒ 下次启动长度校验不符被摘掉重读（该资产热启动退化为「摘除+重读」；GLB 不受影响）——已写进结果 `notes` |
+| 防回退 | 用例 +8：结构放行即 `integrityMode=structural` 且 observed≠expected 如实记录 / 同内容 strict 口径被拒（CDN 未放宽）/ **GLB 开 structural 也不放宽（byteLengthMismatches=3）** / 截断内容结构校验不过即失败关闭 / 校验器本身对「时长与清单不符」「NaN 轨道」报错 / 读取来源可追溯 / 结果层 notes / loader 默认口径 strict + 宿主模式分层 |
+| 修复后验证 | ① sim 三场景：常规 **34/34**、`--norestore=1` **37/37**、`--rewritejson=1` **41/41**（复刻平台改写 ⇒ 4 个文本资产 `structural/ok=true`，observed 685959/153780/462699/156804 ≠ 清单，GLB 仍 strict 且字节相符，boot ok 且非 DEVICE_FAIL）；② 五门全绿（`test:battle` **748 passed/14 skipped**）；③ 三道产物门绿（`new Function`/`??`/`?.` 全 0）；④ `cli preview` 编译通过（exit 0，`[uploadFile] parseError 0ms`，无 invalid file/SyntaxError） |
+
+---
+
 ## B0'. P0-2 缺陷记录：产物含 ES2020 语法（预览编译拒收，已修）
 
 | 项 | 内容 |

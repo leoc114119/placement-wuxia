@@ -176,6 +176,32 @@ CDN 服务端内容版本化与回源/404、真实断网下的重试间隔（1s/
 切 CDN 模式（域名备案后）：devtools 控制台执行一次 `wx.setStorageSync('char3d-cdn-base', 'https://<你的域名>/<路径>')`
 再重扫；`verdict`/`resource.mode` 会变成 `cdn`，`executedBranches` 随之更新。
 
+### 7.2 资源完整性口径（P0-4：包内文本 vs 二进制 vs CDN）
+
+| 资产 | 口径 | 说明 |
+|---|---|---|
+| **包内文本**（`application/json`，local-subpackage 模式） | **结构不变量**（`integrityMode=structural`） | 真机实测设备读回的 `idle_v4.json` 与仓库不同（`685411≠726299`，仓库侧无该字节数的版本、纯压缩 693640、文件纯 ASCII ⇒ 机制未定）。故字节不可比时用结构校验放行：JSON 可解析 → 生产解析器 `parseCharacter3DClipJson` 全过 → 时长与 `config/character-3d` 清单真值一致 → nFrames/时长自洽 → 轨道值有限 → coveredJoints 非空。**失败关闭**：任一条不成立即拒收、不覆盖 LKG |
+| **二进制 GLB** | **严格** byteLength + SHA-256 | 模型字节可比且是安全边界，**不因本轮改动放宽**（若也出现不符：只记诊断，不放行） |
+| **CDN 下载路径** | **严格** byteLength + SHA-256 | 线上路径口径不变（`textIntegrityMode` 只对包内文本生效） |
+
+诊断字段怎么读（一次真机运行即可判定平台改写 vs 读取截断）：
+
+```
+__CHAR3D_INTEGRITY__={...}     ← console 单行（真机把这一行抄回来即可定位）
+resource.assetIntegrity[]      ← 结果 JSON 里的完整版
+  integrityMode      strict | structural     本次该资产适用的完整性口径
+  observedByteLength / observedSha256        设备实际读回的长度与摘要
+  expectedByteLength / expectedSha256        清单期望（config/character-3d 真值）
+  readSource                                 读回来的字节走哪条路（分包 readFile 候选命中 / 缓存 readFileBytes / downloadFile）
+  headHex64 / tailHex64                      首尾各 64 字节 hex：与仓库对照可判「前缀截断 / 中段丢失 / 整体重排」
+  structuralOk / structuralSummary / structuralDetail   结构账（fps/nFrames/时长/骨轨道/rootTrack/值有限）
+  source / loadStatus                        download | cache-hit | stale-lkg
+resource.readSourceTrail[]     ← 适配器读取轨迹（readFile 候选 / writeTempFile / getFileInfo digest / cachePut 逐条）
+```
+
+> **结构性放行的代价（如实记）**：被改写的文本资产，其缓存索引仍按**清单值**登记 ⇒ 下次启动长度校验不符，
+> 会被摘掉后重新读包（该资产热启动缓存退化为「摘除+重读」；GLB 不受影响）。结果 `notes` 里会写明。
+
 ## 6. 浏览器 sim（导进微信之前的自检，**不是真机证据**）
 
 ```bash
@@ -213,6 +239,10 @@ node proto/character3d_runtime_demo/tests/runtime-demo-browser.mjs --runs=2
    TS 会把 `??`/`?.` 降级成 `!= null / !== void 0` 判断，async/await 与 `for...of` 保持原生。
    其它「运行时接受度」类记号（ES2019+ 语法、`Object.fromEntries`、`.at()`、`BigInt` 等）一并扫描并**提示**。
 
+9. **完整性观测齐备**（P0-4）：`resource.assetIntegrity[]` 逐资产给出 `integrityMode` / `observedByteLength` /
+   `observedSha256` / `expected*` / `readSource` / `headHex64` / `tailHex64` / 结构账；缺字段即视为门失败
+   （诊断是资源门失败时的唯一线索，不能在失败路径上丢）。
+
 > 模块注册形态 = **函数字面量内联**（`__def("<id>", function (require, module, exports) { <模块体> });`），
 > 与 webpack/rollup 同形态；禁用「源码字符串 + 构造」两段式（Node/Chrome 能跑、真机必崩）。
 
@@ -228,9 +258,10 @@ boot（资源门装配）→ sixdir（六向）→ states（全状态）→ jump
 - 恢复路径二选一，**快路径不可用必须落真重建（不得判失败）**：
   `restoreVia='event'`（平台允许扩展恢复）或 `restoreVia='rebuild'`（新建离屏 canvas + webgl2 context，
   经 loader 从缓存重新装配并重传资源 —— 方案 §6.2 原文）；两条都不成才是 `unsupported`（走暂停 + 错误页）。
-- 模拟微信「`restoreContext` 被拒」的端到端自压：
-  `node proto/character3d_runtime_demo/tests/runtime-demo-browser.mjs --runs=1 --norestore=1`
-  （产物 `evidence/sim-norestore-*`，与常规 sim 结果并存）。
+- 三个 sim 场景（产物各自带前缀，互不覆盖）：
+  · **常规** `--runs=2` → `evidence/sim-*`（事件快路径）
+  · **`--norestore=1`** → `evidence/sim-norestore-*`（复刻微信模拟器「restoreContext 被拒」⇒ 真重建路径）
+  · **`--rewritejson=1`** → `evidence/sim-rewritejson-*`（复刻真机 P0-4：平台改写包内文本资产 ⇒ 结构不变量放行）
 
 ## 8. 已知缺口与不确定项（交付时如实登记）
 

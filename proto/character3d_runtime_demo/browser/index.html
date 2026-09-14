@@ -27,6 +27,8 @@
     window.__WX_SHIM_PROFILE = q.get('profile') || 'sim';
     // ?norestore=1：复刻微信模拟器「restoreContext 被平台拒绝」⇒ 端到端压真重建路径
     window.__WX_SHIM_NO_RESTORE = q.get('norestore') === '1';
+    // ?rewritejson=1：复刻真机 P0-4 现象（平台改写包内文本资产 ⇒ 字节与清单不符，但结构合法）
+    window.__WX_SHIM_REWRITE_JSON = q.get('rewritejson') === '1';
   })();
 </script>
 
