@@ -140,11 +140,25 @@
       var c = document.createElement('canvas');
       var realGetContext = c.getContext.bind(c);
       c.getContext = function (type, attrs) {
-        if (type === 'webgl2' && forceAntialiasFalse) {
-          var a = Object.assign({}, attrs || {}, { antialias: false });
-          return realGetContext(type, a);
+        var gl = type === 'webgl2' && forceAntialiasFalse
+          ? realGetContext(type, Object.assign({}, attrs || {}, { antialias: false }))
+          : realGetContext(type, attrs);
+        // sim 开关：复刻微信模拟器的 `restoreContext: context restoration not allowed`
+        // （`?norestore=1`）——用来在浏览器里端到端压**真重建**路径，而不是只压事件快路径。
+        if (type === 'webgl2' && gl && window.__WX_SHIM_NO_RESTORE && !gl.__shimNoRestore) {
+          var origGetExtension = gl.getExtension.bind(gl);
+          gl.getExtension = function (name) {
+            var ext = origGetExtension(name);
+            if (name === 'WEBGL_lose_context' && ext) {
+              ext.restoreContext = function () {
+                throw new Error('WebGL: INVALID_OPERATION: restoreContext: context restoration not allowed');
+              };
+            }
+            return ext;
+          };
+          gl.__shimNoRestore = true;
         }
-        return realGetContext(type, attrs);
+        return gl;
       };
       if (canvasSeq === 1) screenCanvas = c;
       return c;
@@ -237,6 +251,7 @@
     clipboardLength: function () { return clipboard ? String(clipboard).length : 0; },
     shares: function () { return shares.slice(); },
     fileCount: function () { return files.size; },
+    fileNames: function () { return Array.from(files.keys()); },
     bootMs: bootMs,
   };
 })();

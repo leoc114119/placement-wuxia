@@ -146,6 +146,31 @@
 
 ---
 
+## B0'. P0-2 缺陷记录：产物含 ES2020 语法（预览编译拒收，已修）
+
+| 项 | 内容 |
+|---|---|
+| 现象 | 微信预览：`预览 Error: invalid file: bundle.js, 30:66` + `SyntaxError: Unexpected token ?`（appid wx59d99dc241b7bbe9 · ideVersion 2.02.2608040） |
+| 报错行 | `const handle = (0, host_1.startRuntimeDemo)(g.__CHAR3D_DEMO_OPTS ?? {});` |
+| 根因 | `build.mjs` 两处 `ts.transpileModule` 的 `target` 为 **ES2020** ⇒ 产物里 `??` 66 处 / `?.` 47 处；微信预览/运行时编译链不接受 ES2020 语法 |
+| 对照 | 仓库根 `tsconfig.json` 也是 ES2020，但其产物（`proto/battle_demo`）**从未进过微信运行时**（只作浏览器预览页）；S0 probe 是手写老语法 JS，从不碰 `??`/`?.` |
+| 修复 | 发射目标改 **`ts.ScriptTarget.ES2017`**（`build.mjs` 顶部常量 `TRANSPILE_TARGET`，两处共用）：`??`/`?.` 被降级为 `!= null / !== void 0`；async/await 保持原生（无 `__awaiter`/`__generator`）；`for...of` 保持原生（Map/Set 迭代语义不变） |
+| 防回退（两道） | ① 静态导入门第 8 条：扫 `bundle.js`/`game.js`，命中 `??`/`?.` 即 **exit 1**（负例自检：注入 `??`/`?.` 各一处 → 门报 `?? × 1 / ?. × 1`、退出码 1，随后还原）；同族（ES2019+ 语法、`Object.fromEntries`、`.at()`、`BigInt` 等）只提示；② 用例锁：bundle 零 ES2020 记号 / 降级形态确在（`!== null && `、`!== void 0 ? `）/ `TRANSPILE_TARGET = ES2017` 且 build.mjs 再无 `ScriptTarget.ES2020` |
+| 修复后验证 | ① `??`=0、`?.`=0（`new Function`=0）；② 常规 sim **34/34**；③ 五门全绿（`test:battle` 740 passed/14 skipped）；④ **`cli preview` 编译通过（exit 0 + 生成二维码），IDE 日志 `[uploadFile] parseError 0ms`，无 `invalid file`/`SyntaxError`**（对照：修复前 19:51:31 同一编译器报 `task type:upload exec error Error: invalid file: bundle.js, 30:66`） |
+
+## B0''. P0-3 缺陷记录：上下文自测毒死整轮（已修：真重建 + 阶段重排）
+
+| 项 | 内容 |
+|---|---|
+| 现象 | 真机/模拟器 console：`[character3d/renderer] context lost` → `WebGL: INVALID_OPERATION: restoreContext: context restoration not allowed` → `[character3d/renderer] 重建失败（已尝试过一次）` ⇒ 整轮停在「暂停 + 错误页」，**后续六向/全状态/轻功三元/20u 全部没跑到**（拿不到任何设备数据） |
+| 根因（两条） | ① **恢复机制选错**：实现依赖 `gl.restoreContext()`（只在平台允许时有效），而方案 §6.2 要的是**重建**（新建 canvas/context + 重传缓存资源）；② **自测有毒副作用**：注入丢失排在测量阶段之前 ⇒ 平台不能恢复时整轮数据全废（自测不该阻断被测量的项） |
+| 修复①真重建 | 快路径不可用 ⇒ `rebuild3D()`：处置旧 canvas/context（**已丢失 ⇒ 跳过 GL 释放**，不在死上下文上刷 INVALID_OPERATION）→ 新建离屏 canvas + webgl2 context → 经 `net/character-asset-loader` 从缓存重新装配（热命中链，即「重传缓存资源」）→ 重传 GPU → 恢复提交。结果记 `restoreVia: 'event' | 'rebuild' | 'unsupported'` + `fastPathError` + `rebuildOk`；「扩展恢复未执行」写进 `resource.notExecutedBranches` |
+| 修复②阶段重排 | 顺序改为 `boot → sixdir → states → jump-trio → perf →【precontext 中间快照落盘】→ context`；结果增 `phases`（逐阶段 status/detail/ms）+ `phasesOrder`，未达 ok 的阶段在 `notes` 点名 |
+| 防线 | ① 用例断言「上下文自测失败时六向/全状态/20u 结果仍在」（`phases` 只坏 context、其它 5 个 ok，sixDir/states 长度不变）；② `phases`/`phasesOrder` 可视化；③ 终失败路径（§6.2「重建失败 ⇒ 暂停 + 错误页」）用**故障注入**验证（`failNextRebuild`，注入点在破坏性步骤之前 ⇒ 旧运行时保留，暂停语义可端到端验） |
+| 修复后验证 | ① 常规 sim **34/34**（Chrome 允许扩展恢复 ⇒ `restoreVia=event`，未回归）；② **`--norestore=1` 场景 37/37**（shim 复刻微信「restoreContext 被拒」⇒ `restoreVia=rebuild`、`rebuildOk=true`、`fastPathError` 原文入库，且 boot/sixdir/states/jump-trio/perf **全部 ok**）；③ 五门全绿；④ 开发者工具侧见 §B1 |
+
+---
+
 ## B0. P0 缺陷记录：bundle 动态求值（真机门第一坎，已修）
 
 | 项 | 内容 |

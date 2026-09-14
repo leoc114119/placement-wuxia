@@ -24,10 +24,11 @@
   // ---- proto/character3d_runtime_demo/main ----
   __def("proto/character3d_runtime_demo/main", function (require, module, exports) {
 "use strict";
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const host_1 = require("./host");
 const g = globalThis;
-const handle = (0, host_1.startRuntimeDemo)(g.__CHAR3D_DEMO_OPTS ?? {});
+const handle = (0, host_1.startRuntimeDemo)((_a = g.__CHAR3D_DEMO_OPTS) !== null && _a !== void 0 ? _a : {});
 g.__CHAR3D_DEMO = handle;
 
   });
@@ -135,14 +136,15 @@ function createTimingRenderer(real, sink) {
     };
 }
 function startRuntimeDemo(options = {}) {
+    var _a, _b, _c;
     if (options.now)
         clock = options.now;
     const host = resolveWx();
-    const sys = options.systemInfoOverride ?? safeCall(() => host.getSystemInfoSync(), {});
+    const sys = (_a = options.systemInfoOverride) !== null && _a !== void 0 ? _a : safeCall(() => host.getSystemInfoSync(), {});
     const dpr = sys.pixelRatio && sys.pixelRatio > 0 ? sys.pixelRatio : 1;
     const dprUsed = Math.min(dpr, 3);
-    const winW = sys.windowWidth ?? 375;
-    const winH = sys.windowHeight ?? 667;
+    const winW = (_b = sys.windowWidth) !== null && _b !== void 0 ? _b : 375;
+    const winH = (_c = sys.windowHeight) !== null && _c !== void 0 ? _c : 667;
     const mainCanvas = host.createCanvas();
     const mainCtx = mainCanvas.getContext('2d');
     if (!mainCtx)
@@ -182,6 +184,19 @@ function startRuntimeDemo(options = {}) {
     let booting = false;
     let disposed = false;
     const outstandingRafs = new Set();
+    const phaseRecords = new Map();
+    function beginPhase(name) {
+        phaseRecords.set(name, { name, status: 'running', detail: '', ms: 0, startedAt: nowMs() });
+    }
+    function endPhase(name, status, detail = '') {
+        const rec = phaseRecords.get(name);
+        if (!rec)
+            return;
+        rec.status = status;
+        rec.detail = detail;
+        rec.ms = Math.round(nowMs() - rec.startedAt);
+    }
+    let failNextRebuild = null;
     const waiters = { frames: [], ms: [], until: [] };
     let touchListenerAttached = false;
     function waitFrames(n) {
@@ -238,7 +253,7 @@ function startRuntimeDemo(options = {}) {
                 try {
                     mainCtx.drawImage(runtime3d.pass.canvas, 0, 0);
                 }
-                catch { }
+                catch (_a) { }
                 compositeMs = nowMs() - tc;
             }
             frameTimes = { passMs, animMs: Math.max(0, passMs - submitMs), submitMs, compositeMs };
@@ -293,7 +308,7 @@ function startRuntimeDemo(options = {}) {
             const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2');
             timerExt = ext ? { TIME_ELAPSED_EXT: ext.TIME_ELAPSED_EXT, GPU_DISJOINT_EXT: ext.GPU_DISJOINT_EXT } : null;
         }
-        catch {
+        catch (_a) {
             timerExt = null;
         }
     }
@@ -325,7 +340,7 @@ function startRuntimeDemo(options = {}) {
             }
             return last;
         }
-        catch {
+        catch (_a) {
             timerExt = null;
             return null;
         }
@@ -337,17 +352,18 @@ function startRuntimeDemo(options = {}) {
             if (gl.getError() !== gl.NO_ERROR)
                 state.glErrors++;
         }
-        catch { }
+        catch (_a) { }
     }
     function buildLines() {
+        var _a, _b, _c, _d, _e, _f, _g;
         const r = runtime3d;
         const progress = E.runProgress(readRuns());
         const bb = r ? r.renderer.backbuffer : { width: bbW, height: bbH };
         return [
-            'T31-FE-C · ' + (state.sim ? 'BROWSER SIM（非真机证据）' : 'WX 真机') + ' · ' + (sys.brand ?? '?') + '/' + (sys.model ?? '?'),
-            'SDK ' + String(sys.SDKVersion ?? '?') + ' · dpr ' + dpr + '(用 ' + dprUsed + ') · bb ' + bb.width + 'x' + bb.height,
-            'edgeMode ' + String(r?.edgeMode ?? '—') + ' · aa有效 ' + String(r?.renderer.contextAttributes?.antialias ?? '—') +
-                ' · 资源 ' + (resourcePlanCached?.mode ?? '—') + ' · 缓存 ' + state.cacheState,
+            'T31-FE-C · ' + (state.sim ? 'BROWSER SIM（非真机证据）' : 'WX 真机') + ' · ' + ((_a = sys.brand) !== null && _a !== void 0 ? _a : '?') + '/' + ((_b = sys.model) !== null && _b !== void 0 ? _b : '?'),
+            'SDK ' + String((_c = sys.SDKVersion) !== null && _c !== void 0 ? _c : '?') + ' · dpr ' + dpr + '(用 ' + dprUsed + ') · bb ' + bb.width + 'x' + bb.height,
+            'edgeMode ' + String((_d = r === null || r === void 0 ? void 0 : r.edgeMode) !== null && _d !== void 0 ? _d : '—') + ' · aa有效 ' + String((_f = (_e = r === null || r === void 0 ? void 0 : r.renderer.contextAttributes) === null || _e === void 0 ? void 0 : _e.antialias) !== null && _f !== void 0 ? _f : '—') +
+                ' · 资源 ' + ((_g = resourcePlanCached === null || resourcePlanCached === void 0 ? void 0 : resourcePlanCached.mode) !== null && _g !== void 0 ? _g : '—') + ' · 缓存 ' + state.cacheState,
             '冷启动 ' + progress.cold + '/' + progress.required + ' · 热缓存 ' + progress.hot + '/' + progress.required +
                 ' · 本轮 #' + runIndexCached + ' · 阶段 ' + state.phase,
             '命令 ' + state.commands.length + 'u · pass ' + frameTimes.passMs.toFixed(1) + 'ms（anim ' + frameTimes.animMs.toFixed(1) +
@@ -396,17 +412,23 @@ function startRuntimeDemo(options = {}) {
                     fail: () => resolve(Math.round(nowMs() - t0)),
                 });
             }
-            catch {
+            catch (_a) {
                 resolve(Math.round(nowMs() - t0));
             }
         });
     }
-    async function bootstrap3D(resourcePlan, coldSeries) {
+    async function bootstrap3D(resourcePlan, coldSeries, opts = {}) {
+        var _a, _b, _c;
         if (booting)
             return;
         booting = true;
         try {
-            disposeRuntime();
+            if (failNextRebuild !== null) {
+                const why = failNextRebuild;
+                failNextRebuild = null;
+                throw new Error(why);
+            }
+            disposeRuntime({ contextLost: opts.contextLost === true });
             const stages = {};
             stages.subpackageMs = await loadSubpackage(resourcePlan);
             const platform = (0, adapter_local_1.createResourcePlatform)(resourcePlan);
@@ -415,7 +437,7 @@ function startRuntimeDemo(options = {}) {
                     try {
                         await platform.cacheRemove(ref.id);
                     }
-                    catch { }
+                    catch (_d) { }
                 }
             }
             const loader = (0, character_asset_loader_1.createCharacterAssetLoader)({
@@ -430,7 +452,7 @@ function startRuntimeDemo(options = {}) {
             const profileLoad = await loader.loadProfile(character_3d_1.HERO_3D_PROFILE);
             stages.loaderMs = Math.round(nowMs() - tLoad);
             const stats = loader.stats();
-            if (profileLoad.status === 'failed' || !profileLoad.model?.bytes) {
+            if (profileLoad.status === 'failed' || !((_a = profileLoad.model) === null || _a === void 0 ? void 0 : _a.bytes)) {
                 throw new Error('资源门失败：' + (profileLoad.diagnostics.slice(0, 4).join(' | ') || '未知'));
             }
             const tParse = nowMs();
@@ -440,7 +462,7 @@ function startRuntimeDemo(options = {}) {
             const tAnim = nowMs();
             for (const key of ['idle', 'atk', 'cast', 'jump']) {
                 const res = profileLoad.clips[key];
-                if (!res?.bytes)
+                if (!(res === null || res === void 0 ? void 0 : res.bytes))
                     throw new Error('动作资产缺失/失败：' + key);
                 rawByKey[key] = JSON.parse((0, glb_1.decodeUtf8)(res.bytes));
             }
@@ -474,7 +496,8 @@ function startRuntimeDemo(options = {}) {
             initTimerExt();
             const evtCanvas = canvas3d;
             const onLost = (e) => {
-                e?.preventDefault?.();
+                var _a;
+                (_a = e === null || e === void 0 ? void 0 : e.preventDefault) === null || _a === void 0 ? void 0 : _a.call(e);
                 if (realRenderer.status !== 'ready')
                     return;
                 state.contextLostEvents++;
@@ -486,11 +509,11 @@ function startRuntimeDemo(options = {}) {
                 const ok = realRenderer.handleContextRestored();
                 if (ok) {
                     armDtProbe();
-                    host3d?.resume();
+                    host3d === null || host3d === void 0 ? void 0 : host3d.resume();
                 }
             };
-            evtCanvas.addEventListener?.('webglcontextlost', onLost);
-            evtCanvas.addEventListener?.('webglcontextrestored', onRestored);
+            (_b = evtCanvas.addEventListener) === null || _b === void 0 ? void 0 : _b.call(evtCanvas, 'webglcontextlost', onLost);
+            (_c = evtCanvas.addEventListener) === null || _c === void 0 ? void 0 : _c.call(evtCanvas, 'webglcontextrestored', onRestored);
             const anim = {
                 actionMap: character_3d_1.HERO_3D_ACTION_MAP,
                 crossFadeSec: character_3d_1.CHARACTER_3D_CROSS_FADE_SEC,
@@ -503,7 +526,7 @@ function startRuntimeDemo(options = {}) {
                 viewport: { width: Math.max(1, Math.round(bbW * renderScale)), height: Math.max(1, Math.round(bbH * renderScale)) },
                 runtimes: {
                     [character_3d_1.HERO_3D_PROFILE_ID]: {
-                        profile: { ...character_3d_1.HERO_3D_PROFILE, screenHeightPxAtReference: character_3d_1.HERO_3D_PROFILE.screenHeightPxAtReference * dprUsed },
+                        profile: Object.assign(Object.assign({}, character_3d_1.HERO_3D_PROFILE), { screenHeightPxAtReference: character_3d_1.HERO_3D_PROFILE.screenHeightPxAtReference * dprUsed }),
                         model,
                         anim,
                     },
@@ -517,10 +540,12 @@ function startRuntimeDemo(options = {}) {
                 stages,
                 diagnostics: [...profileLoad.diagnostics, ...renderer.diagnostics],
                 modelResolvedPath: resolvedCodePathOf(platform),
-                teardown: () => {
-                    evtCanvas.removeEventListener?.('webglcontextlost', onLost);
-                    evtCanvas.removeEventListener?.('webglcontextrestored', onRestored);
-                    renderer.dispose();
+                teardown: (teardownOpts) => {
+                    var _a, _b;
+                    (_a = evtCanvas.removeEventListener) === null || _a === void 0 ? void 0 : _a.call(evtCanvas, 'webglcontextlost', onLost);
+                    (_b = evtCanvas.removeEventListener) === null || _b === void 0 ? void 0 : _b.call(evtCanvas, 'webglcontextrestored', onRestored);
+                    if ((teardownOpts === null || teardownOpts === void 0 ? void 0 : teardownOpts.contextLost) !== true)
+                        renderer.dispose();
                 },
             };
             state.cacheState = classifyCache(stats);
@@ -531,20 +556,30 @@ function startRuntimeDemo(options = {}) {
             booting = false;
         }
     }
-    function disposeRuntime() {
-        host3d?.dispose();
+    function disposeRuntime(opts = {}) {
+        host3d === null || host3d === void 0 ? void 0 : host3d.dispose();
         host3d = null;
         if (runtime3d) {
             try {
-                runtime3d.teardown();
+                runtime3d.teardown({ contextLost: opts.contextLost === true });
             }
-            catch { }
+            catch (_a) { }
         }
         runtime3d = null;
         gl = null;
     }
+    async function rebuild3D(reason) {
+        state.footer = '上下文真重建（' + reason + '）…';
+        await bootstrap3D(plan(), false, { contextLost: true });
+        state.commands = [singleIdleCommand()];
+        state.units = 1;
+        armDtProbe();
+        host3d === null || host3d === void 0 ? void 0 : host3d.resume();
+        await waitFrames(2);
+    }
     async function phaseBoot() {
         state.phase = 'boot';
+        beginPhase('boot');
         const resourcePlan = plan();
         resourcePlanCached = resourcePlan;
         const runs = readRuns();
@@ -560,7 +595,7 @@ function startRuntimeDemo(options = {}) {
             executedBranches: resourcePlan.executedBranches,
             notExecutedBranches: resourcePlan.notExecutedBranches,
             modelResolvedPath: r.modelResolvedPath,
-            assetStages: { ...r.stages },
+            assetStages: Object.assign({}, r.stages),
             loaderStats: flattenStats(r.loaderStats),
             reloadStats: null,
             hotChainObserved: false,
@@ -573,9 +608,12 @@ function startRuntimeDemo(options = {}) {
             sixdirOk: false, statesOk: false, contextOk: false, failures: 0,
         });
         writeRuns(runs);
+        endPhase('boot', 'ok', 'edgeMode=' + r.edgeMode + ' · 缓存=' + state.cacheState + ' · ' + resourcePlan.mode);
     }
     async function phaseScenarios() {
+        var _a, _b, _c, _d, _e;
         state.phase = 'sixdir';
+        beginPhase('sixdir');
         const sixDir = [];
         for (const sample of S.FACING_SAMPLES) {
             const footX = sample.u * bbW;
@@ -591,9 +629,9 @@ function startRuntimeDemo(options = {}) {
             state.commands = [cmd];
             state.footer = '六向 · ' + sample.facing + ' / ' + sample.state;
             await waitFrames(30);
-            const controller = runtime3d?.pass.controllers.get(cmd.actorId) ?? null;
+            const controller = (_a = runtime3d === null || runtime3d === void 0 ? void 0 : runtime3d.pass.controllers.get(cmd.actorId)) !== null && _a !== void 0 ? _a : null;
             const activeClipKey = controller ? controller.activeClipKey : null;
-            const placed = state.passResult?.placed.get(cmd.actorId) ?? null;
+            const placed = (_c = (_b = state.passResult) === null || _b === void 0 ? void 0 : _b.placed.get(cmd.actorId)) !== null && _c !== void 0 ? _c : null;
             sixDir.push({
                 facing: sample.facing, state: sample.state, footX, footY,
                 expectedClipKey: sample.expectedClipKey, activeClipKey, placed,
@@ -601,7 +639,9 @@ function startRuntimeDemo(options = {}) {
                 ok: activeClipKey === sample.expectedClipKey,
             });
         }
+        endPhase('sixdir', sixDir.every((row) => row.ok) ? 'ok' : 'failed', sixDir.map((row) => row.facing + ':' + String(row.activeClipKey)).join(' '));
         state.phase = 'states';
+        beginPhase('states');
         const states = [];
         for (const sample of S.STATE_SAMPLES) {
             const actorId = 'state-' + sample.label;
@@ -614,7 +654,7 @@ function startRuntimeDemo(options = {}) {
                 }];
             state.footer = '全状态 · ' + sample.label;
             await waitFrames(sample.warmupFrames);
-            const controller = runtime3d?.pass.controllers.get(actorId) ?? null;
+            const controller = (_d = runtime3d === null || runtime3d === void 0 ? void 0 : runtime3d.pass.controllers.get(actorId)) !== null && _d !== void 0 ? _d : null;
             const activeClipKey = controller ? controller.activeClipKey : null;
             states.push({
                 state: sample.label, expectedClipKey: sample.expectedClipKey, activeClipKey, trio: null,
@@ -622,7 +662,9 @@ function startRuntimeDemo(options = {}) {
                 ok: activeClipKey === sample.expectedClipKey,
             });
         }
+        endPhase('states', states.every((row) => row.ok) ? 'ok' : 'failed', states.map((row) => row.state + ':' + String(row.activeClipKey)).join(' '));
         state.phase = 'jump-trio';
+        beginPhase('jump-trio');
         const trios = [];
         for (const c of S.MOVE_LOCK_CASES) {
             const actorId = 'trio-' + c.caseId;
@@ -636,7 +678,7 @@ function startRuntimeDemo(options = {}) {
                 }];
             state.footer = '轻功三元 · ' + c.caseId;
             await waitFrames(30);
-            const controller = runtime3d?.pass.controllers.get(actorId) ?? null;
+            const controller = (_e = runtime3d === null || runtime3d === void 0 ? void 0 : runtime3d.pass.controllers.get(actorId)) !== null && _e !== void 0 ? _e : null;
             const activeClipKey = controller ? controller.activeClipKey : null;
             if (activeClipKey !== c.expectedClipKey || cmdIsJump !== c.expectedCmdIsJump) {
                 state.footer = '✗ ' + c.caseId + '：期望 clip=' + c.expectedClipKey + '/cmd=' + String(c.expectedCmdIsJump) +
@@ -644,6 +686,8 @@ function startRuntimeDemo(options = {}) {
             }
             trios.push({ caseId: c.caseId, snapIsJump: c.syntheticSnapshotIsJump, cmdIsJump, activeClipKey, note: c.note });
         }
+        const trioOk = trios.every((t) => { var _a; return ((_a = S.MOVE_LOCK_CASES.find((c) => c.caseId === t.caseId)) === null || _a === void 0 ? void 0 : _a.expectedClipKey) === t.activeClipKey; });
+        endPhase('jump-trio', trioOk ? 'ok' : 'failed', trios.map((t) => t.caseId + ':' + String(t.activeClipKey)).join(' '));
         return { sixDir, states, trios };
     }
     function loseExt() {
@@ -653,16 +697,19 @@ function startRuntimeDemo(options = {}) {
             const raw = gl.getExtension('WEBGL_lose_context');
             return raw && typeof raw.loseContext === 'function' && typeof raw.restoreContext === 'function' ? raw : null;
         }
-        catch {
+        catch (_a) {
             return null;
         }
     }
     async function phaseContext() {
+        var _a, _b, _c;
         state.phase = 'context';
+        beginPhase('context');
         const ev = E.emptyContextEvidence();
         const r = runtime3d;
         if (!r) {
             ev.error = '无运行时';
+            endPhase('context', 'failed', '无运行时');
             return ev;
         }
         const real = r.renderer;
@@ -676,7 +723,7 @@ function startRuntimeDemo(options = {}) {
             try {
                 ext.loseContext();
             }
-            catch { }
+            catch (_d) { }
             await waitFrames(2);
         }
         if (real.status !== 'context-lost') {
@@ -692,89 +739,111 @@ function startRuntimeDemo(options = {}) {
             try {
                 ext.restoreContext();
             }
-            catch { }
-        }
-        armDtProbe();
-        await waitFrames(3);
-        if (real.status === 'context-lost') {
-            ev.restoreOk = real.handleContextRestored();
-            ev.restoreVia = 'host-api';
-            if (ev.restoreOk) {
+            catch (error) {
+                ev.fastPathError = messageOf(error);
+            }
+            await waitFrames(3);
+            if (real.status === 'context-lost' && real.handleContextRestored()) {
+                ev.restoreOk = true;
+                ev.restoreVia = 'event';
                 armDtProbe();
-                host3d?.resume();
+                host3d === null || host3d === void 0 ? void 0 : host3d.resume();
+            }
+            else if (real.status === 'ready') {
+                ev.restoreOk = true;
+                ev.restoreVia = 'event';
             }
         }
-        else {
-            ev.restoreOk = real.status === 'ready';
-            ev.restoreVia = 'event';
-        }
         if (!ev.restoreOk) {
-            ev.error = '首次恢复未成功：status=' + real.status;
+            ev.rebuildAttempted = true;
+            try {
+                await rebuild3D('fast-path-unavailable');
+                ev.rebuildOk = true;
+                ev.restoreOk = true;
+                ev.restoreVia = 'rebuild';
+            }
+            catch (error) {
+                ev.rebuildOk = false;
+                ev.rebuildError = messageOf(error);
+                ev.restoreOk = false;
+                ev.restoreVia = 'unsupported';
+                ev.error = '重建失败：' + messageOf(error);
+            }
         }
         if (ev.restoreOk) {
-            assertProbeArmed();
+            if (probedDtSec === null) {
+                armDtProbe();
+                host3d === null || host3d === void 0 ? void 0 : host3d.resume();
+            }
             await waitFrames(2);
             ev.firstFrameDtSec = probedDtSec;
         }
-        host3d?.start();
-        host3d?.start();
-        host3d?.resume();
+        host3d === null || host3d === void 0 ? void 0 : host3d.start();
+        host3d === null || host3d === void 0 ? void 0 : host3d.start();
+        host3d === null || host3d === void 0 ? void 0 : host3d.resume();
         await waitFrames(8);
-        ev.pendingFramesMax = Math.max(state.maxOutstandingRafs, host3d?.pendingFrames ?? 0);
-        host3d?.pause('clock-reset-test');
+        ev.pendingFramesMax = Math.max(state.maxOutstandingRafs, (_a = host3d === null || host3d === void 0 ? void 0 : host3d.pendingFrames) !== null && _a !== void 0 ? _a : 0);
+        host3d === null || host3d === void 0 ? void 0 : host3d.pause('clock-reset-test');
         const framesAtPause = state.frames;
         await sleepWall(CLOCK_PAUSE_MS);
         ev.pauseFrozenFrames = state.frames - framesAtPause;
         armDtProbe();
-        host3d?.resume();
+        host3d === null || host3d === void 0 ? void 0 : host3d.resume();
         await waitFrames(2);
         ev.resumeDtSec = probedDtSec;
         ev.clockResetOk = ev.pauseFrozenFrames === 0 && ev.resumeDtSec === 0;
-        const ext2 = loseExt();
-        if (ext2) {
-            try {
-                ext2.loseContext();
+        const rNow = runtime3d;
+        if (rNow) {
+            const ext2 = loseExt();
+            if (ext2) {
+                try {
+                    ext2.loseContext();
+                }
+                catch (_e) { }
             }
-            catch { }
+            if (rNow.renderer.status !== 'context-lost')
+                rNow.renderer.notifyContextLost();
         }
-        if (real.status !== 'context-lost')
-            real.notifyContextLost();
         ev.secondRestoreAttempted = true;
-        if (ext2) {
-            try {
-                ext2.restoreContext();
-            }
-            catch { }
+        ev.terminalFailureInjected = true;
+        failNextRebuild = '注入故障：验证 §6.2 重建失败路径';
+        let terminalRebuildOk = false;
+        try {
+            await rebuild3D('injected-terminal-failure');
+            terminalRebuildOk = true;
         }
-        await waitFrames(3);
-        if (real.status === 'context-lost')
-            ev.secondRestoreFailed = real.handleContextRestored() === false;
-        else
-            ev.secondRestoreFailed = real.status !== 'ready';
-        if (ev.secondRestoreFailed) {
-            host3d?.notifyContextRestored(false, () => {
+        catch (_f) {
+            terminalRebuildOk = false;
+        }
+        ev.secondRestoreFailed = terminalRebuildOk === false;
+        if (terminalRebuildOk) {
+            ev.error = '注入故障未生效（重建竟然成功）';
+        }
+        else {
+            host3d === null || host3d === void 0 ? void 0 : host3d.notifyContextRestored(false, () => {
                 ev.errorPageShown = true;
-                state.footer = '✗ WebGL2 上下文重建失败（已尝试一次）→ 已暂停对局';
+                state.footer = '✗ WebGL2 上下文重建失败（§6.2）→ 已暂停对局';
             });
         }
-        ev.pausedOnFinalFailure = host3d?.status === 'paused';
+        ev.pausedOnFinalFailure = (host3d === null || host3d === void 0 ? void 0 : host3d.status) === 'paused';
         const framesAtFinalPause = state.frames;
         await sleepWall(300);
         ev.framesWhilePaused = state.frames - framesAtFinalPause;
         const actionsBefore = state.buttonActions;
         const tap = handleTap(layout.buttons[3].rect.x0 + 8, layout.buttons[3].rect.y0 + 8, true);
-        ev.inputIgnoredWhilePaused = host3d?.status === 'paused' && tap.hit !== null && state.buttonActions === actionsBefore;
+        ev.inputIgnoredWhilePaused = (host3d === null || host3d === void 0 ? void 0 : host3d.status) === 'paused' && tap.hit !== null && state.buttonActions === actionsBefore;
         for (let i = 0; i < 3; i++)
             handleButton('retry3d');
-        await waitUntil(() => runtime3d !== null && host3d?.status === 'running', 15000);
+        await waitUntil(() => runtime3d !== null && (host3d === null || host3d === void 0 ? void 0 : host3d.status) === 'running', 15000);
         await waitFrames(8);
         ev.pendingFramesMax = Math.max(ev.pendingFramesMax, state.maxOutstandingRafs);
         if (resource && runtime3d) {
             const hot = flattenStats(runtime3d.loaderStats);
             resource.reloadStats = hot;
-            resource.hotChainObserved = (hot.cacheHits ?? 0) > 0 && (hot.downloads ?? 0) === 0;
+            resource.hotChainObserved = ((_b = hot.cacheHits) !== null && _b !== void 0 ? _b : 0) > 0 && ((_c = hot.downloads) !== null && _c !== void 0 ? _c : 0) === 0;
         }
-        state.footer = '上下文注入完成 · ' + ev.injectionMode;
+        endPhase('context', E.contextEvidenceOk(ev) ? 'ok' : 'failed', ev.injectionMode + ' → ' + ev.restoreVia + (ev.fastPathError ? '（快路径不可用）' : ''));
+        state.footer = '上下文注入完成 · ' + ev.injectionMode + ' → ' + ev.restoreVia;
         return ev;
     }
     function singleIdleCommand() {
@@ -787,6 +856,7 @@ function startRuntimeDemo(options = {}) {
     }
     async function phasePerf() {
         state.phase = 'perf';
+        beginPhase('perf');
         const profile = options.shortProfile === true ? S.SIM_PROFILE : S.SPEC_PROFILE;
         const minSamples = profile.name === 'spec' ? M.REQUIRED_MIN_SAMPLES : 120;
         for (const stage of profile.stages) {
@@ -821,11 +891,13 @@ function startRuntimeDemo(options = {}) {
             state.perf = null;
             state.footer = stage.units + 'u 完成 · fpsMedian=' + rec.fpsMedian + ' · P95=' + rec.frameMsP95;
         }
+        endPhase('perf', 'ok', state.perfResults.map((r) => r.unitCount + 'u:' + r.fpsMedian).join(' '));
     }
     function snapshotCounters() {
-        const c = runtime3d?.renderer.counters;
+        var _a, _b, _c;
+        const c = runtime3d === null || runtime3d === void 0 ? void 0 : runtime3d.renderer.counters;
         return {
-            frames: c?.frames ?? 0, drawCalls: c?.drawCalls ?? 0, paletteUploads: c?.paletteUploads ?? 0,
+            frames: (_a = c === null || c === void 0 ? void 0 : c.frames) !== null && _a !== void 0 ? _a : 0, drawCalls: (_b = c === null || c === void 0 ? void 0 : c.drawCalls) !== null && _b !== void 0 ? _b : 0, paletteUploads: (_c = c === null || c === void 0 ? void 0 : c.paletteUploads) !== null && _c !== void 0 ? _c : 0,
             contextLostEvents: state.contextLostEvents, glErrors: state.glErrors,
         };
     }
@@ -840,7 +912,7 @@ function startRuntimeDemo(options = {}) {
         }));
         if (!prime)
             return;
-        const controllers = runtime3d?.pass.controllers;
+        const controllers = runtime3d === null || runtime3d === void 0 ? void 0 : runtime3d.pass.controllers;
         if (!controllers)
             return;
         const idleSec = character_3d_1.HERO_3D_CLIP_SOURCE_SEC.idle;
@@ -854,7 +926,8 @@ function startRuntimeDemo(options = {}) {
         }
     }
     function measureHorizontalInset(count) {
-        const placed = state.passResult?.placed;
+        var _a;
+        const placed = (_a = state.passResult) === null || _a === void 0 ? void 0 : _a.placed;
         if (!placed || placed.size !== count)
             return 0;
         let maxW = 0;
@@ -863,9 +936,10 @@ function startRuntimeDemo(options = {}) {
         return Math.ceil(maxW / 2) + 2;
     }
     function checkUnitsVisible(count) {
+        var _a;
         if (!gl || !runtime3d)
             return { ok: false, note: '无 gl/运行时' };
-        const placed = state.passResult?.placed;
+        const placed = (_a = state.passResult) === null || _a === void 0 ? void 0 : _a.placed;
         if (!placed)
             return { ok: false, note: '无 placed（pass 未 ready）' };
         if (placed.size !== count)
@@ -929,32 +1003,34 @@ function startRuntimeDemo(options = {}) {
                             fs.writeFileSync(host.env.USER_DATA_PATH + '/' + name, fs.readFileSync(r.tempFilePath));
                             resolve(name);
                         }
-                        catch {
+                        catch (_a) {
                             resolve(r.tempFilePath);
                         }
                     },
                     fail: () => resolve(null),
                 });
             }
-            catch {
+            catch (_a) {
                 resolve(null);
             }
         });
     }
     let resource = null;
     let resolvedResult = null;
+    let preContextSnapshot = null;
     function deviceSnapshot() {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const device = {
-            brand: sys.brand ?? 'unknown', model: sys.model ?? 'unknown', system: sys.system ?? 'unknown',
-            platform: sys.platform ?? 'unknown',
-            SDKVersion: sys.SDKVersion ?? null,
-            benchmarkLevel: sys.benchmarkLevel ?? null,
+            brand: (_a = sys.brand) !== null && _a !== void 0 ? _a : 'unknown', model: (_b = sys.model) !== null && _b !== void 0 ? _b : 'unknown', system: (_c = sys.system) !== null && _c !== void 0 ? _c : 'unknown',
+            platform: (_d = sys.platform) !== null && _d !== void 0 ? _d : 'unknown',
+            SDKVersion: (_e = sys.SDKVersion) !== null && _e !== void 0 ? _e : null,
+            benchmarkLevel: (_f = sys.benchmarkLevel) !== null && _f !== void 0 ? _f : null,
             pixelRatio: dpr,
-            screenWidth: sys.screenWidth ?? 0, screenHeight: sys.screenHeight ?? 0,
+            screenWidth: (_g = sys.screenWidth) !== null && _g !== void 0 ? _g : 0, screenHeight: (_h = sys.screenHeight) !== null && _h !== void 0 ? _h : 0,
             windowWidth: winW, windowHeight: winH,
             vendor: null, renderer: null, unmaskedVendor: null, unmaskedRenderer: null,
             glVersion: null, glslVersion: null,
-            maxVertexUniformVectors: runtime3d?.renderer.maxVertexUniformVectors ?? null,
+            maxVertexUniformVectors: (_j = runtime3d === null || runtime3d === void 0 ? void 0 : runtime3d.renderer.maxVertexUniformVectors) !== null && _j !== void 0 ? _j : null,
             deviceHash: '',
         };
         if (gl) {
@@ -969,31 +1045,32 @@ function startRuntimeDemo(options = {}) {
                     device.unmaskedRenderer = String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL));
                 }
             }
-            catch { }
+            catch (_k) { }
         }
         device.deviceHash = E.deviceHashOf(device);
         return device;
     }
     function buildResultNow(parts) {
+        var _a, _b, _c, _d, _e, _f, _g;
         const r = runtime3d;
-        const eff = r?.renderer.contextAttributes ?? null;
+        const eff = (_a = r === null || r === void 0 ? void 0 : r.renderer.contextAttributes) !== null && _a !== void 0 ? _a : null;
         const ctx = {
             device: deviceSnapshot(),
             canvas: {
                 backbuffer: r ? { width: r.renderer.backbuffer.width, height: r.renderer.backbuffer.height } : null,
                 requestedAttributes: { alpha: true, antialias: true, depth: true, premultipliedAlpha: true, preserveDrawingBuffer: true },
-                effectiveAttributes: eff ? { ...eff } : null,
+                effectiveAttributes: eff ? Object.assign({}, eff) : null,
                 dpr, renderScale: character_3d_1.CHARACTER_3D_RENDER_SCALE, dprCappedAt: 3,
             },
             rendererInfo: {
-                edgeMode: r?.edgeMode ?? null,
+                edgeMode: (_b = r === null || r === void 0 ? void 0 : r.edgeMode) !== null && _b !== void 0 ? _b : null,
                 effectiveAntialias: eff ? eff.antialias === true : null,
-                jointCount: r?.renderer.jointCount ?? null,
-                vertexCount: r?.renderer.vertexCount ?? null,
-                indexCount: r?.renderer.indexCount ?? null,
-                counters: r ? { ...r.renderer.counters } : null,
+                jointCount: (_c = r === null || r === void 0 ? void 0 : r.renderer.jointCount) !== null && _c !== void 0 ? _c : null,
+                vertexCount: (_d = r === null || r === void 0 ? void 0 : r.renderer.vertexCount) !== null && _d !== void 0 ? _d : null,
+                indexCount: (_e = r === null || r === void 0 ? void 0 : r.renderer.indexCount) !== null && _e !== void 0 ? _e : null,
+                counters: r ? Object.assign({}, r.renderer.counters) : null,
             },
-            resource: resource ?? {
+            resource: resource !== null && resource !== void 0 ? resource : {
                 mode: 'local-subpackage', executedBranches: [], notExecutedBranches: [],
                 modelResolvedPath: null, assetStages: {}, loaderStats: {}, reloadStats: null,
                 hotChainObserved: false, loadStatus: 'failed', diagnostics: ['未装配'],
@@ -1003,10 +1080,13 @@ function startRuntimeDemo(options = {}) {
             jumpTrios: parts.trios,
             context: parts.context,
             capacity: state.perfResults.slice(),
+            phases: Array.from(phaseRecords.values()).map((p) => ({
+                name: p.name, status: p.status, detail: p.detail, ms: p.ms,
+            })),
             runs: readRuns(),
             env: {
                 sim: state.sim,
-                commitSha: options.commitShaOverride ?? safeCall(() => host.getStorageSync('char3d-commit-sha'), '') ?? '',
+                commitSha: (_g = (_f = options.commitShaOverride) !== null && _f !== void 0 ? _f : safeCall(() => host.getStorageSync('char3d-commit-sha'), '')) !== null && _g !== void 0 ? _g : '',
                 profile: options.shortProfile === true ? 'sim-short' : 'spec',
                 screenshots: parts.screenshots.slice(),
                 notes: [
@@ -1016,23 +1096,34 @@ function startRuntimeDemo(options = {}) {
                         'tests/battle-character3d-wiring.test.ts 已闭合，本卡不重证。',
                     'assetStages：读取含在 loaderMs 内（loader 状态机是一次调用；S0 的 readFileMs 不可再分）',
                     'passMs/animMs/submitMs：animMs = passMs − ΣdrawUnit（时间代理，不改生产代码）',
+                    '阶段顺序（phasesOrder）：' + E.PHASES_ORDER.join(' → ') +
+                        ' —— 测量项（六向/全状态/轻功三元/压测）**在上下文自测之前**跑完并落盘，自测失败不毒死测量结果' +
+                        (preContextSnapshot ? '；压测后已先落中间快照 ' + preContextSnapshot : ''),
                 ],
             },
         };
         return E.buildResult(ctx);
     }
+    function writeResultFile(result, suffix = '') {
+        const name = suffix
+            ? E.shareFileName(result).replace(/\.json$/, '') + '_' + suffix + '.json'
+            : E.shareFileName(result);
+        try {
+            host.getFileSystemManager().writeFileSync(host.env.USER_DATA_PATH + '/' + name, JSON.stringify(result), 'utf8');
+        }
+        catch (_a) { }
+        return name;
+    }
     function exportResult() {
         if (!resolvedResult)
             return;
-        try {
-            host.getFileSystemManager().writeFileSync(host.env.USER_DATA_PATH + '/' + E.shareFileName(resolvedResult), JSON.stringify(resolvedResult), 'utf8');
-        }
-        catch { }
+        writeResultFile(resolvedResult);
     }
     function handleButton(id) {
+        var _a;
         state.buttonActions++;
         if (!runtime3d && id !== 'retry3d') {
-            state.footer = '▶ ' + (hud_1.BUTTON_LABELS[id] ?? id) + '：运行时未就绪';
+            state.footer = '▶ ' + ((_a = hud_1.BUTTON_LABELS[id]) !== null && _a !== void 0 ? _a : id) + '：运行时未就绪';
             return;
         }
         if (id === 'retry3d') {
@@ -1049,7 +1140,7 @@ function startRuntimeDemo(options = {}) {
             return;
         }
         if (id === 'view') {
-            state.pageText = state.pageText === null ? JSON.stringify(resolvedResult ?? { pending: true }) : null;
+            state.pageText = state.pageText === null ? JSON.stringify(resolvedResult !== null && resolvedResult !== void 0 ? resolvedResult : { pending: true }) : null;
             state.pageIndex = 0;
             state.footer = state.pageText === null ? '▶ 返回摘要' : '▶ 分页查看（点右半下一页）';
             return;
@@ -1083,7 +1174,7 @@ function startRuntimeDemo(options = {}) {
                 host.setClipboardData({
                     data: text,
                     success: () => resolve({ ok: true, errMsg: null }),
-                    fail: (e) => resolve({ ok: false, errMsg: e.errMsg ?? 'fail' }),
+                    fail: (e) => { var _a; return resolve({ ok: false, errMsg: (_a = e.errMsg) !== null && _a !== void 0 ? _a : 'fail' }); },
                 });
             }
             catch (e) {
@@ -1108,7 +1199,7 @@ function startRuntimeDemo(options = {}) {
                 host.shareFileMessage({
                     filePath: host.env.USER_DATA_PATH + '/' + fileName, fileName,
                     success: () => resolve({ ok: true, errMsg: null }),
-                    fail: (e) => resolve({ ok: false, errMsg: e.errMsg ?? 'fail' }),
+                    fail: (e) => { var _a; return resolve({ ok: false, errMsg: (_a = e.errMsg) !== null && _a !== void 0 ? _a : 'fail' }); },
                 });
             }
             catch (e) {
@@ -1123,7 +1214,7 @@ function startRuntimeDemo(options = {}) {
     }
     function handleTap(x, y, preMapped = false) {
         const mapped = preMapped ? { x, y } : toBackbuffer(x, y);
-        const paused = host3d?.status === 'paused';
+        const paused = (host3d === null || host3d === void 0 ? void 0 : host3d.status) === 'paused';
         if (state.pageText !== null && mapped.y < layout.footerY) {
             state.pageIndex += mapped.x >= bbW / 2 ? 1 : -1;
             state.footer = '▶ 翻页';
@@ -1157,7 +1248,7 @@ function startRuntimeDemo(options = {}) {
             });
             touchListenerAttached = true;
         }
-        catch {
+        catch (_a) {
             touchListenerAttached = false;
         }
     }
@@ -1168,7 +1259,7 @@ function startRuntimeDemo(options = {}) {
                 return [];
             return raw.filter((r) => !!r && typeof r.runIndex === 'number');
         }
-        catch {
+        catch (_a) {
             return [];
         }
     }
@@ -1176,6 +1267,7 @@ function startRuntimeDemo(options = {}) {
         safeCall(() => host.setStorageSync(STORAGE_RUNS, runs.slice(-12)), undefined);
     }
     function updateRun(patch) {
+        var _a;
         const runs = readRuns();
         const last = runs[runs.length - 1];
         if (!last)
@@ -1187,7 +1279,7 @@ function startRuntimeDemo(options = {}) {
         if (patch.contextOk !== undefined)
             last.contextOk = patch.contextOk;
         if (patch.failures !== undefined)
-            last.failures = (last.failures ?? 0) + patch.failures;
+            last.failures = ((_a = last.failures) !== null && _a !== void 0 ? _a : 0) + patch.failures;
         writeRuns(runs);
     }
     async function runAll() {
@@ -1209,8 +1301,6 @@ function startRuntimeDemo(options = {}) {
                 if (row.screenshot)
                     screenshots.push(row.screenshot);
             updateRun({ sixdirOk: scen.sixDir.every((r) => r.ok), statesOk: scen.states.every((r) => r.ok) });
-            contextEv = await phaseContext();
-            updateRun({ contextOk: E.contextEvidenceOk(contextEv) });
             const runs = readRuns();
             const progress = E.runProgress(runs);
             const forcePerf = safeCall(() => host.getStorageSync(STORAGE_PERF_ALWAYS), 0) === 1;
@@ -1218,7 +1308,20 @@ function startRuntimeDemo(options = {}) {
                 await phasePerf();
             }
             else {
+                beginPhase('perf');
+                endPhase('perf', 'skipped', '冷/热未满 ' + E.RUNS_REQUIRED + ' 次且未开「压测常开」');
                 state.footer = '本轮不跑压测（冷/热各满 ' + E.RUNS_REQUIRED + ' 次后自动跑；点「重跑压测」可改常开）';
+            }
+            state.phase = 'measured';
+            const snapshot = buildResultNow({ sixDir, states, trios, context: contextEv, screenshots });
+            preContextSnapshot = writeResultFile(snapshot, 'precontext');
+            contextEv = await phaseContext();
+            updateRun({ contextOk: E.contextEvidenceOk(contextEv) });
+            if (resource && contextEv.fastPathError) {
+                resource.notExecutedBranches = resource.notExecutedBranches.concat([
+                    'WEBGL_lose_context.restoreContext 扩展恢复（本平台不可用：' + contextEv.fastPathError +
+                        '）—— 已改走真重建（新建 canvas/context + 缓存重装配）',
+                ]);
             }
             state.phase = 'done';
             resolvedResult = buildResultNow({ sixDir, states, trios, context: contextEv, screenshots });
@@ -1305,7 +1408,7 @@ function safeCall(fn, fallback) {
     try {
         return fn();
     }
-    catch {
+    catch (_a) {
         return fallback;
     }
 }
@@ -1316,7 +1419,7 @@ function logLine(line) {
     try {
         console.log(line);
     }
-    catch { }
+    catch (_a) { }
 }
 function withTimeout(promise, ms, fallback) {
     return new Promise((resolve) => {
@@ -2154,10 +2257,11 @@ function assertValidAssetRef(ref) {
     }
 }
 function createCharacterAssetLoader(options) {
+    var _a, _b, _c;
     const platform = options.platform;
-    const retryDelays = options.retryDelaysMs ?? [1000, 3000];
-    const downloadTimeoutMs = options.downloadTimeoutMs ?? 15000;
-    const sleep = options.sleep ?? ((ms) => new Promise((resolve) => { setTimeout(resolve, ms); }));
+    const retryDelays = (_a = options.retryDelaysMs) !== null && _a !== void 0 ? _a : [1000, 3000];
+    const downloadTimeoutMs = (_b = options.downloadTimeoutMs) !== null && _b !== void 0 ? _b : 15000;
+    const sleep = (_c = options.sleep) !== null && _c !== void 0 ? _c : ((ms) => new Promise((resolve) => { setTimeout(resolve, ms); }));
     const stats = {
         downloadAttempts: 0, downloads: 0, cacheHits: 0, staleFallbacks: 0, failures: 0, cacheWriteFailures: 0,
         structureRejects: 0, shaMismatches: 0, byteLengthMismatches: 0, timeouts: 0, networkErrors: 0,
@@ -2236,7 +2340,7 @@ function createCharacterAssetLoader(options) {
             }
             tempPath = await platform.writeTempFile(tempName, bytes);
             const digest = await platform.sha256File(tempPath);
-            const sha = digest ?? (await platform.sha256Bytes(bytes));
+            const sha = digest !== null && digest !== void 0 ? digest : (await platform.sha256Bytes(bytes));
             if (sha !== ref.sha256) {
                 stats.shaMismatches++;
                 diags.push('sha256-mismatch');
@@ -2351,7 +2455,7 @@ function createCharacterAssetLoader(options) {
             };
         },
         stats() {
-            return { ...stats };
+            return Object.assign({}, stats);
         },
     };
 }
@@ -2555,6 +2659,7 @@ const FXAA_FRAGMENT_SRC = [
     '}',
 ].join('\n');
 function createCharacter3DRenderer(options) {
+    var _a;
     const { canvas, model, baseColor, platform, light, fxaa } = options;
     const jointCount = model.jointNodes.length;
     const diags = [];
@@ -2571,7 +2676,7 @@ function createCharacter3DRenderer(options) {
     let restoreAttempted = false;
     let backbufferW = canvas.width;
     let backbufferH = canvas.height;
-    let edgeMode = options.forceEdgeMode ?? 'fxaa';
+    let edgeMode = (_a = options.forceEdgeMode) !== null && _a !== void 0 ? _a : 'fxaa';
     let contextAttributes = null;
     let maxVertexUniformVectors = null;
     let skin = null;
@@ -2752,10 +2857,11 @@ function createCharacter3DRenderer(options) {
         depthBuffer = null;
     }
     function buildAll() {
+        var _a;
         const g = gl;
         contextAttributes = g.getContextAttributes();
         const requestedMsaa = contextAttributes ? contextAttributes.antialias === true : false;
-        edgeMode = options.forceEdgeMode ?? (requestedMsaa ? 'native-msaa' : 'fxaa');
+        edgeMode = (_a = options.forceEdgeMode) !== null && _a !== void 0 ? _a : (requestedMsaa ? 'native-msaa' : 'fxaa');
         const raw = g.getParameter(g.MAX_VERTEX_UNIFORM_VECTORS);
         maxVertexUniformVectors = typeof raw === 'number' && raw > 0 ? raw : null;
         if (maxVertexUniformVectors !== null && jointCount * 4 + 8 > maxVertexUniformVectors) {
@@ -3766,7 +3872,7 @@ function createCharacter3DPass(options) {
         if (existing)
             return existing;
         const created = {
-            controller: new animation_1.CharacterAnimController({ ...runtime.anim }),
+            controller: new animation_1.CharacterAnimController(Object.assign({}, runtime.anim)),
             pose: (0, animation_1.createPose)(runtime.model),
             scratchPose: (0, animation_1.createPose)(runtime.model),
         };
@@ -3969,6 +4075,7 @@ function asFiniteNumber(v) {
     return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 function parseCharacter3DClipJson(raw, name) {
+    var _a, _b, _c;
     const obj = asRecord(raw);
     if (!obj)
         fail('动作 json 不是对象: ' + name);
@@ -4022,9 +4129,9 @@ function parseCharacter3DClipJson(raw, name) {
         declaredDurationSec: duration,
         samplerDurationSec: nFrames / fps,
         rootMode: rootModeRaw,
-        rootScale: asFiniteNumber(obj.rootScale) ?? 1,
-        unitScale: asFiniteNumber(obj.unitScale) ?? 1,
-        mappedCount: asFiniteNumber(obj.mappedCount) ?? names.length,
+        rootScale: (_a = asFiniteNumber(obj.rootScale)) !== null && _a !== void 0 ? _a : 1,
+        unitScale: (_b = asFiniteNumber(obj.unitScale)) !== null && _b !== void 0 ? _b : 1,
+        mappedCount: (_c = asFiniteNumber(obj.mappedCount)) !== null && _c !== void 0 ? _c : names.length,
         source: typeof obj.source === 'string' ? obj.source : '',
         boneTracks,
         rootTrack: rootTrack,
@@ -4257,9 +4364,10 @@ class CharacterAnimController {
         }
     }
     sample(model, pose, scratch) {
-        const key = this.currentClipKey ?? this.opts.fallbackClip ?? 'idle';
+        var _a, _b;
+        const key = (_b = (_a = this.currentClipKey) !== null && _a !== void 0 ? _a : this.opts.fallbackClip) !== null && _b !== void 0 ? _b : 'idle';
         const source = this.opts.clips[key];
-        const scratchPose = scratch ?? pose;
+        const scratchPose = scratch !== null && scratch !== void 0 ? scratch : pose;
         const fade = this.fade;
         if (!source) {
             this.note('missing-clip:' + key);
@@ -4303,9 +4411,10 @@ class CharacterAnimController {
         return input.state;
     }
     resolveTarget(actionKey, spec, input, inheritedFrom) {
+        var _a, _b, _c;
         if (inheritedFrom || spec.clip === null) {
             const base = this.inherited;
-            const clipKey = base ? base.clipKey : this.currentClipKey ?? this.opts.fallbackClip ?? 'idle';
+            const clipKey = base ? base.clipKey : (_b = (_a = this.currentClipKey) !== null && _a !== void 0 ? _a : this.opts.fallbackClip) !== null && _b !== void 0 ? _b : 'idle';
             const src = this.opts.clips[clipKey];
             const dur = src ? clipDurationSec(src) : 1;
             const phase = base
@@ -4324,25 +4433,26 @@ class CharacterAnimController {
         }
         const clipKey = spec.clip;
         const src = this.opts.clips[clipKey];
-        const durationSec = src ? clipDurationSec(src) : (spec.playWindowSec ?? 1);
+        const durationSec = src ? clipDurationSec(src) : ((_c = spec.playWindowSec) !== null && _c !== void 0 ? _c : 1);
         const phase = this.phaseFor(spec.progressSource, spec, input, durationSec);
         return { actionKey, clipKey, phaseRatio: phase, loop: spec.loop, rootDisplacement: spec.rootMotion, derived: true };
     }
     phaseFor(source, spec, input, durationSec) {
+        var _a, _b;
         const start = spec.startRatio;
         const span = 1 - start;
         switch (source) {
             case 'hold':
                 return start;
             case 'moveProgress': {
-                const window = spec.playWindowSec ?? durationSec;
+                const window = (_a = spec.playWindowSec) !== null && _a !== void 0 ? _a : durationSec;
                 const p = input.moveProgress !== null
                     ? clamp01(input.moveProgress)
                     : clamp01(input.stateElapsedSec / (window > 0 ? window : 1));
                 return foldPhase(start + p * span, spec.loop);
             }
             case 'stateElapsed': {
-                const window = spec.playWindowSec ?? durationSec;
+                const window = (_b = spec.playWindowSec) !== null && _b !== void 0 ? _b : durationSec;
                 if (spec.loop) {
                     return foldPhase(start + viewWindow(input.stateElapsedSec, window) * span, true);
                 }
@@ -4454,7 +4564,7 @@ function createHostRuntime(options) {
             if (ok)
                 return;
             pause('context-restore-failed');
-            onFinalFailure?.();
+            onFinalFailure === null || onFinalFailure === void 0 ? void 0 : onFinalFailure();
         },
         addDisposer(fn) {
             if (status === 'disposed')
@@ -4473,9 +4583,9 @@ function createHostRuntime(options) {
             while (disposers.length > 0) {
                 const fn = disposers.pop();
                 try {
-                    fn?.();
+                    fn === null || fn === void 0 ? void 0 : fn();
                 }
-                catch {
+                catch (_a) {
                 }
             }
         },
@@ -4487,7 +4597,7 @@ function createHostRuntime(options) {
   __def("proto/character3d_runtime_demo/evidence", function (require, module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ALL_STATES = exports.ALL_FACINGS = exports.RUNS_REQUIRED = exports.TAP_DIAG_PREFIX = exports.CONSOLE_RESULT_PREFIX = exports.RUNTIME_SCHEMA_VERSION = void 0;
+exports.PHASES_ORDER = exports.ALL_STATES = exports.ALL_FACINGS = exports.RUNS_REQUIRED = exports.TAP_DIAG_PREFIX = exports.CONSOLE_RESULT_PREFIX = exports.RUNTIME_SCHEMA_VERSION = void 0;
 exports.emptyContextEvidence = emptyContextEvidence;
 exports.contextEvidenceOk = contextEvidenceOk;
 exports.deviceHashOf = deviceHashOf;
@@ -4512,7 +4622,10 @@ exports.ALL_STATES = ['idle', 'walk', 'basic', 'charge', 'strike', 'jump', 'dead
 function emptyContextEvidence() {
     return {
         injectionMode: 'none', extAvailable: false, lostObserved: false, sessionContinuedWhileLost: false,
-        restoreOk: false, restoreVia: 'none', firstFrameDtSec: null, pauseFrozenFrames: -1, resumeDtSec: null, clockResetOk: false,
+        restoreOk: false, restoreVia: 'none', fastPathError: null,
+        rebuildAttempted: false, rebuildOk: false, rebuildError: null,
+        rebuildPolicy: 'per-loss-single-attempt', terminalFailureInjected: false,
+        firstFrameDtSec: null, pauseFrozenFrames: -1, resumeDtSec: null, clockResetOk: false,
         pendingFramesMax: 0, framesWhilePaused: -1,
         secondRestoreAttempted: false, secondRestoreFailed: false,
         pausedOnFinalFailure: false, errorPageShown: false, inputIgnoredWhilePaused: false,
@@ -4520,10 +4633,10 @@ function emptyContextEvidence() {
     };
 }
 function contextEvidenceOk(c) {
+    const recovered = c.restoreOk && (c.restoreVia === 'event' || (c.restoreVia === 'rebuild' && c.rebuildOk));
     return (c.lostObserved &&
         c.sessionContinuedWhileLost &&
-        c.restoreOk &&
-        c.restoreVia !== 'none' &&
+        recovered &&
         c.clockResetOk &&
         c.pendingFramesMax <= 1 &&
         c.framesWhilePaused === 0 &&
@@ -4533,6 +4646,7 @@ function contextEvidenceOk(c) {
         c.errorPageShown &&
         c.inputIgnoredWhilePaused);
 }
+exports.PHASES_ORDER = ['boot', 'sixdir', 'states', 'jump-trio', 'perf', 'context'];
 function deviceHashOf(d) {
     const parts = [d.brand, d.model, d.system, d.platform, d.SDKVersion, d.renderer, d.vendor, d.unmaskedRenderer, d.pixelRatio].join('|');
     let h = 2166136261;
@@ -4610,6 +4724,17 @@ function runtimeVerdicts(ctx) {
     if (sim) {
         notes.push('本次为浏览器 sim：只证明同一份 bundle 的代码路径通，**不是**微信/安卓能力证据（方案 §9.3）');
     }
+    const notOk = ctx.phases.filter((p) => p.status !== 'ok');
+    if (notOk.length > 0) {
+        notes.push('未完成的阶段（phasesOrder=' + exports.PHASES_ORDER.join(' → ') + '）：' +
+            notOk.map((p) => p.name + '(' + p.status + (p.detail ? '：' + p.detail : '') + ')').join(' / ') +
+            ' —— 已产出的阶段结果照常导出，不影响其余判定');
+    }
+    if (ctx.context.restoreVia === 'rebuild') {
+        notes.push('上下文恢复走**真重建**（平台不允许扩展恢复' +
+            (ctx.context.fastPathError ? '：' + ctx.context.fastPathError : '') +
+            '）：新建离屏 canvas/context + 经 loader 从缓存重新装配并重传资源；该平台**未执行**扩展恢复路径');
+    }
     if (ctx.resource.mode === 'local-subpackage') {
         notes.push('资源链走分包/本地路径 adapter ⇒ 已执行：清单校验/缓存命中/临时落盘/SHA-256 校验/结构门/原子登记/LKG/解析；未执行：wx.downloadFile HTTP 链路与合法域名白名单');
     }
@@ -4620,13 +4745,8 @@ function runtimeVerdicts(ctx) {
 }
 function buildResult(ctx) {
     const { verdict, notes } = runtimeVerdicts(ctx);
-    return {
-        schemaVersion: exports.RUNTIME_SCHEMA_VERSION,
-        ...ctx,
-        device: { ...ctx.device, deviceHash: ctx.device.deviceHash || deviceHashOf(ctx.device) },
-        verdict,
-        notes,
-    };
+    return Object.assign(Object.assign({ schemaVersion: exports.RUNTIME_SCHEMA_VERSION }, ctx), { device: Object.assign(Object.assign({}, ctx.device), { deviceHash: ctx.device.deviceHash || deviceHashOf(ctx.device) }), verdict,
+        notes });
 }
 function toConsoleLine(result) {
     return exports.CONSOLE_RESULT_PREFIX + JSON.stringify(result);
@@ -4771,37 +4891,8 @@ function createSampler(unitCount, durationSec, requiredMinSamples = exports.REQU
             const wall = sortAsc(frames.map((f) => f.wallMs));
             const fps = sortAsc(frames.map((f) => (f.wallMs > 0 ? 1000 / f.wallMs : 0)));
             const gpus = frames.map((f) => f.gpuMs).filter((v) => v !== null && v !== undefined);
-            const rec = {
-                unitCount,
-                durationSec: round(this.elapsedSec, 3),
-                sampleCount: frames.length,
-                fpsMean: round(mean(fps), 2),
-                fpsMedian: round(percentile(fps, 0.5), 2),
-                onePercentLowFps: round(onePercentLowFps(wall), 2),
-                frameMsMedian: round(percentile(wall, 0.5), 3),
-                frameMsP95: round(percentile(wall, 0.95), 3),
-                frameMsP99: round(percentile(wall, 0.99), 3),
-                over33msRatio: round(ratioOver(wall, 33), 5),
-                over50msRatio: round(ratioOver(wall, 50), 5),
-                passMsMedian: round(percentile(sortAsc(frames.map((f) => f.passMs)), 0.5), 4),
-                passMsMean: round(mean(frames.map((f) => f.passMs)), 4),
-                animMsMean: round(mean(frames.map((f) => f.animMs)), 4),
-                submitMsMean: round(mean(frames.map((f) => f.submitMs)), 4),
-                compositeCpuMsMean: round(mean(frames.map((f) => f.compositeMs)), 4),
-                gpuMs: gpus.length ? round(percentile(sortAsc(gpus), 0.5), 4) : null,
-                gpuMsSource: gpus.length ? 'EXT_disjoint_timer_query_webgl2' : 'unavailable',
-                contextLostCount: 0,
-                glErrorCount: 0,
-                drawCallsPerFrame: 0,
-                skinPalettesPerFrame: 0,
-                allUnitsOnScreen: false,
-                visibilityNote: '',
-                specProfile: true,
-                a2Profile: 'spec',
-                truncated,
-                truncateReason,
-                ...extra,
-            };
+            const rec = Object.assign({ unitCount, durationSec: round(this.elapsedSec, 3), sampleCount: frames.length, fpsMean: round(mean(fps), 2), fpsMedian: round(percentile(fps, 0.5), 2), onePercentLowFps: round(onePercentLowFps(wall), 2), frameMsMedian: round(percentile(wall, 0.5), 3), frameMsP95: round(percentile(wall, 0.95), 3), frameMsP99: round(percentile(wall, 0.99), 3), over33msRatio: round(ratioOver(wall, 33), 5), over50msRatio: round(ratioOver(wall, 50), 5), passMsMedian: round(percentile(sortAsc(frames.map((f) => f.passMs)), 0.5), 4), passMsMean: round(mean(frames.map((f) => f.passMs)), 4), animMsMean: round(mean(frames.map((f) => f.animMs)), 4), submitMsMean: round(mean(frames.map((f) => f.submitMs)), 4), compositeCpuMsMean: round(mean(frames.map((f) => f.compositeMs)), 4), gpuMs: gpus.length ? round(percentile(sortAsc(gpus), 0.5), 4) : null, gpuMsSource: gpus.length ? 'EXT_disjoint_timer_query_webgl2' : 'unavailable', contextLostCount: 0, glErrorCount: 0, drawCallsPerFrame: 0, skinPalettesPerFrame: 0, allUnitsOnScreen: false, visibilityNote: '', specProfile: true, a2Profile: 'spec', truncated,
+                truncateReason }, extra);
             return rec;
         },
     };
@@ -5029,7 +5120,8 @@ const CDN_NOT_EXECUTED = [
     'CDN 服务端内容版本化与回源策略（部署侧）',
 ];
 function resolveResourceChainPlan(input) {
-    const raw = (input.cdnBaseUrl ?? '').trim();
+    var _a;
+    const raw = ((_a = input.cdnBaseUrl) !== null && _a !== void 0 ? _a : '').trim();
     const isHttp = /^https?:\/\/[^\s]+$/.test(raw);
     if (isHttp) {
         return {
@@ -5061,13 +5153,15 @@ function stripLocalBase(url) {
     return rel.length > 0 ? rel : null;
 }
 function createLocalSubpackagePlatform(options = {}) {
+    var _a, _b;
     const inner = (0, platform_wx_1.createWxCharacter3DPlatform)({ runtime: options.runtime, logSink: options.logSink });
-    const host = options.runtime ?? resolveRuntime();
-    const root = options.root ?? exports.SUBPACKAGE_ROOT;
+    const host = (_a = options.runtime) !== null && _a !== void 0 ? _a : resolveRuntime();
+    const root = (_b = options.root) !== null && _b !== void 0 ? _b : exports.SUBPACKAGE_ROOT;
     const resolvedCodePaths = {};
     function readCodeFile(relativePath, downloadOptions) {
         return new Promise((resolve, reject) => {
-            if (downloadOptions?.signal?.aborted) {
+            var _a;
+            if ((_a = downloadOptions === null || downloadOptions === void 0 ? void 0 : downloadOptions.signal) === null || _a === void 0 ? void 0 : _a.aborted) {
                 reject(new Error('[local-subpackage] 读取被取消: ' + relativePath));
                 return;
             }
@@ -5189,17 +5283,18 @@ function resolveWxRuntime() {
 const CACHE_DIR_NAME = 'character3d';
 const CACHE_INDEX_KEY = 'character3d-cache-index-v1';
 function createWxCharacter3DPlatform(options = {}) {
-    const host = options.runtime ?? resolveWxRuntime();
+    var _a, _b;
+    const host = (_a = options.runtime) !== null && _a !== void 0 ? _a : resolveWxRuntime();
     const fs = host.getFileSystemManager();
     const cacheDir = host.env.USER_DATA_PATH + '/' + CACHE_DIR_NAME;
-    const logSink = options.logSink ?? ((level, message, data) => {
+    const logSink = (_b = options.logSink) !== null && _b !== void 0 ? _b : ((level, message, data) => {
         const fn = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
-        fn(message, data ?? '');
+        fn(message, data !== null && data !== void 0 ? data : '');
     });
     try {
         fs.mkdirSync(cacheDir, true);
     }
-    catch {
+    catch (_c) {
     }
     const cacheIndex = new Map(readIndex());
     let indexDirty = false;
@@ -5211,7 +5306,7 @@ function createWxCharacter3DPlatform(options = {}) {
             const entries = Object.entries(raw);
             return entries.filter(([, v]) => v && typeof v.savedPath === 'string' && typeof v.sha256 === 'string');
         }
-        catch {
+        catch (_a) {
             return [];
         }
     }
@@ -5236,7 +5331,7 @@ function createWxCharacter3DPlatform(options = {}) {
             fs.accessSync(path);
             return true;
         }
-        catch {
+        catch (_a) {
             return false;
         }
     }
@@ -5250,7 +5345,7 @@ function createWxCharacter3DPlatform(options = {}) {
                     fail: () => resolve(null),
                 });
             }
-            catch {
+            catch (_a) {
                 resolve(null);
             }
         });
@@ -5298,7 +5393,7 @@ function createWxCharacter3DPlatform(options = {}) {
                         try {
                             task.abort();
                         }
-                        catch { }
+                        catch (_a) { }
                         finish(() => reject(new Error('[platform-wx] 下载被取消: ' + url)));
                     });
                 }
@@ -5321,7 +5416,7 @@ function createWxCharacter3DPlatform(options = {}) {
             try {
                 fs.unlinkSync(path);
             }
-            catch { }
+            catch (_a) { }
             if (!digest) {
                 throw new Error('[platform-wx] 该基础库不支持 getFileInfo(digestAlgorithm) ⇒ 无法校验 SHA-256，拒绝放行');
             }
@@ -5337,7 +5432,7 @@ function createWxCharacter3DPlatform(options = {}) {
                 persistIndex(false);
                 return null;
             }
-            return { ...entry };
+            return Object.assign({}, entry);
         },
         async cachePut(input) {
             if (!fileExists(input.tempPath)) {
@@ -5348,19 +5443,19 @@ function createWxCharacter3DPlatform(options = {}) {
                 try {
                     fs.renameSync(input.tempPath, dest);
                 }
-                catch {
+                catch (_a) {
                     fs.copyFileSync(input.tempPath, dest);
                     try {
                         fs.unlinkSync(input.tempPath);
                     }
-                    catch { }
+                    catch (_b) { }
                 }
             }
             else {
                 try {
                     fs.unlinkSync(input.tempPath);
                 }
-                catch { }
+                catch (_c) { }
             }
             const entry = {
                 assetId: input.assetId,
@@ -5380,11 +5475,11 @@ function createWxCharacter3DPlatform(options = {}) {
                 try {
                     fs.unlinkSync(dest);
                 }
-                catch { }
+                catch (_d) { }
                 persistIndex(false);
                 throw error;
             }
-            return { ...entry };
+            return Object.assign({}, entry);
         },
         async cacheRemove(assetId) {
             const entry = cacheIndex.get(assetId);
@@ -5392,7 +5487,7 @@ function createWxCharacter3DPlatform(options = {}) {
                 try {
                     fs.unlinkSync(entry.savedPath);
                 }
-                catch { }
+                catch (_a) { }
             }
             cacheIndex.delete(assetId);
             indexDirty = true;
@@ -5423,7 +5518,7 @@ function createWxCharacter3DPlatform(options = {}) {
             try {
                 fs.unlinkSync(path);
             }
-            catch {
+            catch (_a) {
             }
         },
         async decodeImage(bytes, mimeType, name) {
@@ -5507,6 +5602,7 @@ exports.BUTTON_LABELS = {
 };
 const FONT = '"PingFang SC","Microsoft YaHei",monospace';
 function drawHud(ctx, layout, view) {
+    var _a;
     const w = layout.width;
     const fs = Math.max(12, Math.round(w / 46));
     const panelH = view.page
@@ -5541,7 +5637,7 @@ function drawHud(ctx, layout, view) {
         ctx.font = bfont + 'px ' + FONT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(exports.BUTTON_LABELS[b.id] ?? b.id, (b.rect.x0 + b.rect.x1) / 2, (b.rect.y0 + b.rect.y1) / 2);
+        ctx.fillText((_a = exports.BUTTON_LABELS[b.id]) !== null && _a !== void 0 ? _a : b.id, (b.rect.x0 + b.rect.x1) / 2, (b.rect.y0 + b.rect.y1) / 2);
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.font = fs + 'px ' + FONT;

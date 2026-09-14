@@ -35,6 +35,10 @@ const PROFILE = arg('profile', 'sim');
 const VIEWPORT = { width: +arg('vw', '390'), height: +arg('vh', '844') };
 const DSF = +arg('dsf', '2');
 const SHOTS = arg('shots', 'last');
+/** `--norestore=1`：复刻微信模拟器「restoreContext 被平台拒绝」的场景（压真重建路径）。
+ *  产物文件名加 `norestore` 前缀，与常规 sim 结果并存不覆盖。 */
+const NO_RESTORE = arg('norestore', '0') === '1';
+const TAG = NO_RESTORE ? 'sim-norestore' : 'sim';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -78,7 +82,8 @@ async function runOnce(context, baseUrl, runIndex, commit) {
   page.on('console', (msg) => consoleLines.push(msg.text()));
   page.on('pageerror', (e) => consoleLines.push('PAGEERROR ' + e.message));
 
-  const url = `${baseUrl}/proto/character3d_runtime_demo/browser/index.html?aa=${AA}&profile=${PROFILE}&perf=1&commit=${commit}`;
+  const url = `${baseUrl}/proto/character3d_runtime_demo/browser/index.html?aa=${AA}&profile=${PROFILE}&perf=1&commit=${commit}` +
+    (NO_RESTORE ? '&norestore=1' : '');
   await page.goto(url, { waitUntil: 'load' });
 
   // 宿主跑完全流程：结果句柄被赋非空值
@@ -114,10 +119,11 @@ async function runOnce(context, baseUrl, runIndex, commit) {
   const clipboardLen = await page.evaluate(() => window.__WX_SHIM.clipboardLength());
   const shares = await page.evaluate(() => window.__WX_SHIM.shares());
   const fileCount = await page.evaluate(() => window.__WX_SHIM.fileCount());
+  const fileNames = await page.evaluate(() => window.__WX_SHIM.fileNames());
   // 页面级截图存 JPEG（控体积；取景证据用上面的逐项截图）
-  await page.screenshot({ path: path.join(OUT, `sim-page-run${runIndex}.jpg`), type: 'jpeg', quality: 72 });
+  await page.screenshot({ path: path.join(OUT, `${TAG}-page-run${runIndex}.jpg`), type: 'jpeg', quality: 72 });
   await page.close();
-  return { result, consoleLines, screenshots, clipboardLen, shares, fileCount };
+  return { result, consoleLines, screenshots, clipboardLen, shares, fileCount, fileNames };
 }
 
 /** 截图压缩：50% 尺寸 + JPEG（默认；`--shots=full` 保留原 PNG）。 */
@@ -172,9 +178,9 @@ try {
     runs.push(r);
 
     // 结果 JSON 落库（含 console 单行原文）
-    fs.writeFileSync(path.join(OUT, `sim-result-run${i}.json`), JSON.stringify(r.result, null, 1));
+    fs.writeFileSync(path.join(OUT, `${TAG}-result-run${i}.json`), JSON.stringify(r.result, null, 1));
     const consoleResult = r.consoleLines.find((l) => l.startsWith('__CHAR3D_RUNTIME_RESULT__='));
-    fs.writeFileSync(path.join(OUT, `sim-console-run${i}.json`), JSON.stringify({
+    fs.writeFileSync(path.join(OUT, `${TAG}-console-run${i}.json`), JSON.stringify({
       consoleLine: consoleResult ?? null,
       tapLines: r.consoleLines.filter((l) => l.startsWith('__CHAR3D_TAP__=')),
       clipboardLines: r.consoleLines.filter((l) => l.startsWith('__CHAR3D_CLIPBOARD__=')),
@@ -189,7 +195,7 @@ try {
         const [meta, b64] = String(dataUrl).split(',');
         const ext = SHOTS === 'full' ? 'png' : 'jpg';
         const out = name.replace(/\.png$/, '.' + ext);
-        fs.writeFileSync(path.join(OUT, `sim-run${i}-${out}`), Buffer.from(b64, 'base64'));
+        fs.writeFileSync(path.join(OUT, `${TAG}-run${i}-${out}`), Buffer.from(b64, 'base64'));
         void meta;
       }
     }
@@ -230,6 +236,21 @@ try {
     `${c.injectionMode} · restoreVia=${c.restoreVia}`);
   check('上下文注入：lost 被观测 + 短暂 lost 期间 session 继续', c.lostObserved && c.sessionContinuedWhileLost);
   check('上下文注入：恢复成功 + 恢复首帧 dt=0（不补算停顿）', c.restoreOk && c.firstFrameDtSec === 0, `dt=${c.firstFrameDtSec}`);
+  if (NO_RESTORE) {
+    // P0-3 核心：平台拒绝扩展恢复时，**必须落真重建**，且不得因此判失败/丢测量结果
+    check('上下文注入：快路径抛错被如实记录（复刻微信模拟器原文）',
+      typeof c.fastPathError === 'string' && c.fastPathError.includes('restoration not allowed'), String(c.fastPathError));
+    check('上下文注入：快路径不可用 ⇒ 走**真重建**（新建 canvas/context + 缓存重装配）',
+      c.restoreVia === 'rebuild' && c.rebuildAttempted === true && c.rebuildOk === true,
+      `restoreVia=${c.restoreVia} rebuildOk=${c.rebuildOk}`);
+    check('上下文注入：真重建后恢复成功（不因平台拒绝扩展恢复而判失败）',
+      c.restoreOk === true && !String(last.verdict.contextRestore).endsWith('FAIL'), last.verdict.contextRestore);
+    check('结果如实标注「扩展恢复未执行」',
+      last.resource.notExecutedBranches.some((b) => b.includes('restoreContext')), last.resource.notExecutedBranches.join(' | '));
+  } else {
+    check('上下文注入：sim 走 event 快路径（平台允许扩展恢复；真重建路径不得在 sim 触发回归）',
+      c.restoreVia === 'event' && c.rebuildAttempted === false, `restoreVia=${c.restoreVia} rebuild=${c.rebuildAttempted}`);
+  }
   check('上下文注入：暂停期间帧冻结 + 恢复 dt=0', c.pauseFrozenFrames === 0 && c.resumeDtSec === 0,
     `frozen=${c.pauseFrozenFrames} resumeDt=${c.resumeDtSec}`);
   check('上下文注入：单 RAF（峰值 ≤1）', c.pendingFramesMax <= 1, 'raf 峰值=' + c.pendingFramesMax);
@@ -238,6 +259,17 @@ try {
     `failed=${c.secondRestoreFailed} paused=${c.pausedOnFinalFailure} page=${c.errorPageShown} inputIgnored=${c.inputIgnoredWhilePaused}`);
   check('上下文注入：终失败暂停后 tick 冻结', c.framesWhilePaused === 0, 'frames=' + c.framesWhilePaused);
   check('上下文 verdict 非 FAIL', !String(last.verdict.contextRestore).endsWith('FAIL'), last.verdict.contextRestore);
+
+  // P0-3：阶段重排（自测在最后）+ 中间快照（自测失败不丢测量结果）
+  check('阶段顺序：context 恒在最后（测量项在前）',
+    last.phases.map((p) => p.name).join(',') === 'boot,sixdir,states,jump-trio,perf,context',
+    last.phases.map((p) => `${p.name}:${p.status}`).join(' '));
+  check('测量项阶段全部 ok（六向/全状态/轻功三元/压测）',
+    ['boot', 'sixdir', 'states', 'jump-trio', 'perf'].every((n) => last.phases.find((p) => p.name === n)?.status === 'ok'),
+    last.phases.map((p) => `${p.name}:${p.status}`).join(' '));
+  check('压测后先落 precontext 中间快照（自测失败也不丢测量结果）',
+    runs.every((r) => r.fileNames.some((n) => n.includes('precontext'))),
+    runs[runs.length - 1].fileNames.filter((n) => n.includes('char3d_')).join(' '));
 
   check('FXAA 分支是生产分支（有效 antialias=false）', last.rendererInfo.edgeMode === 'fxaa' && last.rendererInfo.effectiveAntialias === false,
     `edgeMode=${last.rendererInfo.edgeMode} aa=${last.rendererInfo.effectiveAntialias}`);
@@ -265,9 +297,10 @@ try {
     runs[runs.length - 1].result.runs.length >= runs.length && runs[runs.length - 1].result.runs.length >= 1,
     `runs=${runs[runs.length - 1].result.runs.length} / 启动次数=${runs.length}`);
 
-  fs.writeFileSync(path.join(OUT, 'sim-summary.json'), JSON.stringify({
+  fs.writeFileSync(path.join(OUT, `${TAG}-summary.json`), JSON.stringify({
     generatedAt: new Date().toISOString(),
     commitSha: commit,
+    scenario: NO_RESTORE ? 'norestore（复刻微信模拟器：restoreContext 被拒 ⇒ 真重建路径）' : 'standard（事件快路径）',
     aa: AA, profile: PROFILE, viewport: VIEWPORT, deviceScaleFactor: DSF,
     deviceEvidence: false,
     note: 'sim（浏览器 + wx shim）只证明同一份 bundle 的代码路径通；真机能力证据必须来自 HONOR 扫码运行（方案 §9.3）',

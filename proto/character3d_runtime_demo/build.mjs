@@ -19,6 +19,24 @@ const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
+/**
+ * ★【T31-FE-C P0-2】TS 发射目标 = **ES2017**（**不是** ES2020）。
+ *
+ * 为什么：微信预览/运行时的编译链**不接受 ES2020 语法**。实测（Leo 预览，ideVersion 2.02.2608040）：
+ *   预览 Error: invalid file: bundle.js, 30:66 → `SyntaxError: Unexpected token ?`
+ *   （`const handle = (0, host_1.startRuntimeDemo)(g.__CHAR3D_DEMO_OPTS ?? {});`）
+ * 首轮用 ES2020 ⇒ 产物里 `??` 66 处 / `?.` 47 处 → 预览阶段直接语法报错。
+ *
+ * 选 ES2017 的理由（不是随手挑的）：
+ *   · TS 对 target < ES2020 会把 `??`/`?.` **降级**成语义等价的 `!= null / !== void 0` 判断；
+ *   · ES2017 保留**原生 async/await**（S0 probe 真机已验证 async/await 可用），不会引入 `__awaiter`/`__generator`
+ *     这类额外状态机；也保留原生 `for...of`（不降级成索引循环 ⇒ Map/Set 迭代语义不变）；
+ *   · 对象展开（ES2018 语法）由 TS 自动降级成 `__assign` 辅助函数，不留给运行时。
+ * 若真机/预览上发现必须更低级别才过，再降一级并在此记录理由（禁静默下调）。
+ *
+ * ⚠ 该约束由 §7 的**ES2020 语法记号门**（scanLegacySyntax）与 tests/character3d-runtime-demo.test.ts 双锁。
+ */
+const TRANSPILE_TARGET = ts.ScriptTarget.ES2017;
 const DEMO = path.join(ROOT, 'proto/character3d_runtime_demo');
 const OUT = path.join(DEMO, 'bundle.js');
 const CHECK_ONLY = process.argv.includes('--check');
@@ -49,7 +67,7 @@ function collect(entryKey) {
     const src = fs.readFileSync(path.join(ROOT, key + '.ts'), 'utf8');
     const out = ts.transpileModule(src, {
       compilerOptions: {
-        target: ts.ScriptTarget.ES2020,
+        target: TRANSPILE_TARGET, // ES2017：见文件头 P0-2 注释（微信预览不接受 ES2020 语法）
         module: ts.ModuleKind.CommonJS,
         esModuleInterop: true,
         // 产物不带源码注释：① 体积；② 源码扫描口径统一（扫字面量只看真代码）
@@ -132,7 +150,7 @@ function loadTsModule(key, cache = new Map()) {
   if (cache.has(key)) return cache.get(key);
   const src = fs.readFileSync(path.join(ROOT, key + '.ts'), 'utf8');
   const js = ts.transpileModule(src, {
-    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
+    compilerOptions: { target: TRANSPILE_TARGET, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
     fileName: key,
   }).outputText;
   const mod = { exports: {} };
@@ -174,6 +192,46 @@ function scanDynamicEvalFamily(text) {
   if (strTimer.length) notes.push('字符串型定时器 × ' + strTimer.length);
   const dynImport = text.match(/[^.\w$]import\s*\(/g) || [];
   if (dynImport.length) notes.push('动态 import() × ' + dynImport.length);
+  return notes;
+}
+
+/**
+ * ES2020 语法记号扫描（微信预览/运行时**不接受**）—— T31-FE-C P0-2 崩因本体。
+ * 硬门三项：`??`（空值合并，含 `??=`）、`?.`（可选链，含 `?.[` / `?.(`）。
+ * 说明：这是**记号级**扫描（不解析 AST）。理论上字符串内容里出现 `??` / `?.` 也会命中；
+ *   真遇到请改写该字符串字面量，**不要**放宽本门（门的价值就在于产物里一个都不许有）。
+ */
+function scanLegacySyntax(text) {
+  const hits = [];
+  const nullish = text.match(/\?\?/g) || [];
+  if (nullish.length) hits.push('?? × ' + nullish.length);
+  const optional = text.match(/\?\./g) || [];
+  if (optional.length) hits.push('?. × ' + optional.length);
+  return hits;
+}
+
+/** 其它「运行时接受度」类记号（同族，**只报告不阻断**）：ES2018+ 语法与运行库 API。 */
+function scanRuntimeAcceptanceReport(text) {
+  const notes = [];
+  const checks = [
+    ['可选捕获绑定 catch {（ES2019）', /catch\s*\{/g],
+    ['逻辑赋值 ||= / &&=（ES2021）', /(\|\||&&)=/g],
+    ['数字分隔符 1_000（ES2021）', /\b\d+_\d+/g],
+    ['私有字段 #x（ES2022）', /[.\s{]#[a-z_$]/g],
+    ['Array.prototype.at（ES2022）', /\.at\s*\(/g],
+    ['Object.fromEntries（ES2019）', /Object\.fromEntries/g],
+    ['Object.hasOwn（ES2022）', /Object\.hasOwn/g],
+    ['String.replaceAll（ES2021）', /\.replaceAll\s*\(/g],
+    ['Promise.allSettled/any', /Promise\.(allSettled|any)\b/g],
+    ['BigInt 字面量/调用', /\bBigInt\b|\b\d+n\b/g],
+    ['structuredClone', /structuredClone/g],
+    ['ResizeObserver/IntersectionObserver', /(ResizeObserver|IntersectionObserver)/g],
+    ['OffscreenCanvas 直接 new', /new\s+(OffscreenCanvas|ImageBitmap)\b/g],
+  ];
+  for (const [name, re] of checks) {
+    const m = text.match(re);
+    if (m && m.length) notes.push(name + ' × ' + m.length);
+  }
   return notes;
 }
 
@@ -237,7 +295,7 @@ function staticGate() {
     for (const f of ['game.js', 'bundle.js']) {
       const file = path.join(DEMO, f);
       if (!fs.existsSync(file)) continue;
-      const diags = ts.createSourceFile(f, fs.readFileSync(file, 'utf8'), ts.ScriptTarget.ES2020, false).parseDiagnostics;
+      const diags = ts.createSourceFile(f, fs.readFileSync(file, 'utf8'), TRANSPILE_TARGET, false).parseDiagnostics;
       if (diags.length) problems.push(`${f} 语法非法：${diags[0].messageText}`);
     }
   }
@@ -257,7 +315,8 @@ function staticGate() {
     if (/systems\/battle-core|battle-session/.test(bundleCode)) problems.push('bundle.js 内出现 battle-core/battle-session（宿主不引结算）');
   }
 
-  // 7) 入包 JS **禁动态代码求值**（微信小游戏运行时禁令；T31-FE-C P0 防回退门）
+  // 7) 入包 JS **禁动态代码求值**（微信小游戏运行时禁令；T31-FE-C P0-1 防回退门）
+  // 8) 入包 JS **禁 ES2020 语法记号**（微信预览/运行时编译链不接受；T31-FE-C P0-2 防回退门）
   for (const f of ['bundle.js', 'game.js']) {
     const file = path.join(DEMO, f);
     if (!fs.existsSync(file)) continue;
@@ -265,7 +324,13 @@ function staticGate() {
     const hits = scanDynamicEval(text);
     if (hits.length) problems.push(`${f} 含动态代码求值（微信运行时禁用）：${hits.join(' / ')}`);
     const family = scanDynamicEvalFamily(text);
-    if (family.length) notes.push(`${f} 同族限制报告（未阻断）：${family.join(' / ')}`);
+    if (family.length) notes.push(`${f} 动态求值同族报告（未阻断）：${family.join(' / ')}`);
+    const syntax = scanLegacySyntax(text);
+    if (syntax.length) {
+      problems.push(`${f} 含 ES2020 语法记号（微信预览不接受；发射目标须为 ES2017）：${syntax.join(' / ')}`);
+    }
+    const acceptance = scanRuntimeAcceptanceReport(text);
+    if (acceptance.length) notes.push(`${f} 运行时接受度报告（未阻断，需人工判断）：${acceptance.join(' / ')}`);
   }
   notes.push(`资产副本 ${refs.length} 个 / ${(copiedBytes / 1048576).toFixed(2)} MB（源 = proto/battle_demo/cdn）`);
   notes.push(`主包 bundle ${(fs.existsSync(OUT) ? fs.statSync(OUT).size / 1024 : 0).toFixed(0)} KB（微信主包上限 4MB）`);

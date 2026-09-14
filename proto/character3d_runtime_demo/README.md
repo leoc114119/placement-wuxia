@@ -207,8 +207,30 @@ node proto/character3d_runtime_demo/tests/runtime-demo-browser.mjs --runs=2
    `TypeError: m.fn is not a function`）。同族限制（字符串型 `setTimeout/setInterval`、动态 `import()`）
    一并扫描并**提示**（不阻断）；模块体自身带动态求值会在构建期直接抛错。
 
+8. **入包 JS 零 ES2020 语法记号**：`bundle.js` / `game.js` 命中 `??` / `?.` 即**失败退出**
+   （微信预览编译链不接受 ES2020 语法 —— T31-FE-C P0-2：`invalid file: bundle.js, 30:66` +
+   `SyntaxError: Unexpected token ?`）。发射目标固定 **`ts.ScriptTarget.ES2017`**（`build.mjs` 顶部常量）：
+   TS 会把 `??`/`?.` 降级成 `!= null / !== void 0` 判断，async/await 与 `for...of` 保持原生。
+   其它「运行时接受度」类记号（ES2019+ 语法、`Object.fromEntries`、`.at()`、`BigInt` 等）一并扫描并**提示**。
+
 > 模块注册形态 = **函数字面量内联**（`__def("<id>", function (require, module, exports) { <模块体> });`），
 > 与 webpack/rollup 同形态；禁用「源码字符串 + 构造」两段式（Node/Chrome 能跑、真机必崩）。
+
+### 7.1 阶段顺序（自测不得毒死测量）
+
+```
+boot（资源门装配）→ sixdir（六向）→ states（全状态）→ jump-trio（轻功三元）→ perf（1/5/10/20 压测）
+→ 【中间快照落盘 char3d_<hash>_result_run<n>_precontext.json】→ context（上下文丢失/恢复自测）
+```
+
+- **上下文自测排在整轮最后**：平台不支持恢复时，前面的测量结果照常产出与导出（结果 JSON 的
+  `phases` 逐阶段状态 + `phasesOrder` 一眼可见「哪一步没跑」）。
+- 恢复路径二选一，**快路径不可用必须落真重建（不得判失败）**：
+  `restoreVia='event'`（平台允许扩展恢复）或 `restoreVia='rebuild'`（新建离屏 canvas + webgl2 context，
+  经 loader 从缓存重新装配并重传资源 —— 方案 §6.2 原文）；两条都不成才是 `unsupported`（走暂停 + 错误页）。
+- 模拟微信「`restoreContext` 被拒」的端到端自压：
+  `node proto/character3d_runtime_demo/tests/runtime-demo-browser.mjs --runs=1 --norestore=1`
+  （产物 `evidence/sim-norestore-*`，与常规 sim 结果并存）。
 
 ## 8. 已知缺口与不确定项（交付时如实登记）
 

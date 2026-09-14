@@ -74,10 +74,27 @@ export interface ContextInjectionEvidence {
   lostObserved: boolean;
   /** 短暂 lost 期间 session（tick）是否继续推进（方案 §6.2「暂停人物提交但 session 继续保持」） */
   sessionContinuedWhileLost: boolean;
-  /** 第一次恢复是否成功 */
+  /** 第一次恢复是否成功（快路径或真重建**任一**成功即 true） */
   restoreOk: boolean;
-  /** 恢复由谁触发：event = 宿主 webglcontextrestored 事件；host-api = 宿主直接调 renderer 入口 */
-  restoreVia: 'event' | 'host-api' | 'none';
+  /** 恢复走的是哪条路：
+   *  · `event` = 平台允许扩展恢复（`restoreContext()` + webglcontextrestored 事件 / renderer 入口）；
+   *  · `rebuild` = 快路径不可用 ⇒ **真重建**：新建离屏 canvas + webgl2 context，经 loader 从缓存重新装配
+   *    并重传资源（方案 §6.2「尝试重建一次并重传缓存资源」）；
+   *  · `unsupported` = 两条路都没成（此时按 §6.2 走暂停 + 错误页）；
+   *  · `none` = 未尝试。 */
+  restoreVia: 'event' | 'rebuild' | 'unsupported' | 'none';
+  /** 快路径（`restoreContext()`）抛错原文——微信模拟器实测：
+   *  `WebGL: INVALID_OPERATION: restoreContext: context restoration not allowed`（该平台不允许扩展恢复） */
+  fastPathError: string | null;
+  /** 是否尝试过真重建 */
+  rebuildAttempted: boolean;
+  /** 真重建是否成功 */
+  rebuildOk: boolean;
+  rebuildError: string | null;
+  /** 重建策略（结果里写明，避免「再失败几次才暂停」被各人理解成不同东西） */
+  rebuildPolicy: string;
+  /** 终失败路径是否为**故障注入**触发（验证 §6.2「重建失败 ⇒ 暂停对局 + 错误页」用） */
+  terminalFailureInjected: boolean;
   /** 恢复成功后**首帧 dt**（必须为 0：host 恢复时置空 last，禁补算停顿） */
   firstFrameDtSec: number | null;
   /** 显式暂停 → 恢复：暂停期间新增帧数（必须为 0） */
@@ -105,7 +122,10 @@ export interface ContextInjectionEvidence {
 export function emptyContextEvidence(): ContextInjectionEvidence {
   return {
     injectionMode: 'none', extAvailable: false, lostObserved: false, sessionContinuedWhileLost: false,
-    restoreOk: false, restoreVia: 'none', firstFrameDtSec: null, pauseFrozenFrames: -1, resumeDtSec: null, clockResetOk: false,
+    restoreOk: false, restoreVia: 'none', fastPathError: null,
+    rebuildAttempted: false, rebuildOk: false, rebuildError: null,
+    rebuildPolicy: 'per-loss-single-attempt', terminalFailureInjected: false,
+    firstFrameDtSec: null, pauseFrozenFrames: -1, resumeDtSec: null, clockResetOk: false,
     pendingFramesMax: 0, framesWhilePaused: -1,
     secondRestoreAttempted: false, secondRestoreFailed: false,
     pausedOnFinalFailure: false, errorPageShown: false, inputIgnoredWhilePaused: false,
@@ -115,11 +135,12 @@ export function emptyContextEvidence(): ContextInjectionEvidence {
 
 /** §6.2 上下文恢复的完整判据（真机与 sim 共用同一份）。 */
 export function contextEvidenceOk(c: ContextInjectionEvidence): boolean {
+  const recovered =
+    c.restoreOk && (c.restoreVia === 'event' || (c.restoreVia === 'rebuild' && c.rebuildOk));
   return (
     c.lostObserved &&
     c.sessionContinuedWhileLost &&
-    c.restoreOk &&
-    c.restoreVia !== 'none' &&
+    recovered &&
     c.clockResetOk &&
     c.pendingFramesMax <= 1 &&
     c.framesWhilePaused === 0 &&
@@ -210,6 +231,8 @@ export interface RuntimeResultContext {
   jumpTrios: JumpTrioRow[];
   context: ContextInjectionEvidence;
   capacity: CapacityRecord[];
+  /** 各阶段状态（顺序见 PHASES_ORDER）：**自测不得毒死测量**，故测量项在前、上下文自测在最后 */
+  phases: PhaseRecord[];
   runs: RuntimeRunRecord[];
   env: {
     /** true = 浏览器 sim（非微信/安卓能力证据） */
@@ -236,6 +259,20 @@ export interface RuntimeResult extends RuntimeResultContext {
   verdict: RuntimeVerdicts;
   notes: string[];
 }
+
+/** 阶段状态：`skipped` = 本轮按条件不跑（例如压测未到冷/热门槛）；`failed` = 该阶段抛错。 */
+export type PhaseStatus = 'pending' | 'running' | 'ok' | 'failed' | 'skipped';
+
+export interface PhaseRecord {
+  name: string;
+  status: PhaseStatus;
+  detail: string;
+  /** 该阶段耗时（毫秒，平台钟；跨运行不可比） */
+  ms: number;
+}
+
+/** 阶段顺序（结果里一并给出，使「哪一步没跑」一眼可见；测量项在前、破坏性自测在后）。 */
+export const PHASES_ORDER: readonly string[] = ['boot', 'sixdir', 'states', 'jump-trio', 'perf', 'context'];
 
 export function deviceHashOf(d: RuntimeDevice): string {
   const parts = [d.brand, d.model, d.system, d.platform, d.SDKVersion, d.renderer, d.vendor, d.unmaskedRenderer, d.pixelRatio].join('|');
@@ -325,6 +362,21 @@ export function runtimeVerdicts(ctx: RuntimeResultContext): { verdict: RuntimeVe
   }
   if (sim) {
     notes.push('本次为浏览器 sim：只证明同一份 bundle 的代码路径通，**不是**微信/安卓能力证据（方案 §9.3）');
+  }
+  const notOk = ctx.phases.filter((p) => p.status !== 'ok');
+  if (notOk.length > 0) {
+    notes.push(
+      '未完成的阶段（phasesOrder=' + PHASES_ORDER.join(' → ') + '）：' +
+        notOk.map((p) => p.name + '(' + p.status + (p.detail ? '：' + p.detail : '') + ')').join(' / ') +
+        ' —— 已产出的阶段结果照常导出，不影响其余判定',
+    );
+  }
+  if (ctx.context.restoreVia === 'rebuild') {
+    notes.push(
+      '上下文恢复走**真重建**（平台不允许扩展恢复' +
+        (ctx.context.fastPathError ? '：' + ctx.context.fastPathError : '') +
+        '）：新建离屏 canvas/context + 经 loader 从缓存重新装配并重传资源；该平台**未执行**扩展恢复路径',
+    );
   }
   if (ctx.resource.mode === 'local-subpackage') {
     notes.push('资源链走分包/本地路径 adapter ⇒ 已执行：清单校验/缓存命中/临时落盘/SHA-256 校验/结构门/原子登记/LKG/解析；未执行：wx.downloadFile HTTP 链路与合法域名白名单');

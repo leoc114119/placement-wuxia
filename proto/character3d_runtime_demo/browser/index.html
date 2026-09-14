@@ -25,6 +25,8 @@
     window.__WX_SHIM_PRESET = preset;
     window.__WX_SHIM_AA = q.get('aa') || null; // 'fxaa' | 'native-msaa' | null
     window.__WX_SHIM_PROFILE = q.get('profile') || 'sim';
+    // ?norestore=1：复刻微信模拟器「restoreContext 被平台拒绝」⇒ 端到端压真重建路径
+    window.__WX_SHIM_NO_RESTORE = q.get('norestore') === '1';
   })();
 </script>
 

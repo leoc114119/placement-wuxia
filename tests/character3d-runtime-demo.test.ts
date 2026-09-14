@@ -35,6 +35,7 @@ import {
   contextEvidenceOk,
   deviceHashOf,
   emptyContextEvidence,
+  PHASES_ORDER,
   runProgress,
   shareFileName,
   toConsoleLine,
@@ -417,7 +418,10 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
     return {
       ...emptyContextEvidence(),
       injectionMode: 'gl-ext', extAvailable: true, lostObserved: true, sessionContinuedWhileLost: true,
-      restoreOk: true, restoreVia: 'event', firstFrameDtSec: 0, pauseFrozenFrames: 0, resumeDtSec: 0,
+      restoreOk: true, restoreVia: 'event', fastPathError: null,
+      rebuildAttempted: false, rebuildOk: false, rebuildError: null,
+      rebuildPolicy: 'per-loss-single-attempt', terminalFailureInjected: true,
+      firstFrameDtSec: 0, pauseFrozenFrames: 0, resumeDtSec: 0,
       clockResetOk: true, pendingFramesMax: 1, framesWhilePaused: 0,
       secondRestoreAttempted: true, secondRestoreFailed: true, pausedOnFinalFailure: true,
       errorPageShown: true, inputIgnoredWhilePaused: true, error: null,
@@ -468,6 +472,7 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
       })),
       context: contextOkEvidence(),
       capacity: [],
+      phases: PHASES_ORDER.map((name) => ({ name, status: 'ok' as const, detail: '', ms: 1 })),
       runs: [run(1, 'cold'), run(2, 'cold'), run(3, 'cold'), run(4, 'hot'), run(5, 'hot'), run(6, 'hot')],
       env: { sim: false, commitSha: 'x'.repeat(40), profile: 'spec', screenshots: [], notes: [] },
       ...overrides,
@@ -540,6 +545,9 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
       ['sessionContinuedWhileLost', false],
       ['restoreOk', false],
       ['restoreVia', 'none'],
+      // 注：`rebuildOk` 只在 restoreVia==='rebuild' 时被判据消费，`terminalFailureInjected` 是
+      // 「终失败路径为故障注入」的**来源标记**（不是通过条件）——两者都另有用例单独覆盖：
+      // rebuildOk 见「恢复路径三态」，terminalFailureInjected 断言见下方字段存在性检查。
       ['clockResetOk', false],
       ['pendingFramesMax', 2],
       ['framesWhilePaused', 3],
@@ -553,6 +561,9 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
       const broken = { ...ok, [key]: value } as ContextInjectionEvidence;
       expect(contextEvidenceOk(broken), String(key)).toBe(false);
     }
+    // 来源标记与策略必须如实入结果（终失败路径=故障注入；重建策略写死一处口径）
+    expect(ok.terminalFailureInjected).toBe(true);
+    expect(ok.rebuildPolicy).toBe('per-loss-single-attempt');
   });
 
   it('结果出口：console 单行前缀 / 分享文件名 / deviceHash 可复算', () => {
@@ -563,6 +574,64 @@ describe('结果 schema 与判定矩阵（卡 C DoD 口径）', () => {
     expect(deviceHashOf(res.device)).toBe(res.device.deviceHash);
     expect(runProgress(res.runs)).toEqual({ cold: 3, hot: 3, required: RUNS_REQUIRED });
     expect(res.schemaVersion).toBe('t31-fe-c-1.0');
+  });
+
+  // ---- P0-3：恢复改真重建 + 阶段重排（自测不得毒死测量）----
+
+  it('恢复路径三态：event / rebuild（真重建）/ unsupported —— 快路径不可用不得判失败', () => {
+    const ev = contextOkEvidence();
+    // ① event 路径（平台允许扩展恢复）
+    expect(contextEvidenceOk({ ...ev, restoreVia: 'event' })).toBe(true);
+    // ② rebuild 路径（平台拒绝 restoreContext ⇒ 新建 canvas/context 重装配）——同样算恢复成功
+    const rebuilt: ContextInjectionEvidence = {
+      ...ev, restoreVia: 'rebuild', rebuildAttempted: true, rebuildOk: true,
+      fastPathError: 'WebGL: INVALID_OPERATION: restoreContext: context restoration not allowed',
+    };
+    expect(contextEvidenceOk(rebuilt)).toBe(true);
+    // ③ rebuild 声明成功但 rebuildOk=false ⇒ 不算恢复（不许把失败写成成功）
+    expect(contextEvidenceOk({ ...rebuilt, rebuildOk: false })).toBe(false);
+    // ④ 两条路都没成 ⇒ 不算恢复（此时按 §6.2 走暂停 + 错误页）
+    expect(contextEvidenceOk({ ...ev, restoreOk: false, restoreVia: 'unsupported' })).toBe(false);
+    // ⑤ 备注里点明"该平台未执行扩展恢复"
+    const notes = buildResult(baseContext({ context: rebuilt })).notes.join(' ');
+    expect(notes).toContain('真重建');
+    expect(notes).toContain('未执行');
+  });
+
+  it('阶段重排：测量项在上下文自测之前，phasesOrder 里 context 恒在最后', () => {
+    expect(PHASES_ORDER).toEqual(['boot', 'sixdir', 'states', 'jump-trio', 'perf', 'context']);
+    const ctx = baseContext();
+    expect(ctx.phases.map((p) => p.name)).toEqual([...PHASES_ORDER]);
+    // 没跑到 ok 的阶段要在 notes 里点名（"哪一步没跑"一眼可见）
+    const withFailures = buildResult(baseContext({
+      phases: PHASES_ORDER.map((name) => ({
+        name, status: name === 'context' ? ('failed' as const) : ('ok' as const), detail: name === 'context' ? '模拟器不允许恢复' : '', ms: 1,
+      })),
+    }));
+    expect(withFailures.notes.join(' ')).toContain('未完成的阶段');
+    expect(withFailures.notes.join(' ')).toContain('context(failed');
+    // 关键承诺：上面 5 个阶段的结果照常在结果里（自测失败不毒死测量）——六向/全状态/20u 字段不为空
+    expect(withFailures.sixDir).toHaveLength(6);
+    expect(withFailures.states).toHaveLength(7);
+    expect(withFailures.phases.filter((p) => p.status === 'ok').length).toBe(PHASES_ORDER.length - 1);
+  });
+
+  it('host 源码级：真重建走 bootstrap3D(contextLost) 新建 canvas/context；阶段顺序与中间快照都在', () => {
+    const host = readFileSync('proto/character3d_runtime_demo/host.ts', 'utf8');
+    // 真重建 = 复用装配链（新 canvas/context + loader 重装配）且明确标注"上下文已丢失"跳过 GL 释放
+    expect(host).toContain('async function rebuild3D(reason: string): Promise<void>');
+    expect(host).toContain('await bootstrap3D(plan(), false, { contextLost: true })');
+    expect(host).toContain('if (teardownOpts?.contextLost !== true) renderer.dispose();');
+    // 快路径不可用 ⇒ 落重建（不是判失败）；终失败走 §6.2 暂停 + 错误页
+    expect(host).toContain('ev.rebuildAttempted = true;');
+    expect(host).toContain("ev.rebuildOk = true;\n        ev.restoreOk = true;\n        ev.restoreVia = 'rebuild';");
+    expect(host).toContain('notifyContextRestored(false');
+    // 阶段重排：phasePerf 在 phaseContext 之前；且测量后先落 precontext 快照
+    expect(host.indexOf('await phasePerf()')).toBeGreaterThan(0);
+    expect(host.indexOf('await phasePerf()')).toBeLessThan(host.indexOf('await phaseContext()'));
+    expect(host).toContain("writeResultFile(snapshot, 'precontext')");
+    // 故障注入只用于验证终失败路径（不改生产语义）
+    expect(host).toContain('failNextRebuild');
   });
 
   it('tap 三态：没命中 / 未连接 / 被暂停（arch seq=421 的区分要求）', () => {
@@ -796,6 +865,37 @@ describe('红线：卡 C 新宿主', () => {
     expect((bundle.match(/__def\("[^"]+", function \(require, module, exports\) \{/g) ?? []).length).toBe(20);
     // 旧的「源码字符串变量 + 构造」形态必须彻底消失
     expect(bundle).not.toContain('new Function("require", "module", "exports"');
+  });
+
+  // ---- P0-2 回退门：产物**语法级别**必须在微信预览/运行时的接受范围内 ----
+  // 崩因实测（Leo 预览，ideVersion 2.02.2608040）：`invalid file: bundle.js, 30:66` +
+  // `SyntaxError: Unexpected token ?`（`g.__CHAR3D_DEMO_OPTS ?? {}`）⇒ 预览编译直接拒收 ES2020 语法。
+
+  it('bundle.js 内零 ES2020 语法记号（?? / ?. / ??=）', () => {
+    const bundle = readFileSync('proto/character3d_runtime_demo/bundle.js', 'utf8');
+    expect(bundle.match(/\?\?/g) ?? []).toEqual([]);
+    expect(bundle.match(/\?\./g) ?? []).toEqual([]);
+    // 降级后的等价形态应当在（证明确实降级了，而不是"恰好没写这种语法"）
+    expect(bundle).toContain('!== null && ');
+    expect(bundle).toContain('!== void 0 ? ');
+  });
+
+  it('ES2017 发射目标：async/await 保持原生（不引 __awaiter/__generator 状态机）', () => {
+    const bundle = readFileSync('proto/character3d_runtime_demo/bundle.js', 'utf8');
+    expect(bundle).not.toContain('__awaiter');
+    expect(bundle).not.toContain('__generator');
+  });
+
+  it('build.mjs 的发射目标与 ES2020 门（生成器、目标、门三者不许脱钩）', () => {
+    const build = readFileSync('proto/character3d_runtime_demo/build.mjs', 'utf8');
+    // 发射目标 = ES2017（微信预览不接受 ES2020 语法）
+    expect(build).toContain('const TRANSPILE_TARGET = ts.ScriptTarget.ES2017;');
+    expect(build).not.toContain('ts.ScriptTarget.ES2020');
+    // 门函数在，且接进了静态导入门
+    expect(build).toContain('function scanLegacySyntax(text)');
+    expect(build).toContain('含 ES2020 语法记号（微信预览不接受；发射目标须为 ES2017）');
+    // 同族报告项（只报告不阻断）
+    expect(build).toContain('function scanRuntimeAcceptanceReport(text)');
   });
 
   it('build.mjs 自带防回退门（生成器与门不许脱钩）', () => {

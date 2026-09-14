@@ -1,7 +1,7 @@
 {
- "generatedAt": "2026-09-14T12:02:59.679Z",
+ "generatedAt": "2026-09-14T12:01:37.012Z",
  "commitSha": "faa78c21c210db3ed395711b64a614ef689879dc",
- "scenario": "standard（事件快路径）",
+ "scenario": "norestore（复刻微信模拟器：restoreContext 被拒 ⇒ 真重建路径）",
  "aa": "fxaa",
  "profile": "sim",
  "viewport": {
@@ -30,7 +30,7 @@
   {
    "name": "资源链证据：本地分包模式 + 已执行/未执行分支都列了",
    "ok": true,
-   "detail": "local-subpackage · 已执行 9 / 未执行 4"
+   "detail": "local-subpackage · 已执行 9 / 未执行 5"
   },
   {
    "name": "资源链证据：冷链（downloads>0）跑过",
@@ -45,7 +45,7 @@
   {
    "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
    "ok": true,
-   "detail": "{\"subpackageMs\":1,\"loaderMs\":38,\"glbParseMs\":3,\"animParseMs\":2,\"textureDecodeMs\":2,\"firstGpuUploadMs\":60}"
+   "detail": "{\"subpackageMs\":1,\"loaderMs\":68,\"glbParseMs\":3,\"animParseMs\":2,\"textureDecodeMs\":4,\"firstGpuUploadMs\":105}"
   },
   {
    "name": "六向 6 行且逐向 expected==activeClipKey",
@@ -70,7 +70,7 @@
   {
    "name": "上下文注入：真 WEBGL_lose_context 可用",
    "ok": true,
-   "detail": "gl-ext · restoreVia=event"
+   "detail": "gl-ext · restoreVia=rebuild"
   },
   {
    "name": "上下文注入：lost 被观测 + 短暂 lost 期间 session 继续",
@@ -83,9 +83,24 @@
    "detail": "dt=0"
   },
   {
-   "name": "上下文注入：sim 走 event 快路径（平台允许扩展恢复；真重建路径不得在 sim 触发回归）",
+   "name": "上下文注入：快路径抛错被如实记录（复刻微信模拟器原文）",
    "ok": true,
-   "detail": "restoreVia=event rebuild=false"
+   "detail": "WebGL: INVALID_OPERATION: restoreContext: context restoration not allowed"
+  },
+  {
+   "name": "上下文注入：快路径不可用 ⇒ 走**真重建**（新建 canvas/context + 缓存重装配）",
+   "ok": true,
+   "detail": "restoreVia=rebuild rebuildOk=true"
+  },
+  {
+   "name": "上下文注入：真重建后恢复成功（不因平台拒绝扩展恢复而判失败）",
+   "ok": true,
+   "detail": "SIM_PASS"
+  },
+  {
+   "name": "结果如实标注「扩展恢复未执行」",
+   "ok": true,
+   "detail": "wx.downloadFile HTTP 下载（含 statusCode 处理与 timeoutMs 取消） | 微信 downloadFile 合法域名白名单校验 | CDN 内容版本化目录在服务端的真实 404/回源行为 | 真实网络失败/断网/超时下的重试间隔（1s/3s）与网络错误分类 | WEBGL_lose_context.restoreContext 扩展恢复（本平台不可用：WebGL: INVALID_OPERATION: restoreContext: context restoration not allowed）—— 已改走真重建（新建 canvas/context + 缓存重装配）"
   },
   {
    "name": "上下文注入：暂停期间帧冻结 + 恢复 dt=0",
@@ -125,7 +140,7 @@
   {
    "name": "压测后先落 precontext 中间快照（自测失败也不丢测量结果）",
    "ok": true,
-   "detail": "/sim-user/char3d_hcrbug_result_run2_precontext.json /sim-user/char3d_hcrbug_result_run2.json"
+   "detail": "/sim-user/char3d_hcrbug_result_run1_precontext.json /sim-user/char3d_hcrbug_result_run1.json"
   },
   {
    "name": "FXAA 分支是生产分支（有效 antialias=false）",
@@ -140,7 +155,7 @@
   {
    "name": "20u 档：屏上 20 个角色全部可见",
    "ok": true,
-   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18554,perf-1:20501,perf-2:20238,perf-3:20550,perf-4:19105,perf-5:18701,…"
+   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18554,perf-1:20501,perf-2:20235,perf-3:20552,perf-4:19104,perf-5:18700,…"
   },
   {
    "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
@@ -160,7 +175,7 @@
   {
    "name": "结果回收：剪贴板成功（字符数 > 0）",
    "ok": true,
-   "detail": "12075"
+   "detail": "12377"
   },
   {
    "name": "结果回收：分享被调起",
@@ -180,9 +195,9 @@
   {
    "name": "运行历史跨启动累积（第 N 次启动读到 ≥N 条记录）",
    "ok": true,
-   "detail": "runs=2 / 启动次数=2"
+   "detail": "runs=1 / 启动次数=1"
   }
  ],
- "passCount": 34,
- "total": 34
+ "passCount": 37,
+ "total": 37
 }

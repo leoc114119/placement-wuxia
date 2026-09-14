@@ -149,7 +149,9 @@ interface Runtime3D {
   stages: Record<string, number>;
   diagnostics: string[];
   modelResolvedPath: string | null;
-  teardown: () => void;
+  /** 释放本运行时。`contextLost=true` 时**跳过 renderer.dispose()**：上下文已死，
+   *  在死上下文上做 GL 释放只会刷 INVALID_OPERATION（真重建路径专用）。 */
+  teardown: (opts?: { contextLost?: boolean }) => void;
 }
 
 export interface RuntimeDemoOptions {
@@ -230,6 +232,21 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
   let booting = false;
   let disposed = false;
   const outstandingRafs = new Set<number>();
+  /** 阶段记录（结果 JSON 的 phases/phasesOrder）：让「哪一步没跑」一眼可见 */
+  const phaseRecords = new Map<string, E.PhaseRecord & { startedAt: number }>();
+  function beginPhase(name: string): void {
+    phaseRecords.set(name, { name, status: 'running', detail: '', ms: 0, startedAt: nowMs() });
+  }
+  function endPhase(name: string, status: E.PhaseStatus, detail = ''): void {
+    const rec = phaseRecords.get(name);
+    if (!rec) return;
+    rec.status = status;
+    rec.detail = detail;
+    rec.ms = Math.round(nowMs() - rec.startedAt);
+  }
+  /** 故障注入：下一次 bootstrap3D 直接失败（用于验证 §6.2「重建失败 ⇒ 暂停 + 错误页」路径）。
+   *  在**任何破坏性步骤之前**抛出 ⇒ 旧运行时/旧循环原样保留，便于验证暂停语义。 */
+  let failNextRebuild: string | null = null;
   const waiters: Waiters = { frames: [], ms: [], until: [] };
   let touchListenerAttached = false;
 
@@ -425,11 +442,20 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
     });
   }
 
-  async function bootstrap3D(resourcePlan: ResourceChainPlan, coldSeries: boolean): Promise<void> {
+  async function bootstrap3D(
+    resourcePlan: ResourceChainPlan,
+    coldSeries: boolean,
+    opts: { contextLost?: boolean } = {},
+  ): Promise<void> {
     if (booting) return;
     booting = true;
     try {
-      disposeRuntime();
+      if (failNextRebuild !== null) {
+        const why = failNextRebuild;
+        failNextRebuild = null;
+        throw new Error(why); // 故障注入：不触碰既有运行时（见 failNextRebuild 注释）
+      }
+      disposeRuntime({ contextLost: opts.contextLost === true });
       const stages: Record<string, number> = {};
       stages.subpackageMs = await loadSubpackage(resourcePlan);
       const platform = createResourcePlatform(resourcePlan);
@@ -545,10 +571,11 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
         stages,
         diagnostics: [...profileLoad.diagnostics, ...renderer.diagnostics],
         modelResolvedPath: resolvedCodePathOf(platform),
-        teardown: () => {
+        teardown: (teardownOpts?: { contextLost?: boolean }) => {
           evtCanvas.removeEventListener?.('webglcontextlost', onLost);
           evtCanvas.removeEventListener?.('webglcontextrestored', onRestored);
-          renderer.dispose();
+          // 上下文已丢失时不做 GL 释放（死上下文上的 GL 调用只会刷 INVALID_OPERATION）
+          if (teardownOpts?.contextLost !== true) renderer.dispose();
         },
       };
       state.cacheState = classifyCache(stats);
@@ -559,20 +586,40 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
     }
   }
 
-  function disposeRuntime(): void {
+  function disposeRuntime(opts: { contextLost?: boolean } = {}): void {
     host3d?.dispose();
     host3d = null;
     if (runtime3d) {
-      try { runtime3d.teardown(); } catch { /* 释放异常不阻断重装配 */ }
+      try { runtime3d.teardown({ contextLost: opts.contextLost === true }); } catch { /* 释放异常不阻断重装配 */ }
     }
     runtime3d = null;
     gl = null;
+  }
+
+  /**
+   * ★【T31-FE-C P0-3】**真重建**（方案 §6.2 原文：「尝试重建一次并**重传缓存资源**」）。
+   *
+   * 与「扩展恢复」的区别：`restoreContext()` 只在平台允许时有效；微信模拟器直接拒绝
+   * （实测 `WebGL: INVALID_OPERATION: restoreContext: context restoration not allowed`）。
+   * 真重建不依赖平台扩展：处置旧 canvas/context（已丢失 ⇒ 跳过 GL 释放）→ **新建**离屏 canvas 与
+   * webgl2 context → 经 `net/character-asset-loader` 从缓存重新装配（热命中链，即"重传缓存资源"）→
+   * 重新上传 GPU 资源 → 恢复提交与对局。**不因快路径不可用而判失败**。
+   */
+  async function rebuild3D(reason: string): Promise<void> {
+    state.footer = '上下文真重建（' + reason + '）…';
+    await bootstrap3D(plan(), false, { contextLost: true });
+    state.commands = [singleIdleCommand()];
+    state.units = 1;
+    armDtProbe();
+    host3d?.resume();
+    await waitFrames(2);
   }
 
   // ===== 阶段 1：引导 + 资源链证据 =====
 
   async function phaseBoot(): Promise<void> {
     state.phase = 'boot';
+    beginPhase('boot');
     const resourcePlan = plan();
     resourcePlanCached = resourcePlan;
     const runs = readRuns();
@@ -600,12 +647,14 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       sixdirOk: false, statesOk: false, contextOk: false, failures: 0,
     });
     writeRuns(runs);
+    endPhase('boot', 'ok', 'edgeMode=' + r.edgeMode + ' · 缓存=' + state.cacheState + ' · ' + resourcePlan.mode);
   }
 
   // ===== 阶段 2：六向 + 全状态 + 轻功三元 =====
 
   async function phaseScenarios(): Promise<{ sixDir: E.FacingEvidenceRow[]; states: E.StateEvidenceRow[]; trios: E.JumpTrioRow[] }> {
     state.phase = 'sixdir';
+    beginPhase('sixdir');
     const sixDir: E.FacingEvidenceRow[] = [];
     for (const sample of S.FACING_SAMPLES) {
       const footX = sample.u * bbW;
@@ -632,7 +681,10 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       });
     }
 
+    endPhase('sixdir', sixDir.every((row) => row.ok) ? 'ok' : 'failed',
+      sixDir.map((row) => row.facing + ':' + String(row.activeClipKey)).join(' '));
     state.phase = 'states';
+    beginPhase('states');
     const states: E.StateEvidenceRow[] = [];
     for (const sample of S.STATE_SAMPLES) {
       const actorId = 'state-' + sample.label;
@@ -655,8 +707,11 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       });
     }
 
+    endPhase('states', states.every((row) => row.ok) ? 'ok' : 'failed',
+      states.map((row) => row.state + ':' + String(row.activeClipKey)).join(' '));
     // 轻功三元（arch seq=421：snapIsJump / cmdIsJump / activeClipKey 并列）
     state.phase = 'jump-trio';
+    beginPhase('jump-trio');
     const trios: E.JumpTrioRow[] = [];
     for (const c of S.MOVE_LOCK_CASES) {
       const actorId = 'trio-' + c.caseId;
@@ -678,6 +733,8 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       }
       trios.push({ caseId: c.caseId, snapIsJump: c.syntheticSnapshotIsJump, cmdIsJump, activeClipKey, note: c.note });
     }
+    const trioOk = trios.every((t) => S.MOVE_LOCK_CASES.find((c) => c.caseId === t.caseId)?.expectedClipKey === t.activeClipKey);
+    endPhase('jump-trio', trioOk ? 'ok' : 'failed', trios.map((t) => t.caseId + ':' + String(t.activeClipKey)).join(' '));
     return { sixDir, states, trios };
   }
 
@@ -694,9 +751,10 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
 
   async function phaseContext(): Promise<E.ContextInjectionEvidence> {
     state.phase = 'context';
+    beginPhase('context');
     const ev = E.emptyContextEvidence();
     const r = runtime3d;
-    if (!r) { ev.error = '无运行时'; return ev; }
+    if (!r) { ev.error = '无运行时'; endPhase('context', 'failed', '无运行时'); return ev; }
     const real = r.renderer;
     state.commands = [singleIdleCommand()];
     state.units = 1;
@@ -722,21 +780,39 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
     await waitFrames(12);
     ev.sessionContinuedWhileLost = state.frames > framesAtLoss;
 
-    // ② 恢复成功路径：**真事件优先**（宿主 webglcontextrestored），只有事件没到才由宿主直接补桥
-    if (ext) { try { ext.restoreContext(); } catch { /* 交 handleContextRestored 判定 */ } }
-    armDtProbe(); // 事件路径与 host-api 路径都要在恢复前武装探针
-    await waitFrames(3);
-    if (real.status === 'context-lost') {
-      ev.restoreOk = real.handleContextRestored();
-      ev.restoreVia = 'host-api';
-      if (ev.restoreOk) { armDtProbe(); host3d?.resume(); }
-    } else {
-      ev.restoreOk = real.status === 'ready';
-      ev.restoreVia = 'event';
+    // ② 恢复：**快路径优先**（平台允许扩展恢复时走事件/handleContextRestored），不可用即**真重建**
+    if (ext) {
+      try { ext.restoreContext(); } catch (error) { ev.fastPathError = messageOf(error); }
+      await waitFrames(3);
+      if (real.status === 'context-lost' && real.handleContextRestored()) {
+        ev.restoreOk = true;
+        ev.restoreVia = 'event';
+        armDtProbe();
+        host3d?.resume();
+      } else if (real.status === 'ready') {
+        ev.restoreOk = true; // 宿主 webglcontextrestored 事件已完成恢复（onRestored 内已 resume+武装探针）
+        ev.restoreVia = 'event';
+      }
     }
-    if (!ev.restoreOk) { ev.error = '首次恢复未成功：status=' + real.status; }
+    if (!ev.restoreOk) {
+      // ★ 快路径不可用（或没 ext）：落真重建 —— 新建 canvas/context + 从缓存重装配并重传资源。
+      //   这一路径**不得**被当成失败（方案 §6.2 要的就是重建，而不是依赖扩展恢复）。
+      ev.rebuildAttempted = true;
+      try {
+        await rebuild3D('fast-path-unavailable');
+        ev.rebuildOk = true;
+        ev.restoreOk = true;
+        ev.restoreVia = 'rebuild';
+      } catch (error) {
+        ev.rebuildOk = false;
+        ev.rebuildError = messageOf(error);
+        ev.restoreOk = false;
+        ev.restoreVia = 'unsupported';
+        ev.error = '重建失败：' + messageOf(error);
+      }
+    }
     if (ev.restoreOk) {
-      assertProbeArmed();
+      if (probedDtSec === null) { armDtProbe(); host3d?.resume(); }
       await waitFrames(2);
       ev.firstFrameDtSec = probedDtSec;
     }
@@ -759,19 +835,30 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
     ev.resumeDtSec = probedDtSec;
     ev.clockResetOk = ev.pauseFrozenFrames === 0 && ev.resumeDtSec === 0;
 
-    // ⑤ 二次 lost + 恢复 → 重建**终失败**（renderer 只试一次，§6.2）⇒ 暂停对局 + 显式错误页
-    const ext2 = loseExt();
-    if (ext2) { try { ext2.loseContext(); } catch { /* 已丢失允许 */ } }
-    if (real.status !== 'context-lost') real.notifyContextLost();
+    // ⑤ 终失败路径（§6.2「重建失败 ⇒ 暂停对局 + 显式错误页」）——**故障注入**让下一次重建必失败：
+    //    先制造一次丢失，再让重建抛错。注入在破坏性步骤之前 ⇒ 旧运行时/循环原样保留，
+    //    于是「暂停 + 错误页 + 停 tick + 忽略输入」这套语义能在真机/模拟器上端到端验证。
+    const rNow = runtime3d;
+    if (rNow) {
+      const ext2 = loseExt();
+      if (ext2) { try { ext2.loseContext(); } catch { /* 已丢失允许 */ } }
+      if (rNow.renderer.status !== 'context-lost') rNow.renderer.notifyContextLost();
+    }
     ev.secondRestoreAttempted = true;
-    if (ext2) { try { ext2.restoreContext(); } catch { /* 交 handleContextRestored 判定 */ } }
-    await waitFrames(3);
-    if (real.status === 'context-lost') ev.secondRestoreFailed = real.handleContextRestored() === false;
-    else ev.secondRestoreFailed = real.status !== 'ready'; // 事件已把状态推到 failed
-    if (ev.secondRestoreFailed) {
+    ev.terminalFailureInjected = true;
+    failNextRebuild = '注入故障：验证 §6.2 重建失败路径';
+    let terminalRebuildOk = false;
+    try {
+      await rebuild3D('injected-terminal-failure');
+      terminalRebuildOk = true;
+    } catch { terminalRebuildOk = false; }
+    ev.secondRestoreFailed = terminalRebuildOk === false;
+    if (terminalRebuildOk) {
+      ev.error = '注入故障未生效（重建竟然成功）';
+    } else {
       host3d?.notifyContextRestored(false, () => {
         ev.errorPageShown = true;
-        state.footer = '✗ WebGL2 上下文重建失败（已尝试一次）→ 已暂停对局';
+        state.footer = '✗ WebGL2 上下文重建失败（§6.2）→ 已暂停对局';
       });
     }
     ev.pausedOnFinalFailure = host3d?.status === 'paused';
@@ -795,7 +882,9 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       resource.reloadStats = hot;
       resource.hotChainObserved = (hot.cacheHits ?? 0) > 0 && (hot.downloads ?? 0) === 0;
     }
-    state.footer = '上下文注入完成 · ' + ev.injectionMode;
+    endPhase('context', E.contextEvidenceOk(ev) ? 'ok' : 'failed',
+      ev.injectionMode + ' → ' + ev.restoreVia + (ev.fastPathError ? '（快路径不可用）' : ''));
+    state.footer = '上下文注入完成 · ' + ev.injectionMode + ' → ' + ev.restoreVia;
     return ev;
   }
 
@@ -812,6 +901,7 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
 
   async function phasePerf(): Promise<void> {
     state.phase = 'perf';
+    beginPhase('perf');
     const profile = options.shortProfile === true ? S.SIM_PROFILE : S.SPEC_PROFILE;
     const minSamples = profile.name === 'spec' ? M.REQUIRED_MIN_SAMPLES : 120;
     for (const stage of profile.stages) {
@@ -852,6 +942,7 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       state.perf = null;
       state.footer = stage.units + 'u 完成 · fpsMedian=' + rec.fpsMedian + ' · P95=' + rec.frameMsP95;
     }
+    endPhase('perf', 'ok', state.perfResults.map((r) => r.unitCount + 'u:' + r.fpsMedian).join(' '));
   }
 
   function snapshotCounters(): {
@@ -963,6 +1054,8 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
 
   let resource: E.ResourceChainEvidence | null = null;
   let resolvedResult: E.RuntimeResult | null = null;
+  /** 压测后先落的 precontext 快照文件名（最终结果里注明，便于"自测失败但测量结果完好"时取证） */
+  let preContextSnapshot: string | null = null;
 
   function deviceSnapshot(): E.RuntimeDevice {
     const device: E.RuntimeDevice = {
@@ -1028,6 +1121,9 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       jumpTrios: parts.trios,
       context: parts.context,
       capacity: state.perfResults.slice(),
+      phases: Array.from(phaseRecords.values()).map((p) => ({
+        name: p.name, status: p.status, detail: p.detail, ms: p.ms,
+      })),
       runs: readRuns(),
       env: {
         sim: state.sim,
@@ -1041,21 +1137,29 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
             'tests/battle-character3d-wiring.test.ts 已闭合，本卡不重证。',
           'assetStages：读取含在 loaderMs 内（loader 状态机是一次调用；S0 的 readFileMs 不可再分）',
           'passMs/animMs/submitMs：animMs = passMs − ΣdrawUnit（时间代理，不改生产代码）',
+          '阶段顺序（phasesOrder）：' + E.PHASES_ORDER.join(' → ') +
+            ' —— 测量项（六向/全状态/轻功三元/压测）**在上下文自测之前**跑完并落盘，自测失败不毒死测量结果' +
+            (preContextSnapshot ? '；压测后已先落中间快照 ' + preContextSnapshot : ''),
         ],
       },
     };
     return E.buildResult(ctx);
   }
 
+  /** 落盘一份结果（默认文件名由 evidence.shareFileName 生成；中间快照可指定后缀）。 */
+  function writeResultFile(result: E.RuntimeResult, suffix = ''): string {
+    const name = suffix
+      ? E.shareFileName(result).replace(/\.json$/, '') + '_' + suffix + '.json'
+      : E.shareFileName(result);
+    try {
+      host.getFileSystemManager().writeFileSync(host.env.USER_DATA_PATH + '/' + name, JSON.stringify(result), 'utf8');
+    } catch { /* 写文件失败不影响 console/分享通道 */ }
+    return name;
+  }
+
   function exportResult(): void {
     if (!resolvedResult) return;
-    try {
-      host.getFileSystemManager().writeFileSync(
-        host.env.USER_DATA_PATH + '/' + E.shareFileName(resolvedResult),
-        JSON.stringify(resolvedResult),
-        'utf8',
-      );
-    } catch { /* 写文件失败不影响 console/分享通道 */ }
+    writeResultFile(resolvedResult);
   }
 
   // ===== 交互 =====
@@ -1207,16 +1311,32 @@ export function startRuntimeDemo(options: RuntimeDemoOptions = {}): RuntimeDemoH
       for (const row of scen.states) if (row.screenshot) screenshots.push(row.screenshot);
       updateRun({ sixdirOk: scen.sixDir.every((r) => r.ok), statesOk: scen.states.every((r) => r.ok) });
 
-      contextEv = await phaseContext();
-      updateRun({ contextOk: E.contextEvidenceOk(contextEv) });
-
+      // ---- ③ 压测（**在上下文自测之前**：破坏性自测不得阻断被测量的项）----
       const runs = readRuns();
       const progress = E.runProgress(runs);
       const forcePerf = safeCall(() => host.getStorageSync(STORAGE_PERF_ALWAYS), 0) === 1;
       if (forcePerf || (progress.cold >= E.RUNS_REQUIRED && progress.hot >= E.RUNS_REQUIRED)) {
         await phasePerf();
       } else {
+        beginPhase('perf');
+        endPhase('perf', 'skipped', '冷/热未满 ' + E.RUNS_REQUIRED + ' 次且未开「压测常开」');
         state.footer = '本轮不跑压测（冷/热各满 ' + E.RUNS_REQUIRED + ' 次后自动跑；点「重跑压测」可改常开）';
+      }
+
+      // ---- ③.5 中间快照：测量项一跑完就先落盘，保证后面的上下文自测就算把运行时打坏也不丢数据 ----
+      state.phase = 'measured';
+      const snapshot = buildResultNow({ sixDir, states, trios, context: contextEv, screenshots });
+      preContextSnapshot = writeResultFile(snapshot, 'precontext');
+
+      // ---- ④ 最后才做上下文丢失/恢复自测（平台不支持恢复时，前面的测量结果照常产出与导出）----
+      contextEv = await phaseContext();
+      updateRun({ contextOk: E.contextEvidenceOk(contextEv) });
+      // 扩展恢复被平台拒绝 ⇒ 如实记进「未执行分支」（不许把没跑过的路径写成已跑）
+      if (resource && contextEv.fastPathError) {
+        resource.notExecutedBranches = resource.notExecutedBranches.concat([
+          'WEBGL_lose_context.restoreContext 扩展恢复（本平台不可用：' + contextEv.fastPathError +
+            '）—— 已改走真重建（新建 canvas/context + 缓存重装配）',
+        ]);
       }
 
       state.phase = 'done';
