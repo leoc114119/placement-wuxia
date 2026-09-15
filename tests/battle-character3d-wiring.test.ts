@@ -36,6 +36,7 @@ import {
   applyRetargetedClip,
   bindRetargetedClip,
   createPose,
+  gainedRootY,
   parseCharacter3DClipJson,
   CharacterAnimController,
 } from '../ui/character3d/animation';
@@ -515,6 +516,7 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
       duration: 0.6,
       isJumpMove: false,
       hopHeight: 0,
+      jumpChannel: null, // 用例手工构造：非 3D 轻功通道
     });
     const ops: RecordedOp[] = [];
     drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
@@ -558,6 +560,7 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
     view.moveAnims.set('hero', {
       from: { q: 4, r: 8 }, pos: { q: 5, r: 8 }, path: [], pathPx: [], t: 0.3, duration: 0.6,
       isJumpMove: false, hopHeight: 88,
+      jumpChannel: null, // 用例手工构造：非 3D 轻功通道
     });
     const ma = view.moveAnims.get('hero')!;
     ma.t = ma.duration / 2;
@@ -578,6 +581,7 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
     view.moveAnims.set('hero', {
       from: { q: 4, r: 8 }, pos: { q: 5, r: 8 }, path: [], pathPx: [], t: 0, duration: 0.6,
       isJumpMove: true, hopHeight: 88,
+      jumpChannel: null, // 用例手工构造：非 3D 轻功通道
     });
     const ops: RecordedOp[] = [];
     drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
@@ -887,7 +891,7 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
     expect(ma, '未建移动演出').toBeTruthy();
     expect(ma.isJumpMove).toBe(true); // 创建时从该次快照 isJump 锁定
     expect(ma.isJumpMove).toBe(s.snapshot().actors.find((a) => a.id === 'hero')!.isJump);
-    // 【方案 v1.1 §4.1】3D jump 演出时长**固定 1.5 演出秒**（不再按距离取 0.6~1.2s）
+    // 【R2-1 §4.1.2(1)】3D jump 演出时长固定 **1.0 演出秒**（与素材源 1.5s 解耦；不再按距离取 0.6~1.2s）
     expect(dist).toBeGreaterThan(0);
     expect(ma.duration).toBeCloseTo(CHARACTER_3D_JUMP_MOVE_SEC, 10);
 
@@ -926,7 +930,7 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
     expect(samples[samples.length - 1].clip).not.toBe('jump');
   });
 
-  it('短/长路径均 1.5 演出秒 × 倍速 x1/x2（v1.1：仅全局倍率、无距离倍率、hop 恒 0）', () => {
+  it('短/长路径均 1.0 演出秒 × 倍速 x1/x2（R2-1：仅全局倍率、无距离倍率、hop 恒 0；x2 墙钟 0.5s）', () => {
     const observed: Array<{ speed: number; dist: number; duration: number }> = [];
     for (const speed of [1, 2] as const) {
       const dtView = DT_REAL * (speed === 2 ? SPEED_FACTOR.fast : SPEED_FACTOR.normal);
@@ -944,7 +948,7 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
         expect(s.submit({ type: 'move', to })).toBe(true);
         updateView(view, s.snapshot(), dtView, W, H);
         const ma = view.moveAnims.get('hero')!;
-        // ★ v1.1：短/长路径**都是 1.5 演出秒**（不再消费 jumpParams 的 0.6~1.2s）
+        // ★ R2-1：短/长路径**都是 1.0 演出秒**（不再消费 jumpParams 的 0.6~1.2s）
         expect(ma.duration).toBeCloseTo(CHARACTER_3D_JUMP_MOVE_SEC, 10);
         expect(ma.hopHeight).toBe(0);
         observed.push({ speed, dist, duration: ma.duration });
@@ -966,7 +970,7 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
         expect(after.every((x) => x.cmdIsJump === false)).toBe(true);
       }
     }
-    // 短/长两档都取到，且**演出秒恒 1.5**（x1/x2 同值 ⇒ 只改墙钟倍率，不改演出时长）
+    // 短/长两档都取到，且**演出秒恒 1.0**（x1/x2 同值 ⇒ 只改墙钟倍率，不改演出时长）
     const short = observed.filter((o) => o.dist <= JUMP.baseCells);
     const far = observed.filter((o) => o.dist > JUMP.baseCells);
     expect(short.length).toBeGreaterThan(0);
@@ -978,6 +982,8 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
     const x1 = observed.filter((o) => o.speed === 1);
     const x2 = observed.filter((o) => o.speed === 2);
     expect(new Set(x1.map((o) => o.duration))).toEqual(new Set([CHARACTER_3D_JUMP_MOVE_SEC]));
+    // 【R2-1】x2 全局倍速 ⇒ 墙钟 0.5s（演出秒不变，禁额外距离倍率）
+    expect(CHARACTER_3D_JUMP_MOVE_SEC / SPEED_FACTOR.fast).toBeCloseTo(0.5, 10);
     expect(new Set(x2.map((o) => o.duration))).toEqual(new Set([CHARACTER_3D_JUMP_MOVE_SEC]));
   });
 
@@ -988,9 +994,11 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
     const jumpRaw = heroClipRaw('jump');
     const clip = parseCharacter3DClipJson(jumpRaw, 'jump');
     const bound = bindRetargetedClip(clip, model);
+    // 【R2-1】采样带上 root y 正段增益（生产口径）：与源 y 的关系 = gainedRootY(源 y)
+    const yGain = HERO_3D_ACTION_MAP.jump.rootYGain ?? null;
     const probe = (ratio: number): { x: number; y: number; z: number } => {
       const pose = createPose(model);
-      applyRetargetedClip(clip, bound, model, pose, ratio, 'zero-xz', false, true);
+      applyRetargetedClip(clip, bound, model, pose, ratio, 'zero-xz', false, true, yGain);
       const t = pose.tV[bound.rootNode];
       return { x: t[0], y: t[1], z: t[2] };
     };
@@ -1000,7 +1008,8 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
       const i0 = Math.min(clip.nFrames - 1, Math.floor(fi));
       const i1 = Math.min(clip.nFrames - 1, i0 + 1);
       const a = fi - Math.floor(fi);
-      const wantY = bound.rootRest[1] + clip.rootTrack[i0][1] * (1 - a) + clip.rootTrack[i1][1] * a;
+      const rawY = clip.rootTrack[i0][1] * (1 - a) + clip.rootTrack[i1][1] * a;
+      const wantY = bound.rootRest[1] + gainedRootY(rawY, yGain, clip.rootTrackPeakY);
       const got = probe(ratio);
       expect(got.y, `ratio=${ratio} y 与源不符`).toBeCloseTo(wantY, 6); // pose 为 Float32 ⇒ 6 位足够
       expect(got.x, `ratio=${ratio} x 必须为静止位移`).toBeCloseTo(bound.rootRest[0], 6);
@@ -1113,6 +1122,7 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
       duration: 0.3,
       isJumpMove: false,
       hopHeight: 0,
+      jumpChannel: null, // 用例手工构造：非 3D 轻功通道
     });
     expect(draw().isJump).toBe(false);
     expect(pass.controllers.get('hero')?.activeClipKey).toBe('walk');

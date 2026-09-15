@@ -18,7 +18,13 @@ import {
   HERO_3D_PROFILE_ID,
   yawDegForFacing,
 } from '../config/character-3d';
-import { bindRetargetedClip, parseCharacter3DClipJson, type Character3DRetargetedClip } from '../ui/character3d/animation';
+import {
+  bindRetargetedClip,
+  gainedRootY,
+  parseCharacter3DClipJson,
+  remapPhaseByAnchors,
+  type Character3DRetargetedClip,
+} from '../ui/character3d/animation';
 import { heroClip, heroClipRegistry, heroModel } from './character3d-fixtures';
 
 const model = heroModel();
@@ -536,9 +542,11 @@ describe('【T31-R2 · §4.1.1】placed 姿态补偿（HUD 布局框，不动人
     const w = pass.controllers.get('hero')!.fadeWeight;
     expect(w).toBeCloseTo(0.5, 6);
     const viewClock1 = dt1;
-    const fromPhase = Math.min(1, 0.6 + (dt2 + dt3) / jumpSamplerSec); // jump 单播：夹取到 1
+    // 【R2-1】jump 的采样相位 = 锚表重映射后的素材相位 φ(0.6)；淡化来源相位再按来源自有时长推进
+    const gain = HERO_3D_ACTION_MAP.jump.rootYGain ?? null;
+    const fromPhase = Math.min(1, remapPhaseByAnchors(0.6, HERO_3D_ACTION_MAP.jump.phaseAnchors) + (dt2 + dt3) / jumpSamplerSec);
     const toPhase = ((viewClock1 + dt2 + dt3) % idleSamplerSec) / idleSamplerSec;
-    const dyFrom = dyAt(jumpClip, fromPhase, true, false);
+    const dyFrom = gainedRootY(dyAt(jumpClip, fromPhase, true, false), gain, jumpClip.rootTrackPeakY);
     const dyTo = dyAt(idleClip, toPhase, false, true);
     const dyBlend = dyFrom * (1 - w) + dyTo * w;
     const m = renderer.draws[renderer.draws.length - 1].matrix;

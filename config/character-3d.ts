@@ -219,6 +219,21 @@ export type Character3DActionKey = BattleAnimState | 'hit' | 'dead' | 'jump';
  * - `hold`：停在固定归一化位置（dead=idle 首帧）。 */
 export type Character3DProgressSource = 'viewClock' | 'stateElapsed' | 'moveProgress' | 'hold';
 
+/** 分段线性锚点：`p` = 演出/墙钟归一进度，`phase` = 该处的素材相位（方案 §4.1.2(2) 锚表）。
+ * 锚值全部落本文件（渲染层禁散落数字）。 */
+export interface Character3DPhaseAnchor {
+  readonly p: number;
+  readonly phase: number;
+}
+
+/** 素材 root y **正段**增益（方案 §4.1.2(4)，口径变更：arch 前「不加系数、沿素材」已废止）。
+ * `gain` 施于 y>0 段（y≤0 段 ×1，深蹲深度不变）；`bandRatio` = 过零线性渐入带的上沿
+ * （= 素材 root y 峰值 × 本比例，峰值在 clip 解析期求得，禁硬编码绝对值），防过零处速度折点。 */
+export interface Character3DRootYGain {
+  readonly gain: number;
+  readonly bandRatio: number;
+}
+
 /** 单个动作槽位的播放规则（字段逐条对应方案 §5 表，本文件之外禁写时长）。 */
 export interface Character3DActionSpec {
   /** 目标资产槽位；null = 不切专用动作（hit 沿用当前 clip，方案 §5 hit 行）。 */
@@ -228,7 +243,8 @@ export interface Character3DActionSpec {
   readonly loop: boolean;
   /** 归一化播放窗（秒）：把**整段源**映射到该窗内播完；null = 按源时长 1:1。 */
   readonly playWindowSec: number | null;
-  /** 归一化起点 [0,1)：strike 从 2/3 位置起播到末尾并保持（兼容既有 cast2→3 语义）。 */
+  /** 归一化起点 [0,1)：出招槽位的起播位置（strike startRatio=1 ⇒ 末姿保持）。
+   *  【v1.1 历史口径】曾为 strike「从 2/3 起播到末尾」（兼容既有 cast2→3 帧语义）。 */
   readonly startRatio: number;
   /** 根位移策略（方案 v1.1 §4.1）：
    *  · `'track'` = 按源叠加 rootTrack 三轴增量（walk 等）；
@@ -239,8 +255,29 @@ export interface Character3DActionSpec {
   /** 单播端点策略（方案 v1.1 §4.1，jump 专用）：true ⇒ 采样 `fi = phase × (nFrames − 1)`，
    *  phase=1 **正好落末帧**（46 帧 ⇒ fi=0/22.5/45）；缺省 false = `phase × nFrames` 夹取（其它 clip 不变）。 */
   readonly endpointInclusive?: boolean;
+  /** 【R2-1 · §4.1.2(2)】素材相位重映射锚表（缺省 = 进度即相位）：演出进度 p → 素材相位 φ，分段线性。
+   * 仅 jump 声明（深蹲压缩 / 滞空扩展 / 落地缓冲，见 CHARACTER_3D_JUMP_PHASE_ANCHORS）。 */
+  readonly phaseAnchors?: readonly Character3DPhaseAnchor[];
+  /** 【R2-1 · §4.1.2(4)】素材 root y 正段增益（缺省 = 不加系数）。 */
+  readonly rootYGain?: Character3DRootYGain;
   /** 进入本状态时是否重置混合（dead 不混回，方案 §5 末段）。 */
   readonly crossFadeOnEnter: boolean;
+}
+
+/** 3D 轻功**水平通道**（方案 §4.1.2(3)）：位移只发生在腾空段——深蹲期脚不离地即恒 0（禁滑步）、
+ * 落地缓冲原地完成；两端水平速度为零（smoothstep）。`h(p)`：p ≤ start 恒 0 / 中段 smoothstep / p ≥ end 恒 1。
+ * MoveAnim 创建时**仅对 3D 轻功**（isJumpMove 且 hopHeight=0）写入本通道；2D 敌型路径插值零改动。 */
+export interface Character3DJumpChannel {
+  readonly moveStartP: number;
+  readonly moveEndP: number;
+}
+
+/** 水平通道进度（纯函数；MoveAnim 唯一消费点与用例共用，禁第二处实现）。 */
+export function jumpChannelProgressH(p: number, channel: Character3DJumpChannel): number {
+  if (!(p > channel.moveStartP)) return 0;
+  if (p >= channel.moveEndP) return 1;
+  const t = (p - channel.moveStartP) / (channel.moveEndP - channel.moveStartP);
+  return t * t * (3 - 2 * t); // smoothstep：两端速度为零
 }
 
 /** charge / strike 共用的 cast 循环周期：一轮 = 既有 cast 三帧节拍 3 × CAST_FRAME_PERIOD_MS = 840ms
@@ -255,6 +292,29 @@ export const HERO_3D_STRIKE_START_RATIO = 2 / 3;
  * 故走完这一等分的时间 = 一个 CAST_FRAME_PERIOD_MS，与既有 cast2→3 一拍在时长上等价
  *（也与 CHOREO.strikeSec=0.3 的收招窗同量级）。 */
 export const HERO_3D_STRIKE_WINDOW_SEC = CAST_FRAME_PERIOD_MS / 1000;
+
+/** 【R2-1 · §4.1.2(1)】3D 轻功**演出窗**（秒）：1.0 演出秒（x1 墙钟 1.0s；x2 沿既有演出钟 0.5s，
+ * 禁额外距离倍率）。与素材源时长（1.5s）**解耦**——由本条相位重映射与增益承担观感，
+ * 故**禁止**再由 HERO_3D_CLIP_SOURCE_SEC.jump 派生（旧口径 1.5 已废止）。 */
+export const CHARACTER_3D_JUMP_MOVE_SEC = 1.0;
+
+/** 【R2-1 · §4.1.2(2)】轻功素材相位锚表（演出进度 p → 素材相位 φ，分段线性）：
+ *   深蹲蓄势（素材 0~0.44）压缩进 0.25s ／ 腾空滞空（素材 0.44~0.73）扩展为 0.50s ／
+ *   落地缓冲（素材 0.73~1）0.25s。锚值全部落此处（渲染层禁散落数字）。 */
+export const CHARACTER_3D_JUMP_PHASE_ANCHORS: readonly Character3DPhaseAnchor[] = [
+  { p: 0.0, phase: 0.0 },
+  { p: 0.25, phase: 0.44 },
+  { p: 0.75, phase: 0.73 },
+  { p: 1.0, phase: 1.0 },
+];
+
+/** 【R2-1 · §4.1.2(3)】轻功水平通道锚：位移窗 = 腾空段（p ∈ [0.25, 0.75]，两端速度为零）。 */
+export const CHARACTER_3D_JUMP_CHANNEL: Character3DJumpChannel = { moveStartP: 0.25, moveEndP: 0.75 };
+
+/** 【R2-1 · §4.1.2(4)】素材 root y 正段增益：推荐值 ×2.0（备案 ×1.85 / ×2.4，仅备查不启用）；
+ * 过零线性渐入带 = 峰值 × 8%。增益作用于模型单位空间、**先于 scale**，与显示比例正交。 */
+export const CHARACTER_3D_JUMP_Y_GAIN = 2.0;
+export const CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO = 0.08;
 
 export const HERO_3D_ACTION_MAP: Readonly<Record<Character3DActionKey, Character3DActionSpec>> = {
   idle: {
@@ -327,26 +387,22 @@ export const HERO_3D_ACTION_MAP: Readonly<Record<Character3DActionKey, Character
     crossFadeOnEnter: false,
   },
   jump: {
-    // 【方案 v1.1 §4.1】moveProgress 0→1 映射完整 1.5s 源；**只剥 root x/z、保留 y**（竖直由素材提供），
-    // 程序 hop 恒 0（见 CHARACTER_3D_JUMP_MOVE_SEC 与 battle-hex-render 的 MoveAnim 创建）；
-    // endpointInclusive：fi = progress×(46−1) ⇒ progress=1 正好落末帧（禁 progress×46 提前到末帧）。
+    // 【R2-1 · §4.1.2】moveProgress 0→1 = 演出窗进度 p（不再等于素材相位）；**素材相位由锚表重映射**
+    // （深蹲压缩 / 滞空扩展 / 落地缓冲）；**只剥 root x/z、保留 y**（竖直由素材提供），程序 hop 恒 0；
+    // root y 正段 ×CHARACTER_3D_JUMP_Y_GAIN（深蹲负段不加深，过零带线性渐入）；
+    // endpointInclusive：fi = φ×(46−1) ⇒ φ=1 正好落末帧（禁 φ×46 提前到末帧）。
     clip: 'jump',
     progressSource: 'moveProgress',
     loop: false,
-    playWindowSec: HERO_3D_CLIP_SOURCE_SEC.jump,
+    playWindowSec: CHARACTER_3D_JUMP_MOVE_SEC,
     startRatio: 0,
     rootMotion: 'zero-xz',
     endpointInclusive: true,
+    phaseAnchors: CHARACTER_3D_JUMP_PHASE_ANCHORS,
+    rootYGain: { gain: CHARACTER_3D_JUMP_Y_GAIN, bandRatio: CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO },
     crossFadeOnEnter: true,
   },
 };
-
-/**
- * 3D 轻功移动的**演出时长**（秒）——方案 v1.1 §4.1：「3D jump 的 MoveAnim.duration 固定 1.5 演出秒」，
- * 动作与水平路径**共用** `progress = clamp(elapsed / 1.5, 0, 1)`，**不再消费**按距离的 0.6~1.2s jump 时长。
- * 全局 x2 下墙钟 0.75s（沿既有演出钟同步加速，**不加距离倍率**）；session 逻辑格/300ms 快照窗保持不动。
- * 与源时长同值 ⇒ 1× 播放速率 = 1.0×（旧口径把 1.5s 源压进 0.6~1.2s ⇒ 1.25~2.5×，已废止）。 */
-export const CHARACTER_3D_JUMP_MOVE_SEC = HERO_3D_CLIP_SOURCE_SEC.jump;
 
 /** 状态切换默认交叉淡化 100ms；jump→idle 固定 180ms（方案 §5 末段）。 */
 export const CHARACTER_3D_CROSS_FADE_SEC = 0.1;

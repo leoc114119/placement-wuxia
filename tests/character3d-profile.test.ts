@@ -5,7 +5,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   CHARACTER_3D_CROSS_FADE_SEC,
-  CHARACTER_3D_JUMP_MOVE_SEC,
   CHARACTER_3D_FXAA,
   CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
   CHARACTER_3D_LIGHT,
@@ -15,7 +14,13 @@ import {
   CHARACTER_3D_VERTEX_FLOATS,
   HERO_3D_ACTION_MAP,
   HERO_3D_ATTACHMENTS,
+  CHARACTER_3D_JUMP_CHANNEL,
+  CHARACTER_3D_JUMP_MOVE_SEC,
+  CHARACTER_3D_JUMP_PHASE_ANCHORS,
+  CHARACTER_3D_JUMP_Y_GAIN,
+  CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO,
   HERO_3D_CAST_CYCLE_SEC,
+  jumpChannelProgressH,
   HERO_3D_CLIP_SOURCE_SEC,
   HERO_3D_EMBEDDED_CLIPS,
   HERO_3D_MODEL_ACCOUNT,
@@ -30,7 +35,8 @@ import {
 } from '../config/character-3d';
 import { CAST_FRAME_PERIOD_MS, CHOREO, PIECE, TILE_H } from '../config/battle-hex';
 import type { Character3DAssetRef, Character3DProfile, BattleFacingHex } from '../types';
-import { heroModel } from './character3d-fixtures';
+import { gainedRootY, remapPhaseByAnchors } from '../ui/character3d/animation';
+import { heroClip, heroModel } from './character3d-fixtures';
 
 const FACINGS: BattleFacingHex[] = ['right', 'rightup', 'leftup', 'left', 'leftdown', 'rightdown'];
 const CLIP_KEYS = ['idle', 'walk', 'atk', 'cast', 'jump'] as const;
@@ -188,19 +194,56 @@ describe('动作映射（方案 §5 表逐行）', () => {
     expect(HERO_3D_ACTION_MAP.dead.crossFadeOnEnter).toBe(false);
   });
 
-  it('jump（v1.1）：moveProgress 0→1 映射完整 1.5s 源、**只剥 root x/z 保留 y**、端点含末帧', () => {
+  it('jump（R2-1）：1.0s 演出窗 + 素材相位锚表 + 正段增益；**只剥 root x/z 保留 y**、端点含末帧', () => {
     expect(HERO_3D_ACTION_MAP.jump.clip).toBe('jump');
     expect(HERO_3D_ACTION_MAP.jump.progressSource).toBe('moveProgress');
     // 【方案 v1.1 §4.1】只剥水平（'zero-xz'）：竖直唯一来源＝素材 root y；旧 'zero'（三轴全清）已废止
     expect(HERO_3D_ACTION_MAP.jump.rootMotion).toBe('zero-xz');
     expect(HERO_3D_ACTION_MAP.jump.endpointInclusive).toBe(true);
-    expect(HERO_3D_ACTION_MAP.jump.playWindowSec).toBeCloseTo(1.5, 12);
-    // 3D jump 演出时长固定 1.5 演出秒（= 源时长 ⇒ 1× 播放速率）
-    expect(CHARACTER_3D_JUMP_MOVE_SEC).toBeCloseTo(HERO_3D_CLIP_SOURCE_SEC.jump, 12);
-    // 其它 clip 的 root 策略不被本次改动波及
+    // 【R2-1 §4.1.2(1)】演出窗 1.0 演出秒；与源时长**解耦**（禁再由源时长派生）
+    expect(CHARACTER_3D_JUMP_MOVE_SEC).toBeCloseTo(1.0, 12);
+    expect(HERO_3D_ACTION_MAP.jump.playWindowSec).toBe(CHARACTER_3D_JUMP_MOVE_SEC);
+    expect(CHARACTER_3D_JUMP_MOVE_SEC).not.toBe(HERO_3D_CLIP_SOURCE_SEC.jump);
+    // 【R2-1 §4.1.2(2)】相位锚表：深蹲 0.25 / 腾空 0.50 / 落地 0.25（锚值落 config，渲染层无数字）
+    expect(HERO_3D_ACTION_MAP.jump.phaseAnchors).toEqual(CHARACTER_3D_JUMP_PHASE_ANCHORS);
+    expect(CHARACTER_3D_JUMP_PHASE_ANCHORS.map((a) => a.p)).toEqual([0, 0.25, 0.75, 1]);
+    expect(CHARACTER_3D_JUMP_PHASE_ANCHORS.map((a) => a.phase)).toEqual([0, 0.44, 0.73, 1]);
+    // 【R2-1 §4.1.2(3)】水平通道：位移窗 = 腾空段（0.25→0.75），两端速度为零
+    expect(CHARACTER_3D_JUMP_CHANNEL).toEqual({ moveStartP: 0.25, moveEndP: 0.75 });
+    expect(jumpChannelProgressH(0, CHARACTER_3D_JUMP_CHANNEL)).toBe(0);
+    expect(jumpChannelProgressH(0.24, CHARACTER_3D_JUMP_CHANNEL)).toBe(0);   // 深蹲段恒 0（禁滑步）
+    expect(jumpChannelProgressH(0.5, CHARACTER_3D_JUMP_CHANNEL)).toBeCloseTo(0.5, 12);
+    expect(jumpChannelProgressH(0.76, CHARACTER_3D_JUMP_CHANNEL)).toBe(1);   // 落地段恒 1（原地缓冲）
+    expect(jumpChannelProgressH(1, CHARACTER_3D_JUMP_CHANNEL)).toBe(1);
+    // 两端速度为零（smoothstep）：0.25 与 0.75 附近的增量远小于中段
+    const eps = 1e-3;
+    const slopeAt = (p: number): number => (jumpChannelProgressH(p + eps, CHARACTER_3D_JUMP_CHANNEL) - jumpChannelProgressH(p, CHARACTER_3D_JUMP_CHANNEL)) / eps;
+    const midSlope = slopeAt(0.5);
+    expect(midSlope).toBeGreaterThan(1); // 中段最快（smoothstep 峰值斜率 = 1.5）
+    expect(slopeAt(0.25)).toBeLessThan(0.1 * midSlope); // 起跳端速度≈0
+    expect(slopeAt(0.749)).toBeLessThan(0.1 * midSlope); // 落地端速度≈0
+    // 【R2-1 §4.1.2(4)】正段增益 ×2.0 + 过零带 8%（y≤0 段不加系数）
+    expect(HERO_3D_ACTION_MAP.jump.rootYGain).toEqual({
+      gain: CHARACTER_3D_JUMP_Y_GAIN,
+      bandRatio: CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO,
+    });
+    expect(CHARACTER_3D_JUMP_Y_GAIN).toBe(2.0);
+    expect(CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO).toBeCloseTo(0.08, 12);
+    // 增益只对正段生效：负 y 原样、0 原样、带外 ×2（用真实素材峰值定带）
+    const peak = heroClip('jump').rootTrackPeakY;
+    const gain = HERO_3D_ACTION_MAP.jump.rootYGain!;
+    expect(gainedRootY(-0.17, gain, peak)).toBe(-0.17);
+    expect(gainedRootY(0, gain, peak)).toBe(0);
+    expect(gainedRootY(peak, gain, peak)).toBeCloseTo(peak * 2, 12);
+    const band = peak * CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO;
+    expect(gainedRootY(band / 2, gain, peak)).toBeCloseTo((band / 2) * 1.5, 12); // 带内渐入中值
+    expect(gainedRootY(-0.001, gain, peak)).toBeLessThan(0); // 负侧连续（不跳变）
+    // 其它 clip 的 root 策略不被本次改动波及（无锚表、无增益、无端点策略）
     for (const key of ['idle', 'walk', 'basic', 'charge', 'strike'] as const) {
       expect(HERO_3D_ACTION_MAP[key].rootMotion, key).toBe('track');
       expect(HERO_3D_ACTION_MAP[key].endpointInclusive, key).toBeUndefined();
+      expect(HERO_3D_ACTION_MAP[key].phaseAnchors, key).toBeUndefined();
+      expect(HERO_3D_ACTION_MAP[key].rootYGain, key).toBeUndefined();
     }
   });
 

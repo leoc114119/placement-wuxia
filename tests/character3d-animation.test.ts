@@ -6,11 +6,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   CHARACTER_3D_CROSS_FADE_SEC,
+  CHARACTER_3D_JUMP_MOVE_SEC,
+  CHARACTER_3D_JUMP_PHASE_ANCHORS,
   CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+  CHARACTER_3D_JUMP_Y_GAIN,
+  CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO,
   HERO_3D_ACTION_MAP,
   HERO_3D_CAST_CYCLE_SEC,
   HERO_3D_STRIKE_START_RATIO,
   HERO_3D_STRIKE_WINDOW_SEC,
+  type Character3DRootYGain,
 } from '../config/character-3d';
 import { CAST_FRAME_PERIOD_MS, CHOREO } from '../config/battle-hex';
 import {
@@ -20,7 +25,9 @@ import {
   CharacterAnimController,
   clipDurationSec,
   createPose,
+  gainedRootY,
   parseCharacter3DClipJson,
+  remapPhaseByAnchors,
   resolvePose,
   type CharacterAnimInput,
   type Character3DPose,
@@ -51,11 +58,17 @@ function referencePalette(
   root: 'track' | 'zero' | 'zero-xz' = 'track',
   pose: Character3DPose = createPose(model),
   endpointInclusive = false,
+  yGain: Character3DRootYGain | null = null,
 ): number {
   const clip = heroClip(key);
   const bound = bindRetargetedClip(clip, model);
-  applyRetargetedClip(clip, bound, model, pose, phase, root, loop, endpointInclusive);
+  applyRetargetedClip(clip, bound, model, pose, phase, root, loop, endpointInclusive, yGain);
   return digestFloats(resolvePose(model, pose), 1e-5);
+}
+
+/** 【R2-1 §4.1.2(2)】演出进度 p → 素材相位 φ（生产锚表，供参考实现对齐）。 */
+function jumpPhaseOf(p: number): number {
+  return remapPhaseByAnchors(p, CHARACTER_3D_JUMP_PHASE_ANCHORS);
 }
 
 function sampleDigest(controller: CharacterAnimController): number {
@@ -283,16 +296,74 @@ describe('动作状态机（方案 §5）', () => {
     expect(c.activeClipKey).toBe('idle');
   });
 
-  it('jump 采样：**只剥 root x/z、保留 y**（v1.1 §4.1；状态机透传 rootMotion=zero-xz）', () => {
+  it('jump 采样：**只剥 root x/z、保留 y** + 相位锚表重映射 + 正段增益（R2-1 §4.1.2）', () => {
     const c = newController();
     c.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, isJump: true });
     const palette = samplePalette(c);
     expect(palette.length).toBe(41 * 16);
-    // 相位 = moveProgress（0.5）⇒ fi = 0.5×(46−1) = 22.5；root 只清 x/z、保留 y
-    const reference = referencePalette('jump', 0.5, false, 'zero-xz', createPose(model), true);
+    // 演出进度 0.5 ⇒ 素材相位 φ=0.44+((0.5−0.25)/0.5)×(0.73−0.44)=0.585 ⇒ fi = φ×(46−1)
+    expect(jumpPhaseOf(0.5)).toBeCloseTo(0.585, 12);
+    const gain = HERO_3D_ACTION_MAP.jump.rootYGain ?? null;
+    const reference = referencePalette('jump', jumpPhaseOf(0.5), false, 'zero-xz', createPose(model), true, gain);
     const c2 = newController();
     c2.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, isJump: true });
     expect(sampleDigest(c2)).toBe(reference);
+    // 锚表确实起作用（若回退成「进度即相位」，采样结果必不同）
+    // 反例自证：若有人把「进度即相位」写回（φ 恒等），同一 progress 的采样必与此参考不同
+    const c3 = newController();
+    c3.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, isJump: true });
+    expect(sampleDigest(c3)).not.toBe(referencePalette('jump', 0.5, false, 'zero-xz', createPose(model), true, gain));
+  });
+
+  it('jump 相位锚表：深蹲压缩 / 滞空扩展 / 落地缓冲 三段各自锚值对上；端点 p=0/1 不变', () => {
+    expect(jumpPhaseOf(0)).toBe(0);
+    expect(jumpPhaseOf(0.25)).toBeCloseTo(0.44, 12);
+    expect(jumpPhaseOf(0.75)).toBeCloseTo(0.73, 12);
+    expect(jumpPhaseOf(1)).toBe(1);
+    // 分段线性：中值点各自落在锚线上
+    expect(jumpPhaseOf(0.125)).toBeCloseTo(0.22, 12);
+    expect(jumpPhaseOf(0.5)).toBeCloseTo(0.585, 12);
+    expect(jumpPhaseOf(0.875)).toBeCloseTo(0.865, 12);
+    // 单调不减（禁回卷/倒播）
+    let prev = -1;
+    for (let i = 0; i <= 100; i++) {
+      const phi = jumpPhaseOf(i / 100);
+      expect(phi).toBeGreaterThanOrEqual(prev);
+      prev = phi;
+    }
+    // 缺省锚表 = 恒等（其它 clip 的 progressSource 不受影响）
+    expect(remapPhaseByAnchors(0.37, undefined)).toBe(0.37);
+  });
+
+  it('jump 正段增益：y>0 ×2.0、y≤0 ×1（深蹲深度不变）、过零带线性渐入', () => {
+    const gain = { gain: CHARACTER_3D_JUMP_Y_GAIN, bandRatio: CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO };
+    const clip = heroClip('jump');
+    const peak = clip.rootTrackPeakY;
+    expect(peak).toBeCloseTo(0.16655, 5);
+    const band = peak * gain.bandRatio;
+    expect(gainedRootY(-0.176, gain, peak)).toBeCloseTo(-0.176, 12); // 蹲底原样（不加深）
+    expect(gainedRootY(peak, gain, peak)).toBeCloseTo(peak * 2, 12);  // 峰值 ×2
+    expect(gainedRootY(band / 2, gain, peak)).toBeCloseTo(band / 2 * 1.5, 12); // 带内线性渐入
+    expect(gainedRootY(band * 2, gain, peak)).toBeCloseTo(band * 2 * 2, 12);   // 带外恒 gain
+    // 过零连续：0⁻ → 0⁻、0 → 0，且左右极限一致（无速度折点式跳变）
+    expect(gainedRootY(0, gain, peak)).toBe(0);
+    expect(gainedRootY(-1e-9, gain, peak)).toBe(-1e-9); // 负侧原样（连续，不跳变）
+    // 跨零连续：左右极限都≈0（差 < 3ε，无跳变）
+    expect(Math.abs(gainedRootY(1e-9, gain, peak) - gainedRootY(-1e-9, gain, peak))).toBeLessThan(3e-9);
+    expect(gainedRootY(1e-9, gain, peak)).toBeLessThan(2e-9);
+    // 控制器实采：峰值相位处 root y 必须≈源值×2（用状态机取同一素材）
+    const c = newController();
+    const pose = createPose(model);
+    const scratch = createPose(model);
+    c.update(0.016, { state: 'walk', stateElapsedSec: 0, moveProgress: 0.55, isJump: true });
+    c.sample(model, pose, scratch);
+    const phi = jumpPhaseOf(0.55);
+    const fi = phi * (clip.nFrames - 1); // endpointInclusive：fi = φ×(46−1)
+    const i0 = Math.floor(fi);
+    const a = fi - i0;
+    const dyRaw = clip.rootTrack[i0][1] * (1 - a) + clip.rootTrack[i0 + 1][1] * a; // 与采样器同式
+    const bound = bindRetargetedClip(clip, model);
+    expect(pose.tV[bound.rootNode][1] - bound.rootRest[1]).toBeCloseTo(gainedRootY(dyRaw, gain, peak), 6);
   });
 
   it('B1 · 轻功判据 = isJump 透传：hopPx 为 0 的端点帧也全程走 jump 槽位', () => {
@@ -304,11 +375,11 @@ describe('动作状态机（方案 §5）', () => {
     expect(c.actionKey, '起点帧').toBe('jump');
     expect(c.activeClipKey, '起点帧').toBe('jump');
     const startDigest = sampleDigest(c);
-    expect(startDigest).toBe(referencePalette('jump', 0, false, 'zero-xz', createPose(model), true));
+    expect(startDigest).toBe(referencePalette('jump', jumpPhaseOf(0), false, 'zero-xz', createPose(model), true, HERO_3D_ACTION_MAP.jump.rootYGain ?? null));
     // 窗口末帧：hop 回到 0、moveProgress 仍非 null
     c.update(0.016, { state: 'walk', stateElapsedSec: 1.5, moveProgress: 1, isJump: true });
     expect(c.actionKey, '终点帧').toBe('jump');
-    expect(sampleDigest(c)).toBe(referencePalette('jump', 1, false, 'zero-xz', createPose(model), true));
+    expect(sampleDigest(c)).toBe(referencePalette('jump', jumpPhaseOf(1), false, 'zero-xz', createPose(model), true, HERO_3D_ACTION_MAP.jump.rootYGain ?? null));
     // 非轻功：hopPx 非 0 也不得被判成 jump（判据只认 isJump）
     c.update(0.016, { state: 'walk', stateElapsedSec: 0.2, moveProgress: 0.4, isJump: false });
     expect(c.actionKey).toBe('walk');

@@ -1,6 +1,19 @@
 // T16 用例：渲染层红线扫描 + 六边形几何 + 帧组播报 + 镜头 + 输入翻译 + mock 快照渲染烟雾 + mock 会话契约咬合
 // 运行：npm run test:battle
-import { CHARACTER_3D_JUMP_MOVE_SEC } from '../config/character-3d';
+import {
+  CHARACTER_3D_JUMP_CHANNEL,
+  CHARACTER_3D_JUMP_MOVE_SEC,
+  HERO_3D_ACTION_MAP,
+  HERO_3D_PROFILE,
+} from '../config/character-3d';
+import {
+  applyRetargetedClip,
+  bindRetargetedClip,
+  createPose,
+  remapPhaseByAnchors,
+  resolvePose,
+} from '../ui/character3d/animation';
+import { heroClip, heroModel } from './character3d-fixtures';
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -921,7 +934,7 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
       expect(Math.abs(dq + dr)).toBeLessThanOrEqual(1);
     }
     // 分段采样连续：像素序列相邻差 ≤ 半格宽，且不进入占格中心（格中心像素）
-    const ma = { from, pos: to, path, pathPx: path.map((c) => hexToWorld(c.q, c.r)), t: 0, duration: 0.9, isJumpMove: false, hopHeight: 0 };
+    const ma = { from, pos: to, path, pathPx: path.map((c) => hexToWorld(c.q, c.r)), t: 0, duration: 0.9, isJumpMove: false, hopHeight: 0 , jumpChannel: null }  // 用例手工构造：非 3D 轻功通道
     const occPx = hexToWorld(5, 6); // 占格中心像素
     let last = ma.pathPx[0];
     for (let t = 0; t <= 900; t += 30) {
@@ -1036,6 +1049,124 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     const expectP = jumpParamsFor(hexDist({ q: 4, r: 8 }, { q: 1, r: 8 }));
     expect(ma2?.duration).toBeCloseTo(expectP.duration, 6);
     expect(ma2?.hopHeight).toBeCloseTo(expectP.height, 6);
+  });
+
+  it('【R2-1 §4.1.2】3D 轻功水平通道：深蹲/落地段位移恒 0、腾空段 smoothstep、2D 敌型零 diff', () => {
+    const view = createView();
+    const snap = makeSnapshot([{ id: 'hero', animState: 'walk', isJump: true, pos: { q: 6, r: 8 }, renderPos: { q: 0, r: 8 } }]);
+    updateView(view, snap, 0.001, 375, 667);
+    const ma = view.moveAnims.get('hero')!;
+    // 演出窗 = 1.0 演出秒（R2-1）；通道只在 3D 轻功写入
+    expect(ma.duration).toBeCloseTo(CHARACTER_3D_JUMP_MOVE_SEC, 10);
+    expect(CHARACTER_3D_JUMP_MOVE_SEC).toBeCloseTo(1.0, 12);
+    expect(ma.jumpChannel).toEqual(CHARACTER_3D_JUMP_CHANNEL);
+    const at = (p: number): { x: number; y: number } => {
+      ma.t = p * ma.duration;
+      return moveAnimDrawPosPx(ma);
+    };
+    const start = at(0);
+    const land = at(1);
+    const totalDx = land.x - start.x;
+    expect(Math.abs(totalDx)).toBeGreaterThan(50); // 本用例确有水平位移（否则断言空转）
+    // ① 深蹲段（p<0.24）：水平位移 ≤1 逻辑像素（脚不离地不得滑步 = 「先往前挪再跳」根因修复）
+    for (const p of [0, 0.1, 0.2, 0.24]) expect(Math.abs(at(p).x - start.x), `p=${p}`).toBeLessThanOrEqual(1);
+    // ② 腾空段（0.25~0.75）：单调推进，且中段速度最快（smoothstep 两端为零）
+    const xs = [0.3, 0.4, 0.5, 0.6, 0.7].map((p) => at(p).x);
+    for (let i = 1; i < xs.length; i++) expect(xs[i]).toBeGreaterThan(xs[i - 1]);
+    const d1 = xs[1] - xs[0];
+    const dMid = xs[2] - xs[1];
+    expect(dMid).toBeGreaterThan(d1);
+    // ③ 落地段（p>0.78）：原地缓冲（恒在终点）
+    for (const p of [0.78, 0.9, 1]) expect(Math.abs(at(p).x - land.x), `p=${p}`).toBeLessThanOrEqual(1);
+    // ④ 位移只发生在腾空段：腾空段位移量 ≈ 全程（深蹲/落地两段合计 ≤2 逻辑像素）
+    const air = at(0.75).x - at(0.25).x;
+    expect(Math.abs(air - totalDx)).toBeLessThanOrEqual(2);
+    // ⑤ 通道外路径零变化：2D 敌型（jumpChannel=null）仍按 p 线性（既有行为）
+    const view2 = createView();
+    const enemy = { id: 'e-2d', spriteKey: 'npc-shanzei-a', animState: 'walk' as const, isJump: true, pos: { q: 6, r: 8 }, renderPos: { q: 0, r: 8 } };
+    updateView(view2, makeSnapshot([enemy]), 0.001, 375, 667);
+    const ma2 = view2.moveAnims.get('e-2d')!;
+    expect(ma2.jumpChannel).toBeNull();
+    ma2.t = ma2.duration * 0.25;
+    const e25 = moveAnimDrawPosPx(ma2);
+    ma2.t = ma2.duration * 0.125;
+    const e125 = moveAnimDrawPosPx(ma2);
+    expect(Math.abs(e125.x - moveAnimDrawPosPx({ ...ma2, t: 0 }).x)).toBeGreaterThan(1); // 2D 前段照旧在动
+    expect(Math.abs(e25.x - e125.x)).toBeGreaterThan(1);
+  });
+
+  it('【R2-1 §4.1.2】轻功判据（真实 3D 链路）：演出窗 1.0s / 离地-触地相位 / 峰值身高比 / hop 恒 0', () => {
+    // CPU 蒙皮（整网格顶点）逐 1% 相位求足底高度：与 PM 像素仪器同量（腿姿态贡献一并计入），
+    // 是「峰值/身高」这条判据在 CI 里可复现的机械读数（PM 另用像素仪器独立复核）。
+    const model = heroModel();
+    const clip = heroClip('jump');
+    const bound = bindRetargetedClip(clip, model);
+    const pose = createPose(model);
+    const { positions, jointIndices, weights, vertexCount } = model.mesh;
+    const minSkinY = (palette: Float32Array): number => {
+      let minY = Infinity;
+      for (let i = 0; i < vertexCount; i++) {
+        const px = positions[i * 3];
+        const py = positions[i * 3 + 1];
+        const pz = positions[i * 3 + 2];
+        let y = 0;
+        for (let k = 0; k < 4; k++) {
+          const w = weights[i * 4 + k];
+          if (w === 0) continue;
+          const m = jointIndices[i * 4 + k] * 16;
+          y += w * (palette[m + 1] * px + palette[m + 5] * py + palette[m + 9] * pz + palette[m + 13]);
+        }
+        if (y < minY) minY = y;
+      }
+      return minY;
+    };
+    const gain = HERO_3D_ACTION_MAP.jump.rootYGain ?? null;
+    const refH = HERO_3D_PROFILE.screenHeightPxAtReference;
+    const scalePx = refH / HERO_3D_PROFILE.modelHeight;
+    const footAt = (p: number): number => {
+      const phi = remapPhaseByAnchors(p, HERO_3D_ACTION_MAP.jump.phaseAnchors);
+      applyRetargetedClip(clip, bound, model, pose, phi, 'zero-xz', false, true, gain);
+      return minSkinY(resolvePose(model, pose));
+    };
+    const restFoot = (() => {
+      applyRetargetedClip(clip, bound, model, pose, 0, 'zero', false, true, null); // 静止姿态（root 归 rest）
+      return minSkinY(resolvePose(model, pose));
+    })();
+    const liftPx = (p: number): number => (footAt(p) - restFoot) * scalePx;
+    // ① 离地/触地相位（占位判据：足底离开/回到静止脚底高度）
+    const firstOff = (() => {
+      for (let i = 0; i <= 100; i++) if (liftPx(i / 100) > 1) return i / 100;
+      return 1;
+    })();
+    const lastOff = (() => {
+      for (let i = 100; i >= 0; i--) if (liftPx(i / 100) > 1) return i / 100;
+      return 0;
+    })();
+    expect(firstOff).toBeGreaterThanOrEqual(0.24);
+    expect(firstOff).toBeLessThanOrEqual(0.28);
+    expect(lastOff).toBeGreaterThanOrEqual(0.73);
+    expect(lastOff).toBeLessThanOrEqual(0.78);
+    // ② 峰值 / 参考身高（判据带见任务卡；实测值随 【Q3-T31-R2】 待裁）
+    let peak = 0;
+    let peakP = 0;
+    for (let i = 0; i <= 100; i++) {
+      const v = liftPx(i / 100);
+      if (v > peak) { peak = v; peakP = i / 100; }
+    }
+    // eslint-disable-next-line no-console
+    console.log(`[R2-1] 峰值=${peak.toFixed(2)}px 参考高=${refH}px 比值=${(peak / refH).toFixed(3)} peakP=${peakP}`);
+    expect(peak / refH).toBeGreaterThan(0.33); // 至少高于改前基线（0.33）：增益确实抬高了
+    // ③ hop 恒 0 + 演出窗 1.0s（3D 轻功）
+    const view = createView();
+    const snap = makeSnapshot([{ id: 'hero', animState: 'walk', isJump: true, pos: { q: 5, r: 8 }, renderPos: { q: 1, r: 8 } }]);
+    updateView(view, snap, 0.001, 375, 667);
+    const ma = view.moveAnims.get('hero')!;
+    expect(ma.duration).toBeCloseTo(1.0, 10);
+    expect(ma.hopHeight).toBe(0);
+    for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+      ma.t = t * ma.duration;
+      expect(pieceHop(view, snap.actors[0])).toBe(0);
+    }
   });
 
   it('T15 R3 rejected 消费：spawnNoteFx 头顶冒字（上浮渐隐，寿命到即亡）', () => {

@@ -22,7 +22,9 @@ import type {
 import type {
   Character3DActionKey,
   Character3DActionSpec,
+  Character3DPhaseAnchor,
   Character3DProgressSource,
+  Character3DRootYGain,
 } from '../../config/character-3d';
 import { fromTRS, mul, nlerp } from './math';
 import type { Character3DEmbeddedClip, Character3DModel, Character3DTrack } from './glb';
@@ -141,6 +143,9 @@ export interface Character3DRetargetedClip {
   boneTracks: Record<string, number[][]>;
   /** [nFrames][3] 根位移**增量**（叠在 Root 静止位移上） */
   rootTrack: number[][];
+  /** 【R2-1 · §4.1.2(4)】rootTrack 的 y 峰值（解析期一次求得）：过零渐入带上沿 = 本值 × bandRatio，
+   * 禁在渲染/采样层硬编码绝对值。 */
+  rootTrackPeakY: number;
 }
 
 function fail(msg: string): never {
@@ -194,6 +199,11 @@ export function parseCharacter3DClipJson(raw: unknown, name: string): Character3
     const row = rootTrack[f];
     if (!Array.isArray(row) || row.length !== 3) fail('rootTrack 第 ' + f + ' 帧不是 vec3');
   }
+  let rootTrackPeakY = 0;
+  for (let f = 0; f < nFrames; f++) {
+    const y = (rootTrack as number[][])[f][1];
+    if (y > rootTrackPeakY) rootTrackPeakY = y;
+  }
   return {
     name,
     fps,
@@ -207,6 +217,7 @@ export function parseCharacter3DClipJson(raw: unknown, name: string): Character3
     source: typeof obj.source === 'string' ? obj.source : '',
     boneTracks,
     rootTrack: rootTrack as number[][],
+    rootTrackPeakY,
   };
 }
 
@@ -250,6 +261,10 @@ const q4 = new Float32Array(4);
  *   · 'zero-xz' = **只清水平增量**（x/z 归静止位移）、**保留 y 增量**（v1.1 §4.1 jump 口径：
  *     `Root.translation = rest + [0, sampledY, 0]`，竖直由素材提供，程序不再叠 pieceHop）。
  * @param loop 循环取模 / 单播夹取（方案 §5：basic 尾帧保持至状态退出 —— 单播若取模会跳回首帧）
+ * @param endpointInclusive 单播端点策略（v1.1 §4.1 jump：fi = phase×(nFrames−1)，phase=1 落末帧）
+ * @param yGain 【R2-1 · §4.1.2(4)】root y **正段**增益（缺省 null = 不加系数，沿素材）：
+ *   y>0 ⇒ ×gain；y≤0 ⇒ ×1（深蹲深度不变）；[0, 峰值×bandRatio] 内线性渐入防过零速度折点。
+ *   只作用于 'zero-xz' 竖直通道（水平已清零）；增益在**模型单位空间**生效、先于 scale，与显示比例正交。
  */
 export function applyRetargetedClip(
   clip: Character3DRetargetedClip,
@@ -260,6 +275,7 @@ export function applyRetargetedClip(
   rootDisplacement: 'track' | 'zero' | 'zero-xz',
   loop = true,
   endpointInclusive = false,
+  yGain: Character3DRootYGain | null = null,
 ): void {
   resetPose(pose, model);
   const nF = clip.nFrames;
@@ -295,15 +311,45 @@ export function applyRetargetedClip(
   const dy = r0[1] * (1 - a) + r1[1] * a;
   const dz = r0[2] * (1 - a) + r1[2] * a;
   if (rootDisplacement === 'zero-xz') {
-    // ★ v1.1 §4.1：**只剥水平增量**，y 原样叠加在静止位移上（不得抹掉 rest 平移，不钳负 y 蹲姿）
+    // ★ v1.1 §4.1：**只剥水平增量**，y 原样叠加在静止位移上（不得抹掉 rest 平移，不钳负 y 蹲姿）。
+    // ★ R2-1 §4.1.2(4)：y 过增益后再叠（正段 ×gain、深蹲负段 ×1、过零带线性渐入）。
     rt[0] = rr[0];
-    rt[1] = rr[1] + dy;
+    rt[1] = rr[1] + gainedRootY(dy, yGain, clip.rootTrackPeakY);
     rt[2] = rr[2];
     return;
   }
   rt[0] = rr[0] + dx;
   rt[1] = rr[1] + dy;
   rt[2] = rr[2] + dz;
+}
+
+/**
+ * root y 正段增益（方案 §4.1.2(4)）：`y ≤ 0 ⇒ y`（深蹲深度不变）；`y > 0 ⇒ y×k(y)`，
+ * k 在 [0, peak×bandRatio] 内由 1 线性升到 gain（过零处连续、无速度折点），带外恒为 gain。
+ * `peakY` = 素材 root y 峰值（解析期求得）；带为 0 或无效时退化为全正段 ×gain。
+ */
+export function gainedRootY(y: number, gain: Character3DRootYGain | null, peakY: number): number {
+  if (!gain || y <= 0) return y;
+  const band = peakY > 0 && gain.bandRatio > 0 ? peakY * gain.bandRatio : 0;
+  const k = band > 0 && y < band ? 1 + (y / band) * (gain.gain - 1) : gain.gain;
+  return y * k;
+}
+
+/** 分段线性相位重映射（方案 §4.1.2(2)）：演出进度 p → 素材相位 φ。
+ * 缺省锚表 = 进度即相位；p 超出末锚时取末锚值（不外推）；锚表须首锚 p=0。 */
+export function remapPhaseByAnchors(p: number, anchors?: readonly Character3DPhaseAnchor[]): number {
+  if (!anchors || anchors.length === 0) return p;
+  if (p <= anchors[0].p) return anchors[0].phase;
+  for (let i = 1; i < anchors.length; i++) {
+    const a = anchors[i - 1];
+    const b = anchors[i];
+    if (p <= b.p) {
+      const span = b.p - a.p;
+      const t = span > 0 ? (p - a.p) / span : 0;
+      return a.phase + t * (b.phase - a.phase);
+    }
+  }
+  return anchors[anchors.length - 1].phase;
 }
 
 // ===== GLB 内嵌预设（② 号源）=====
@@ -465,6 +511,8 @@ interface FadeState {
   rootDisplacement: 'track' | 'zero' | 'zero-xz';
   /** 来源动作的端点策略（淡化期仍按来源自己的口径采样） */
   endpointInclusive: boolean;
+  /** 来源动作的 root y 增益（淡化期仍按来源口径采样，§4.1.2(4)） */
+  rootYGain: Character3DRootYGain | null;
   durationSec: number;
 }
 
@@ -491,8 +539,18 @@ export class CharacterAnimController {
   private lastRatio = 0;
   /** 当前相位是否按循环口径解（决定末帧保持 vs 取模回卷） */
   private lastLoop = true;
-  /** hit 继承：沿用进入 hit 时的 clip 与相位，继续推进（方案 §5 hit 行「不切专用动作」） */
-  private inherited: { clipKey: Character3DClipKey; phaseRatio: number; clockSec: number; loop: boolean; rootDisplacement: 'track' | 'zero' | 'zero-xz' } | null = null;
+  /** hit 继承：沿用进入 hit 时的 clip 与相位，继续推进（方案 §5 hit 行「不切专用动作」）。
+   * 【R2 · BUG-20250915-37】端点策略与 root y 增益**一并沿用来源**（与 rootDisplacement 对齐）：
+   * 继承态不再回落到 hit 槽位自己的缺省值（`endpointInclusive=false`），否则「沿用进入时策略」的注释与实现不符。 */
+  private inherited: {
+    clipKey: Character3DClipKey;
+    phaseRatio: number;
+    clockSec: number;
+    loop: boolean;
+    rootDisplacement: 'track' | 'zero' | 'zero-xz';
+    endpointInclusive: boolean;
+    rootYGain: Character3DRootYGain | null;
+  } | null = null;
 
   constructor(opts: CharacterAnimControllerOptions) {
     this.opts = opts;
@@ -542,6 +600,7 @@ export class CharacterAnimController {
           loop: this.opts.actionMap[this.currentActionKey].loop,
           rootDisplacement: this.opts.actionMap[this.currentActionKey].rootMotion,
           endpointInclusive: this.opts.actionMap[this.currentActionKey].endpointInclusive === true,
+          rootYGain: this.opts.actionMap[this.currentActionKey].rootYGain ?? null,
           durationSec: dur > 0 ? dur : 1e-6,
         };
         this.fadeElapsedSec = 0;
@@ -566,6 +625,9 @@ export class CharacterAnimController {
           clockSec: this.viewClockSec,
           loop: target.loop,
           rootDisplacement: target.rootDisplacement,
+          // 【BUG-20250915-37】同样沿用来源的端点策略与 root y 增益（不再回落 hit 槽位缺省）
+          endpointInclusive: spec.endpointInclusive === true,
+          rootYGain: spec.rootYGain ?? null,
         };
       }
     } else {
@@ -599,13 +661,13 @@ export class CharacterAnimController {
     if (fade) {
       const fadeSource = this.opts.clips[fade.clipKey];
       if (fadeSource) {
-        this.sampleOne(fadeSource, fade.phaseRatio, fade.rootDisplacement, fade.loop, model, scratchPose, fade.endpointInclusive);
-        this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusive());
+        this.sampleOne(fadeSource, fade.phaseRatio, fade.rootDisplacement, fade.loop, model, scratchPose, fade.endpointInclusive, fade.rootYGain);
+        this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusive(), this.currentRootYGain());
         blendPoses(pose, scratchPose, pose, this.fadeWeight);
         return resolvePose(model, pose);
       }
     }
-    this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusive());
+    this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusive(), this.currentRootYGain());
     return resolvePose(model, pose);
   }
 
@@ -613,9 +675,16 @@ export class CharacterAnimController {
     return this.inherited ? this.inherited.rootDisplacement : this.opts.actionMap[this.currentActionKey].rootMotion;
   }
 
-  /** 端点策略（v1.1 jump：phase=1 落末帧）——继承态（hit）沿用进入时的动作策略。 */
+  /** 端点策略（v1.1 jump：phase=1 落末帧）——继承态（hit）沿用进入时的动作策略（BUG-20250915-37 修正）。 */
   private currentEndpointInclusive(): boolean {
+    if (this.inherited) return this.inherited.endpointInclusive;
     return this.opts.actionMap[this.currentActionKey].endpointInclusive === true;
+  }
+
+  /** root y 正段增益（§4.1.2(4)）——继承态（hit）沿用进入时的动作策略。 */
+  private currentRootYGain(): Character3DRootYGain | null {
+    if (this.inherited) return this.inherited.rootYGain;
+    return this.opts.actionMap[this.currentActionKey].rootYGain ?? null;
   }
 
   private sampleOne(
@@ -626,9 +695,10 @@ export class CharacterAnimController {
     model: Character3DModel,
     pose: Character3DPose,
     endpointInclusive = false,
+    yGain: Character3DRootYGain | null = null,
   ): void {
     if (source.kind === 'retargeted') {
-      applyRetargetedClip(source.clip, source.bound, model, pose, phaseRatio, rootDisplacement, loop, endpointInclusive);
+      applyRetargetedClip(source.clip, source.bound, model, pose, phaseRatio, rootDisplacement, loop, endpointInclusive, yGain);
     } else {
       // 嵌入 clip 按**时间**采样（t = start + r×duration ⇒ r=1 正好落末关键帧），不存在「相位×帧数」的
       // 提前到末帧问题 ⇒ 无需端点策略（endpointInclusive 只对重定向 clip 的帧索引映射有意义）。
@@ -696,7 +766,9 @@ export class CharacterAnimController {
         const p = input.moveProgress !== null
           ? clamp01(input.moveProgress)
           : clamp01(input.stateElapsedSec / (window > 0 ? window : 1));
-        return foldPhase(start + p * span, spec.loop);
+        // 【R2-1 · §4.1.2(2)】素材相位与演出进度解耦：先按锚表把 p 重映射成素材相位 φ（缺省=恒等）
+        const phase = remapPhaseByAnchors(p, spec.phaseAnchors);
+        return foldPhase(start + phase * span, spec.loop);
       }
       case 'stateElapsed': {
         const window = spec.playWindowSec ?? durationSec;

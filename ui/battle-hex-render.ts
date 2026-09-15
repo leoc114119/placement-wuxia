@@ -62,7 +62,10 @@ import {
 // 只读查表：渲染层不持任何资产地址/时长（§6.1 资源 URL 只在 config）。
 import {
   CHARACTER_3D_PROFILE_BY_SPRITE_KEY,
+  CHARACTER_3D_JUMP_CHANNEL,
   CHARACTER_3D_JUMP_MOVE_SEC,
+  jumpChannelProgressH,
+  type Character3DJumpChannel,
 } from '../config/character-3d';
 
 // ============ T31-FE-B · 3D 人物层接点（方案 §2/§4.1/§4.3；S1 仅主角 3D） ============
@@ -357,6 +360,10 @@ export interface MoveAnim {
    * 降段会被错判成普通行走（arch 9e824cb5 的每帧直传要求已由 333bb239 明文修正）。 */
   isJumpMove: boolean;
   hopHeight: number; // 抛物线顶高（普通行走=0）
+  /** 【R2-1 · §4.1.2(3)】水平位移通道（**仅 3D 轻功**写入：isJumpMove 且 hopHeight=0）：
+   * 深蹲段恒 0（脚不离地不得滑步）、腾空段 smoothstep、落地缓冲恒 1。null = 沿 p 线性插值
+   *（既有 2D 敌型/普通行走零改动）。消费点唯一：moveAnimDrawPosPx。 */
+  jumpChannel: Character3DJumpChannel | null;
 }
 
 interface FxItem {
@@ -679,9 +686,13 @@ export function computeMovePath(from: HexPos, to: HexPos, occupied: Set<string>,
   return bfsMovePath(from, to, occupied);
 }
 
-/** 移动演出位置（像素空间插值：from_px→…→pos_px 沿路径点列线性——像素直线恒直，无错位网格锯齿） */
+/** 移动演出位置（像素空间插值：from_px→…→pos_px 沿路径点列线性——像素直线恒直，无错位网格锯齿）。
+ * 【R2-1 §4.1.2(3)】3D 轻功（`jumpChannel` 非空）走**水平通道**：p 先经 h(p) 重映射
+ *（深蹲段恒 0 / 腾空段 smoothstep / 落地段恒 1），位移只发生在腾空段；其余路径（2D 敌型、
+ * 普通行走）仍按 p 线性 ⇒ 既有行为零变化。镜头跟随与命令 footX/footY 自动同源（本函数是唯一消费点）。 */
 export function moveAnimDrawPosPx(ma: MoveAnim): { x: number; y: number } {
-  const p = Math.min(1, ma.t / ma.duration);
+  const raw = Math.min(1, ma.t / ma.duration);
+  const p = ma.jumpChannel ? jumpChannelProgressH(raw, ma.jumpChannel) : raw;
   const pts = ma.pathPx.length >= 2 ? ma.pathPx : [hexToWorld(ma.from.q, ma.from.r), hexToWorld(ma.pos.q, ma.pos.r)];
   const segs = pts.length - 1;
   if (segs < 1) return { x: pts[0].x, y: pts[0].y };
@@ -867,6 +878,8 @@ export function updateView(
         // 【R1 · 修订乙】轻功意图在此**一次性锁定**（本演出期间不再读快照 isJump；见 MoveAnim 注释）
         isJumpMove: a.isJump,
         hopHeight: a.isJump && !is3DJumper ? jp.height : 0,
+        // 【R2-1 §4.1.2(3)】水平通道只在 3D 轻功写入（2D 敌型 jumpParamsFor 消费路径零 diff）
+        jumpChannel: a.isJump && is3DJumper ? CHARACTER_3D_JUMP_CHANNEL : null,
       });
     }
     // ---- 移动演出推进（演出计时主导：到时不删、定格终点等快照到位/离开 walk 才释放） ----
