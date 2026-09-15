@@ -178,6 +178,17 @@ const summarizeJump = (frames, speed) => {
   const lastOffIdx = phases.map((p, i) => (visible[i] && lift[i] > 1 ? i : -1)).filter((i) => i >= 0).pop();
   const lastOff = lastOffIdx === undefined ? null : phases[lastOffIdx];
   const peakIdx = lift.indexOf(Math.max(...lift));
+  // 触地读数：峰值之后**首个** lift ≤ 1px 的相位（真实落地穿越点）；
+  // 注：素材末段「起身」有小的正 root y，增益放大后在锚上方留 ~2px 平台 ⇒ 「最后一个 >1px 的相位」
+  //     会被该平台拉到窗尾（lastOffPhase），故两者并列给出，判据用 touchDownPhase。
+  let touchDownIdx = -1;
+  for (let i = peakIdx + 1; i < lift.length; i++) {
+    if (visible[i] && lift[i] <= 1) {
+      touchDownIdx = i;
+      break;
+    }
+  }
+  const tailPlateau = lift.slice(-6).reduce((a, b) => Math.max(a, b), -1e9);
   const deep = withAnim.filter((f) => pAt(f) < 0.24);
   const land = withAnim.filter((f) => pAt(f) > 0.78);
   const xSpan = (arr) => (arr.length < 2 ? 0 : Math.max(...arr.map((f) => f.hudCx)) - Math.min(...arr.map((f) => f.hudCx)));
@@ -191,7 +202,9 @@ const summarizeJump = (frames, speed) => {
     sampledViewSpanSec: +(t1 - t0).toFixed(3),
     hopAllZero: withAnim.every((f) => f.hop === 0),
     firstOffPhase: firstOff,
-    lastOffPhase: lastOff,
+    lastOffPhase: lastOff, // ⚠ 会被「起身」正 root y 平台拉晚（见 touchDownPhase 注释）
+    touchDownPhase: touchDownIdx >= 0 ? phases[touchDownIdx] : null,
+    tailPlateauMaxPx: +tailPlateau.toFixed(3), // 窗尾 6 帧最大抬升（起身平台，判读用）
     peakAirHeightPx: lift[peakIdx],
     // 【方案 v1.3.1 §4.1.2(6)】峰值 ÷ 名义参考高（= 该帧 placed.h，squashY=1）：正式判据带 [0.65,0.80]
     // 口径：峰值 = 逐帧人物层包围盒底边相对 placed.groundAnchorY 的最大抬升（本工具即此法；PM 像素仪器同口径）
