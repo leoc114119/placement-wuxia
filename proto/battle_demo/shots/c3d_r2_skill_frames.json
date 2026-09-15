@@ -4,7 +4,7 @@
   "x1": {
    "charge": [
     {
-     "wall": 0.6901,
+     "wall": 0.6317,
      "viewT": 0.4333,
      "state": "charge",
      "isJumpSnap": false,
@@ -25,13 +25,13 @@
      "airHeight": -1
     },
     {
-     "wall": 0.7061,
-     "viewT": 0.45,
+     "wall": 0.6416,
+     "viewT": 0.4499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.0167,
+     "stateElapsedSec": 0.0166,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -46,7 +46,7 @@
      "airHeight": -1
     },
     {
-     "wall": 0.7233,
+     "wall": 0.658,
      "viewT": 0.4666,
      "state": "charge",
      "isJumpSnap": false,
@@ -67,13 +67,13 @@
      "airHeight": -1
     },
     {
-     "wall": 0.7388,
-     "viewT": 0.4834,
+     "wall": 0.6749,
+     "viewT": 0.4833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.0501,
+     "stateElapsedSec": 0.05,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -88,13 +88,13 @@
      "airHeight": 0
     },
     {
-     "wall": 0.7551,
-     "viewT": 0.4999,
+     "wall": 0.6929,
+     "viewT": 0.5,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.0666,
+     "stateElapsedSec": 0.0667,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -109,7 +109,7 @@
      "airHeight": 1
     },
     {
-     "wall": 0.7719,
+     "wall": 0.7132,
      "viewT": 0.5166,
      "state": "charge",
      "isJumpSnap": false,
@@ -130,13 +130,13 @@
      "airHeight": 3
     },
     {
-     "wall": 0.7882,
-     "viewT": 0.5333,
+     "wall": 0.7235,
+     "viewT": 0.5332,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.1,
+     "stateElapsedSec": 0.0999,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -151,7 +151,7 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8056,
+     "wall": 0.7407,
      "viewT": 0.55,
      "state": "charge",
      "isJumpSnap": false,
@@ -172,7 +172,7 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8247,
+     "wall": 0.7573,
      "viewT": 0.5666,
      "state": "charge",
      "isJumpSnap": false,
@@ -193,7 +193,7 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8392,
+     "wall": 0.7758,
      "viewT": 0.5833,
      "state": "charge",
      "isJumpSnap": false,
@@ -214,13 +214,13 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8562,
-     "viewT": 0.6,
+     "wall": 0.7905,
+     "viewT": 0.5999,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.1667,
+     "stateElapsedSec": 0.1666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -235,7 +235,7 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8727,
+     "wall": 0.8082,
      "viewT": 0.6166,
      "state": "charge",
      "isJumpSnap": false,
@@ -256,7 +256,7 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8901,
+     "wall": 0.8248,
      "viewT": 0.6333,
      "state": "charge",
      "isJumpSnap": false,
@@ -277,18 +277,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9078,
-     "viewT": 0.65,
+     "wall": 0.8417,
+     "viewT": 0.6499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.2167,
+     "stateElapsedSec": 0.2166,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.826,
+     "hudTop": 332.827,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -298,7 +298,7 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9248,
+     "wall": 0.8581,
      "viewT": 0.6666,
      "state": "charge",
      "isJumpSnap": false,
@@ -319,7 +319,7 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9411,
+     "wall": 0.8768,
      "viewT": 0.6833,
      "state": "charge",
      "isJumpSnap": false,
@@ -340,18 +340,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9568,
-     "viewT": 0.6999,
+     "wall": 0.8919,
+     "viewT": 0.7,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.2666,
+     "stateElapsedSec": 0.2667,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.491,
+     "hudTop": 332.49,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -361,7 +361,7 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9743,
+     "wall": 0.9072,
      "viewT": 0.7166,
      "state": "charge",
      "isJumpSnap": false,
@@ -382,18 +382,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9913,
-     "viewT": 0.7333,
+     "wall": 0.9243,
+     "viewT": 0.7332,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.3,
+     "stateElapsedSec": 0.2999,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.027,
+     "hudTop": 332.028,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -403,7 +403,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0095,
+     "wall": 0.9416,
      "viewT": 0.7499,
      "state": "charge",
      "isJumpSnap": false,
@@ -424,7 +424,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0239,
+     "wall": 0.9584,
      "viewT": 0.7666,
      "state": "charge",
      "isJumpSnap": false,
@@ -445,7 +445,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0404,
+     "wall": 0.9768,
      "viewT": 0.7833,
      "state": "charge",
      "isJumpSnap": false,
@@ -466,18 +466,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0581,
-     "viewT": 0.8,
+     "wall": 0.9918,
+     "viewT": 0.7999,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.3667,
+     "stateElapsedSec": 0.3666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.78,
+     "hudTop": 330.782,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -487,18 +487,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0752,
-     "viewT": 0.8167,
+     "wall": 1.0097,
+     "viewT": 0.8166,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.3834,
+     "stateElapsedSec": 0.3833,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.465,
+     "hudTop": 330.467,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -508,18 +508,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.097,
-     "viewT": 0.8333,
+     "wall": 1.0268,
+     "viewT": 0.8332,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.4,
+     "stateElapsedSec": 0.3999,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.173,
+     "hudTop": 330.174,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -529,18 +529,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.1058,
-     "viewT": 0.8499,
+     "wall": 1.0429,
+     "viewT": 0.85,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.4166,
+     "stateElapsedSec": 0.4167,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.918,
+     "hudTop": 329.917,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -550,18 +550,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.1222,
-     "viewT": 0.8666,
+     "wall": 1.0608,
+     "viewT": 0.8667,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.4333,
+     "stateElapsedSec": 0.4334,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.722,
+     "hudTop": 329.721,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -571,7 +571,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.1408,
+     "wall": 1.077,
      "viewT": 0.8833,
      "state": "charge",
      "isJumpSnap": false,
@@ -592,13 +592,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.1583,
-     "viewT": 0.9,
+     "wall": 1.0927,
+     "viewT": 0.8999,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.4667,
+     "stateElapsedSec": 0.4666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -613,7 +613,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.1761,
+     "wall": 1.1089,
      "viewT": 0.9166,
      "state": "charge",
      "isJumpSnap": false,
@@ -634,18 +634,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.1916,
-     "viewT": 0.9332,
+     "wall": 1.1261,
+     "viewT": 0.9333,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.4999,
+     "stateElapsedSec": 0.5,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.434,
+     "hudTop": 329.435,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -655,7 +655,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2076,
+     "wall": 1.1432,
      "viewT": 0.95,
      "state": "charge",
      "isJumpSnap": false,
@@ -676,7 +676,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2246,
+     "wall": 1.1615,
      "viewT": 0.9666,
      "state": "charge",
      "isJumpSnap": false,
@@ -697,7 +697,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2405,
+     "wall": 1.1762,
      "viewT": 0.9833,
      "state": "charge",
      "isJumpSnap": false,
@@ -718,7 +718,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.259,
+     "wall": 1.1924,
      "viewT": 0.9999,
      "state": "charge",
      "isJumpSnap": false,
@@ -739,7 +739,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2779,
+     "wall": 1.2098,
      "viewT": 1.0166,
      "state": "charge",
      "isJumpSnap": false,
@@ -760,7 +760,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2919,
+     "wall": 1.2252,
      "viewT": 1.0332,
      "state": "charge",
      "isJumpSnap": false,
@@ -781,7 +781,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.3077,
+     "wall": 1.2442,
      "viewT": 1.0499,
      "state": "charge",
      "isJumpSnap": false,
@@ -802,7 +802,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.3236,
+     "wall": 1.2578,
      "viewT": 1.0666,
      "state": "charge",
      "isJumpSnap": false,
@@ -823,18 +823,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.3406,
-     "viewT": 1.0833,
+     "wall": 1.2753,
+     "viewT": 1.0832,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.65,
+     "stateElapsedSec": 0.6499,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.098,
+     "hudTop": 331.097,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -844,18 +844,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.3587,
-     "viewT": 1.0999,
+     "wall": 1.2923,
+     "viewT": 1.1,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.6666,
+     "stateElapsedSec": 0.6667,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.151,
+     "hudTop": 331.15,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -865,7 +865,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.3791,
+     "wall": 1.3097,
      "viewT": 1.1166,
      "state": "charge",
      "isJumpSnap": false,
@@ -886,7 +886,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.3898,
+     "wall": 1.3279,
      "viewT": 1.1333,
      "state": "charge",
      "isJumpSnap": false,
@@ -907,18 +907,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.4083,
-     "viewT": 1.15,
+     "wall": 1.3458,
+     "viewT": 1.1499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.7167,
+     "stateElapsedSec": 0.7166,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.475,
+     "hudTop": 330.476,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -928,7 +928,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.4242,
+     "wall": 1.3599,
      "viewT": 1.1666,
      "state": "charge",
      "isJumpSnap": false,
@@ -949,7 +949,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.4406,
+     "wall": 1.3767,
      "viewT": 1.1833,
      "state": "charge",
      "isJumpSnap": false,
@@ -970,18 +970,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.46,
-     "viewT": 1.1999,
+     "wall": 1.3926,
+     "viewT": 1.2,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.7666,
+     "stateElapsedSec": 0.7667,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.192,
+     "hudTop": 330.193,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -991,7 +991,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.4736,
+     "wall": 1.4099,
      "viewT": 1.2166,
      "state": "charge",
      "isJumpSnap": false,
@@ -1012,18 +1012,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.4902,
-     "viewT": 1.2332,
+     "wall": 1.4286,
+     "viewT": 1.2333,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.7999,
+     "stateElapsedSec": 0.8,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.403,
+     "hudTop": 330.404,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1033,18 +1033,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.505,
-     "viewT": 1.2499,
+     "wall": 1.4411,
+     "viewT": 1.25,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.8166,
+     "stateElapsedSec": 0.8167,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.574,
+     "hudTop": 330.575,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1054,7 +1054,7 @@
      "airHeight": 4
     },
     {
-     "wall": 1.523,
+     "wall": 1.4574,
      "viewT": 1.2666,
      "state": "charge",
      "isJumpSnap": false,
@@ -1075,18 +1075,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.54,
-     "viewT": 1.2832,
+     "wall": 1.4746,
+     "viewT": 1.2833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.8499,
+     "stateElapsedSec": 0.85,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.959,
+     "hudTop": 330.96,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1096,18 +1096,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.5551,
-     "viewT": 1.3,
+     "wall": 1.4912,
+     "viewT": 1.2999,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.8667,
+     "stateElapsedSec": 0.8666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.194,
+     "hudTop": 331.192,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1117,18 +1117,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.5727,
-     "viewT": 1.3167,
+     "wall": 1.5092,
+     "viewT": 1.3166,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.8834,
+     "stateElapsedSec": 0.8833,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.447,
+     "hudTop": 331.446,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1138,7 +1138,7 @@
      "airHeight": 4
     },
     {
-     "wall": 1.5893,
+     "wall": 1.5272,
      "viewT": 1.3333,
      "state": "charge",
      "isJumpSnap": false,
@@ -1159,13 +1159,13 @@
      "airHeight": 4
     },
     {
-     "wall": 1.6067,
-     "viewT": 1.35,
+     "wall": 1.5464,
+     "viewT": 1.3499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.9167,
+     "stateElapsedSec": 0.9166,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -1180,7 +1180,7 @@
      "airHeight": 4
     },
     {
-     "wall": 1.6218,
+     "wall": 1.5629,
      "viewT": 1.3666,
      "state": "charge",
      "isJumpSnap": false,
@@ -1201,7 +1201,7 @@
      "airHeight": 3
     },
     {
-     "wall": 1.6384,
+     "wall": 1.5752,
      "viewT": 1.3833,
      "state": "charge",
      "isJumpSnap": false,
@@ -1222,7 +1222,7 @@
      "airHeight": 3
     },
     {
-     "wall": 1.6543,
+     "wall": 1.5908,
      "viewT": 1.4,
      "state": "charge",
      "isJumpSnap": false,
@@ -1243,7 +1243,7 @@
      "airHeight": 3
     },
     {
-     "wall": 1.6722,
+     "wall": 1.6082,
      "viewT": 1.4166,
      "state": "charge",
      "isJumpSnap": false,
@@ -1264,7 +1264,7 @@
      "airHeight": 4
     },
     {
-     "wall": 1.6906,
+     "wall": 1.625,
      "viewT": 1.4332,
      "state": "charge",
      "isJumpSnap": false,
@@ -1285,7 +1285,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.7057,
+     "wall": 1.6432,
      "viewT": 1.4499,
      "state": "charge",
      "isJumpSnap": false,
@@ -1306,7 +1306,7 @@
      "airHeight": 6
     },
     {
-     "wall": 1.7232,
+     "wall": 1.66,
      "viewT": 1.4666,
      "state": "charge",
      "isJumpSnap": false,
@@ -1327,7 +1327,7 @@
      "airHeight": 6
     },
     {
-     "wall": 1.7389,
+     "wall": 1.6775,
      "viewT": 1.4833,
      "state": "charge",
      "isJumpSnap": false,
@@ -1348,7 +1348,7 @@
      "airHeight": 6
     },
     {
-     "wall": 1.758,
+     "wall": 1.694,
      "viewT": 1.4999,
      "state": "charge",
      "isJumpSnap": false,
@@ -1369,7 +1369,7 @@
      "airHeight": 6
     },
     {
-     "wall": 1.7746,
+     "wall": 1.7096,
      "viewT": 1.5166,
      "state": "charge",
      "isJumpSnap": false,
@@ -1390,7 +1390,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.7907,
+     "wall": 1.7253,
      "viewT": 1.5333,
      "state": "charge",
      "isJumpSnap": false,
@@ -1411,7 +1411,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8096,
+     "wall": 1.7431,
      "viewT": 1.5499,
      "state": "charge",
      "isJumpSnap": false,
@@ -1432,18 +1432,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8243,
-     "viewT": 1.5666,
+     "wall": 1.76,
+     "viewT": 1.5665,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.1333,
+     "stateElapsedSec": 1.1332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 327.441,
+     "hudTop": 327.443,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1453,18 +1453,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8421,
-     "viewT": 1.5833,
+     "wall": 1.7807,
+     "viewT": 1.5832,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.15,
+     "stateElapsedSec": 1.1499,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 327.149,
+     "hudTop": 327.15,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1474,7 +1474,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8565,
+     "wall": 1.792,
      "viewT": 1.5999,
      "state": "charge",
      "isJumpSnap": false,
@@ -1495,7 +1495,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8732,
+     "wall": 1.8102,
      "viewT": 1.6166,
      "state": "charge",
      "isJumpSnap": false,
@@ -1516,7 +1516,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8922,
+     "wall": 1.8266,
      "viewT": 1.6332,
      "state": "charge",
      "isJumpSnap": false,
@@ -1537,7 +1537,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.9071,
+     "wall": 1.8433,
      "viewT": 1.6499,
      "state": "charge",
      "isJumpSnap": false,
@@ -1558,7 +1558,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.9227,
+     "wall": 1.862,
      "viewT": 1.6666,
      "state": "charge",
      "isJumpSnap": false,
@@ -1579,13 +1579,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.9406,
-     "viewT": 1.6833,
+     "wall": 1.8759,
+     "viewT": 1.6832,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.25,
+     "stateElapsedSec": 1.2499,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -1600,7 +1600,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.9582,
+     "wall": 1.8914,
      "viewT": 1.6999,
      "state": "charge",
      "isJumpSnap": false,
@@ -1621,13 +1621,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.9784,
-     "viewT": 1.7165,
+     "wall": 1.9081,
+     "viewT": 1.7166,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.2832,
+     "stateElapsedSec": 1.2833,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -1642,7 +1642,7 @@
      "airHeight": 5
     },
     {
-     "wall": 1.9923,
+     "wall": 1.9247,
      "viewT": 1.7332,
      "state": "charge",
      "isJumpSnap": false,
@@ -1663,7 +1663,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0078,
+     "wall": 1.9426,
      "viewT": 1.7499,
      "state": "charge",
      "isJumpSnap": false,
@@ -1684,18 +1684,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0239,
-     "viewT": 1.7666,
+     "wall": 1.9609,
+     "viewT": 1.7665,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.3333,
+     "stateElapsedSec": 1.3332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 327.651,
+     "hudTop": 327.649,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1705,7 +1705,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0406,
+     "wall": 1.9762,
      "viewT": 1.7832,
      "state": "charge",
      "isJumpSnap": false,
@@ -1726,18 +1726,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0581,
-     "viewT": 1.8,
+     "wall": 1.993,
+     "viewT": 1.7999,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.3667,
+     "stateElapsedSec": 1.3666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 328.412,
+     "hudTop": 328.409,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1747,18 +1747,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0767,
-     "viewT": 1.8166,
+     "wall": 2.0091,
+     "viewT": 1.8165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.3833,
+     "stateElapsedSec": 1.3832,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 328.776,
+     "hudTop": 328.774,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1768,18 +1768,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0916,
-     "viewT": 1.8333,
+     "wall": 2.0266,
+     "viewT": 1.8332,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.4,
+     "stateElapsedSec": 1.3999,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.111,
+     "hudTop": 329.109,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1789,7 +1789,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.1093,
+     "wall": 2.0426,
      "viewT": 1.8499,
      "state": "charge",
      "isJumpSnap": false,
@@ -1810,7 +1810,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.123,
+     "wall": 2.0615,
      "viewT": 1.8666,
      "state": "charge",
      "isJumpSnap": false,
@@ -1831,18 +1831,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.1395,
-     "viewT": 1.8833,
+     "wall": 2.0776,
+     "viewT": 1.8832,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.45,
+     "stateElapsedSec": 1.4499,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.184,
+     "hudTop": 330.182,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -1852,7 +1852,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.1575,
+     "wall": 2.0933,
      "viewT": 1.8999,
      "state": "charge",
      "isJumpSnap": false,
@@ -1873,7 +1873,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.1766,
+     "wall": 2.1099,
      "viewT": 1.9166,
      "state": "charge",
      "isJumpSnap": false,
@@ -1894,7 +1894,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.1909,
+     "wall": 2.1258,
      "viewT": 1.9332,
      "state": "charge",
      "isJumpSnap": false,
@@ -1915,7 +1915,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.2069,
+     "wall": 2.1444,
      "viewT": 1.9499,
      "state": "charge",
      "isJumpSnap": false,
@@ -1936,7 +1936,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.2241,
+     "wall": 2.1621,
      "viewT": 1.9666,
      "state": "charge",
      "isJumpSnap": false,
@@ -1957,13 +1957,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.2423,
-     "viewT": 1.9832,
+     "wall": 2.1752,
+     "viewT": 1.9833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.5499,
+     "stateElapsedSec": 1.55,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -1978,7 +1978,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.26,
+     "wall": 2.1933,
      "viewT": 1.9999,
      "state": "charge",
      "isJumpSnap": false,
@@ -1999,7 +1999,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.2758,
+     "wall": 2.2095,
      "viewT": 2.0166,
      "state": "charge",
      "isJumpSnap": false,
@@ -2020,7 +2020,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.2912,
+     "wall": 2.2261,
      "viewT": 2.0333,
      "state": "charge",
      "isJumpSnap": false,
@@ -2041,7 +2041,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.3066,
+     "wall": 2.2454,
      "viewT": 2.0499,
      "state": "charge",
      "isJumpSnap": false,
@@ -2062,18 +2062,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.324,
-     "viewT": 2.0665,
+     "wall": 2.259,
+     "viewT": 2.0666,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.6332,
+     "stateElapsedSec": 1.6333,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.034,
+     "hudTop": 331.032,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2083,7 +2083,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.3415,
+     "wall": 2.2765,
      "viewT": 2.0832,
      "state": "charge",
      "isJumpSnap": false,
@@ -2104,7 +2104,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.3581,
+     "wall": 2.2915,
      "viewT": 2.0999,
      "state": "charge",
      "isJumpSnap": false,
@@ -2125,18 +2125,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.3742,
-     "viewT": 2.1165,
+     "wall": 2.3104,
+     "viewT": 2.1166,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.6832,
+     "stateElapsedSec": 1.6833,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.277,
+     "hudTop": 330.275,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2146,18 +2146,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.3902,
-     "viewT": 2.1333,
+     "wall": 2.3277,
+     "viewT": 2.1332,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.7,
+     "stateElapsedSec": 1.6999,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.97,
+     "hudTop": 329.972,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2167,7 +2167,7 @@
      "airHeight": 4
     },
     {
-     "wall": 2.4075,
+     "wall": 2.3436,
      "viewT": 2.1499,
      "state": "charge",
      "isJumpSnap": false,
@@ -2188,18 +2188,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.4249,
-     "viewT": 2.1666,
+     "wall": 2.3593,
+     "viewT": 2.1665,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.7333,
+     "stateElapsedSec": 1.7332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.304,
+     "hudTop": 329.306,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2209,18 +2209,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.4444,
-     "viewT": 2.1833,
+     "wall": 2.376,
+     "viewT": 2.1832,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.75,
+     "stateElapsedSec": 1.7499,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.009,
+     "hudTop": 329.011,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2230,7 +2230,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.459,
+     "wall": 2.392,
      "viewT": 2.1999,
      "state": "charge",
      "isJumpSnap": false,
@@ -2251,18 +2251,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.4739,
-     "viewT": 2.2166,
+     "wall": 2.4102,
+     "viewT": 2.2165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.7833,
+     "stateElapsedSec": 1.7832,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 328.607,
+     "hudTop": 328.608,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2272,13 +2272,13 @@
      "airHeight": 5
     },
     {
-     "wall": 2.4899,
-     "viewT": 2.2333,
+     "wall": 2.4282,
+     "viewT": 2.2332,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.8,
+     "stateElapsedSec": 1.7999,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -2293,18 +2293,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.5064,
-     "viewT": 2.2499,
+     "wall": 2.4416,
+     "viewT": 2.2498,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.8166,
+     "stateElapsedSec": 1.8165,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 328.494,
+     "hudTop": 328.493,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2314,18 +2314,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.5238,
-     "viewT": 2.2665,
+     "wall": 2.4593,
+     "viewT": 2.2666,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.8332,
+     "stateElapsedSec": 1.8333,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 328.533,
+     "hudTop": 328.534,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2335,7 +2335,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.5426,
+     "wall": 2.4756,
      "viewT": 2.2832,
      "state": "charge",
      "isJumpSnap": false,
@@ -2356,7 +2356,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.5573,
+     "wall": 2.4933,
      "viewT": 2.2999,
      "state": "charge",
      "isJumpSnap": false,
@@ -2377,18 +2377,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.5735,
-     "viewT": 2.3166,
+     "wall": 2.5085,
+     "viewT": 2.3165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.8833,
+     "stateElapsedSec": 1.8832,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.01,
+     "hudTop": 329.007,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2398,7 +2398,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.5896,
+     "wall": 2.5274,
      "viewT": 2.3332,
      "state": "charge",
      "isJumpSnap": false,
@@ -2419,7 +2419,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.6061,
+     "wall": 2.5425,
      "viewT": 2.3499,
      "state": "charge",
      "isJumpSnap": false,
@@ -2440,7 +2440,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.6255,
+     "wall": 2.5599,
      "viewT": 2.3665,
      "state": "charge",
      "isJumpSnap": false,
@@ -2461,7 +2461,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.6391,
+     "wall": 2.5763,
      "viewT": 2.3833,
      "state": "charge",
      "isJumpSnap": false,
@@ -2482,7 +2482,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.6557,
+     "wall": 2.5936,
      "viewT": 2.3999,
      "state": "charge",
      "isJumpSnap": false,
@@ -2503,7 +2503,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.6723,
+     "wall": 2.61,
      "viewT": 2.4165,
      "state": "charge",
      "isJumpSnap": false,
@@ -2524,7 +2524,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.6891,
+     "wall": 2.6265,
      "viewT": 2.4332,
      "state": "charge",
      "isJumpSnap": false,
@@ -2545,13 +2545,13 @@
      "airHeight": 5
     },
     {
-     "wall": 2.7072,
-     "viewT": 2.4499,
+     "wall": 2.6426,
+     "viewT": 2.4498,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.0166,
+     "stateElapsedSec": 2.0165,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -2566,7 +2566,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.7235,
+     "wall": 2.66,
      "viewT": 2.4666,
      "state": "charge",
      "isJumpSnap": false,
@@ -2587,7 +2587,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.7416,
+     "wall": 2.6764,
      "viewT": 2.4832,
      "state": "charge",
      "isJumpSnap": false,
@@ -2608,7 +2608,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.7563,
+     "wall": 2.6948,
      "viewT": 2.4999,
      "state": "charge",
      "isJumpSnap": false,
@@ -2629,7 +2629,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.7745,
+     "wall": 2.7108,
      "viewT": 2.5166,
      "state": "charge",
      "isJumpSnap": false,
@@ -2650,7 +2650,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.7916,
+     "wall": 2.727,
      "viewT": 2.5332,
      "state": "charge",
      "isJumpSnap": false,
@@ -2671,7 +2671,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.8082,
+     "wall": 2.7412,
      "viewT": 2.5499,
      "state": "charge",
      "isJumpSnap": false,
@@ -2692,7 +2692,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.827,
+     "wall": 2.7594,
      "viewT": 2.5666,
      "state": "charge",
      "isJumpSnap": false,
@@ -2713,7 +2713,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.8406,
+     "wall": 2.7773,
      "viewT": 2.5832,
      "state": "charge",
      "isJumpSnap": false,
@@ -2734,7 +2734,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.8614,
+     "wall": 2.7943,
      "viewT": 2.5999,
      "state": "charge",
      "isJumpSnap": false,
@@ -2755,13 +2755,13 @@
      "airHeight": 5
     },
     {
-     "wall": 2.8741,
-     "viewT": 2.6165,
+     "wall": 2.813,
+     "viewT": 2.6166,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.1832,
+     "stateElapsedSec": 2.1833,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -2776,13 +2776,13 @@
      "airHeight": 5
     },
     {
-     "wall": 2.8898,
-     "viewT": 2.6332,
+     "wall": 2.8263,
+     "viewT": 2.6333,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.1999,
+     "stateElapsedSec": 2.2,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -2797,7 +2797,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.9072,
+     "wall": 2.8433,
      "viewT": 2.6499,
      "state": "charge",
      "isJumpSnap": false,
@@ -2818,18 +2818,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.9231,
-     "viewT": 2.6666,
+     "wall": 2.8625,
+     "viewT": 2.6665,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.2333,
+     "stateElapsedSec": 2.2332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.114,
+     "hudTop": 331.113,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -2839,7 +2839,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.9406,
+     "wall": 2.8744,
      "viewT": 2.6832,
      "state": "charge",
      "isJumpSnap": false,
@@ -2860,7 +2860,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.9577,
+     "wall": 2.8913,
      "viewT": 2.6999,
      "state": "charge",
      "isJumpSnap": false,
@@ -2881,7 +2881,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.9747,
+     "wall": 2.9077,
      "viewT": 2.7165,
      "state": "charge",
      "isJumpSnap": false,
@@ -2902,7 +2902,7 @@
      "airHeight": 5
     },
     {
-     "wall": 2.9905,
+     "wall": 2.925,
      "viewT": 2.7332,
      "state": "charge",
      "isJumpSnap": false,
@@ -2923,7 +2923,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.0072,
+     "wall": 2.9434,
      "viewT": 2.7499,
      "state": "charge",
      "isJumpSnap": false,
@@ -2944,7 +2944,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.0233,
+     "wall": 2.9574,
      "viewT": 2.7665,
      "state": "charge",
      "isJumpSnap": false,
@@ -2965,7 +2965,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.0417,
+     "wall": 2.9749,
      "viewT": 2.7832,
      "state": "charge",
      "isJumpSnap": false,
@@ -2986,13 +2986,13 @@
      "airHeight": 5
     },
     {
-     "wall": 3.0601,
-     "viewT": 2.7999,
+     "wall": 2.9933,
+     "viewT": 2.7998,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.3666,
+     "stateElapsedSec": 2.3665,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3007,13 +3007,13 @@
      "airHeight": 5
     },
     {
-     "wall": 3.0759,
-     "viewT": 2.8166,
+     "wall": 3.0089,
+     "viewT": 2.8165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.3833,
+     "stateElapsedSec": 2.3832,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3028,7 +3028,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.0899,
+     "wall": 3.027,
      "viewT": 2.8332,
      "state": "charge",
      "isJumpSnap": false,
@@ -3049,18 +3049,18 @@
      "airHeight": 5
     },
     {
-     "wall": 3.1072,
-     "viewT": 2.8499,
+     "wall": 3.0454,
+     "viewT": 2.8498,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.4166,
+     "stateElapsedSec": 2.4165,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.963,
+     "hudTop": 331.964,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -3070,18 +3070,18 @@
      "airHeight": 5
     },
     {
-     "wall": 3.1243,
-     "viewT": 2.8665,
+     "wall": 3.059,
+     "viewT": 2.8666,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.4332,
+     "stateElapsedSec": 2.4333,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.811,
+     "hudTop": 331.809,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -3091,18 +3091,18 @@
      "airHeight": 5
     },
     {
-     "wall": 3.1409,
-     "viewT": 2.8833,
+     "wall": 3.0764,
+     "viewT": 2.8832,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.45,
+     "stateElapsedSec": 2.4499,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.6,
+     "hudTop": 331.601,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -3112,7 +3112,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.1572,
+     "wall": 3.0934,
      "viewT": 2.8999,
      "state": "charge",
      "isJumpSnap": false,
@@ -3133,18 +3133,18 @@
      "airHeight": 5
     },
     {
-     "wall": 3.1767,
-     "viewT": 2.9165,
+     "wall": 3.1117,
+     "viewT": 2.9166,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.4832,
+     "stateElapsedSec": 2.4833,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.242,
+     "hudTop": 331.241,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -3154,7 +3154,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.1906,
+     "wall": 3.1299,
      "viewT": 2.9332,
      "state": "charge",
      "isJumpSnap": false,
@@ -3175,7 +3175,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.2078,
+     "wall": 3.1447,
      "viewT": 2.9499,
      "state": "charge",
      "isJumpSnap": false,
@@ -3196,7 +3196,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.2239,
+     "wall": 3.1595,
      "viewT": 2.9665,
      "state": "charge",
      "isJumpSnap": false,
@@ -3217,7 +3217,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.2414,
+     "wall": 3.1771,
      "viewT": 2.9832,
      "state": "charge",
      "isJumpSnap": false,
@@ -3238,13 +3238,13 @@
      "airHeight": 5
     },
     {
-     "wall": 3.2609,
-     "viewT": 2.9998,
+     "wall": 3.1926,
+     "viewT": 2.9999,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.5665,
+     "stateElapsedSec": 2.5666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3259,7 +3259,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.2739,
+     "wall": 3.2137,
      "viewT": 3.0165,
      "state": "charge",
      "isJumpSnap": false,
@@ -3280,7 +3280,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.2917,
+     "wall": 3.2318,
      "viewT": 3.0332,
      "state": "charge",
      "isJumpSnap": false,
@@ -3301,7 +3301,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.3078,
+     "wall": 3.2479,
      "viewT": 3.0499,
      "state": "charge",
      "isJumpSnap": false,
@@ -3322,7 +3322,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.3247,
+     "wall": 3.2609,
      "viewT": 3.0665,
      "state": "charge",
      "isJumpSnap": false,
@@ -3343,7 +3343,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.3413,
+     "wall": 3.2775,
      "viewT": 3.0832,
      "state": "charge",
      "isJumpSnap": false,
@@ -3364,7 +3364,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.3592,
+     "wall": 3.2948,
      "viewT": 3.0999,
      "state": "charge",
      "isJumpSnap": false,
@@ -3385,7 +3385,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.3734,
+     "wall": 3.3112,
      "viewT": 3.1165,
      "state": "charge",
      "isJumpSnap": false,
@@ -3406,7 +3406,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.3908,
+     "wall": 3.3325,
      "viewT": 3.1332,
      "state": "charge",
      "isJumpSnap": false,
@@ -3427,18 +3427,18 @@
      "airHeight": 4
     },
     {
-     "wall": 3.4073,
-     "viewT": 3.1499,
+     "wall": 3.3477,
+     "viewT": 3.1498,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.7166,
+     "stateElapsedSec": 2.7165,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.772,
+     "hudTop": 332.771,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -3448,7 +3448,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.4243,
+     "wall": 3.361,
      "viewT": 3.1665,
      "state": "charge",
      "isJumpSnap": false,
@@ -3469,7 +3469,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.4426,
+     "wall": 3.3756,
      "viewT": 3.1832,
      "state": "charge",
      "isJumpSnap": false,
@@ -3490,7 +3490,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.4572,
+     "wall": 3.3979,
      "viewT": 3.1999,
      "state": "charge",
      "isJumpSnap": false,
@@ -3511,18 +3511,18 @@
      "airHeight": 4
     },
     {
-     "wall": 3.4737,
-     "viewT": 3.2166,
+     "wall": 3.4082,
+     "viewT": 3.2165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.7833,
+     "stateElapsedSec": 2.7832,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 333.282,
+     "hudTop": 333.283,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -3532,7 +3532,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.491,
+     "wall": 3.4268,
      "viewT": 3.2332,
      "state": "charge",
      "isJumpSnap": false,
@@ -3553,18 +3553,18 @@
      "airHeight": 4
     },
     {
-     "wall": 3.5079,
-     "viewT": 3.2498,
+     "wall": 3.4414,
+     "viewT": 3.2499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.8165,
+     "stateElapsedSec": 2.8166,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 333.117,
+     "hudTop": 333.116,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -3574,7 +3574,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.5258,
+     "wall": 3.4572,
      "viewT": 3.2665,
      "state": "charge",
      "isJumpSnap": false,
@@ -3595,7 +3595,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.5385,
+     "wall": 3.4748,
      "viewT": 3.2832,
      "state": "charge",
      "isJumpSnap": false,
@@ -3616,7 +3616,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.5569,
+     "wall": 3.4926,
      "viewT": 3.2999,
      "state": "charge",
      "isJumpSnap": false,
@@ -3637,13 +3637,13 @@
      "airHeight": 4
     },
     {
-     "wall": 3.5735,
-     "viewT": 3.3165,
+     "wall": 3.5115,
+     "viewT": 3.3166,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.8832,
+     "stateElapsedSec": 2.8833,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3658,7 +3658,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.5913,
+     "wall": 3.5275,
      "viewT": 3.3332,
      "state": "charge",
      "isJumpSnap": false,
@@ -3679,13 +3679,13 @@
      "airHeight": 4
     },
     {
-     "wall": 3.6095,
-     "viewT": 3.3499,
+     "wall": 3.5431,
+     "viewT": 3.3498,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.9166,
+     "stateElapsedSec": 2.9165,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3700,7 +3700,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.6227,
+     "wall": 3.5591,
      "viewT": 3.3665,
      "state": "charge",
      "isJumpSnap": false,
@@ -3721,7 +3721,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.6389,
+     "wall": 3.5763,
      "viewT": 3.3832,
      "state": "charge",
      "isJumpSnap": false,
@@ -3742,13 +3742,13 @@
      "airHeight": 4
     },
     {
-     "wall": 3.6555,
-     "viewT": 3.3998,
+     "wall": 3.5932,
+     "viewT": 3.3999,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.9665,
+     "stateElapsedSec": 2.9666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3763,13 +3763,13 @@
      "airHeight": 4
     },
     {
-     "wall": 3.6734,
-     "viewT": 3.4166,
+     "wall": 3.6116,
+     "viewT": 3.4165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.9833,
+     "stateElapsedSec": 2.9832,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3784,13 +3784,13 @@
      "airHeight": 4
     },
     {
-     "wall": 3.69,
-     "viewT": 3.4332,
+     "wall": 3.6277,
+     "viewT": 3.4331,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.9999,
+     "stateElapsedSec": 2.9998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3805,13 +3805,13 @@
      "airHeight": 4
     },
     {
-     "wall": 3.707,
-     "viewT": 3.4498,
+     "wall": 3.6429,
+     "viewT": 3.4499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.0165,
+     "stateElapsedSec": 3.0166,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3826,13 +3826,13 @@
      "airHeight": 4
     },
     {
-     "wall": 3.7226,
-     "viewT": 3.4665,
+     "wall": 3.6597,
+     "viewT": 3.4666,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.0332,
+     "stateElapsedSec": 3.0333,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3847,7 +3847,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.7393,
+     "wall": 3.6757,
      "viewT": 3.4831,
      "state": "charge",
      "isJumpSnap": false,
@@ -3868,7 +3868,7 @@
      "airHeight": 4
     },
     {
-     "wall": 3.7563,
+     "wall": 3.6941,
      "viewT": 3.4999,
      "state": "charge",
      "isJumpSnap": false,
@@ -3889,7 +3889,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.7722,
+     "wall": 3.7108,
      "viewT": 3.5166,
      "state": "charge",
      "isJumpSnap": false,
@@ -3910,7 +3910,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.7908,
+     "wall": 3.7262,
      "viewT": 3.5332,
      "state": "charge",
      "isJumpSnap": false,
@@ -3931,7 +3931,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.8087,
+     "wall": 3.7428,
      "viewT": 3.5498,
      "state": "charge",
      "isJumpSnap": false,
@@ -3952,13 +3952,13 @@
      "airHeight": 5
     },
     {
-     "wall": 3.828,
-     "viewT": 3.5666,
+     "wall": 3.76,
+     "viewT": 3.5665,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.1333,
+     "stateElapsedSec": 3.1332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -3973,7 +3973,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.8414,
+     "wall": 3.7756,
      "viewT": 3.5832,
      "state": "charge",
      "isJumpSnap": false,
@@ -3994,13 +3994,13 @@
      "airHeight": 5
     },
     {
-     "wall": 3.8575,
-     "viewT": 3.5999,
+     "wall": 3.7916,
+     "viewT": 3.5998,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.1666,
+     "stateElapsedSec": 3.1665,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4015,7 +4015,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.8742,
+     "wall": 3.8097,
      "viewT": 3.6165,
      "state": "charge",
      "isJumpSnap": false,
@@ -4036,7 +4036,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.8921,
+     "wall": 3.8286,
      "viewT": 3.6332,
      "state": "charge",
      "isJumpSnap": false,
@@ -4057,13 +4057,13 @@
      "airHeight": 5
     },
     {
-     "wall": 3.9088,
-     "viewT": 3.6498,
+     "wall": 3.8428,
+     "viewT": 3.6499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.2165,
+     "stateElapsedSec": 3.2166,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4078,7 +4078,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.923,
+     "wall": 3.8578,
      "viewT": 3.6665,
      "state": "charge",
      "isJumpSnap": false,
@@ -4099,7 +4099,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.9416,
+     "wall": 3.875,
      "viewT": 3.6832,
      "state": "charge",
      "isJumpSnap": false,
@@ -4120,18 +4120,18 @@
      "airHeight": 5
     },
     {
-     "wall": 3.958,
-     "viewT": 3.6999,
+     "wall": 3.8928,
+     "viewT": 3.6998,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.2666,
+     "stateElapsedSec": 3.2665,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.491,
+     "hudTop": 332.492,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -4141,7 +4141,7 @@
      "airHeight": 5
     },
     {
-     "wall": 3.9748,
+     "wall": 3.9077,
      "viewT": 3.7165,
      "state": "charge",
      "isJumpSnap": false,
@@ -4162,18 +4162,18 @@
      "airHeight": 5
     },
     {
-     "wall": 3.9908,
-     "viewT": 3.7332,
+     "wall": 3.9248,
+     "viewT": 3.7331,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.2999,
+     "stateElapsedSec": 3.2998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.028,
+     "hudTop": 332.03,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -4183,7 +4183,7 @@
      "airHeight": 5
     },
     {
-     "wall": 4.0091,
+     "wall": 3.9414,
      "viewT": 3.7498,
      "state": "charge",
      "isJumpSnap": false,
@@ -4204,7 +4204,7 @@
      "airHeight": 5
     },
     {
-     "wall": 4.0258,
+     "wall": 3.9585,
      "viewT": 3.7665,
      "state": "charge",
      "isJumpSnap": false,
@@ -4225,18 +4225,18 @@
      "airHeight": 5
     },
     {
-     "wall": 4.0412,
-     "viewT": 3.7832,
+     "wall": 3.9751,
+     "viewT": 3.7831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.3499,
+     "stateElapsedSec": 3.3498,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.109,
+     "hudTop": 331.111,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -4246,18 +4246,18 @@
      "airHeight": 5
     },
     {
-     "wall": 4.057,
-     "viewT": 3.7999,
+     "wall": 3.9946,
+     "viewT": 3.7998,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.3666,
+     "stateElapsedSec": 3.3665,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.782,
+     "hudTop": 330.784,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -4267,7 +4267,7 @@
      "airHeight": 5
     },
     {
-     "wall": 4.0749,
+     "wall": 4.0084,
      "viewT": 3.8165,
      "state": "charge",
      "isJumpSnap": false,
@@ -4290,7 +4290,7 @@
    ],
    "strike": [
     {
-     "wall": 4.1219,
+     "wall": 4.0572,
      "viewT": 3.8665,
      "state": "strike",
      "isJumpSnap": false,
@@ -4311,13 +4311,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.1382,
-     "viewT": 3.8832,
+     "wall": 4.0738,
+     "viewT": 3.8831,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.0167,
+     "stateElapsedSec": 0.0166,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4332,13 +4332,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.155,
-     "viewT": 3.8998,
+     "wall": 4.0898,
+     "viewT": 3.8999,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.0333,
+     "stateElapsedSec": 0.0334,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4353,7 +4353,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.1748,
+     "wall": 4.107,
      "viewT": 3.9165,
      "state": "strike",
      "isJumpSnap": false,
@@ -4374,7 +4374,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.1882,
+     "wall": 4.124,
      "viewT": 3.9332,
      "state": "strike",
      "isJumpSnap": false,
@@ -4395,7 +4395,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.2058,
+     "wall": 4.143,
      "viewT": 3.9498,
      "state": "strike",
      "isJumpSnap": false,
@@ -4416,7 +4416,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.2225,
+     "wall": 4.1615,
      "viewT": 3.9665,
      "state": "strike",
      "isJumpSnap": false,
@@ -4437,13 +4437,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.2403,
-     "viewT": 3.9831,
+     "wall": 4.1744,
+     "viewT": 3.9832,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.1166,
+     "stateElapsedSec": 0.1167,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4458,13 +4458,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.2591,
-     "viewT": 3.9998,
+     "wall": 4.193,
+     "viewT": 3.9999,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.1333,
+     "stateElapsedSec": 0.1334,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4479,7 +4479,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.2735,
+     "wall": 4.21,
      "viewT": 4.0165,
      "state": "strike",
      "isJumpSnap": false,
@@ -4500,13 +4500,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.2912,
-     "viewT": 4.0332,
+     "wall": 4.2264,
+     "viewT": 4.0331,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.1667,
+     "stateElapsedSec": 0.1666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4521,7 +4521,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.3063,
+     "wall": 4.2482,
      "viewT": 4.0498,
      "state": "strike",
      "isJumpSnap": false,
@@ -4542,7 +4542,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.324,
+     "wall": 4.2589,
      "viewT": 4.0665,
      "state": "strike",
      "isJumpSnap": false,
@@ -4563,7 +4563,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.3421,
+     "wall": 4.2756,
      "viewT": 4.0831,
      "state": "strike",
      "isJumpSnap": false,
@@ -4584,13 +4584,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.3583,
-     "viewT": 4.0999,
+     "wall": 4.2942,
+     "viewT": 4.0998,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.2334,
+     "stateElapsedSec": 0.2333,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4605,13 +4605,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.3745,
-     "viewT": 4.1164,
+     "wall": 4.3149,
+     "viewT": 4.1165,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.2499,
+     "stateElapsedSec": 0.25,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4626,13 +4626,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.3912,
-     "viewT": 4.1331,
+     "wall": 4.3281,
+     "viewT": 4.1332,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.2666,
+     "stateElapsedSec": 0.2667,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4647,7 +4647,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.406,
+     "wall": 4.3465,
      "viewT": 4.1498,
      "state": "strike",
      "isJumpSnap": false,
@@ -4668,7 +4668,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.4226,
+     "wall": 4.3619,
      "viewT": 4.1665,
      "state": "strike",
      "isJumpSnap": false,
@@ -4689,7 +4689,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.4405,
+     "wall": 4.378,
      "viewT": 4.1831,
      "state": "strike",
      "isJumpSnap": false,
@@ -4710,7 +4710,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.4587,
+     "wall": 4.3977,
      "viewT": 4.1998,
      "state": "strike",
      "isJumpSnap": false,
@@ -4731,7 +4731,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.474,
+     "wall": 4.4169,
      "viewT": 4.2165,
      "state": "strike",
      "isJumpSnap": false,
@@ -4752,13 +4752,13 @@
      "airHeight": 4
     },
     {
-     "wall": 4.4887,
-     "viewT": 4.2331,
+     "wall": 4.4253,
+     "viewT": 4.2332,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.3666,
+     "stateElapsedSec": 0.3667,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4773,7 +4773,7 @@
      "airHeight": 4
     },
     {
-     "wall": 4.5067,
+     "wall": 4.4431,
      "viewT": 4.2498,
      "state": "strike",
      "isJumpSnap": false,
@@ -4798,8 +4798,8 @@
   "x2": {
    "charge": [
     {
-     "wall": 0.6397,
-     "viewT": 0.4832,
+     "wall": 0.6415,
+     "viewT": 0.4833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -4819,8 +4819,8 @@
      "airHeight": -1
     },
     {
-     "wall": 0.6541,
-     "viewT": 0.5166,
+     "wall": 0.6589,
+     "viewT": 0.5167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -4840,8 +4840,8 @@
      "airHeight": -1
     },
     {
-     "wall": 0.6724,
-     "viewT": 0.55,
+     "wall": 0.6739,
+     "viewT": 0.5501,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -4861,8 +4861,8 @@
      "airHeight": 1
     },
     {
-     "wall": 0.6896,
-     "viewT": 0.5832,
+     "wall": 0.6906,
+     "viewT": 0.5833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -4882,13 +4882,13 @@
      "airHeight": 5
     },
     {
-     "wall": 0.7048,
-     "viewT": 0.6166,
+     "wall": 0.7073,
+     "viewT": 0.6165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.1334,
+     "stateElapsedSec": 0.1332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -4903,8 +4903,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.7219,
-     "viewT": 0.65,
+     "wall": 0.7253,
+     "viewT": 0.6501,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -4924,8 +4924,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.738,
-     "viewT": 0.6832,
+     "wall": 0.7398,
+     "viewT": 0.6833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -4945,8 +4945,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.7551,
-     "viewT": 0.7166,
+     "wall": 0.7561,
+     "viewT": 0.7167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -4966,18 +4966,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.7724,
-     "viewT": 0.75,
+     "wall": 0.7727,
+     "viewT": 0.7499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.2668,
+     "stateElapsedSec": 0.2666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.488,
+     "hudTop": 332.491,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -4987,8 +4987,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.787,
-     "viewT": 0.7832,
+     "wall": 0.7902,
+     "viewT": 0.7833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5008,8 +5008,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8033,
-     "viewT": 0.8166,
+     "wall": 0.8076,
+     "viewT": 0.8167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5029,8 +5029,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.821,
-     "viewT": 0.8498,
+     "wall": 0.824,
+     "viewT": 0.8499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5050,8 +5050,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8375,
-     "viewT": 0.8832,
+     "wall": 0.8399,
+     "viewT": 0.8833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5071,18 +5071,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.856,
-     "viewT": 0.9166,
+     "wall": 0.8567,
+     "viewT": 0.9165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.4334,
+     "stateElapsedSec": 0.4332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.721,
+     "hudTop": 329.723,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5092,18 +5092,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8726,
-     "viewT": 0.9498,
+     "wall": 0.8745,
+     "viewT": 0.9501,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.4666,
+     "stateElapsedSec": 0.4668,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.475,
+     "hudTop": 329.474,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5113,8 +5113,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.8883,
-     "viewT": 0.9832,
+     "wall": 0.8909,
+     "viewT": 0.9833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5134,18 +5134,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.906,
-     "viewT": 1.0166,
+     "wall": 0.908,
+     "viewT": 1.0165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.5334,
+     "stateElapsedSec": 0.5332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.642,
+     "hudTop": 329.64,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5155,18 +5155,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9219,
-     "viewT": 1.0498,
+     "wall": 0.9248,
+     "viewT": 1.0501,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.5666,
+     "stateElapsedSec": 0.5668,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.02,
+     "hudTop": 330.022,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5176,18 +5176,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9387,
-     "viewT": 1.0834,
+     "wall": 0.9419,
+     "viewT": 1.0831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.6002,
+     "stateElapsedSec": 0.5998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.469,
+     "hudTop": 330.463,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5197,8 +5197,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9566,
-     "viewT": 1.1166,
+     "wall": 0.9581,
+     "viewT": 1.1167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5218,8 +5218,8 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9703,
-     "viewT": 1.1498,
+     "wall": 0.9768,
+     "viewT": 1.1499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5239,18 +5239,18 @@
      "airHeight": 5
     },
     {
-     "wall": 0.9868,
-     "viewT": 1.1834,
+     "wall": 0.9935,
+     "viewT": 1.1833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.7002,
+     "stateElapsedSec": 0.7,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.747,
+     "hudTop": 330.75,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5260,18 +5260,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0032,
-     "viewT": 1.2166,
+     "wall": 1.0085,
+     "viewT": 1.2165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.7334,
+     "stateElapsedSec": 0.7332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.256,
+     "hudTop": 330.257,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5281,18 +5281,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0197,
-     "viewT": 1.25,
+     "wall": 1.0252,
+     "viewT": 1.2499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.7668,
+     "stateElapsedSec": 0.7666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.193,
+     "hudTop": 330.192,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5302,8 +5302,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0371,
-     "viewT": 1.2832,
+     "wall": 1.0415,
+     "viewT": 1.2833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5323,18 +5323,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.0555,
-     "viewT": 1.3166,
+     "wall": 1.0577,
+     "viewT": 1.3165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.8334,
+     "stateElapsedSec": 0.8332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.755,
+     "hudTop": 330.753,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5344,18 +5344,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.0696,
-     "viewT": 1.35,
+     "wall": 1.0751,
+     "viewT": 1.3499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.8668,
+     "stateElapsedSec": 0.8666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.195,
+     "hudTop": 331.192,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5365,8 +5365,8 @@
      "airHeight": 4
     },
     {
-     "wall": 1.0871,
-     "viewT": 1.3832,
+     "wall": 1.0917,
+     "viewT": 1.3833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5386,8 +5386,8 @@
      "airHeight": 4
     },
     {
-     "wall": 1.1053,
-     "viewT": 1.4166,
+     "wall": 1.1071,
+     "viewT": 1.4167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5407,8 +5407,8 @@
      "airHeight": 3
     },
     {
-     "wall": 1.1212,
-     "viewT": 1.4498,
+     "wall": 1.1254,
+     "viewT": 1.4499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5428,8 +5428,8 @@
      "airHeight": 3
     },
     {
-     "wall": 1.1394,
-     "viewT": 1.4832,
+     "wall": 1.143,
+     "viewT": 1.4833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5449,8 +5449,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.1583,
-     "viewT": 1.5166,
+     "wall": 1.1587,
+     "viewT": 1.5167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5470,8 +5470,8 @@
      "airHeight": 6
     },
     {
-     "wall": 1.1719,
-     "viewT": 1.5498,
+     "wall": 1.177,
+     "viewT": 1.5499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5491,8 +5491,8 @@
      "airHeight": 6
     },
     {
-     "wall": 1.1883,
-     "viewT": 1.5832,
+     "wall": 1.1936,
+     "viewT": 1.5833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5512,8 +5512,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2056,
-     "viewT": 1.6164,
+     "wall": 1.2083,
+     "viewT": 1.6165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5533,8 +5533,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2226,
-     "viewT": 1.6498,
+     "wall": 1.2254,
+     "viewT": 1.6499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5554,13 +5554,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2422,
-     "viewT": 1.6832,
+     "wall": 1.2412,
+     "viewT": 1.6831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.2,
+     "stateElapsedSec": 1.1998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -5575,8 +5575,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2566,
-     "viewT": 1.7164,
+     "wall": 1.2591,
+     "viewT": 1.7165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5596,18 +5596,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2724,
-     "viewT": 1.7498,
+     "wall": 1.2743,
+     "viewT": 1.7501,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.2666,
+     "stateElapsedSec": 1.2668,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 327.086,
+     "hudTop": 327.087,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5617,18 +5617,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.2888,
-     "viewT": 1.7834,
+     "wall": 1.2896,
+     "viewT": 1.7831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.3002,
+     "stateElapsedSec": 1.2998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 327.308,
+     "hudTop": 327.305,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5638,18 +5638,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.3071,
-     "viewT": 1.8164,
+     "wall": 1.306,
+     "viewT": 1.8167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.3332,
+     "stateElapsedSec": 1.3334,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 327.649,
+     "hudTop": 327.653,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5659,8 +5659,8 @@
      "airHeight": 4
     },
     {
-     "wall": 1.3244,
-     "viewT": 1.8498,
+     "wall": 1.3227,
+     "viewT": 1.8499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5680,8 +5680,8 @@
      "airHeight": 4
     },
     {
-     "wall": 1.3391,
-     "viewT": 1.8832,
+     "wall": 1.3402,
+     "viewT": 1.8833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5702,17 +5702,17 @@
     },
     {
      "wall": 1.3571,
-     "viewT": 1.9164,
+     "viewT": 1.9167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.4332,
+     "stateElapsedSec": 1.4334,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.832,
+     "hudTop": 329.837,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5722,8 +5722,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.3721,
-     "viewT": 1.9498,
+     "wall": 1.3754,
+     "viewT": 1.9499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5743,8 +5743,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.3905,
-     "viewT": 1.9832,
+     "wall": 1.389,
+     "viewT": 1.9833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5764,18 +5764,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.4083,
-     "viewT": 2.0166,
+     "wall": 1.4063,
+     "viewT": 2.0165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.5334,
+     "stateElapsedSec": 1.5332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.311,
+     "hudTop": 331.31,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5785,8 +5785,8 @@
      "airHeight": 4
     },
     {
-     "wall": 1.4209,
-     "viewT": 2.0498,
+     "wall": 1.4223,
+     "viewT": 2.0499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5806,39 +5806,39 @@
      "airHeight": 4
     },
     {
-     "wall": 1.4376,
-     "viewT": 2.0834,
+     "wall": 1.4397,
+     "viewT": 2.0831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.6002,
+     "stateElapsedSec": 1.5998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.304,
+     "hudTop": 331.306,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
      "footY": 425,
-     "bboxMinX": 114,
+     "bboxMinX": 113,
      "bboxMaxX": 168,
      "airHeight": 4
     },
     {
-     "wall": 1.4535,
-     "viewT": 2.1166,
+     "wall": 1.4588,
+     "viewT": 2.1165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.6334,
+     "stateElapsedSec": 1.6332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.031,
+     "hudTop": 331.034,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5848,18 +5848,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.471,
-     "viewT": 2.15,
+     "wall": 1.4725,
+     "viewT": 2.1499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.6668,
+     "stateElapsedSec": 1.6666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.574,
+     "hudTop": 330.578,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5869,18 +5869,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.4901,
-     "viewT": 2.1834,
+     "wall": 1.4891,
+     "viewT": 2.1833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.7002,
+     "stateElapsedSec": 1.7,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.966,
+     "hudTop": 329.97,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -5890,8 +5890,8 @@
      "airHeight": 4
     },
     {
-     "wall": 1.5035,
-     "viewT": 2.2164,
+     "wall": 1.5061,
+     "viewT": 2.2165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5911,8 +5911,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.5212,
-     "viewT": 2.2498,
+     "wall": 1.5236,
+     "viewT": 2.2499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5932,8 +5932,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.5385,
-     "viewT": 2.2832,
+     "wall": 1.5434,
+     "viewT": 2.2833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5953,8 +5953,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.5531,
-     "viewT": 2.3164,
+     "wall": 1.561,
+     "viewT": 2.3165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5974,8 +5974,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.5722,
-     "viewT": 2.3498,
+     "wall": 1.5749,
+     "viewT": 2.3499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -5995,8 +5995,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.5882,
-     "viewT": 2.3832,
+     "wall": 1.5931,
+     "viewT": 2.3833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6016,18 +6016,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.6044,
-     "viewT": 2.4166,
+     "wall": 1.608,
+     "viewT": 2.4165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 1.9334,
+     "stateElapsedSec": 1.9332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.476,
+     "hudTop": 330.471,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6037,8 +6037,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.6217,
-     "viewT": 2.4498,
+     "wall": 1.6281,
+     "viewT": 2.4499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6058,8 +6058,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.6376,
-     "viewT": 2.4832,
+     "wall": 1.6463,
+     "viewT": 2.4833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6079,13 +6079,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.6568,
-     "viewT": 2.5166,
+     "wall": 1.6579,
+     "viewT": 2.5165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.0334,
+     "stateElapsedSec": 2.0332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6100,8 +6100,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.674,
-     "viewT": 2.5498,
+     "wall": 1.6774,
+     "viewT": 2.5499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6121,18 +6121,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.6888,
-     "viewT": 2.5832,
+     "wall": 1.6941,
+     "viewT": 2.5831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.1,
+     "stateElapsedSec": 2.0998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.187,
+     "hudTop": 331.188,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6142,8 +6142,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.7056,
-     "viewT": 2.6164,
+     "wall": 1.7081,
+     "viewT": 2.6165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6163,13 +6163,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.7217,
-     "viewT": 2.65,
+     "wall": 1.7265,
+     "viewT": 2.6499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.1668,
+     "stateElapsedSec": 2.1666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6184,13 +6184,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.7397,
-     "viewT": 2.6832,
+     "wall": 1.7468,
+     "viewT": 2.6831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.2,
+     "stateElapsedSec": 2.1998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6205,18 +6205,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.7592,
-     "viewT": 2.7166,
+     "wall": 1.7597,
+     "viewT": 2.7165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.2334,
+     "stateElapsedSec": 2.2332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.114,
+     "hudTop": 331.113,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6226,8 +6226,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.776,
-     "viewT": 2.7498,
+     "wall": 1.7737,
+     "viewT": 2.7499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6247,18 +6247,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.7878,
-     "viewT": 2.7832,
+     "wall": 1.7906,
+     "viewT": 2.7831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.3,
+     "stateElapsedSec": 2.2998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.393,
+     "hudTop": 331.392,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6268,29 +6268,29 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8054,
-     "viewT": 2.8166,
+     "wall": 1.8101,
+     "viewT": 2.8165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.3334,
+     "stateElapsedSec": 2.3332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.653,
+     "hudTop": 331.652,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
      "footY": 424,
-     "bboxMinX": 129,
+     "bboxMinX": 130,
      "bboxMaxX": 162,
      "airHeight": 5
     },
     {
-     "wall": 1.8229,
-     "viewT": 2.8498,
+     "wall": 1.8267,
+     "viewT": 2.8499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6310,13 +6310,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8385,
-     "viewT": 2.8832,
+     "wall": 1.8435,
+     "viewT": 2.8831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.4,
+     "stateElapsedSec": 2.3998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6331,18 +6331,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8557,
-     "viewT": 2.9166,
+     "wall": 1.8578,
+     "viewT": 2.9165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.4334,
+     "stateElapsedSec": 2.4332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.808,
+     "hudTop": 331.811,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6352,18 +6352,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8705,
-     "viewT": 2.95,
+     "wall": 1.8752,
+     "viewT": 2.9499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.4668,
+     "stateElapsedSec": 2.4666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.394,
+     "hudTop": 331.397,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6373,8 +6373,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.8914,
-     "viewT": 2.9832,
+     "wall": 1.8917,
+     "viewT": 2.9833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6394,18 +6394,18 @@
      "airHeight": 5
     },
     {
-     "wall": 1.9098,
-     "viewT": 3.0166,
+     "wall": 1.9124,
+     "viewT": 3.0165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.5334,
+     "stateElapsedSec": 2.5332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.737,
+     "hudTop": 330.74,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6415,13 +6415,13 @@
      "airHeight": 5
     },
     {
-     "wall": 1.923,
-     "viewT": 3.0498,
+     "wall": 1.9246,
+     "viewT": 3.0497,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.5666,
+     "stateElapsedSec": 2.5664,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6432,17 +6432,17 @@
      "hudW": 67.603,
      "footY": 424,
      "bboxMinX": 129,
-     "bboxMaxX": 166,
+     "bboxMaxX": 167,
      "airHeight": 5
     },
     {
-     "wall": 1.9392,
-     "viewT": 3.0832,
+     "wall": 1.943,
+     "viewT": 3.0831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.6,
+     "stateElapsedSec": 2.5998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6457,8 +6457,8 @@
      "airHeight": 5
     },
     {
-     "wall": 1.9547,
-     "viewT": 3.1164,
+     "wall": 1.9582,
+     "viewT": 3.1165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6478,18 +6478,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.9705,
-     "viewT": 3.1498,
+     "wall": 1.9747,
+     "viewT": 3.1497,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.6666,
+     "stateElapsedSec": 2.6664,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 331.602,
+     "hudTop": 331.597,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6499,18 +6499,18 @@
      "airHeight": 4
     },
     {
-     "wall": 1.9894,
-     "viewT": 3.1832,
+     "wall": 1.9917,
+     "viewT": 3.1831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.7,
+     "stateElapsedSec": 2.6998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.428,
+     "hudTop": 332.423,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6520,18 +6520,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0025,
-     "viewT": 3.2164,
+     "wall": 2.0067,
+     "viewT": 3.2167,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.7332,
+     "stateElapsedSec": 2.7334,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 333.037,
+     "hudTop": 333.041,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6541,18 +6541,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0206,
-     "viewT": 3.25,
+     "wall": 2.0251,
+     "viewT": 3.2499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.7668,
+     "stateElapsedSec": 2.7666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 333.275,
+     "hudTop": 333.274,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6562,8 +6562,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0373,
-     "viewT": 3.283,
+     "wall": 2.042,
+     "viewT": 3.2831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6583,18 +6583,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0539,
-     "viewT": 3.3166,
+     "wall": 2.0585,
+     "viewT": 3.3165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.8334,
+     "stateElapsedSec": 2.8332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 333.011,
+     "hudTop": 333.012,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6604,8 +6604,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0721,
-     "viewT": 3.3498,
+     "wall": 2.0765,
+     "viewT": 3.3499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6625,13 +6625,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.0905,
-     "viewT": 3.3832,
+     "wall": 2.0925,
+     "viewT": 3.3831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 2.9,
+     "stateElapsedSec": 2.8998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6646,8 +6646,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.1076,
-     "viewT": 3.4164,
+     "wall": 2.1078,
+     "viewT": 3.4165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6667,8 +6667,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.1207,
-     "viewT": 3.4498,
+     "wall": 2.1251,
+     "viewT": 3.4499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6688,8 +6688,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.1376,
-     "viewT": 3.4832,
+     "wall": 2.1427,
+     "viewT": 3.4833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6709,18 +6709,18 @@
      "airHeight": 4
     },
     {
-     "wall": 2.1551,
-     "viewT": 3.5166,
+     "wall": 2.1616,
+     "viewT": 3.5165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.0334,
+     "stateElapsedSec": 3.0332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.936,
+     "hudTop": 332.935,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6730,13 +6730,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.1711,
-     "viewT": 3.55,
+     "wall": 2.1796,
+     "viewT": 3.5497,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.0668,
+     "stateElapsedSec": 3.0664,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6751,13 +6751,13 @@
      "airHeight": 5
     },
     {
-     "wall": 2.1887,
-     "viewT": 3.5832,
+     "wall": 2.1905,
+     "viewT": 3.5831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.1,
+     "stateElapsedSec": 3.0998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6772,13 +6772,13 @@
      "airHeight": 5
     },
     {
-     "wall": 2.2072,
-     "viewT": 3.6166,
+     "wall": 2.2104,
+     "viewT": 3.6165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.1334,
+     "stateElapsedSec": 3.1332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6793,13 +6793,13 @@
      "airHeight": 5
     },
     {
-     "wall": 2.2205,
-     "viewT": 3.6498,
+     "wall": 2.2248,
+     "viewT": 3.6497,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.1666,
+     "stateElapsedSec": 3.1664,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -6814,18 +6814,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.2372,
-     "viewT": 3.6832,
+     "wall": 2.2468,
+     "viewT": 3.6831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.2,
+     "stateElapsedSec": 3.1998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.91,
+     "hudTop": 332.911,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6835,8 +6835,8 @@
      "airHeight": 5
     },
     {
-     "wall": 2.254,
-     "viewT": 3.7164,
+     "wall": 2.2578,
+     "viewT": 3.7165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6856,8 +6856,8 @@
      "airHeight": 5
     },
     {
-     "wall": 2.2702,
-     "viewT": 3.7498,
+     "wall": 2.274,
+     "viewT": 3.7499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6877,18 +6877,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.2873,
-     "viewT": 3.783,
+     "wall": 2.2902,
+     "viewT": 3.7833,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.2998,
+     "stateElapsedSec": 3.3,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 332.03,
+     "hudTop": 332.027,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6898,8 +6898,8 @@
      "airHeight": 5
     },
     {
-     "wall": 2.306,
-     "viewT": 3.8164,
+     "wall": 2.3059,
+     "viewT": 3.8165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6919,8 +6919,8 @@
      "airHeight": 5
     },
     {
-     "wall": 2.3223,
-     "viewT": 3.8498,
+     "wall": 2.3243,
+     "viewT": 3.8499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -6940,18 +6940,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.3377,
-     "viewT": 3.8832,
+     "wall": 2.3418,
+     "viewT": 3.8831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.4,
+     "stateElapsedSec": 3.3998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 330.173,
+     "hudTop": 330.176,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6961,18 +6961,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.3544,
-     "viewT": 3.9166,
+     "wall": 2.3569,
+     "viewT": 3.9165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.4334,
+     "stateElapsedSec": 3.4332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.721,
+     "hudTop": 329.723,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -6982,18 +6982,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.3711,
-     "viewT": 3.95,
+     "wall": 2.3736,
+     "viewT": 3.9497,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.4668,
+     "stateElapsedSec": 3.4664,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.474,
+     "hudTop": 329.475,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -7003,18 +7003,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.3877,
-     "viewT": 3.9832,
+     "wall": 2.39,
+     "viewT": 3.9831,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.5,
+     "stateElapsedSec": 3.4998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.435,
+     "hudTop": 329.434,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -7024,18 +7024,18 @@
      "airHeight": 5
     },
     {
-     "wall": 2.4065,
-     "viewT": 4.0166,
+     "wall": 2.4077,
+     "viewT": 4.0165,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
      "cmdIsJump": false,
-     "stateElapsedSec": 3.5334,
+     "stateElapsedSec": 3.5332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
      "groundAnchorY": 429,
-     "hudTop": 329.642,
+     "hudTop": 329.64,
      "hudCx": 140,
      "hudH": 96.096,
      "hudW": 67.603,
@@ -7045,8 +7045,8 @@
      "airHeight": 5
     },
     {
-     "wall": 2.4228,
-     "viewT": 4.0498,
+     "wall": 2.4262,
+     "viewT": 4.0499,
      "state": "charge",
      "isJumpSnap": false,
      "cmdState": "charge",
@@ -7068,8 +7068,8 @@
    ],
    "strike": [
     {
-     "wall": 2.4523,
-     "viewT": 4.1164,
+     "wall": 2.4568,
+     "viewT": 4.1165,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7089,13 +7089,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.4735,
-     "viewT": 4.1498,
+     "wall": 2.4732,
+     "viewT": 4.1497,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.0334,
+     "stateElapsedSec": 0.0332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7110,8 +7110,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.4868,
-     "viewT": 4.1832,
+     "wall": 2.49,
+     "viewT": 4.1833,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7131,8 +7131,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.5038,
-     "viewT": 4.2164,
+     "wall": 2.5067,
+     "viewT": 4.2165,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7152,8 +7152,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.5214,
-     "viewT": 4.2498,
+     "wall": 2.5257,
+     "viewT": 4.2499,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7173,8 +7173,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.5384,
-     "viewT": 4.283,
+     "wall": 2.544,
+     "viewT": 4.2831,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7194,8 +7194,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.5576,
-     "viewT": 4.3164,
+     "wall": 2.5583,
+     "viewT": 4.3165,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7215,8 +7215,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.5717,
-     "viewT": 4.3498,
+     "wall": 2.5748,
+     "viewT": 4.3499,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7236,13 +7236,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.5875,
-     "viewT": 4.3832,
+     "wall": 2.5917,
+     "viewT": 4.3831,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.2668,
+     "stateElapsedSec": 0.2666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7257,8 +7257,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.6044,
-     "viewT": 4.4164,
+     "wall": 2.6095,
+     "viewT": 4.4165,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7278,13 +7278,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.6207,
-     "viewT": 4.4498,
+     "wall": 2.6275,
+     "viewT": 4.4497,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.3334,
+     "stateElapsedSec": 0.3332,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7299,13 +7299,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.6373,
-     "viewT": 4.4832,
+     "wall": 2.6411,
+     "viewT": 4.4831,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.3668,
+     "stateElapsedSec": 0.3666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7320,8 +7320,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.6547,
-     "viewT": 4.5164,
+     "wall": 2.6582,
+     "viewT": 4.5165,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7341,8 +7341,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.6724,
-     "viewT": 4.5498,
+     "wall": 2.6753,
+     "viewT": 4.5499,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7362,13 +7362,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.6873,
-     "viewT": 4.5832,
+     "wall": 2.6933,
+     "viewT": 4.5831,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.4668,
+     "stateElapsedSec": 0.4666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7383,13 +7383,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.704,
-     "viewT": 4.6164,
+     "wall": 2.7082,
+     "viewT": 4.6163,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.5,
+     "stateElapsedSec": 0.4998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7404,8 +7404,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.7209,
-     "viewT": 4.6498,
+     "wall": 2.7252,
+     "viewT": 4.6499,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7425,8 +7425,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.7373,
-     "viewT": 4.683,
+     "wall": 2.7416,
+     "viewT": 4.6831,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7446,13 +7446,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.7544,
-     "viewT": 4.7166,
+     "wall": 2.7584,
+     "viewT": 4.7163,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.6002,
+     "stateElapsedSec": 0.5998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7467,8 +7467,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.773,
-     "viewT": 4.7498,
+     "wall": 2.7771,
+     "viewT": 4.7499,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7488,13 +7488,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.7877,
-     "viewT": 4.7832,
+     "wall": 2.7922,
+     "viewT": 4.7831,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.6668,
+     "stateElapsedSec": 0.6666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7509,13 +7509,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.8051,
-     "viewT": 4.8166,
+     "wall": 2.8085,
+     "viewT": 4.8163,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.7002,
+     "stateElapsedSec": 0.6998,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7530,8 +7530,8 @@
      "airHeight": 4
     },
     {
-     "wall": 2.8219,
-     "viewT": 4.8498,
+     "wall": 2.8238,
+     "viewT": 4.8499,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
@@ -7551,13 +7551,13 @@
      "airHeight": 4
     },
     {
-     "wall": 2.8385,
-     "viewT": 4.8832,
+     "wall": 2.8399,
+     "viewT": 4.8831,
      "state": "strike",
      "isJumpSnap": false,
      "cmdState": "strike",
      "cmdIsJump": false,
-     "stateElapsedSec": 0.7668,
+     "stateElapsedSec": 0.7666,
      "moveProgress": null,
      "clip": "cast",
      "hop": 0,
@@ -7580,7 +7580,7 @@
    "speed": 1,
    "samples": 204,
    "elapsedViewSpanSec": 3.383,
-   "elapsedWallSpanSec": 3.385,
+   "elapsedWallSpanSec": 3.377,
    "firstElapsed": 0,
    "lastElapsed": 3.3832,
    "phaseWraps": 1,
@@ -7588,14 +7588,14 @@
    "strikeSamples": 24,
    "strikePhase": 1,
    "strikeHudTopSpanPx": 0,
-   "chargeHudTopRangePx": 6.51
+   "chargeHudTopRangePx": 6.511
   },
   "x2": {
    "ok": true,
    "speed": 2,
    "samples": 108,
    "elapsedViewSpanSec": 3.567,
-   "elapsedWallSpanSec": 1.783,
+   "elapsedWallSpanSec": 1.785,
    "firstElapsed": 0,
    "lastElapsed": 3.5666,
    "phaseWraps": 1,
@@ -7603,7 +7603,7 @@
    "strikeSamples": 24,
    "strikePhase": 1,
    "strikeHudTopSpanPx": 0,
-   "chargeHudTopRangePx": 6.503
+   "chargeHudTopRangePx": 6.502
   }
  }
 }

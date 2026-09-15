@@ -278,6 +278,72 @@ const summarizeCharge = (frames, strikeFrames, speed) => {
   };
 };
 
+// ══════════ ②' 3D 普攻表现窗（T31-R2-basic：1.5s ⇒ 1.0× 原速）══════════
+const basicFrames = {};
+for (const speed of [1, 2]) {
+  const page = await openPage('', 1);
+  await quiet(page);
+  if (speed === 2) {
+    const p = await page.evaluate(() => {
+      const r = window.__demo.getView().layout.ctrlRect;
+      return window.__demo.cssOf(r.x + ((5 + 213 / 2) / 223) * r.w, r.y + ((163 + 126 / 2) / 448) * r.h);
+    });
+    await page.mouse.click(p.x, p.y);
+    await page.waitForFunction(() => window.__demo.getView().uiState.speed === true, null, { timeout: 4000 });
+  }
+  await page.evaluate(recorderSrc);
+  await page.evaluate(() => {
+    window.__r2.frames.length = 0;
+  });
+  // 白盒触发：basic 态 + animLeftMs=300（= session ANIM_MS.basic）⇒ 300ms 后快照翻 idle，
+  // 其后由 3D 呈现窗（basicHolds3d，1.5s）续播 —— 与生产同形。
+  await setHero(page, { animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1 });
+  await page.waitForTimeout(160);
+  await page.evaluate(() => {
+    window.__r2.frames.length = 0;
+  });
+  await setHero(page, { animState: 'basic', animLeftMs: 300, isJump: false, moveT: 1 });
+  await page.waitForTimeout(speed === 2 ? 1200 : 2200);
+  const frames = await page.evaluate(() => {
+    window.__r2.on = false;
+    return window.__r2.frames;
+  });
+  await page.close();
+  basicFrames['x' + speed] = frames;
+}
+
+/** 3D 普攻逐帧摘要：窗长（elapsed 与 viewT 双口径）、1.0× 斜率、末帧前不切、x2 墙钟。 */
+const summarizeBasic = (frames, speed) => {
+  const f = frames.filter((x) => x.cmdState === 'basic' && x.stateElapsedSec !== null);
+  if (f.length < 2) return { ok: false, reason: '未采到 basic 帧' };
+  const e0 = f[0].stateElapsedSec;
+  const e1 = f[f.length - 1].stateElapsedSec;
+  const v0 = f[0].viewT;
+  const v1 = f[f.length - 1].viewT;
+  const w0 = f[0].wall;
+  const w1 = f[f.length - 1].wall;
+  const clipAllAtk = f.every((x) => x.clip === 'atk');
+  const phases = f.map((x) => x.stateElapsedSec / 1.5); // 窗 1.5s ⇒ 相位 = elapsed/1.5
+  let mono = true;
+  for (let i = 1; i < phases.length; i++) if (phases[i] < phases[i - 1] - 1e-6) mono = false;
+  // clip 首次离开 atk 的时刻（相对 basic 起点）——应 ≥ 窗长（= 不被截断）
+  const after = frames.filter((x) => x.viewT > f[f.length - 1].viewT && x.clip !== 'atk');
+  return {
+    ok: true,
+    speed,
+    samples: f.length,
+    windowSecFromElapsed: +(e1 - e0).toFixed(3), // 采样到的最大 elapsed（应 ≈1.5 减去首尾各一帧）
+    windowSecFromViewT: +(v1 - v0).toFixed(3),
+    wallSec: +(w1 - w0).toFixed(3),
+    rate: +((v1 - v0) / Math.max(1e-9, e1 - e0)).toFixed(4), // 1.0 = 原速（视图秒 / 源进度秒）
+    lastPhase: +phases[phases.length - 1].toFixed(4),
+    phasesMonotone: mono,
+    clipAllAtkWithinWindow: clipAllAtk,
+    clipAfterWindow: after.length ? after[0].clip : null,
+    endState: f[f.length - 1].cmdState,
+  };
+};
+
 // ══════════ ③ dpr 1/2/3 包围盒 ══════════
 const scaleRows = [];
 const FACING = { q: 1, r: 0 };
@@ -326,6 +392,7 @@ for (const dsf of [1, 2, 3]) {
 await browser.close();
 
 const jumpSummary = { x1: summarizeJump(jumpFrames.x1, 1), x2: summarizeJump(jumpFrames.x2, 2) };
+const basicSummary = { x1: summarizeBasic(basicFrames.x1, 1), x2: summarizeBasic(basicFrames.x2, 2) };
 const skillSummary = {
   x1: summarizeCharge(skillFrames.x1.charge, skillFrames.x1.strike, 1),
   x2: summarizeCharge(skillFrames.x2.charge, skillFrames.x2.strike, 2),
@@ -338,11 +405,17 @@ const w = (name, obj) => {
 };
 w('c3d_r2_jump_frames.json', { note: 'R2-1 轻功逐帧（白盒触发 4 格轻功；airHeight = placed.groundAnchorY − 人物层像素包围盒底边/逻辑）', frames: jumpFrames, summary: jumpSummary });
 w('c3d_r2_skill_frames.json', { note: 'R2-2 特/绝逐帧（白盒触发 charge 9s 保持 / strike 保持；窗内相位 = (stateElapsedSec/3) mod 1）', frames: skillFrames, summary: skillSummary });
+w('c3d_r2_basic_frames.json', {
+  note: 'T31-R2-basic 3D 普攻逐帧：白盒 basic + animLeftMs=300（= session ANIM_MS.basic）⇒ 快照翻 idle 后由 3D 呈现窗续播；窗内相位 = stateElapsedSec / 1.5',
+  frames: basicFrames,
+  summary: basicSummary,
+});
 w('c3d_r2_scale_bbox.json', { note: 'R2-3 人物层像素包围盒（dpr 1/2/3，facing=right，idle）', rows: scaleRows });
 
 console.log('\n[t31r2] 轻功摘要：');
 console.log('  x1 ' + JSON.stringify(jumpSummary.x1));
 console.log('  x2 ' + JSON.stringify(jumpSummary.x2));
+console.log('[t31r2] 普攻摘要：x1 ' + JSON.stringify(basicSummary.x1) + '\n  x2 ' + JSON.stringify(basicSummary.x2));
 console.log('[t31r2] 特/绝摘要：x1 ' + JSON.stringify(skillSummary.x1) + '\n  x2 ' + JSON.stringify(skillSummary.x2));
 console.log('[t31r2] 比例包围盒（逻辑 px）：' + scaleRows.map((r) => `dpr=${r.dsf} ${r.bboxHLogical}（placed.h=${r.placedHLogical}）`).join(' · '));
 if (errors.length) {

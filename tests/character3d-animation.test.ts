@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  CHARACTER_3D_BASIC_WINDOW_SEC,
   CHARACTER_3D_CROSS_FADE_SEC,
   CHARACTER_3D_JUMP_MOVE_SEC,
   CHARACTER_3D_JUMP_PHASE_ANCHORS,
@@ -387,17 +388,26 @@ describe('动作状态机（方案 §5）', () => {
     expect(c.activeClipKey).toBe('walk');
   });
 
-  it('basic：把 1.50s 源归一映射到 CHOREO.basicSec，窗尾保持末帧（不跳回首帧）', () => {
+  it('basic（T31-R2-basic）：整段 1.50s atk 源映射到 3D 专用窗 1.5s（1.0× 原速），窗尾保持末帧', () => {
     const c = newController();
     c.update(0.016, { state: 'basic', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('atk');
     expect(sampleDigest(c)).toBe(referencePalette('atk', 0, false));
-    c.update(0.016, { state: 'basic', stateElapsedSec: CHOREO.basicSec, moveProgress: null, isJump: false });
+    // ★ 1.0× 原速：相位 = elapsed / 1.5（源时长）⇒ 半程 0.75s 恰落源中点
+    c.update(0.016, { state: 'basic', stateElapsedSec: CHARACTER_3D_BASIC_WINDOW_SEC / 2, moveProgress: null, isJump: false });
+    expect(sampleDigest(c)).toBe(referencePalette('atk', 0.5, false));
+    // 窗尾 = 源末帧（1.5s 播完整段，不被 0.7s 截断）
+    c.update(0.016, { state: 'basic', stateElapsedSec: CHARACTER_3D_BASIC_WINDOW_SEC, moveProgress: null, isJump: false });
     const atWindowEnd = sampleDigest(c);
     expect(atWindowEnd).toBe(referencePalette('atk', 1, false)); // 末帧
     expect(atWindowEnd).not.toBe(referencePalette('atk', 0, false)); // 不是首帧
+    // 反例自证（旧口径 = 2.14× 加速）：同一 0.7s 时刻，新窗相位 0.467（中段）而旧窗已是 1（末帧）
+    expect(0.7 / CHARACTER_3D_BASIC_WINDOW_SEC).toBeCloseTo(0.4667, 4);
+    expect(0.7 / CHOREO.basicSec).toBe(1);
+    c.update(0.016, { state: 'basic', stateElapsedSec: 0.7, moveProgress: null, isJump: false });
+    expect(sampleDigest(c)).toBe(referencePalette('atk', 0.7 / CHARACTER_3D_BASIC_WINDOW_SEC, false));
     // 窗后仍保持末帧
-    c.update(0.016, { state: 'basic', stateElapsedSec: CHOREO.basicSec * 3, moveProgress: null, isJump: false });
+    c.update(0.016, { state: 'basic', stateElapsedSec: CHARACTER_3D_BASIC_WINDOW_SEC * 3, moveProgress: null, isJump: false });
     expect(sampleDigest(c)).toBe(atWindowEnd);
   });
 

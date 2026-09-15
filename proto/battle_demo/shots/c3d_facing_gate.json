@@ -71,9 +71,9 @@
   "skinMinusHairX": -7.7,
   "skinMinusHairXN": -0.22,
   "skinN": 39,
-  "hairN": 568,
+  "hairN": 563,
   "skinRatio": 0.0338,
-  "skinOfFg": 0.0643,
+  "skinOfFg": 0.0648,
   "bbox": {
    "minX": 24,
    "minY": 11,
@@ -100,12 +100,12 @@
   "actualFacingHex": "left",
   "ok": true,
   "label": "",
-  "skinMinusHairX": -6.1,
-  "skinMinusHairXN": -0.1794,
-  "skinN": 110,
-  "hairN": 523,
-  "skinRatio": 0.098,
-  "skinOfFg": 0.1738,
+  "skinMinusHairX": -6,
+  "skinMinusHairXN": -0.1765,
+  "skinN": 111,
+  "hairN": 521,
+  "skinRatio": 0.0989,
+  "skinOfFg": 0.1756,
   "bbox": {
    "minX": 25,
    "minY": 11,
@@ -122,7 +122,7 @@
   "placedHLogical": 96.09599999999999,
   "placedWLogical": 67.60316734931014,
   "gate": {
-   "normalized": -0.1794,
+   "normalized": -0.1765,
    "threshold": 0.05,
    "pass": true
   }
@@ -167,9 +167,9 @@
   "skinMinusHairX": 2.6,
   "skinMinusHairXN": 0.0743,
   "skinN": 163,
-  "hairN": 446,
+  "hairN": 445,
   "skinRatio": 0.1411,
-  "skinOfFg": 0.2677,
+  "skinOfFg": 0.2681,
   "bbox": {
    "minX": 32,
    "minY": 11,

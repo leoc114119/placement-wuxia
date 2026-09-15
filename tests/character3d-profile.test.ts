@@ -18,6 +18,7 @@ import {
   CHARACTER_3D_VERTEX_FLOATS,
   HERO_3D_ACTION_MAP,
   HERO_3D_ATTACHMENTS,
+  CHARACTER_3D_BASIC_WINDOW_SEC,
   CHARACTER_3D_HERO_SCALE,
   CHARACTER_3D_JUMP_CHANNEL,
   CHARACTER_3D_JUMP_MOVE_SEC,
@@ -38,6 +39,7 @@ import {
   validateCharacter3DProfile,
   yawDegForFacing,
 } from '../config/character-3d';
+import { BASIC_DURATION_MS } from '../config/battle';
 import { CHOREO, PIECE, TILE_H } from '../config/battle-hex';
 import type { Character3DAssetRef, Character3DProfile, BattleFacingHex } from '../types';
 import { gainedRootY, remapPhaseByAnchors } from '../ui/character3d/animation';
@@ -180,12 +182,30 @@ describe('动作映射（方案 §5 表逐行）', () => {
     expect(HERO_3D_ACTION_MAP.walk).toMatchObject({ clip: 'walk', progressSource: 'viewClock', loop: true });
   });
 
-  it('basic：单播、把 1.50s 源归一映射到既有 CHOREO.basicSec、尾帧保持（loop=false）', () => {
+  it('basic（T31-R2-basic · Leo 09-15 裁定）：**3D 专用窗 1.5s**（整段 atk 源 1.0× 播完）、尾帧保持', () => {
     expect(HERO_3D_ACTION_MAP.basic.clip).toBe('atk');
-    expect(HERO_3D_ACTION_MAP.basic.playWindowSec).toBe(CHOREO.basicSec);
+    expect(HERO_3D_ACTION_MAP.basic.playWindowSec).toBe(CHARACTER_3D_BASIC_WINDOW_SEC);
     expect(HERO_3D_ACTION_MAP.basic.progressSource).toBe('stateElapsed');
     expect(HERO_3D_ACTION_MAP.basic.loop).toBe(false);
-    expect(HERO_3D_ACTION_MAP.basic.playWindowSec).toBeCloseTo(0.7, 12); // BASIC_DURATION_MS=700
+    expect(CHARACTER_3D_BASIC_WINDOW_SEC).toBeCloseTo(1.5, 12);
+    // 1.0× 原速：窗长 == atk 源时长（数值相等是**意图**，不是从源推导）
+    expect(HERO_3D_ACTION_MAP.basic.playWindowSec).toBeCloseTo(HERO_3D_CLIP_SOURCE_SEC.atk, 12);
+    expect(HERO_3D_CLIP_SOURCE_SEC.atk).toBeCloseTo(1.5, 12);
+    // ★ 2D/BE 真值不动：BASIC_DURATION_MS 仍 700、CHOREO.basicSec 仍 0.7（未迁移 2D 角色不自动扩大）
+    expect(BASIC_DURATION_MS).toBe(700);
+    expect(CHOREO.basicSec).toBeCloseTo(0.7, 12);
+    expect(HERO_3D_ACTION_MAP.basic.playWindowSec).not.toBe(CHOREO.basicSec);
+  });
+
+  it('basic 窗取值形态：3D 专用常量承载（禁从源时长推导、禁压回 0.7s）', () => {
+    const cfgSrc = readFileSync(path.join(ROOT, 'config/character-3d.ts'), 'utf8');
+    expect(cfgSrc).toContain('export const CHARACTER_3D_BASIC_WINDOW_SEC = 1.5;');
+    // 槽位必须引用常量本身（若有人写回 CHOREO.basicSec / 0.7，本断言报警）
+    expect(cfgSrc).not.toMatch(/playWindowSec:\s*CHOREO\.basicSec/);
+    expect(cfgSrc).not.toMatch(/CHARACTER_3D_BASIC_WINDOW_SEC\s*=\s*HERO_3D_CLIP_SOURCE_SEC/);
+    // 2D 真值源文件（config/battle.ts）本卡未碰
+    const battleSrc = readFileSync(path.join(ROOT, 'config/battle.ts'), 'utf8');
+    expect(battleSrc).toContain('export const BASIC_DURATION_MS = 700;');
   });
 
   it('charge（R2-2 §4.1.3）：整段 cast 源映射进固定 3s 窗循环（840ms 一轮旧口径已废止）', () => {

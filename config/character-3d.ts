@@ -14,7 +14,7 @@
 //   模型 hero_48k_20260914.glb：48,419 三角面 / 41 骨 / 1 mesh / 1 材质 / 1 primitive /
 //   3 × 4096² JPEG；SHA-256 = ff9202b4…f816f0，4,040,728 B。模型无指骨、无武器（剑需另备 3D 资产）。
 
-import { CHOREO, PIECE, TILE_H } from './battle-hex';
+import { PIECE, TILE_H } from './battle-hex';
 import type {
   BattleAnimState,
   BattleFacingHex,
@@ -288,6 +288,18 @@ export function jumpChannelProgressH(p: number, channel: Character3DJumpChannel)
   return t * t * (3 - 2 * t); // smoothstep：两端速度为零
 }
 
+/** 【T31-R2-basic · Leo 09-15 现场裁定】3D 主角**普攻表现窗**（秒）= **1.5 ＝ atk 源时长 ⇒ 1.0× 原速**
+ *（Leo 原话：「普攻的动作有点太快了吧，我记得我们是有个 1.5s 的？现在看是加速的」）。
+ *
+ * **只改 3D 槽位**：`config/battle.ts` 的 `BASIC_DURATION_MS = 700`（**2D/BE 唯一真值**）**不动**。
+ * 历史（禁改回的缘由）：700ms 是 **Leo 09-07 在 L 环亲裁**（原 1000ms，理由「出拳后收得太慢」），
+ * 当时普攻是 **2 帧素材**，0.7s 只是**帧保持窗**、不存在「加速播放」；现役 3D `atk` 是 **1.5s 真实动作**，
+ * 沿用 0.7s 会把整段压进 0.7s 播 ＝ **2.14×**（Leo 09-15 目验所指）。故本条不是推翻 09-07 的判断，
+ * 而是 **3D 时代需要自己的窗**（沿轻功先例：`CHARACTER_3D_JUMP_MOVE_SEC` 为 3D 专用、2D 仍走 jumpParams）。
+ * ⚠ 与源时长数值相等是**意图（原速）**，**不是**从 `HERO_3D_CLIP_SOURCE_SEC.atk` 推导（禁重新压回 0.7s）。
+ * 未迁移 2D 角色（敌方 2D 帧）保持 `CHOREO.basicSec` = 0.7s（方案既有口径「不自动扩大到未迁移 2D 角色」）。 */
+export const CHARACTER_3D_BASIC_WINDOW_SEC = 1.5;
+
 /** 【R2-2 · §4.1.3（Leo 已裁）】特技/绝学**固定 3s 表现窗**（演出秒）：
  * charge 槽位把**整段源**映射进窗——源 >3s ⇒ 按窗压缩、3s 内播完一遍（现役 cast 源 4.5333s ⇒
  * 压缩比 0.662、等效 1.511×）；源 <3s ⇒ 循环填满（1.5s 源恰 2 遍）。
@@ -352,11 +364,13 @@ export const HERO_3D_ACTION_MAP: Readonly<Record<Character3DActionKey, Character
     crossFadeOnEnter: true,
   },
   basic: {
-    // 单播：把完整 1.50s 源归一映射到既有 CHOREO.basicSec 表现窗（= BASIC_DURATION_MS/1000），尾帧保持
+    // 【T31-R2-basic · Leo 09-15 现场裁定】单播：整段 1.50s atk 源映射到 **3D 专用**表现窗
+    //（CHARACTER_3D_BASIC_WINDOW_SEC = 1.5 ⇒ 1.0× 原速），尾帧保持至状态退出。
+    // 2D/BE 的 BASIC_DURATION_MS=700 与 CHOREO.basicSec 不动（2D 敌方仍 0.7s 帧保持窗）。
     clip: 'atk',
     progressSource: 'stateElapsed',
     loop: false,
-    playWindowSec: CHOREO.basicSec,
+    playWindowSec: CHARACTER_3D_BASIC_WINDOW_SEC,
     startRatio: 0,
     rootMotion: 'track',
     crossFadeOnEnter: true,

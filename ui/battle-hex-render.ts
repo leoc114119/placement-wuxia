@@ -63,6 +63,7 @@ import {
 import {
   CHARACTER_3D_PROFILE_BY_SPRITE_KEY,
   CHARACTER_3D_JUMP_CHANNEL,
+  CHARACTER_3D_BASIC_WINDOW_SEC,
   CHARACTER_3D_JUMP_MOVE_SEC,
   jumpChannelProgressH,
   type Character3DJumpChannel,
@@ -408,8 +409,14 @@ export interface BattleHexView {
   /** 【AS · TASK-AS-FE】普攻表现保持窗（【L 环 Leo 09-07 裁 700ms】原口径③/开放点③=1s）：actorId → {since, until}（view.time 系）。
    * 快照 basic 上升沿开窗；session ANIM_MS.basic=300 冻结不动，快照回 idle 后由本窗把普攻帧
    * 保持满 700ms（表现常量 CHOREO.basicSec=BASIC_DURATION_MS/1000 别名）。渲染层私有演出态
-   *（与 moveAnims 同级：演出计时主导，快照真值仍为唯一数据源——只延帧不改任何数值/事件）。 */
+   *（与 moveAnims 同级：演出计时主导，快照真值仍为唯一数据源——只延帧不改任何数值/事件）。
+   * ★【T31-R2-basic】**本表语义与清理时机一字未改**（2D/legacy 真值，`basicHoldActive`/`directionalFrameOf`/
+   * legacy `frameOf` 全走 `until`）；3D 主角的 1.5s 视界另存 `basicHolds3d`（两条视界互不干扰）。 */
   basicHolds: Map<string, { since: number; until: number }>;
+  /** 【T31-R2-basic · Leo 09-15 现场裁定】3D 主角普攻呈现视界：actorId → {since, until}（view.time 系），
+   * `until = since + CHARACTER_3D_BASIC_WINDOW_SEC(1.5)`。**只被 `character3DPresentationOf` 消费**——
+   * 让 1.5s 的 atk 源以 1.0× 播完、不被 2D 的 0.7s 视界截断。与 `basicHolds` 同沿开窗、各自到期即清。 */
+  basicHolds3d: Map<string, { since: number; until: number }>;
   skillPop: number; // 弧形四钮弹出进度 0~1
   selectedCell: HexPos | null; // 选中格高亮（演出态；会话侧契约无此字段）
   /** 【GSG-1 · TASK-AS-v04 · L 环 Leo 09-07 裁收窄】悬停格（表现态；会话侧契约无此字段、不进快照——方案 v0.4 §9.4）。
@@ -466,6 +473,7 @@ export function createView(): BattleHexView {
     shakes: new Map(),
     dmgStagger: new Map(),
     basicHolds: new Map(),
+    basicHolds3d: new Map(),
     skillPop: 0,
     selectedCell: null,
     hoverCell: null,
@@ -912,6 +920,8 @@ export function updateView(
           //（CHOREO.basicSec=BASIC_DURATION_MS/1000 别名，session ANIM_MS.basic=300 冻结差额由此补足）；
           // 保持期内再出手=新演出起点，覆盖旧窗。
           view.basicHolds.set(a.id, { since: view.time, until: view.time + CHOREO.basicSec });
+          // 【T31-R2-basic】3D 主角另开 1.5s 视界（让 1.5s 的 atk 源 1.0× 播完）；2D 表语义不变。
+          view.basicHolds3d.set(a.id, { since: view.time, until: view.time + CHARACTER_3D_BASIC_WINDOW_SEC });
         }
       } else if (prev && a.animState === 'hit') {
         // 【T21 受击反馈互指】受击反馈已改走事件驱动路径（main.ts 白名单入队 → pendingHits 冲刷 +
@@ -934,6 +944,9 @@ export function updateView(
     // 【AS · TASK-AS-FE】保持窗惰性清理（到期即除防 Map 无界；帧选随即回 idle 组）
     const hold = view.basicHolds.get(a.id);
     if (hold !== undefined && view.time >= hold.until) view.basicHolds.delete(a.id);
+    // 【T31-R2-basic】3D 视界独立惰性清理（同式）——2D 表的清理时机保持原样（既有用例锁定）
+    const hold3d = view.basicHolds3d.get(a.id);
+    if (hold3d !== undefined && view.time >= hold3d.until) view.basicHolds3d.delete(a.id);
   }
   // 特效寿命推进（含 note 冒字）
   const aliveFx: FxItem[] = [];
@@ -1438,9 +1451,10 @@ function character3DPresentationOf(
   if (actor.animState === 'dead') return { state: 'dead', elapsedSec: 0 };
   const ma = view.moveAnims.get(actor.id);
   if (ma && ma.t < ma.duration) return { state: 'walk', elapsedSec: sameState };
-  const hold = view.basicHolds.get(actor.id);
+  // 【T31-R2-basic】3D 主角读 **1.5s 视界**（basicHolds3d）：1.5s 的 atk 源以 1.0× 播完，不被 0.7s 截断。
+  const hold = view.basicHolds3d.get(actor.id);
+  // 窗内历时取钟连续值：仍在 basic 态取钟，已翻 idle 取「窗起点差」（与 2D directionalFrameOf 同式）。
   if (actor.animState === 'idle' && hold !== undefined && view.time < hold.until) {
-    // 窗内历时取钟连续值：仍在 basic 态取钟，已翻 idle 取「窗起点差」（与 2D directionalFrameOf 同式）
     const elapsed = clock !== undefined && clock.state === 'basic' ? clock.t : view.time - hold.since;
     return { state: 'basic', elapsedSec: elapsed };
   }

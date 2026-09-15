@@ -15,11 +15,12 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 declare const __dirname: string;
-import { HUD, JUMP, PIECE, SPRITE_PROFILES, TILE_H, hexToWorld, jumpParamsFor, type DirectionalSpriteProfile } from '../config/battle-hex';
+import { CHOREO, HUD, JUMP, PIECE, SPRITE_PROFILES, TILE_H, hexToWorld, jumpParamsFor, type DirectionalSpriteProfile } from '../config/battle-hex';
 import { SPEED_FACTOR } from '../config/battle';
 import {
   CHARACTER_3D_CROSS_FADE_SEC,
   CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+  CHARACTER_3D_BASIC_WINDOW_SEC,
   HERO_3D_ACTION_MAP,
   HERO_3D_PROFILE,
   HERO_3D_PROFILE_ID,
@@ -624,7 +625,8 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
     const snap0 = snap([idle]);
     updateView(view, snap0, 0.016, W, H);
     view.anim.set('hero', { state: 'basic', t: 0.2 });
-    view.basicHolds.set('hero', { since: view.time - 0.2, until: view.time + 0.4 });
+    // 【T31-R2-basic】3D 主角读 1.5s 视界的独立表（basicHolds 仍归 2D/legacy，语义未改）
+    view.basicHolds3d.set('hero', { since: view.time - 0.2, until: view.time + 1.3 });
     const ops: RecordedOp[] = [];
     drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
     const cmd = fake.calls[fake.calls.length - 1][0];
@@ -787,6 +789,33 @@ function castSession(): HexBattleSession {
   };
   put('hero', 4, 8);
   put('e1', 6, 8);
+  return s;
+}
+
+/** 【T31-R2-basic 用例】普攻局：我方(4,8)、敌方(5,8)（相邻 ⇒ basicCells 含目标格），手动模式 */
+function basicSession(): HexBattleSession {
+  const s = createHexBattle({
+    player: realUnit({ id: 'hero', side: 'player', weapon: 'sword', skills: [teSkillDef()] }),
+    enemies: [realUnit({ id: 'e1', side: 'enemy', name: 'npc-shanzei-a', jimin: 0 })],
+    mode: 'manual',
+    seed: 13,
+  });
+  const put = (id: string, q: number, r: number): void => {
+    const u = s._debug.units.find((x) => x.id === id)!;
+    u.hex = { q, r };
+    u.renderQ = q;
+    u.renderR = r;
+    u.moveFromQ = q;
+    u.moveFromR = r;
+    u.moveT = 1;
+    u.isJump = false;
+    u.animState = 'idle';
+    u.animLeftMs = 0;
+    u.bar = 0;
+    u.barWasMax = false;
+  };
+  put('hero', 4, 8);
+  put('e1', 5, 8);
   return s;
 }
 
@@ -1298,6 +1327,123 @@ describe('[T31-R2 · R2-2] 特/绝 3s 表现窗不触 session 时间轴（零外
     // 实测口径（如实记录）：现役 session 的施法相 = charge → idle（t1 即收势，不经 strike 收招相，
     // 见 systems/battle-session 的 AS-4 注释）⇒ strike 3D 槽位由「直接驱动命令」的用例与 shot 证据覆盖。
     expect([...new Set(bare.samples.map((x) => x.split(' ')[1].split(':')[1]))]).toEqual(['charge', 'idle']);
+  });
+});
+
+// ══════════════════ 6''. 【T31-R2-basic】3D 普攻表现窗 1.5s（Leo 09-15 现场裁定） ══════════════════
+describe('[T31-R2-basic] 3D 普攻表现窗 1.5s（1.0× 原速）；2D/legacy 仍 0.7s', () => {
+  it('3D 窗 1.5s 覆盖全程：basic 呈现续播至末帧（clip/state 末帧前不切换）；2D 表仍 0.7s', () => {
+    const { assets } = makeAssets();
+    const { layer, pass, cmds } = makeRealPassLayer(DPR);
+    const view = view3d(layer);
+    const snapIdle = snap([actor({ animState: 'idle' })]);
+    updateView(view, snapIdle, 0.016, W, H); // 登记 idle（上升沿判定的 prev）
+    const snapBasic = snap([actor({ animState: 'basic' })]);
+    updateView(view, snapBasic, 0.016, W, H); // idle→basic 上升沿：两条视界同时开窗
+    const hold3d = view.basicHolds3d.get('hero')!;
+    const hold2d = view.basicHolds.get('hero')!;
+    expect(hold3d.until - hold3d.since).toBeCloseTo(CHARACTER_3D_BASIC_WINDOW_SEC, 10); // 3D：1.5s
+    expect(hold2d.until - hold2d.since).toBeCloseTo(CHOREO.basicSec, 10); // 2D/legacy：0.7s（未改）
+    const since = hold3d.since;
+    const frames: Array<{ t: number; state: string; elapsed: number; clip: string | null }> = [];
+    const dt = 1 / 60;
+    for (let i = 0; i < 150; i++) {
+      const s = view.time - since < 0.3 ? snapBasic : snapIdle; // session ANIM_MS.basic=300 后翻 idle
+      updateView(view, s, dt, W, H);
+      drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt }, s, assets, view);
+      const cmd = cmds.find((c) => c.actorId === 'hero')!;
+      frames.push({ t: view.time - since, state: cmd.state, elapsed: cmd.stateElapsedSec, clip: pass.controllers.get('hero')?.activeClipKey ?? null });
+    }
+    // ① 窗内（0~1.48s）：恒 basic/atk（不被 0.7s 截断 ⇒ 0.7~1.5 段仍在跑同一 clip）
+    const inWindow = frames.filter((f) => f.t < CHARACTER_3D_BASIC_WINDOW_SEC - 0.02);
+    expect(inWindow.length).toBeGreaterThan(80);
+    expect(inWindow.every((f) => f.state === 'basic' && f.clip === 'atk')).toBe(true);
+    // ② 1.0×：相位 = elapsed/1.5 单调增至 ~1（末帧前无切换）
+    const phases = inWindow.map((f) => f.elapsed / CHARACTER_3D_BASIC_WINDOW_SEC);
+    for (let i = 1; i < phases.length; i++) expect(phases[i]).toBeGreaterThanOrEqual(phases[i - 1]);
+    expect(phases[phases.length - 1]).toBeGreaterThan(0.95);
+    expect(inWindow.some((f) => f.t > 0.75 && f.t < 1.15)).toBe(true); // 0.7s 之后确实还在播（旧窗早已结束）
+    // ③ 窗后正常收尾（回 idle），不是被截断
+    const after = frames.filter((f) => f.t > CHARACTER_3D_BASIC_WINDOW_SEC + 0.05);
+    expect(after.length).toBeGreaterThan(0);
+    expect(after.every((f) => f.state === 'idle')).toBe(true);
+    // ④ 2D 表在 0.7s 后即到期（视界互不干扰）
+    expect(view.basicHolds.get('hero')).toBeUndefined();
+  });
+
+  it('呈现窗不遮挡/不推迟新状态：窗内换态（charge / walk+jump）当帧即生效', () => {
+    const { assets } = makeAssets();
+    const { layer, pass, cmds } = makeRealPassLayer(DPR);
+    const view = view3d(layer);
+    const snapBasic = snap([actor({ animState: 'basic' })]);
+    updateView(view, snap([actor({ animState: 'idle' })]), 0.016, W, H);
+    updateView(view, snapBasic, 0.016, W, H);
+    const since = view.basicHolds3d.get('hero')!.since;
+    // 推进到窗中段（≈0.8s）
+    for (let i = 0; i < 48; i++) updateView(view, snapBasic, 1 / 60, W, H);
+    expect(view.time - since).toBeGreaterThan(0.75);
+    expect(view.time - since).toBeLessThan(CHARACTER_3D_BASIC_WINDOW_SEC);
+    // ① 窗内换 charge：当帧即为 charge（不被 basic 视界遮挡）
+    const snapCharge = snap([actor({ animState: 'charge' })]);
+    drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: 1 / 60 }, snapCharge, assets, view);
+    expect(cmds.find((c) => c.actorId === 'hero')!.state).toBe('charge');
+    // ② 窗内换轻功：当帧即 walk+jump
+    const jumpHero = actor({ animState: 'walk', isJump: true, pos: { q: 5, r: 8 }, renderPos: { q: 4, r: 8 } });
+    const snapJump = snap([jumpHero]);
+    updateView(view, snapJump, 1 / 60, W, H);
+    drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: 0 }, snapJump, assets, view);
+    const cmd = cmds.find((c) => c.actorId === 'hero')!;
+    expect(cmd.state).toBe('walk');
+    expect(cmd.isJump).toBe(true);
+    expect(pass.controllers.get('hero')?.actionKey).toBe('jump');
+  });
+
+  it('真实链路零外溢（普攻）：注入 3D 层 vs 裸 session 的事件序/逐帧量与 pendingInput 节奏一致', () => {
+    const run = (withView: boolean) => {
+      const s = basicSession();
+      expect(tickToPending(s), '未到输入态').toBe(true);
+      let view: BattleHexView | null = null;
+      if (withView) view = view3d(makeRealPassLayer(DPR).layer);
+      const assets = withView ? makeAssets().assets : null;
+      const step = (dt: number): void => {
+        s.tick(dt);
+        if (view && assets) {
+          const snap = s.snapshot();
+          updateView(view, snap, dt, W, H);
+          drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt }, snap, assets, view);
+        }
+      };
+      expect(s.submit({ type: 'selectBasic' }), '进普攻选中态被拒').toBe(true);
+      const cells = s.snapshot().basicCells;
+      expect(cells.length, 'basicCells 为空').toBeGreaterThan(0);
+      expect(s.submit({ type: 'basicAtCell', to: cells[0] }), '普攻提交被拒').toBe(true);
+      const startIdx = s.events.length;
+      const samples: string[] = [];
+      for (let i = 0; i < Math.ceil(3.2 / DT_REAL); i++) {
+        step(DT_REAL);
+        const snap = s.snapshot();
+        const a = snap.actors.find((x) => x.id === 'hero')!;
+        const e = snap.actors.find((x) => x.id === 'e1')!;
+        samples.push(
+          `t=${(i * DT_REAL).toFixed(3)} hero=${a.animState}:${a.hp}:${a.actionBar.toFixed(4)} e1=${e.hp} pi=${snap.pendingInput}:${snap.phase}`,
+        );
+      }
+      return { events: s.events.slice(startIdx).map((e) => JSON.stringify(e)), samples, clock: s._debug.clock(), phase: s.snapshot().phase };
+    };
+    const bare = run(false);
+    const painted = run(true);
+    expect(painted.events).toEqual(bare.events);
+    expect(painted.samples).toEqual(bare.samples); // 含 pendingInput：1.5s 呈现窗零节奏外溢
+    expect(painted.clock).toBeCloseTo(bare.clock, 12);
+    expect(painted.phase).toBe(bare.phase);
+    // 防假一致：本局确有普攻状态与伤害事件
+    expect(bare.samples.some((x) => x.includes('hero=basic:'))).toBe(true); // hero 确实进了 basic 态
+    // 防假一致：普攻确实结出伤害（敌方 HP 变化），两条路径同量
+    // 普攻段 1 在 t0 内联结算 ⇒ 首个样本即已掉血；与 realUnit 初始满血 999999 比较
+    const e1Hp = bare.samples.map((x) => Number(/e1=(\d+)/.exec(x)![1]));
+    expect(e1Hp.length).toBeGreaterThan(0);
+    expect(e1Hp[0]).toBeLessThan(999999);
+    expect(e1Hp.every((v, i) => i === 0 || v === e1Hp[0])).toBe(true); // 结算时点唯一且两条路径同量
   });
 });
 
