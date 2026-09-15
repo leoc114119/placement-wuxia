@@ -132,6 +132,10 @@ function createTimingRenderer(real: Character3DRenderer, sink: { submitMs: numbe
     get counters() { return real.counters; },
     get diagnostics() { return real.diagnostics; },
     beginFrame(): void { real.beginFrame(); },
+    get weaponReady() { return real.weaponReady; },
+    drawWeapon(modelMatrix: Float32Array, alpha: number, tints: readonly Float32Array[] | null): void {
+      real.drawWeapon(modelMatrix, alpha, tints);
+    },
     drawUnit(palette: Float32Array, modelMatrix: Float32Array, alpha: number, yawDeg: number): void {
       const t0 = nowMs();
       real.drawUnit(palette, modelMatrix, alpha, yawDeg);

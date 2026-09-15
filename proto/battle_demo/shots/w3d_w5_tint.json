@@ -1,0 +1,17 @@
+{
+ "method": "同页 + rAF 手动步进（同时间戳 ⇒ dt=0，姿态冻结），唯一变量 = 染色",
+ "files": {
+  "base": "w3d_w5_untinted.png",
+  "pommelTint": "w3d_w5_guard_tinted.png",
+  "bladeTint": "w3d_w5_blade_tinted.png",
+  "guardTintAdjacent": "w3d_w5_grip_tinted.png",
+  "restored": "w3d_w5_restored.png"
+ },
+ "guardChangedPx": 173,
+ "bladeChangedPx": 770,
+ "pommelChangedPx": 0,
+ "guardBladeOverlapAnyPx": 14,
+ "guardBladeOverlapInBladeCorePx": 3,
+ "bladeCorePx": 581,
+ "restoreDiffPx": 0
+}

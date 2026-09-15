@@ -2,13 +2,16 @@
 // ① 帧预解码（全部 decode 完才开播，防换帧闪烁）② 整数像素定位（渲染模块内 Math.round）
 // ③ height 定尺（渲染高=格高×定尺系数，素材画布尺寸不参与）④ 资源版本号防缓存
 // 数据源=真 battle-session（联调工单：mock→真 session 单点替换；reset=重建对局）。
-import type { Character3DClipKey, CombatantInput } from '../../types';
+import type { Character3DClipKey, Character3DProfile, CombatantInput } from '../../types';
 import { SPEED_FACTOR } from '../../config/battle';
 import { BATTLE_HEX_RES, DMG, FACINGS, PIECE, REJECT_HINTS, TRIAL_FX_01, TRIAL_FX_FALLBACK_DURATION_MS, hexToWorld, type BattleClip } from '../../config/battle-hex';
 import { WEAPON_LAYER_PROFILES, WEAPON_MODELS } from '../../config/hero-weapon-layer'; // 【T29】武器层只读配置 v2（runtime 路径，零候选引用）
 // 【T31-FE-B】3D 人物层配置（方案 §3/§4/§5/§7）：profile 清单 + 动作映射 + 全部时长/画质常量。
 // 本文件是 preview 宿主对这些配置的**唯一消费点**（资产地址/sha 只存在于 config，宿主不持字面量）。
 import {
+  HERO_3D_WEAPON_ACCOUNT,
+  HERO_3D_WEAPON_REF,
+  HERO_3D_WEAPON_SEGMENT_BOUNDARIES,
   CHARACTER_3D_CROSS_FADE_SEC,
   CHARACTER_3D_FXAA,
   CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
@@ -26,11 +29,21 @@ import {
   decodeUtf8,
   createModelStructureValidator,
   loadCharacter3DModel,
+  loadCharacter3DStaticMesh,
+  validateWeaponAccount,
   type Character3DModel,
 } from '../../ui/character3d/glb';
+import {
+  buildWeaponVertexInterleave,
+  splitWeaponSegments,
+} from '../../ui/character3d/weapon';
 import { resolveClipSource, type Character3DAnimConfig, type Character3DClipRegistry } from '../../ui/character3d/animation';
 import { createCharacter3DRenderer, type Character3DRenderer, type Character3DEdgeMode } from '../../ui/character3d/renderer';
-import { createCharacter3DPass, type Character3DPass } from '../../ui/character3d/pass';
+import {
+  createCharacter3DPass,
+  type Character3DPass,
+  type Character3DWeaponRuntime,
+} from '../../ui/character3d/pass';
 import { createBrowserCharacter3DPlatform } from '../../ui/character3d/platform-browser';
 import { FxCastGate, FxPlayer, findCastSnapshot, loadFxFramePack, type FxFramePack } from '../../ui/fx-player';
 import { WfBannerPlayer, bannerTierOf } from '../../ui/wf-banner';
@@ -354,9 +367,48 @@ const AA_FORCE: Character3DEdgeMode | null = (() => {
 })();
 const BG_OVERRIDE = PREVIEW_QUERY.get('bg');
 const CHAR3D_MODE = PREVIEW_QUERY.get('char3d'); // off | loading | 缺省=正常
+/** 【T32】`?weapon=off`：**诊断/证据专用**——不注入武器（该单位空手）。
+ * 用途：朝向门量测（判据分母 = 前景像素 bbox 宽，挂剑会把它撑大 ⇒ 破坏归一化口径的尺度不变性）。 */
+const WEAPON_OFF = PREVIEW_QUERY.get('weapon') === 'off';
 /** `?heroScale=<倍数>`：**证据专用**注入（默认 1 = config 的 CHARACTER_3D_HERO_SCALE 原值）。
  * 用途：朝向门「归一化判据对缩放不变」自证（R2-3）——同一套判据在比例再乘 0.5 时须同样 6/6 过。
  * 只缩放 3D 主角参考高（命令/缩放/HUD 全部派生自动）；不改 config、不影响任何生产分支。 */
+/** 【T32】`?weaponLen=<0.50~1.20>`：**证据专用**注入挂点长度（默认 config 的 0.75；W4 三档截图/屏长量测用）。 */
+const WEAPON_LEN_OVERRIDE = (() => {
+  const v = Number(PREVIEW_QUERY.get('weaponLen'));
+  return Number.isFinite(v) && v >= 0.5 && v <= 1.2 && v !== 0.75 ? v : null;
+})();
+/** 【T32】`?weaponTint=guard:1e5a24,grip:12305a`：**证据专用**注入四部件染色（W5 不串色像素对用）。
+ * 只影响 preview 宿主的运行时 profile 副本；config（真源）不改、生产分支不受影响。 */
+const WEAPON_TINT_OVERRIDE = (() => {
+  const raw = PREVIEW_QUERY.get('weaponTint');
+  if (!raw) return null;
+  const out: Record<string, string> = { blade: '#ffffff', guard: '#ffffff', grip: '#ffffff', pommel: '#ffffff' };
+  let touched = false;
+  for (const part of raw.split(',')) {
+    const [k, v] = part.split(':');
+    if (!k || !v || !/^#?[0-9a-fA-F]{6}$/.test(v)) continue;
+    if (!(k in out)) continue;
+    out[k] = v.startsWith('#') ? v : '#' + v;
+    touched = true;
+  }
+  return touched ? out : null;
+})();
+/** 证据专用挂点覆盖（不传 = 原样返回 config 的挂点表；**零拷贝零改动**）。 */
+function attachmentsForRuntime(): Character3DProfile['attachments'] {
+  const base = HERO_3D_PROFILE.attachments;
+  if (!WEAPON_LEN_OVERRIDE && !WEAPON_TINT_OVERRIDE) return base;
+  const name = Object.keys(base)[0];
+  return {
+    ...base,
+    [name]: {
+      ...base[name],
+      ...(WEAPON_LEN_OVERRIDE ? { lenRatio: WEAPON_LEN_OVERRIDE } : {}),
+      ...(WEAPON_TINT_OVERRIDE ? { tints: WEAPON_TINT_OVERRIDE as never } : {}),
+    },
+  };
+}
+
 const HERO_SCALE_OVERRIDE = (() => {
   const v = Number(PREVIEW_QUERY.get('heroScale'));
   return Number.isFinite(v) && v > 0 && v !== 1 ? v : 1;
@@ -397,6 +449,13 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
       platform,
       cdnBaseUrl: CHAR3D_CDN_BASE,
       structureValidator: (bytes, ref) => {
+        if (ref.id === HERO_3D_WEAPON_REF.id) {
+          // 【T32】武器结构门：1 mesh / 1 材质 / 0 骨 / 0 动画 / 门面数顶点数逐项相符
+          const wm = loadCharacter3DStaticMesh(bytes);
+          const errs = validateWeaponAccount(wm, HERO_3D_WEAPON_ACCOUNT);
+          if (errs.length) throw new Error('weapon-structure:' + errs.join('；'));
+          return;
+        }
         if (ref.mediaType === 'model/gltf-binary') modelStructureValidator(bytes, ref);
       },
     });
@@ -419,9 +478,36 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
         return { ok: false, failures: [`动作 json 解析失败：${key} · ${String(error)}`] };
       }
     }
+    // ---- 【T32】武器资产：失败 = 无剑进战斗 + 诊断（**不阻塞**，方案 §6 裁定；有 LKG 用 LKG）----
+    let weapon: Character3DWeaponRuntime | null = null;
+    let weaponDiag = WEAPON_OFF ? 'weapon-off-by-query' : 'weapon-not-requested';
+    if (!WEAPON_OFF) {
+      const res = await loader.load(HERO_3D_WEAPON_REF);
+      if (res.status === 'failed' || !res.bytes) {
+        weaponDiag = 'weapon-load-failed';
+      } else {
+        try {
+          const mesh = loadCharacter3DStaticMesh(res.bytes);
+          const segs = splitWeaponSegments(mesh, HERO_3D_WEAPON_SEGMENT_BOUNDARIES);
+          weapon = {
+            assetId: HERO_3D_WEAPON_REF.id,
+            mesh,
+            segments: segs,
+            vertexData: buildWeaponVertexInterleave(mesh),
+          };
+          weaponDiag = 'weapon-ready:' + mesh.account.triangleCount + 'tri/' + mesh.account.vertexCount + 'v';
+        } catch (error) {
+          weaponDiag = 'weapon-parse-failed:' + String(error);
+        }
+      }
+    }
+
     const baseColor = model.textureRoles.baseColor;
     if (!baseColor) return { ok: false, failures: ['模型缺 baseColor 贴图（§6.2 结构门）'] };
     const decoded = await platform.decodeImage(baseColor.bytes, baseColor.mimeType, baseColor.name);
+    const weaponTexture = weapon
+      ? await platform.decodeImage(weapon.mesh.baseColor.bytes, weapon.mesh.baseColor.mimeType, weapon.mesh.baseColor.name)
+      : null;
     // 【T31-FE-B · R3 = arch seq=418 Q2-2】按**目标背衬尺寸**直接建离屏画布（背衬 = round(逻辑 × dpr ×
     // renderScale)，与 renderer.resize 同一式）。此处首调 resize 若尺寸已相等即早退也无妨：投影矩阵由
     // renderer.beginFrame() 在每次上传 uProjection 前用 orthoPixel(backbufferW, backbufferH) 重建
@@ -441,6 +527,23 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
       renderScale: CHARACTER_3D_RENDER_SCALE,
       fxaa: CHARACTER_3D_FXAA,
       forceEdgeMode: AA_FORCE ?? undefined, // 生产不传（能力分支）；仅预览诊断传值
+      // 【T32】武器静态网格（装配期上传一次、多单位共享）；null = 该单位不画武器
+      weapon:
+        weapon && weaponTexture
+          ? {
+              vertexData: weapon.vertexData,
+              indices: weapon.segments.indexComponentType === 5123 ? Uint16Array.from(weapon.segments.indices) : weapon.segments.indices,
+              indexComponentType: weapon.segments.indexComponentType,
+              segments: [
+                weapon.segments.ranges.blade,
+                weapon.segments.ranges.guard,
+                weapon.segments.ranges.grip,
+                weapon.segments.ranges.pommel,
+              ],
+              baseColor: weaponTexture,
+              doubleSided: weapon.mesh.doubleSided,
+            }
+          : null,
     });
     renderer.resize(W, H, dpr);
     if (renderer.status !== 'ready') {
@@ -490,6 +593,8 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
           profile: {
             ...HERO_3D_PROFILE,
             screenHeightPxAtReference: HERO_3D_PROFILE.screenHeightPxAtReference * HERO_SCALE_OVERRIDE * dpr,
+            // 【T32】证据专用挂点覆盖（?weaponLen= / ?weaponTint=）；不传 = config 原表
+            attachments: attachmentsForRuntime(),
           },
           model,
           anim,
@@ -497,6 +602,7 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
       },
       // 诊断：置 loading 时 pass 返回空 placed/不合成（=未就绪口径，不画半成品、不切 2D 帧）
       loadState: CHAR3D_NOT_READY_DIAG ? 'loading' : 'ready',
+      weapon,
     });
     const stats = loader.stats();
     return {
@@ -506,7 +612,7 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
         renderer,
         edgeMode: renderer.edgeMode,
         loaderStats: stats,
-        diagnostics: [...profileLoad.diagnostics, ...renderer.diagnostics],
+        diagnostics: [...profileLoad.diagnostics, ...renderer.diagnostics, weaponDiag],
         loadStatus: profileLoad.status === 'stale-3d-cache' ? 'stale-3d-cache' : 'ready',
         teardown: () => {
           evtCanvas.removeEventListener?.('webglcontextlost', onContextLost);
@@ -826,6 +932,17 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
     loader: CharacterAssetLoaderStats | null;
     diagnostics: readonly string[];
     placed: ReadonlyMap<string, Placed3DMirror> | null;
+    /** 【T32】武器状态（证据面）：本帧是否绘制 + 装配诊断 + 累计 draw 次数 */
+    weapon: {
+      visible: boolean;
+      enabled: boolean;
+      diagnostics: readonly string[];
+      draws: number;
+      /** 武器矩阵对「柄头/握点/剑尖」的投影（物理像素；W4 屏长仪器用） */
+      screen: { pommel: [number, number]; grip: [number, number]; tip: [number, number] } | null;
+    } | null;
+    /** 【T32】控制器解析后的动作键（W6 证据：可见性判据的技术源，含轻功闩锁） */
+    actionKey: string | null;
     lastCommands: ReadonlyArray<{
       actorId: string;
       state: string;
@@ -847,6 +964,16 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
       loader: r?.loaderStats ?? null,
       diagnostics: r?.diagnostics ?? [],
       placed: view.character3dPlaced,
+      weapon: r
+        ? {
+            visible: r.pass.weaponState.visible,
+            enabled: r.pass.weaponState.enabled,
+            diagnostics: r.pass.weaponState.diagnostics,
+            draws: r.renderer.counters.weaponDraws,
+            screen: r.pass.weaponState.screen,
+          }
+        : null,
+      actionKey: r?.pass.controllers.get('hero')?.actionKey ?? null,
       lastCommands: lastCmds3d,
       activeClipKey: r?.pass.controllers.get('hero')?.activeClipKey ?? null,
     };
@@ -873,6 +1000,11 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
     return logicalToCss(w.x - view.camera.x + W / 2, w.y - view.camera.y + H / 2);
   },
   /** 主角演出绘制位置采样（终验：移动帧序列单调性断言用） */
+  /** 【T32 · 证据专用】运行时换四段染色（装备系统 Skin 契约的能力面；null = 全白）——
+   * 供 W5「同帧不串色」像素对照（两次渲染同一姿态，避免跨页姿态噪声）。 */
+  setWeaponTint(tints: Record<string, string> | null): void {
+    char3d?.pass.setWeaponTints(tints);
+  },
   sampleHeroDraw(): { q: number; r: number; hop: number } {
     return sampleHeroDrawPos();
   },

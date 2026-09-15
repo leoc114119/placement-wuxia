@@ -1,0 +1,424 @@
+{
+ "states": [
+  {
+   "state": "idle",
+   "actionKey": "idle",
+   "visible": true,
+   "layerPx": 10382
+  },
+  {
+   "state": "basic",
+   "actionKey": "basic",
+   "visible": true,
+   "layerPx": 8858
+  },
+  {
+   "state": "charge",
+   "actionKey": "charge",
+   "visible": true,
+   "layerPx": 7987
+  },
+  {
+   "state": "strike",
+   "actionKey": "strike",
+   "visible": true,
+   "layerPx": 8091
+  }
+ ],
+ "moveFrames": [
+  {
+   "viewT": 1.583,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "basic",
+   "visible": true,
+   "inMove": false
+  },
+  {
+   "viewT": 1.617,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.633,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.65,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.683,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.7,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.717,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.75,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.767,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.783,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.817,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.833,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.85,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.883,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 1.9,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 1.917,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 1.95,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 1.966,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 1.983,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.016,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.033,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.05,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.083,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.1,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.116,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.15,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.166,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.183,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.217,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.233,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.25,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.283,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.3,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.317,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.35,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.366,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.4,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.417,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.433,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.467,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.483,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.516,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.533,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.55,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.583,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.6,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.616,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.65,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  },
+  {
+   "viewT": 2.666,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "walk",
+   "visible": false,
+   "inMove": false
+  }
+ ],
+ "walkIdleShot": "w3d_w6_walk_idle.png",
+ "moveShotDone": "w3d_w6_walk_after.png"
+}

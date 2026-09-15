@@ -1171,6 +1171,7 @@ describe('红线：卡 C 新宿主', () => {
     expect(files).toEqual([
       'animation.ts', 'glb.ts', 'math.ts', 'pass.ts',
       'platform-browser.ts', 'platform-wx.ts', 'platform.ts', 'renderer.ts',
+      'weapon.ts', // 【T32】3D 武器挂载（方案 v1.0 §8 明确列出的新文件；非未申报模块）
     ]);
   });
 

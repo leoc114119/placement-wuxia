@@ -30,6 +30,21 @@ const FLOATS_PER_VERTEX = 16;
 const STRIDE = FLOATS_PER_VERTEX * 4;
 const LOC = { pos: 0, normal: 1, uv: 2, joints: 3, weights: 4 } as const;
 
+/** T32：武器（静态网格）渲染源——装配期上传一次、多单位共享（W7）。 */
+export interface Character3DWeaponSource {
+  /** 交错顶点（16 float/顶点：pos3+nrm3+uv2+joints4+weights4；武器 joints/weights 恒 0） */
+  vertexData: Float32Array;
+  /** 重排后索引（blade→guard→grip→pommel 连续排布；区间见 segments） */
+  indices: Uint32Array | Uint16Array;
+  indexComponentType: number;
+  /** 四段索引区间（[start, count)，count = 索引个数） */
+  segments: ReadonlyArray<{ start: number; count: number }>;
+  /** 已解码 baseColor 贴图（占**独立纹理单元**，见 beginFrame 说明） */
+  baseColor: PlatformDecodedImage;
+  /** W8 资产属性留档（诊断串） */
+  doubleSided: boolean;
+}
+
 export type Character3DEdgeMode = 'native-msaa' | 'fxaa';
 export type Character3DRenderStatus = 'ready' | 'context-lost' | 'failed' | 'disposed';
 
@@ -57,6 +72,8 @@ export interface Character3DRendererOptions {
    * 因此**不上传**——上传 2× 4096² 未使用贴图是纯浪费 GPU 显存与首帧带宽（架构决策，见交付说明）。 */
   baseColor: PlatformDecodedImage;
   platform: Character3DRenderPlatform;
+  /** 【T32】武器静态网格源（可选：不传 = 不画武器，既有 20 单位口径零变化） */
+  weapon?: Character3DWeaponSource | null;
   light: Character3DLightOptions;
   orthoZHalf: number;
   renderScale: number;
@@ -69,6 +86,8 @@ export interface Character3DRendererCounters {
   drawCalls: number;
   paletteUploads: number;
   frames: number;
+  /** 【T32】武器 draw 次数（无染色 1 段合批 = 1/单位；四段染色 = 4/单位） */
+  weaponDraws: number;
 }
 
 export interface Character3DRenderer {
@@ -85,6 +104,12 @@ export interface Character3DRenderer {
   readonly counters: Character3DRendererCounters;
   readonly diagnostics: readonly string[];
   beginFrame(): void;
+  /** 【T32】武器（静态网格）绘制：在**同一单位的 drawUnit 之后**调用（同一摆放矩阵仍有效）。
+   * `modelMatrix = placement × worldV[bone] × M`（pass 侧合成）；深度缓冲与身体互解 ⇒ W1 无穿透。
+   * @param tints 四段线性空间 RGB（null = 全白 ⇒ 1 次合批 draw；非 null ⇒ 4 段各 1 draw，W5） */
+  drawWeapon(modelMatrix: Float32Array, alpha: number, tints: readonly Float32Array[] | null): void;
+  /** 武器资源是否已装配（诊断/证据面） */
+  readonly weaponReady: boolean;
   /** 画一个单位。yawDeg = 该单位绕 Y 轴朝向（config 的 yawDegForFacing）；
    * 固定方向光据此旋进模型空间，保证「光在世界空间固定」（方案 §4.2 + §7 光照口径）。 */
   drawUnit(palette: Float32Array, modelMatrix: Float32Array, alpha: number, yawDeg: number): void;
@@ -170,6 +195,38 @@ const SKIN_FRAGMENT_SRC = [
   // 预乘 alpha 输出：Canvas 2D 的 drawImage 合成在 sRGB 空间做 source-over，
   // 故存「sRGB 编码 × alpha」。死亡淡出与 FXAA 边缘都吃这条口径。
   '  fragColor = vec4(linearToSrgb(lit) * uAlpha, uAlpha);',
+  '}',
+].join('\n');
+
+/** 【T32】武器 VS：静态网格（**无蒙皮**），uModel = placement × worldV[bone] × M。 */
+const WEAPON_VERTEX_SRC = [
+  '#version 300 es',
+  'precision highp float;',
+  'layout(location = 0) in vec3 aPos;',
+  'layout(location = 2) in vec2 aUv;',
+  'uniform mat4 uProjection;',
+  'uniform mat4 uModel;',
+  'out vec2 vUv;',
+  'void main() {',
+  '  vUv = aUv;',
+  '  gl_Position = uProjection * uModel * vec4(aPos, 1.0);',
+  '}',
+].join('\n');
+
+/** 【T32】武器 FS：**首版无光照**（复刻 Leo 已批的观感台 MeshBasicMaterial 观感＝「所见即所批」）：
+ * `linear(贴图) × uTint` → sRGB × 预乘 alpha。uTint 为线性空间多色（W5：材质色 × 贴图，保留明暗只换色调）。 */
+const WEAPON_FRAGMENT_SRC = [
+  '#version 300 es',
+  'precision mediump float;',
+  'in vec2 vUv;',
+  'uniform sampler2D uBaseColor;',
+  'uniform vec3 uTint;',
+  'uniform float uAlpha;',
+  'out vec4 fragColor;',
+  COLOR_SPACE_GLSL,
+  'void main() {',
+  '  vec3 base = srgbToLinear(texture(uBaseColor, vUv).rgb) * uTint;',
+  '  fragColor = vec4(linearToSrgb(base) * uAlpha, uAlpha);',
   '}',
 ].join('\n');
 
@@ -290,6 +347,24 @@ interface SkinProgram {
   texture: WebGLTexture;
 }
 
+interface WeaponProgram {
+  program: WebGLProgram;
+  u: {
+    projection: WebGLUniformLocation | null;
+    model: WebGLUniformLocation | null;
+    baseColor: WebGLUniformLocation | null;
+    tint: WebGLUniformLocation | null;
+    alpha: WebGLUniformLocation | null;
+  };
+  vao: WebGLVertexArrayObject;
+  vbo: WebGLBuffer;
+  ibo: WebGLBuffer;
+  indexType: number;
+  indexCount: number;
+  texture: WebGLTexture;
+  segments: ReadonlyArray<{ start: number; count: number }>;
+}
+
 interface FxaaProgram {
   program: WebGLProgram;
   vao: WebGLVertexArrayObject;
@@ -309,7 +384,7 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
   const { canvas, model, baseColor, platform, light, fxaa } = options;
   const jointCount = model.jointNodes.length;
   const diags: string[] = [];
-  const counters: Character3DRendererCounters = { drawCalls: 0, paletteUploads: 0, frames: 0 };
+  const counters: Character3DRendererCounters = { drawCalls: 0, paletteUploads: 0, frames: 0, weaponDraws: 0 };
   const vertexData = buildVertexInterleave(model);
   const projection = new Float32Array(16);
   /** 世界（观感台）方向光，归一化；每单位再旋进模型空间（见 drawUnit） */
@@ -328,6 +403,7 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
   let contextAttributes: WebGLContextAttributes | null = null;
   let maxVertexUniformVectors: number | null = null;
   let skin: SkinProgram | null = null;
+  let weapon: WeaponProgram | null = null;
   let fxaaProgram: FxaaProgram | null = null;
   let fbo: WebGLFramebuffer | null = null;
   let fboTexture: WebGLTexture | null = null;
@@ -444,6 +520,54 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
     return { program, u, vao, vbo, ibo, texture };
   }
 
+  /** 【T32】装配武器 program + VAO/VBO/IBO + 贴图（**装配期一次、多单位共享**，W7）。
+   * 顶点布局沿用 16 float（joints/weights 恒 0）⇒ 与角色同一套 attrib 指针代码。 */
+  function buildWeaponProgram(src: Character3DWeaponSource): WeaponProgram {
+    const g = gl as WebGL2RenderingContext;
+    const program = link(WEAPON_VERTEX_SRC, WEAPON_FRAGMENT_SRC, 'weapon');
+    const u = {
+      projection: g.getUniformLocation(program, 'uProjection'),
+      model: g.getUniformLocation(program, 'uModel'),
+      baseColor: g.getUniformLocation(program, 'uBaseColor'),
+      tint: g.getUniformLocation(program, 'uTint'),
+      alpha: g.getUniformLocation(program, 'uAlpha'),
+    };
+    const vao = g.createVertexArray();
+    if (!vao) fail('createVertexArray(weapon) 返回空');
+    g.bindVertexArray(vao);
+    const vbo = g.createBuffer();
+    if (!vbo) fail('createBuffer(weapon.vbo) 返回空');
+    g.bindBuffer(g.ARRAY_BUFFER, vbo);
+    g.bufferData(g.ARRAY_BUFFER, src.vertexData, g.STATIC_DRAW);
+    g.enableVertexAttribArray(LOC.pos);
+    g.vertexAttribPointer(LOC.pos, 3, g.FLOAT, false, STRIDE, 0);
+    g.enableVertexAttribArray(LOC.uv);
+    g.vertexAttribPointer(LOC.uv, 2, g.FLOAT, false, STRIDE, 24);
+    const ibo = g.createBuffer();
+    if (!ibo) fail('createBuffer(weapon.ibo) 返回空');
+    g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, ibo);
+    g.bufferData(g.ELEMENT_ARRAY_BUFFER, src.indices, g.STATIC_DRAW);
+    g.bindVertexArray(null);
+    const texture = g.createTexture();
+    if (!texture) fail('createTexture(weapon) 返回空');
+    g.bindTexture(g.TEXTURE_2D, texture);
+    // UV 朝向与角色同口径（glTF 的 UV 原点在左上；不翻转 ⇒ 数据首行 = t=0）
+    g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL, false);
+    g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, src.baseColor.image as TexImageSource);
+    g.generateMipmap(g.TEXTURE_2D);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR_MIPMAP_LINEAR);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR);
+    g.bindTexture(g.TEXTURE_2D, null);
+    const indexType = src.indexComponentType === 5123 ? 0x1403 /* UNSIGNED_SHORT */ : 0x1405 /* UNSIGNED_INT */;
+    const indexCount = src.segments.reduce((acc, seg) => acc + seg.count, 0);
+    note('weapon-segments=' + src.segments.length);
+    note('weapon-cull=off'); // W8：管线全局 disable(CULL_FACE) ⇒ doubleSided 生效（将来若开剔除须豁免本条）
+    note('weapon-doubleSided=' + (src.doubleSided ? 1 : 0));
+    return { program, u, vao, vbo, ibo, indexType, indexCount, texture, segments: src.segments };
+  }
+
   function buildFxaaProgram(): FxaaProgram {
     const g = gl as WebGL2RenderingContext;
     const program = link(FULLSCREEN_VERTEX_SRC, FXAA_FRAGMENT_SRC, 'fxaa');
@@ -522,6 +646,7 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       fail('MAX_VERTEX_UNIFORM_VECTORS=' + maxVertexUniformVectors + ' 装不下 ' + jointCount + ' 骨');
     }
     skin = buildSkinProgram();
+    if (options.weapon) weapon = buildWeaponProgram(options.weapon);
     if (edgeMode === 'fxaa') {
       fxaaProgram = buildFxaaProgram();
       buildTargets();
@@ -544,6 +669,14 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       g.deleteVertexArray(skin.vao);
       g.deleteTexture(skin.texture);
       skin = null;
+    }
+    if (weapon) {
+      g.deleteProgram(weapon.program);
+      g.deleteBuffer(weapon.vbo);
+      g.deleteBuffer(weapon.ibo);
+      g.deleteVertexArray(weapon.vao);
+      g.deleteTexture(weapon.texture);
+      weapon = null;
     }
     if (fxaaProgram) {
       g.deleteProgram(fxaaProgram.program);
@@ -581,6 +714,7 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
     get maxVertexUniformVectors() { return maxVertexUniformVectors; },
     counters,
     diagnostics: diags,
+    get weaponReady() { return weapon !== null; },
 
     beginFrame(): void {
       if (status !== 'ready') return;
@@ -605,10 +739,21 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       g.uniform1f(s.u.ambient, light.ambientIntensity);
       g.uniform1f(s.u.dirIntensity, light.directionalIntensity);
       g.uniform1f(s.u.diffuseNorm, light.diffuseNormalization);
-      g.activeTexture(g.TEXTURE0);
+      // 纹理单元分工（T32）：角色贴图 = TEXTURE1、武器贴图 = TEXTURE0 —— 两套纹理**各占一个单元**，
+      // 于是「身体→剑→下一个单位身体」的交替绘制**不需要**任何逐 draw 重绑（每帧各绑一次即可）。
+      g.activeTexture(g.TEXTURE1);
       g.bindTexture(g.TEXTURE_2D, s.texture);
-      g.uniform1i(s.u.baseColor, 0);
+      g.uniform1i(s.u.baseColor, 1);
       g.uniform1f(s.u.useTexture, 1);
+      const w = weapon;
+      if (w) {
+        g.activeTexture(g.TEXTURE0);
+        g.bindTexture(g.TEXTURE_2D, w.texture);
+        g.useProgram(w.program);
+        g.uniformMatrix4fv(w.u.projection, false, projection);
+        g.uniform1i(w.u.baseColor, 0);
+        g.useProgram(s.program); // 恢复角色程序（drawUnit 假定已绑定）
+      }
     },
 
     drawUnit(palette: Float32Array, modelMatrix: Float32Array, alpha: number, yawDeg: number): void {
@@ -630,6 +775,36 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       g.uniform1f(s.u.alpha, alpha);
       g.drawElements(g.TRIANGLES, model.mesh.indexCount, indexGlType, 0);
       counters.drawCalls++;
+    },
+
+    drawWeapon(modelMatrix: Float32Array, alpha: number, tints: readonly Float32Array[] | null): void {
+      if (status !== 'ready') return;
+      const w = weapon;
+      if (!w) return;
+      const g = gl as WebGL2RenderingContext;
+      g.useProgram(w.program);
+      g.bindVertexArray(w.vao);
+      g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, w.ibo);
+      g.uniformMatrix4fv(w.u.model, false, modelMatrix);
+      g.uniform1f(w.u.alpha, alpha);
+      if (!tints) {
+        // 全白合批：一次 draw 覆盖全部索引（段顺序连续 ⇒ 单区间）
+        g.uniform3f(w.u.tint, 1, 1, 1);
+        g.drawElements(g.TRIANGLES, w.indexCount, w.indexType, 0);
+        counters.weaponDraws++;
+      } else {
+        for (let i = 0; i < w.segments.length; i++) {
+          const seg = w.segments[i];
+          if (seg.count <= 0) continue;
+          const t = tints[i] ?? tints[tints.length - 1];
+          g.uniform3f(w.u.tint, t[0], t[1], t[2]);
+          g.drawElements(g.TRIANGLES, seg.count, w.indexType, seg.start * (w.indexType === 0x1403 ? 2 : 4));
+          counters.weaponDraws++;
+        }
+      }
+      counters.drawCalls++;
+      g.useProgram((skin as SkinProgram).program); // 归还角色程序（下一单位 drawUnit 直接可用）
+      g.bindVertexArray((skin as SkinProgram).vao);
     },
 
     endFrame(): void {
@@ -687,6 +862,7 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       if (status === 'disposed') return;
       status = 'context-lost';
       skin = null;
+      weapon = null;
       fxaaProgram = null;
       fbo = null;
       fboTexture = null;

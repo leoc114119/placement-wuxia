@@ -73,6 +73,8 @@ interface GltfTextureRef {
 interface GltfMaterial {
   name?: string;
   normalTexture?: GltfTextureRef;
+  /** 【T32】薄几何双面标记（W8：武器剑身为双面片，将来若开背面剔除须豁免）。 */
+  doubleSided?: boolean;
   pbrMetallicRoughness?: {
     baseColorTexture?: GltfTextureRef;
     metallicRoughnessTexture?: GltfTextureRef;
@@ -216,6 +218,9 @@ const CHUNK_BIN = 0x004e4942;
 const COMPONENTS: Record<number, number> = { 5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4 };
 const NCOMP: Record<string, number> = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4, MAT4: 16 };
 const REQUIRED_ATTRS = ['POSITION', 'NORMAL', 'TEXCOORD_0', 'JOINTS_0', 'WEIGHTS_0'] as const;
+
+/** 武器静态网格必需属性（**JOINTS_0/WEIGHTS_0 出现即拒**：武器不蒙皮）。 */
+const WEAPON_REQUIRED_ATTRS = ['POSITION', 'NORMAL', 'TEXCOORD_0'] as const;
 
 function fail(msg: string): never {
   throw new Error('[character3d/glb] ' + msg);
@@ -562,6 +567,137 @@ export function loadCharacter3DModel(buffer: ArrayBuffer | Uint8Array): Characte
   };
 }
 
+// ===== T32 · 静态网格（武器）=====
+
+/** 静态网格资产（**武器类**：无骨骼、无动画、单 mesh/单材质/单贴图）。
+ * 与 `Character3DModel` 分开建模：武器不参与蒙皮/动画/六向缩放的任何一条既有通路。 */
+export interface Character3DStaticMesh {
+  account: Character3DModelAccount;
+  positions: Float64Array;
+  normals: Float64Array;
+  uvs: Float64Array;
+  indices: Uint16Array | Uint32Array;
+  indexComponentType: number;
+  vertexCount: number;
+  indexCount: number;
+  bounds: { min: number[]; max: number[] };
+  /** 材质 baseColor 贴图（内嵌，唯一贴图形态） */
+  baseColor: Character3DImageSource;
+  /** 材质 doubleSided（W8：薄几何必须双面；管线全局不剔面 ⇒ 生效） */
+  doubleSided: boolean;
+}
+
+/**
+ * 解析「静态武器网格」GLB（fail-fast；**角色解析器 `loadCharacter3DModel` 一行未改**）。
+ * 硬门（方案 §2.1）：1 mesh / 1 primitive / TRIANGLES / POSITION+NORMAL+TEXCOORD_0
+ *   **JOINTS_0/WEIGHTS_0 必须缺省**（出现即 fail：防误把蒙皮网格当武器挂）/ **skins 0（或缺省）** /
+ *   **animations 0（或缺省）** / 单材质 / baseColorTexture 有。
+ */
+export function loadCharacter3DStaticMesh(buffer: ArrayBuffer | Uint8Array): Character3DStaticMesh {
+  const glb = parseGlb(buffer);
+  const json = glb.json;
+  const bin = glb.bin;
+  if (json.extensionsRequired && json.extensionsRequired.length) {
+    fail('extensionsRequired=' + json.extensionsRequired.join(',') + '（DRACO 等一律不支持）');
+  }
+  const meshes = json.meshes;
+  if (!Array.isArray(meshes) || meshes.length !== 1) fail('武器 mesh 数=' + (meshes ? meshes.length : 0) + '（只支持单 mesh）');
+  const mesh = meshes[0];
+  if (!mesh.primitives || mesh.primitives.length !== 1) {
+    fail('武器 primitive 数=' + (mesh.primitives ? mesh.primitives.length : 0) + '（只支持单 primitive）');
+  }
+  const prim = mesh.primitives[0];
+  if (prim.mode !== undefined && prim.mode !== 4) fail('武器 primitive.mode=' + prim.mode + '（只支持 TRIANGLES=4）');
+  const attrs = Object.keys(prim.attributes || {});
+  for (const required of WEAPON_REQUIRED_ATTRS) {
+    if (attrs.indexOf(required) < 0) fail('武器缺必需属性 ' + required);
+  }
+  for (const attr of attrs) {
+    if (WEAPON_REQUIRED_ATTRS.indexOf(attr as (typeof WEAPON_REQUIRED_ATTRS)[number]) < 0) {
+      fail('武器出现未支持属性 ' + attr + '（JOINTS_0/WEIGHTS_0 尤其禁止：武器不得蒙皮）');
+    }
+  }
+  if (prim.indices === undefined) fail('武器 primitive 无 indices');
+  const skins = json.skins;
+  if (Array.isArray(skins) && skins.length !== 0) fail('武器 skin 数=' + skins.length + '（武器不得带骨架）');
+  const anims = json.animations;
+  if (Array.isArray(anims) && anims.length !== 0) fail('武器 animations 数=' + anims.length + '（武器不得带动画）');
+  const materials = json.materials;
+  if (!Array.isArray(materials) || materials.length !== 1) {
+    fail('武器 material 数=' + (materials ? materials.length : 0) + '（只支持单材质）');
+  }
+
+  const positions = readAccessor(json, bin, prim.attributes.POSITION);
+  const normals = readAccessor(json, bin, prim.attributes.NORMAL);
+  const uvs = readAccessor(json, bin, prim.attributes.TEXCOORD_0);
+  const indices = readIndices(json, bin, prim.indices);
+  const accessors = json.accessors as GltfAccessor[];
+  const vertexCount = accessors[prim.attributes.POSITION].count;
+  for (const key of WEAPON_REQUIRED_ATTRS) {
+    if (accessors[prim.attributes[key]].count !== vertexCount) {
+      fail('武器属性 ' + key + ' 顶点数与 POSITION 不一致（禁按最小数截断）');
+    }
+  }
+  if (indices.length % 3 !== 0) fail('武器索引数 ' + indices.length + ' 不是 3 的倍数');
+
+  // 内嵌贴图（与角色同形态：BIN 内 JPEG/PNG；外部 URI 不支持）
+  const images: Character3DImageSource[] = [];
+  const textures = json.textures || [];
+  const imageDefs = json.images || [];
+  const bufferViews = json.bufferViews || [];
+  for (let i = 0; i < textures.length; i++) {
+    const src = textures[i].source;
+    if (src === undefined) fail('武器 texture[' + i + '] 无 source（不支持扩展纹理）');
+    const img = imageDefs[src];
+    if (!img) fail('武器 image[' + src + '] 不存在');
+    if (img.bufferView === undefined) fail('武器 image[' + src + '] 非内嵌（不支持外部 URI）');
+    const bv = bufferViews[img.bufferView];
+    if (!bin) fail('缺 BIN chunk 但武器 image[' + src + '] 指向 buffer');
+    images.push({
+      index: i,
+      name: img.name || 'image' + src,
+      mimeType: img.mimeType || '',
+      bytes: bin.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + bv.byteLength),
+    });
+  }
+  const mat = materials[0];
+  const baseTexRef = mat.pbrMetallicRoughness ? mat.pbrMetallicRoughness.baseColorTexture : undefined;
+  if (!baseTexRef) fail('武器材质缺 baseColorTexture（无底色贴图的武器不进 S1）');
+  const baseColor = images[baseTexRef.index];
+  if (!baseColor) fail('武器 baseColorTexture 指向的 image 缺失');
+
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  for (let i = 0; i < vertexCount; i++) {
+    const x = positions[i * 3], y = positions[i * 3 + 1], z = positions[i * 3 + 2];
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+    if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+  }
+  return {
+    account: {
+      triangleCount: indices.length / 3,
+      vertexCount,
+      jointCount: 0,
+      primitiveCount: 1,
+      meshCount: 1,
+      materialCount: 1,
+      textureCount: images.length,
+      bufferBytes: (json.buffers && json.buffers[0] && json.buffers[0].byteLength) || (bin ? bin.byteLength : 0),
+      nodeCount: Array.isArray(json.nodes) ? json.nodes.length : 0,
+      generator: (json.asset && json.asset.generator) || '',
+    },
+    positions, normals, uvs,
+    indices,
+    indexComponentType: accessors[prim.indices].componentType,
+    vertexCount,
+    indexCount: indices.length,
+    bounds: { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] },
+    baseColor,
+    doubleSided: mat.doubleSided === true,
+  };
+}
+
 // ===== 嵌入动画（GLB animations）=====
 
 /** 解析 GLB 内嵌动画为统一轨道结构（**按 sampler 自己的 interpolation**，
@@ -618,6 +754,34 @@ export function buildEmbeddedClips(json: GltfJson, bin: Uint8Array | null, nodes
 }
 
 // ===== 账目校验（loader 的结构门）=====
+
+/** 【T32】武器资产门（与 config 的 HERO_3D_WEAPON_ACCOUNT 同形；机械门常量）。 */
+export interface ExpectedWeaponAccount {
+  readonly triangleCount: number;
+  readonly vertexCount: number;
+  readonly meshCount: number;
+  readonly materialCount: number;
+  readonly textureCount: number;
+  readonly skinCount: number;
+  readonly animationCount: number;
+  readonly doubleSided: boolean;
+}
+
+/** 武器资产门逐项比对（与 `createModelStructureValidator` 同风格：返回问题清单，非空即拒绝）。 */
+export function validateWeaponAccount(mesh: Character3DStaticMesh, expected: ExpectedWeaponAccount): string[] {
+  const errors: string[] = [];
+  const acc = mesh.account;
+  if (acc.triangleCount !== expected.triangleCount) errors.push(`triangleCount=${acc.triangleCount} 应为 ${expected.triangleCount}`);
+  if (acc.vertexCount !== expected.vertexCount) errors.push(`vertexCount=${acc.vertexCount} 应为 ${expected.vertexCount}`);
+  if (acc.jointCount !== expected.skinCount) errors.push(`jointCount=${acc.jointCount} 应为 ${expected.skinCount}（武器不得带骨架）`);
+  if (acc.meshCount !== expected.meshCount) errors.push(`meshCount=${acc.meshCount} 应为 ${expected.meshCount}`);
+  if (acc.materialCount !== expected.materialCount) errors.push(`materialCount=${acc.materialCount} 应为 ${expected.materialCount}`);
+  if (acc.textureCount !== expected.textureCount) errors.push(`textureCount=${acc.textureCount} 应为 ${expected.textureCount}`);
+  if (mesh.doubleSided !== expected.doubleSided) {
+    errors.push(`doubleSided=${String(mesh.doubleSided)} 应为 ${String(expected.doubleSided)}（W8 资产前提）`);
+  }
+  return errors;
+}
 
 export interface ExpectedModelAccount {
   readonly triangleCount: number;

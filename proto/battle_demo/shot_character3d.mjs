@@ -739,11 +739,14 @@ for (const c of checks) console.log(c);
   };
 
   // ① 名义比例（config 的 CHARACTER_3D_HERO_SCALE）：基线随卡重录
-  const gateRows = await runFacingGate('', 1, '');
+  // ★【T32】朝向门用 `?weapon=off` 跑：判据分母 = 前景像素 bbox 宽，挂剑会把 bbox 撑大（剑长可超身高）
+  //   ⇒ 破坏归一化判据的「对缩放不变」前提（实测 leftdown n 由 −0.083 掉到 −0.046 而朝向本身没变）。
+  //   朝向是**角色属性**，武器不该进这道门；武器自身的门见 tools/t32_weapon_evidence.mjs。
+  const gateRows = await runFacingGate('?weapon=off', 1, '');
   fs.writeFileSync(path.join(outDir, 'c3d_facing_gate.json'), JSON.stringify(gateRows, null, 1));
   // ② 缩放不变性自证：比例再乘 0.5（?heroScale=0.5，**证据专用注入**）仍须 6/6 过
   //    （dsf=2：物理像素更细，量化噪声相对更小，判据抖动不掩盖结论）
-  const halfRows = await runFacingGate('?heroScale=0.5', 2, 'half');
+  const halfRows = await runFacingGate('?weapon=off&heroScale=0.5', 2, 'half');
   fs.writeFileSync(
     path.join(outDir, 'c3d_facing_gate_scale_half.json'),
     JSON.stringify(

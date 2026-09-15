@@ -16,7 +16,16 @@
 // 状态机的钟是 view 表现态（dt 由调用方喂），**与 session/结算零耦合**。
 
 import type { Character3DPassResult, Character3DProfile, CharacterRenderCommand } from '../../types';
-import { yawDegForFacing } from '../../config/character-3d';
+import { HERO_3D_WEAPON_SHEATHED_ACTIONS, yawDegForFacing } from '../../config/character-3d';
+import type { Character3DActionKey } from '../../config/character-3d';
+import {
+  calibrateWeaponAttachment,
+  fistCenterLocalOf,
+  tintSegmentsLinear,
+  type WeaponAttachmentCalibration,
+  type WeaponSegments,
+} from './weapon';
+import type { Character3DStaticMesh } from './glb';
 import {
   CharacterAnimController,
   createPose,
@@ -26,7 +35,7 @@ import {
   type Character3DPose,
 } from './animation';
 import type { Character3DModel } from './glb';
-import { mat4, placementYawSquash, type Mat4 } from './math';
+import { mat4, mul, placementYawSquash, type Mat4 } from './math';
 import type { Character3DRenderer } from './renderer';
 import type { PlatformImageSource } from './platform';
 
@@ -37,6 +46,14 @@ export interface Character3DProfileRuntime {
   anim: Character3DAnimConfig;
 }
 
+/** 【T32】武器运行时：解析后的静态网格 + 分段 + 已解码贴图（装配期一次；GPU 资源由 renderer 共享，W7）。 */
+export interface Character3DWeaponRuntime {
+  assetId: string;
+  mesh: Character3DStaticMesh;
+  segments: WeaponSegments;
+  vertexData: Float32Array;
+}
+
 export interface Character3DPassOptions {
   renderer: Character3DRenderer;
   /** 视口尺寸（物理像素，= 离屏画布背衬尺寸） */
@@ -45,6 +62,8 @@ export interface Character3DPassOptions {
   runtimes: Readonly<Record<string, Character3DProfileRuntime>>;
   /** 资源门状态：未就绪时 pass 返回 loading/failed，不画半成品 */
   loadState?: 'ready' | 'loading' | 'failed';
+  /** 【T32】武器运行时（可选）。不传 或 profile 未启用挂点 ⇒ 不画武器（既有行为零变化）。 */
+  weapon?: Character3DWeaponRuntime | null;
 }
 
 /** Canvas 2D 最小注入面（wx canvas 与浏览器 canvas 共用；避免本文件依赖具体宿主）。 */
@@ -60,12 +79,41 @@ export interface Character3DPass {
   readonly canvas: PlatformImageSource;
   /** 当前活跃的动画控制器（诊断/测试用，只读） */
   readonly controllers: ReadonlyMap<string, CharacterAnimController>;
+  /** 【T32】运行时设置四段染色（**装备系统 WeaponSkin 契约的能力面**：一名/一武器一条配置；
+   * 传 null = 全白合批。装配期从 profile 读一次，此接口供运行时换色与 W5 证据同帧对照）。 */
+  setWeaponTints(tints: Record<string, string> | null): void;
+  /** 【T32】武器本帧状态（诊断/证据面）：是否绘制 + 绘制单位 + 装配诊断 + 屏上关键点
+   * （**禁**用于业务判定；关键点 = 武器矩阵对 pommel/grip/tip 三点的投影，物理像素，供 W4 屏长仪器）。 */
+  readonly weaponState: {
+    visible: boolean;
+    actorId: string | null;
+    enabled: boolean;
+    diagnostics: readonly string[];
+    screen: { pommel: [number, number]; grip: [number, number]; tip: [number, number] } | null;
+  };
 }
 
 interface ActorView {
   controller: CharacterAnimController;
   pose: Character3DPose;
   scratchPose: Character3DPose;
+}
+
+/** 【T32】武器装配信息（每 profile runtime 一份；装配期解析，热路径只读）。 */
+interface WeaponRig {
+  enabled: boolean;
+  /** 挂点骨节点下标（-1 = 未解析/缺失） */
+  handNode: number;
+  /** 挂点标定（M/锚点/k/拳心；null = 未启用） */
+  calibration: WeaponAttachmentCalibration | null;
+  anchorLocal: readonly [number, number, number] | null;
+  /** 四段线性染色（null = 全白合批，W5） */
+  tints: readonly Float32Array[] | null;
+  /** W6 甲：命中即**收剑**的动作键（移动演出/轻功） */
+  sheathedActions: ReadonlySet<Character3DActionKey>;
+  segments: WeaponSegments | null;
+  attachmentName?: string;
+  reason?: string;
 }
 
 /** Root 节点装配信息（方案 §4.1.1）：**装配期**解析一次并缓存，热路径只读。 */
@@ -81,7 +129,16 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
   const actors = new Map<string, ActorView>();
   const diags: string[] = [];
   /** profile 运行时 → Root 装配信息（§4.1.1「Root 节点索引装配期解析」；禁每帧扫树） */
+  /** 【T32 证据面】本帧武器是否绘制（last-drawn 镜像；供宿主/证据脚本读） */
+  let lastWeaponVisible = false;
+  let lastWeaponActor: string | null = null;
+  /** 【T32 证据面】本帧武器矩阵对三关键点的投影（物理像素；W4 屏长仪器用） */
+  let lastWeaponScreen: { pommel: [number, number]; grip: [number, number]; tip: [number, number] } | null = null;
   const rootInfos = new Map<Character3DProfileRuntime, ProfileRootInfo>();
+  /** profile 运行时 → 武器装配信息（T32：挂点骨索引 + 拳心 + M + 可见性表；**装配期一次**） */
+  const weaponRigs = new Map<Character3DProfileRuntime, WeaponRig>();
+  /** 每单位一次的 uModel scratch（placement × handWorld × M；与 matrix 同理复用安全） */
+  const weaponMatrix = mat4();
   /** 摆放矩阵 scratch（每帧每单位复用同一个数组，与 probe 的零分配口径一致）。
    * ⚠ 渲染端 uniformMatrix4fv 在调用当时就把值送进 GL，故复用安全；但**调用方不得持有该引用**
    *   （上一单位的值会被下一个单位覆盖）。需要留档请自行复制。 */
@@ -138,6 +195,75 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
     };
   }
 
+  /**
+   * 武器装配（T32 · 方案 §3/§4）：**装配期**解析挂点骨 + 拳心 + 合成 M（禁逐帧）。
+   * 失败一律「无剑 + 诊断」（方案 §6 裁定：武器失败不阻塞战斗；角色失败才阻塞）。
+   */
+  function weaponRigOf(runtime: Character3DProfileRuntime): WeaponRig {
+    const hit = weaponRigs.get(runtime);
+    if (hit) return hit;
+    const rig: WeaponRig = {
+      enabled: false,
+      handNode: -1,
+      calibration: null,
+      anchorLocal: null,
+      tints: null,
+      sheathedActions: new Set(HERO_3D_WEAPON_SHEATHED_ACTIONS),
+      segments: null,
+    };
+    const weapon = options.weapon ?? null;
+    const attachments = runtime.profile.attachments ?? {};
+    const entry = Object.entries(attachments).find(([, att]) => att.enabled === true && att.assetId === weapon?.assetId);
+    if (!weapon) {
+      rig.reason = 'weapon-not-injected';
+    } else if (!entry) {
+      rig.reason = 'attachment-disabled-or-mismatch';
+    } else {
+      const [name, att] = entry;
+      if (att.assetId !== weapon.assetId) {
+        rig.reason = 'asset-mismatch';
+      } else {
+        const nodes = runtime.model.nodes.trs;
+        let handNode = -1;
+        for (let i = 0; i < nodes.length; i++) {
+          if (nodes[i].name === att.bone) {
+            handNode = i;
+            break;
+          }
+        }
+        const jointIndexInSkin = handNode >= 0 ? runtime.model.jointNodes.indexOf(handNode) : -1;
+        if (handNode < 0 || jointIndexInSkin < 0) {
+          // 方案 §3.4：换模型/换骨名 ⇒ 装配期 fail-fast，**禁静默空挂**（此处按 §6 降级为诊断 + 不画）
+          rig.reason = 'hand-bone-missing:' + att.bone;
+          note('weapon-' + rig.reason);
+        } else {
+          // 绑定姿势（rest）下取一次手骨世界矩阵 + 拳心（rest 时几何 = 绑定姿势）
+          const restPose = createPose(runtime.model);
+          resetPose(restPose, runtime.model);
+          resolvePose(runtime.model, restPose);
+          const fist = fistCenterLocalOf(runtime.model.mesh, restPose.worldV[handNode], jointIndexInSkin);
+          const calibration = calibrateWeaponAttachment(
+            att,
+            runtime.profile.modelHeight,
+            fist.center,
+            fist.vertexCount,
+          );
+          rig.enabled = true;
+          rig.handNode = handNode;
+          rig.calibration = calibration;
+          rig.anchorLocal = calibration.anchorLocal;
+          rig.tints = tintSegmentsLinear(att.tints);
+          rig.attachmentName = name;
+          rig.segments = weapon.segments;
+          note('weapon-ready:' + name + ':' + weapon.assetId);
+          note('weapon-k=' + calibration.scale.toFixed(6) + ':ch=' + calibration.charHeightModel.toFixed(6));
+        }
+      }
+    }
+    weaponRigs.set(runtime, rig);
+    return rig;
+  }
+
   function statusOf(): Character3DPassResult['status'] {
     if (options.loadState === 'failed') return 'failed';
     if (renderer.status === 'context-lost') return 'context-lost';
@@ -161,6 +287,9 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
 
   function render(commands: readonly CharacterRenderCommand[], dtSec: number): Character3DPassResult {
     const placed = new Map<string, { cx: number; top: number; w: number; h: number }>();
+    lastWeaponVisible = false;
+    lastWeaponActor = null;
+    lastWeaponScreen = null;
     const status = statusOf();
     if (status !== 'ready') {
       return {
@@ -193,6 +322,26 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
       const box = buildPlacement(matrix, cmd, runtime, yawDeg, view.pose);
       // yaw 同源传两份消费者：摆放矩阵与光向变换（两处不得各算一次，否则会漂）
       renderer.drawUnit(palette, matrix, clampAlpha(cmd.alpha), yawDeg);
+      // ---- 【T32】武器（静态网格）第二条 draw：uModel = placement × worldV[挂点骨] × M ----
+      // 可见性读**控制器解析后的动作键**（含轻功闩锁 / hit 继承；读快照必错——轻功期间快照是 walk）
+      // 规则表在 config（W6 甲：移动演出期间收剑）。
+      const rig = weaponRigOf(runtime);
+      if (rig.enabled && rig.calibration && !rig.sheathedActions.has(view.controller.actionKey)) {
+        mul(weaponMatrix, matrix, view.pose.worldV[rig.handNode]);
+        mul(weaponMatrix, weaponMatrix, rig.calibration.localMatrix);
+        renderer.drawWeapon(weaponMatrix, clampAlpha(cmd.alpha), rig.tints);
+        lastWeaponVisible = true;
+        lastWeaponActor = cmd.actorId;
+        // 证据面（W4 屏长仪器）：武器矩阵对「柄头 / 握点 / 剑尖」三点的投影（物理像素）
+        const entry = runtime.profile.attachments?.[rig.attachmentName ?? 'right-hand-blade'];
+        const gripPoint = entry?.gripLocal ?? [0, 0, 0];
+        const tipY = options.weapon?.mesh.bounds?.max?.[1] ?? 1;
+        lastWeaponScreen = {
+          pommel: point2(weaponMatrix, 0, 0, 0),
+          grip: point2(weaponMatrix, gripPoint[0], gripPoint[1], gripPoint[2]),
+          tip: point2(weaponMatrix, 0, tipY > 0 ? tipY : 1, 0),
+        };
+      }
       placed.set(cmd.actorId, box);
       for (const d of view.controller.diagnostics) note(cmd.actorId + ':' + d);
     }
@@ -256,6 +405,25 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
       for (const [id, view] of actors) map.set(id, view.controller);
       return map;
     },
+    setWeaponTints(tints: Record<string, string> | null): void {
+      // 缺省段补 #ffffff（装备系统只写「要改的那几段」；null/空 = 全白合批）
+      const full = tints
+        ? { blade: '#ffffff', guard: '#ffffff', grip: '#ffffff', pommel: '#ffffff', ...tints }
+        : null;
+      const parsed = tintSegmentsLinear(full as never);
+      for (const rig of weaponRigs.values()) rig.tints = parsed;
+    },
+    get weaponState() {
+      const rigs = Array.from(weaponRigs.values());
+      const enabled = rigs.some((r) => r.enabled);
+      return {
+        visible: lastWeaponVisible,
+        actorId: lastWeaponActor,
+        enabled,
+        diagnostics: rigs.map((r) => (r.enabled ? 'enabled:' + String(r.attachmentName) : 'disabled:' + String(r.reason))),
+        screen: lastWeaponScreen,
+      };
+    },
   };
 }
 
@@ -264,6 +432,14 @@ function combineDiagnostics(a: readonly string[], b: readonly string[]): readonl
   for (const x of a) if (out.indexOf(x) < 0) out.push(x);
   for (const x of b) if (out.indexOf(x) < 0) out.push(x);
   return out;
+}
+
+/** 【T32 证据面】武器矩阵投影一个模型空间点 → 屏幕物理像素 [x,y]（列主序）。 */
+function point2(m: Mat4, x: number, y: number, z: number): [number, number] {
+  return [
+    m[0] * x + m[4] * y + m[8] * z + m[12],
+    m[1] * x + m[5] * y + m[9] * z + m[13],
+  ];
 }
 
 function clampAlpha(v: number): number {

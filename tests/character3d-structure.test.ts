@@ -19,6 +19,7 @@ const PRODUCTION_FILES = [
   'ui/character3d/platform.ts',
   'ui/character3d/platform-browser.ts',
   'ui/character3d/platform-wx.ts',
+  'ui/character3d/weapon.ts', // 【T32】武器挂载（方案 v1.0 §8 文件清单）
   'net/character-asset-loader.ts',
   'config/character-3d.ts',
 ];
@@ -72,6 +73,7 @@ describe('文件面', () => {
     expect(files).toEqual([
       'animation.ts', 'glb.ts', 'math.ts', 'pass.ts',
       'platform-browser.ts', 'platform-wx.ts', 'platform.ts', 'renderer.ts',
+      'weapon.ts', // 【T32】3D 武器挂载（方案 v1.0 §8 明确列出的新文件；非未申报模块）
     ]);
   });
 });

@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import type { Character3DClipKey } from '../types';
 import { HERO_3D_PROFILE } from '../config/character-3d';
-import { loadCharacter3DModel, type Character3DModel } from '../ui/character3d/glb';
+import { loadCharacter3DModel, loadCharacter3DStaticMesh, type Character3DModel, type Character3DStaticMesh } from '../ui/character3d/glb';
 import {
   parseCharacter3DClipJson,
   resolveClipSource,
@@ -26,6 +26,17 @@ export const HERO_CLIP_PATHS: Record<'idle' | 'atk' | 'cast' | 'jump', string> =
   cast: 'assets/characters/hero/model/anim/cast_v4.json',
   jump: 'assets/characters/hero/model/anim/jump_v6_1p5s.json',
 };
+
+/** 【T32】剑资产路径（与 config 的 HERO_3D_WEAPON_REF.urlPath 同源真值）。 */
+export const WEAPON_MODEL_PATH = 'assets/characters/hero/model/weapon/sword_3d_medieval.glb';
+
+let cachedWeapon: Character3DStaticMesh | null = null;
+
+/** 现役剑（静态网格）：真实资产解析（机械门已过，见 config 的 HERO_3D_WEAPON_ACCOUNT）。 */
+export function heroWeapon(): Character3DStaticMesh {
+  if (!cachedWeapon) cachedWeapon = loadCharacter3DStaticMesh(readBytesSync(WEAPON_MODEL_PATH));
+  return cachedWeapon;
+}
 
 let cachedModel: Character3DModel | null = null;
 

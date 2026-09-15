@@ -20,6 +20,7 @@ import {
   HERO_3D_ATTACHMENTS,
   CHARACTER_3D_BASIC_WINDOW_SEC,
   CHARACTER_3D_HERO_SCALE,
+  HERO_3D_WEAPON_REF,
   CHARACTER_3D_JUMP_CHANNEL,
   CHARACTER_3D_JUMP_MOVE_SEC,
   CHARACTER_3D_JUMP_PHASE_ANCHORS,
@@ -151,16 +152,27 @@ describe('现役 profile 自检', () => {
     expect(FACINGS.map(yawDegForFacing)).toEqual([90, 135, -135, -90, -45, 45]);
   });
 
-  it('挂点：bone 是模型真骨、localMatrix 16 个数、enabled=false（素材过门前不得启用）', () => {
+  it('挂点（T32 起启用右手剑）：bone 是模型真骨、结构化标定参数齐、assetId 指向武器资产', () => {
     const model = heroModel();
     const entries = Object.entries(HERO_3D_ATTACHMENTS);
     expect(entries.length).toBeGreaterThan(0);
     for (const [name, att] of entries) {
-      expect(att.enabled, `挂点 ${name} 不得启用`).toBe(false);
       expect(att.localMatrix.length, `挂点 ${name} localMatrix`).toBe(16);
-      expect(att.assetId, `挂点 ${name} 素材未生产不得填 assetId`).toBe('');
-      expect(Object.keys(HERO_3D_PROFILE.clips)).not.toContain(att.assetId);
       expect(model.jointNames, `挂点 ${name} 的骨必须存在`).toContain(att.bone);
+      // 【T32】双门已过（Leo 审美 seq=443 + 规格/技术门）：启用 + 指向武器资产 + 结构化参数齐
+      expect(att.enabled, `挂点 ${name} 应已启用（双门已过）`).toBe(true);
+      expect(att.assetId).toBe(HERO_3D_WEAPON_REF.id);
+      expect(att.gripLocal, `挂点 ${name} 缺 gripLocal（W9）`).toEqual([0, 0.1082, 0]);
+      expect(att.lenRatio).toBeCloseTo(0.75, 12);
+      expect(att.poseDeg).toEqual({ rx: -25, ry: 80, rz: -90 });
+      expect(att.offsetLocal).toEqual([-0.03, 0, 0]);
+      expect(att.doubleSided).toBe(true);
+      // 武器资产不占角色资产槽位（W7：URL/SHA 独立）
+      expect(Object.keys(HERO_3D_PROFILE.clips)).not.toContain(att.assetId);
+      expect(HERO_3D_WEAPON_REF.urlPath).not.toBe(HERO_3D_PROFILE.model.urlPath);
+      expect(HERO_3D_WEAPON_REF.sha256).not.toBe(HERO_3D_PROFILE.model.sha256);
+      // 染色缺省全白 = 原贴图观感（Leo 已批对照图）
+      expect(att.tints).toBeUndefined();
     }
   });
 
@@ -399,14 +411,33 @@ describe('清单校验（错误输入非零失败）', () => {
     expect(validateCharacter3DProfile(b).some((e) => e.includes('leftup'))).toBe(true);
   });
 
-  it('挂点被启用 / localMatrix 长度错即报错（素材双门）', () => {
+  it('挂点门（T32 改法）：启用缺 assetId / lenRatio 越界 / 缺 doubleSided / localMatrix 长度错 ⇒ 报错', () => {
+    const name = Object.keys(cloneProfile().attachments)[0];
+    // 启用但 assetId 空（素材未过门）
     const a = cloneProfile();
-    const name = Object.keys(a.attachments)[0];
-    (a.attachments as unknown as Record<string, { enabled: boolean }>)[name].enabled = true;
+    const attA = (a.attachments as unknown as Record<string, { assetId: string }>)[name];
+    attA.assetId = '';
     expect(validateCharacter3DProfile(a).some((e) => e.includes(name))).toBe(true);
+    // 未知武器
+    const a2 = cloneProfile();
+    (a2.attachments as unknown as Record<string, { assetId: string }>)[name].assetId = 'sword-unknown';
+    expect(validateCharacter3DProfile(a2).some((e) => e.includes('未知武器'))).toBe(true);
+    // lenRatio 越界（已验域 0.5~1.2）
     const b = cloneProfile();
-    (b.attachments as unknown as Record<string, { localMatrix: number[] }>)[name].localMatrix = [1, 0, 0];
-    expect(validateCharacter3DProfile(b).some((e) => e.includes('localMatrix'))).toBe(true);
+    (b.attachments as unknown as Record<string, { lenRatio: number }>)[name].lenRatio = 1.5;
+    expect(validateCharacter3DProfile(b).some((e) => e.includes('lenRatio'))).toBe(true);
+    // 缺 doubleSided（W8）
+    const c = cloneProfile();
+    delete (c.attachments as unknown as Record<string, { doubleSided?: boolean }>)[name].doubleSided;
+    expect(validateCharacter3DProfile(c).some((e) => e.includes('doubleSided'))).toBe(true);
+    // 缺 gripLocal（W9）
+    const d = cloneProfile();
+    delete (d.attachments as unknown as Record<string, { gripLocal?: unknown }>)[name].gripLocal;
+    expect(validateCharacter3DProfile(d).some((e) => e.includes('gripLocal'))).toBe(true);
+    // localMatrix 长度错
+    const e2 = cloneProfile();
+    (e2.attachments as unknown as Record<string, { localMatrix: number[] }>)[name].localMatrix = [1, 0, 0];
+    expect(validateCharacter3DProfile(e2).some((e2msg) => e2msg.includes('localMatrix'))).toBe(true);
   });
 
   it('mode 非法即报错', () => {

@@ -171,15 +171,70 @@ export function normalizeSignedDeg(deg: number): number {
   return v;
 }
 
-/** 挂点（方案 §11）：从 S1 预留，**素材不过双门不得启用**。
- * assetId 暂空 = 3D 剑素材尚未生产（README「已知边界：模型无武器」）；
- * localMatrix = 单位阵（未定标），过门前不得填值、不得置 enabled=true。 */
+/** ===== T32 · 3D 武器（剑）资产与挂点参数 =====
+ *
+ * 真源：《3D武器挂载接入技术方案》v1.0 @ `99cde3fe`（§2 渲染 / §3 标定 / §4 W6 甲 / §5 换色）＋
+ *   A4-T31（挂点合成数学＋参考矩阵＋关键点自检表）＋主规格《武器挂载规格与接入需求》。
+ *
+ * 铁律：
+ *   ① **结构化参数为真源、`localMatrix` 为装配期派生物**（composer 合成；禁把 16 浮点写死进本文件）；
+ *   ② `gripLocal` 等**逐资产**值只允许出现在本文件的武器资产条目里（渲染/加载文件零硬编码，用例做源码扫描）；
+ *   ③ `ch`（角色身高）一律取 `profile.modelHeight`（**模型单位**）；**禁用** `screenHeightPxAtReference`
+ *     （那是像素、且已乘 CHARACTER_3D_HERO_SCALE ⇒ 会把 k 放大两个数量级）；
+ *   ④ 合成顺序红线：`M = T(f)·R(Q)·S(k)·T(0,−gripY,0)`——`T(0,−gripY,0)` 必须在 `S(k)` **右侧**
+ *     （平移量是武器模型单位、不乘 k），写反即「插多/插少」一个 gripY（且 W4 锚点会随长度漂）。 */
+
+/** 剑资产（Leo 09-14 交付；贴图内嵌；与「剑的比例规格」不同源——规格值属早期 2D 剑 B，见 A4 §一⑥）。
+ * URL 内容版本化：版本目录 = 该资产 SHA-256 前 12 位（7a5fe0e54ad6）。 */
+export const HERO_3D_WEAPON_REF: Character3DAssetRef = assetRef(
+  'sword-3d-medieval',
+  '7a5fe0e54ad660eeae17323dddc2bd99a73bc7639057b8545ad297a798ecf1d4',
+  218456,
+  'sword_3d_medieval.glb',
+  'model/gltf-binary',
+);
+
+/** 武器资产**机械门**（研发 PM 09-15 实测，全 PASS；结构门常量与 loader/用例同源）。
+ * `doubleSided` 是 **W8 的资产前提**（薄几何必须双面；管线当前全局不开背面剔除）。 */
+export const HERO_3D_WEAPON_ACCOUNT = {
+  triangleCount: 1758,
+  vertexCount: 1457,
+  meshCount: 1,
+  materialCount: 1,
+  textureCount: 1,
+  skinCount: 0,
+  animationCount: 0,
+  doubleSided: true,
+  textureSize: 1024,
+} as const;
+
+/** W5 换色：几何 Y 分段界（离**柄头端**的比例）——剑首 | 柄 | 护手 | 剑身。
+ * 出处：观感台 `splitSwordMesh`（A4 §3.6）。段间共享同一 VBO，仅索引重排（顶点零复制）。 */
+export const HERO_3D_WEAPON_SEGMENT_BOUNDARIES: readonly number[] = [0.06, 0.2, 0.27];
+
+/** W6（**甲** · Leo 09-15 现场裁定）**收剑规则**：**移动演出期间（离开 A 起到抵达 B）不显示剑**，
+ * 演出结束（回待机）立即显示；**轻功同样收剑**。
+ * 实现语义 = 控制器**解析后的动作键**命中本表即收剑（`walk` = 移动演出槽位，播的是 run 资产；
+ * `jump` = 轻功闩锁）——**读快照必错**：轻功期间快照 animState 是 `walk`、且演出长于快照窗。
+ * ⚠ 与主规格 §5-W6 字句「walk 可见」的差异是**有意**的（该字句系 walk→run 并轨前的观感台语境；
+ * 甲 = 移动即收，正是 Leo 在观感台批的「run 收剑」观感）。改判乙（走路持剑）只改本表一行。 */
+export const HERO_3D_WEAPON_SHEATHED_ACTIONS: readonly Character3DActionKey[] = ['walk', 'jump'];
+
+/** 挂点（T32 起启用右手剑）。**localMatrix 是装配期派生物**（composer 合成，见 ui/character3d/weapon.ts）：
+ * 此处置单位阵为占位，渲染路径不读它做几何（只读结构化参数）；用例锁「本文件不含写死的 16 浮点」。 */
 export const HERO_3D_ATTACHMENTS: Character3DProfile['attachments'] = {
   'right-hand-blade': {
-    bone: 'R_Hand',
-    assetId: '',
-    enabled: false,
+    bone: 'R_Hand', // 41 骨 Mixamo 命名，逐版本一致
+    assetId: HERO_3D_WEAPON_REF.id,
+    enabled: true, // 双门：①Leo 审美（工单 seq=443，原话「这剑效果很好」）②规格/技术门（方案 v1.0 + 复核）
     localMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    // —— 结构化标定参数（真源；Leo 在观感台目视调定，换长度/颜色都不动这组）——
+    gripLocal: [0, 0.1082, 0], // 握点（武器模型空间，逐资产实测；A4 §一④）
+    lenRatio: 0.75, // 剑全长 = lenRatio × 角色身高（模型单位）；域 0.50~1.20
+    poseDeg: { rx: -25, ry: 80, rz: -90 }, // 剑局部三轴（ry = 绕剑自身长轴自转）
+    offsetLocal: [-0.03, 0, 0], // 骨局部偏移（×ch 后并入 f）
+    doubleSided: true, // 资产属性留档（W8；管线全局不剔面 ⇒ 生效）
+    // tints 缺省全白 = 原贴图观感（Leo 已批对照图）；装备系统按 WeaponSkin 只加配置行
   },
 };
 
@@ -541,7 +596,37 @@ export function validateCharacter3DProfile(profile: Character3DProfile): string[
 
   for (const [name, att] of Object.entries(profile.attachments)) {
     if (!att.bone) errors.push(`挂点 ${name} 缺 bone`);
-    if (att.enabled) errors.push(`挂点 ${name} 已启用——素材未过双门不得启用（方案 §11）`);
+    // 【T32】启用门（方案 §3.2）：素材过**双门**后方可 enabled=true —— 逐条机械核对，缺一即报错：
+    //   ① assetId 非空且能在武器资产账里找到；② 武器资产门常量齐（面数/顶点/单 mesh/单材质/单贴图/0 骨/0 动画/双面）；
+    //   ③ 结构化标定参数齐（gripLocal 3 数 / lenRatio ∈ 0.5~1.2 / poseDeg 三轴 / offsetLocal 3 数）。
+    if (!att.enabled) continue;
+    if (!att.assetId) {
+      errors.push(`挂点 ${name} 启用但 assetId 为空（素材未过双门不得启用，方案 §11）`);
+      continue;
+    }
+    if (att.assetId !== HERO_3D_WEAPON_REF.id) {
+      errors.push(`挂点 ${name} 的 assetId=${att.assetId} 不在武器资产账内（未知武器）`);
+      continue;
+    }
+    const acc = HERO_3D_WEAPON_ACCOUNT;
+    if (acc.skinCount !== 0 || acc.animationCount !== 0) {
+      errors.push(`武器资产门异常：skinCount=${acc.skinCount} animationCount=${acc.animationCount}（武器不得带骨架/动画）`);
+    }
+    if (!att.gripLocal || att.gripLocal.length !== 3 || !att.gripLocal.every((v) => Number.isFinite(v))) {
+      errors.push(`挂点 ${name} 启用但 gripLocal 非 3 个有限数（W9：握点逐资产必填）`);
+    }
+    if (att.lenRatio === undefined || !(att.lenRatio >= 0.5 && att.lenRatio <= 1.2)) {
+      errors.push(`挂点 ${name} lenRatio=${String(att.lenRatio)} 越界（已验域 0.50~1.20，W4）`);
+    }
+    if (!att.poseDeg || ![att.poseDeg.rx, att.poseDeg.ry, att.poseDeg.rz].every((v) => Number.isFinite(v))) {
+      errors.push(`挂点 ${name} 启用但 poseDeg 三轴不全（W3）`);
+    }
+    if (!att.offsetLocal || att.offsetLocal.length !== 3 || !att.offsetLocal.every((v) => Number.isFinite(v))) {
+      errors.push(`挂点 ${name} 启用但 offsetLocal 非 3 个有限数`);
+    }
+    if (att.doubleSided !== true) {
+      errors.push(`挂点 ${name} 未声明 doubleSided=true（W8：薄几何必须双面，否则剑身破洞）`);
+    }
     if (att.localMatrix.length !== 16) {
       errors.push(`挂点 ${name} localMatrix 长度 ${att.localMatrix.length} 应为 16`);
     }

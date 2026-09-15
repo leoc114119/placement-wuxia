@@ -427,7 +427,22 @@ export interface CharacterAttachmentProfile {
   bone: string;
   assetId: string;
   enabled: boolean;
-  localMatrix: readonly number[]; // 16 个数；素材过门前 enabled=false
+  /** **派生物**（T32 起）：由结构化参数在装配期经 composer 合成（方案 §3.2）。
+   * 禁把 16 浮点手工写死进配置——金标准矩阵单测 + 源码扫描锁这一点。 */
+  localMatrix: readonly number[];
+  // —— T32 新增（武器类挂点的**结构化真源**；可选，向后兼容既有空挂点）——
+  /** 握点（武器模型空间，逐资产实测值；W9）。本剑 = [0, 0.1082, 0]（原点在柄头端，≠握点、≠几何中心）。 */
+  gripLocal?: readonly [number, number, number];
+  /** 武器全长 = lenRatio × 角色身高（模型单位）；已验域 0.50~1.20（W4）。 */
+  lenRatio?: number;
+  /** 武器局部三轴姿态（度）；`ry` = 绕武器自身长轴自转（W3）。 */
+  poseDeg?: { rx: number; ry: number; rz: number };
+  /** 挂点骨局部偏移（×角色身高后并入拳心锚点）。 */
+  offsetLocal?: readonly [number, number, number];
+  /** 资产属性留档（W8：薄几何必须双面渲染；将来若开背面剔除须豁免本条）。 */
+  doubleSided?: boolean;
+  /** 四部件染色（#RRGGBB）；缺省全白 = 原贴图观感（W5）。 */
+  tints?: { blade: string; guard: string; grip: string; pommel: string };
 }
 
 /** 3D 角色 profile：清单**随代码发布**（体积小），模型/动作 payload 走 CDN（方案 §6.1）。
