@@ -334,23 +334,25 @@ describe('动作状态机（方案 §5）', () => {
     expect(remapPhaseByAnchors(0.37, undefined)).toBe(0.37);
   });
 
-  it('jump 正段增益：y>0 ×2.0、y≤0 ×1（深蹲深度不变）、过零带线性渐入', () => {
+  it('jump 正段增益（v1.3.1 k=3.2）：y>0 ×k、y≤0 ×1（深蹲深度不变）、过零带线性渐入', () => {
     const gain = { gain: CHARACTER_3D_JUMP_Y_GAIN, bandRatio: CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO };
     const clip = heroClip('jump');
     const peak = clip.rootTrackPeakY;
     expect(peak).toBeCloseTo(0.16655, 5);
+    expect(gain.gain).toBe(3.2);
     const band = peak * gain.bandRatio;
     expect(gainedRootY(-0.176, gain, peak)).toBeCloseTo(-0.176, 12); // 蹲底原样（不加深）
-    expect(gainedRootY(peak, gain, peak)).toBeCloseTo(peak * 2, 12);  // 峰值 ×2
-    expect(gainedRootY(band / 2, gain, peak)).toBeCloseTo(band / 2 * 1.5, 12); // 带内线性渐入
-    expect(gainedRootY(band * 2, gain, peak)).toBeCloseTo(band * 2 * 2, 12);   // 带外恒 gain
+    expect(gainedRootY(peak, gain, peak)).toBeCloseTo(peak * gain.gain, 12); // 峰值 ×k
+    // 带内线性渐入：带中点增益 = 1 + (k−1)/2
+    expect(gainedRootY(band / 2, gain, peak)).toBeCloseTo((band / 2) * (1 + (gain.gain - 1) / 2), 12);
+    expect(gainedRootY(band * 2, gain, peak)).toBeCloseTo(band * 2 * gain.gain, 12); // 带外恒 k
     // 过零连续：0⁻ → 0⁻、0 → 0，且左右极限一致（无速度折点式跳变）
     expect(gainedRootY(0, gain, peak)).toBe(0);
     expect(gainedRootY(-1e-9, gain, peak)).toBe(-1e-9); // 负侧原样（连续，不跳变）
     // 跨零连续：左右极限都≈0（差 < 3ε，无跳变）
     expect(Math.abs(gainedRootY(1e-9, gain, peak) - gainedRootY(-1e-9, gain, peak))).toBeLessThan(3e-9);
     expect(gainedRootY(1e-9, gain, peak)).toBeLessThan(2e-9);
-    // 控制器实采：峰值相位处 root y 必须≈源值×2（用状态机取同一素材）
+    // 控制器实采：峰值相位处 root y 必须 = gainedRootY(源值)（用状态机取同一素材）
     const c = newController();
     const pose = createPose(model);
     const scratch = createPose(model);

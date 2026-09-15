@@ -193,6 +193,11 @@ const summarizeJump = (frames, speed) => {
     firstOffPhase: firstOff,
     lastOffPhase: lastOff,
     peakAirHeightPx: lift[peakIdx],
+    // 【方案 v1.3.1 §4.1.2(6)】峰值 ÷ 名义参考高（= 该帧 placed.h，squashY=1）：正式判据带 [0.65,0.80]
+    // 口径：峰值 = 逐帧人物层包围盒底边相对 placed.groundAnchorY 的最大抬升（本工具即此法；PM 像素仪器同口径）
+    peakRatio: +(lift[peakIdx] / (withAnim[peakIdx].hudH || 1)).toFixed(4),
+    peakRatioBandOk:
+      lift[peakIdx] / (withAnim[peakIdx].hudH || 1) >= 0.65 && lift[peakIdx] / (withAnim[peakIdx].hudH || 1) <= 0.8,
     framesWithoutPixels: visible.filter((v) => !v).length,
     peakPhase: phases[peakIdx],
     deepCrouchCxSpanPx: +xSpan(deep).toFixed(3),
@@ -331,5 +336,9 @@ if (errors.length) {
   console.log('\n[t31r2] 页面错误：');
   for (const e of errors.slice(0, 20)) console.log('  ' + e);
 }
-const bad = [jumpSummary.x1.ok, jumpSummary.x2.ok, skillSummary.x1.ok, skillSummary.x2.ok].some((v) => !v);
+const bad =
+  [jumpSummary.x1.ok, jumpSummary.x2.ok, skillSummary.x1.ok, skillSummary.x2.ok].some((v) => !v) ||
+  // 【v1.3.1 判据】轻功峰值/名义参考高必须落 [0.65,0.80]（两档倍速各自判定；越界即 exit 1）
+  (jumpSummary.x1.ok && !jumpSummary.x1.peakRatioBandOk) ||
+  (jumpSummary.x2.ok && !jumpSummary.x2.peakRatioBandOk);
 process.exit(bad || errors.length ? 1 : 0);

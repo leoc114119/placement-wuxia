@@ -319,9 +319,14 @@ export const CHARACTER_3D_JUMP_PHASE_ANCHORS: readonly Character3DPhaseAnchor[] 
 /** 【R2-1 · §4.1.2(3)】轻功水平通道锚：位移窗 = 腾空段（p ∈ [0.25, 0.75]，两端速度为零）。 */
 export const CHARACTER_3D_JUMP_CHANNEL: Character3DJumpChannel = { moveStartP: 0.25, moveEndP: 0.75 };
 
-/** 【R2-1 · §4.1.2(4)】素材 root y 正段增益：推荐值 ×2.0（备案 ×1.85 / ×2.4，仅备查不启用）；
- * 过零线性渐入带 = 峰值 × 8%。增益作用于模型单位空间、**先于 scale**，与显示比例正交。 */
-export const CHARACTER_3D_JUMP_Y_GAIN = 2.0;
+/** 【R2-1 · §4.1.2(4) · 方案 v1.3.1 收口】素材 root y 正段增益：**k = 3.2**（Leo 09-15 现场裁定目标
+ * 「腾空 ≈ 身高 73%」；arch 出 v1.3.1（commit 64e071b7）把判据带钉为 **峰值÷名义参考高 ∈ [0.65, 0.80]**，
+ * 偏离处置依次 3.0 / 3.4）。
+ * 口径（条文钉死）：y>0 段乘 k、y≤0 段乘 1（深蹲深度不变）、过零带 [0, 峰值×8%] 线性渐入；
+ * 峰值 = 逐帧取**人物层包围盒底边**相对 `placed.groundAnchorY` 的最大抬升，分母 = 名义参考高
+ * （现 96.096），**以像素仪器为准**（CPU 探针只作预检，约 −6px 恒定偏置）。
+ * 增益作用于模型单位空间、**先于 scale**，与显示比例正交。 */
+export const CHARACTER_3D_JUMP_Y_GAIN = 3.2;
 export const CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO = 0.08;
 
 export const HERO_3D_ACTION_MAP: Readonly<Record<Character3DActionKey, Character3DActionSpec>> = {

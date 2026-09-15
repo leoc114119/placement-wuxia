@@ -5,55 +5,55 @@
    "dsf": 1,
    "glW": 394,
    "glH": 700,
-   "layerPx": 1132,
-   "bboxHPhys": 75,
+   "layerPx": 1882,
+   "bboxHPhys": 98,
    "dpr": 1,
    "placed": {
     "cx": 140,
-    "top": 355.0757834932574,
-    "h": 73.91999999999999,
-    "w": 52.00243642254626,
+    "top": 332.8921400706436,
+    "h": 96.09599999999999,
+    "w": 67.60316734931014,
     "groundAnchorY": 429
    },
-   "bboxHLogical": 75,
-   "placedHLogical": 73.91999999999999,
-   "placedWLogical": 52.00243642254626
+   "bboxHLogical": 98,
+   "placedHLogical": 96.09599999999999,
+   "placedWLogical": 67.60316734931014
   },
   {
    "dsf": 2,
    "glW": 788,
    "glH": 1400,
-   "layerPx": 4379,
-   "bboxHPhys": 150,
+   "layerPx": 7330,
+   "bboxHPhys": 195,
    "dpr": 2,
    "placed": {
     "cx": 140,
-    "top": 355.0720632143357,
-    "h": 73.91999999999999,
-    "w": 52.00243642254626,
+    "top": 332.8921484431473,
+    "h": 96.09599999999999,
+    "w": 67.60316734931014,
     "groundAnchorY": 429
    },
-   "bboxHLogical": 75,
-   "placedHLogical": 73.91999999999999,
-   "placedWLogical": 52.00243642254626
+   "bboxHLogical": 97.5,
+   "placedHLogical": 96.09599999999999,
+   "placedWLogical": 67.60316734931014
   },
   {
    "dsf": 3,
    "glW": 1182,
    "glH": 2100,
-   "layerPx": 9751,
-   "bboxHPhys": 225,
+   "layerPx": 16357,
+   "bboxHPhys": 291,
    "dpr": 3,
    "placed": {
     "cx": 140,
-    "top": 355.07088341761624,
-    "h": 73.91999999999999,
-    "w": 52.00243642254626,
+    "top": 332.8936879490141,
+    "h": 96.09599999999999,
+    "w": 67.60316734931014,
     "groundAnchorY": 429
    },
-   "bboxHLogical": 75,
-   "placedHLogical": 73.91999999999999,
-   "placedWLogical": 52.00243642254626
+   "bboxHLogical": 97,
+   "placedHLogical": 96.09599999999999,
+   "placedWLogical": 67.60316734931014
   }
  ]
 }

@@ -251,21 +251,26 @@ describe('动作映射（方案 §5 表逐行）', () => {
     expect(midSlope).toBeGreaterThan(1); // 中段最快（smoothstep 峰值斜率 = 1.5）
     expect(slopeAt(0.25)).toBeLessThan(0.1 * midSlope); // 起跳端速度≈0
     expect(slopeAt(0.749)).toBeLessThan(0.1 * midSlope); // 落地端速度≈0
-    // 【R2-1 §4.1.2(4)】正段增益 ×2.0 + 过零带 8%（y≤0 段不加系数）
+    // 【R2-1 §4.1.2(4) · v1.3.1】正段增益 ×k + 过零带 8%（y≤0 段不加系数）
     expect(HERO_3D_ACTION_MAP.jump.rootYGain).toEqual({
       gain: CHARACTER_3D_JUMP_Y_GAIN,
       bandRatio: CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO,
     });
-    expect(CHARACTER_3D_JUMP_Y_GAIN).toBe(2.0);
+    // 【方案 v1.3.1 · Leo 09-15 现场裁定】k = 3.2（目标「腾空 ≈ 身高 73%」，判据带 [0.65,0.80]）
+    expect(CHARACTER_3D_JUMP_Y_GAIN).toBe(3.2);
     expect(CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO).toBeCloseTo(0.08, 12);
-    // 增益只对正段生效：负 y 原样、0 原样、带外 ×2（用真实素材峰值定带）
+    // 增益只对正段生效：负 y 原样、0 原样、带外 ×k（用真实素材峰值定带）
     const peak = heroClip('jump').rootTrackPeakY;
     const gain = HERO_3D_ACTION_MAP.jump.rootYGain!;
     expect(gainedRootY(-0.17, gain, peak)).toBe(-0.17);
     expect(gainedRootY(0, gain, peak)).toBe(0);
-    expect(gainedRootY(peak, gain, peak)).toBeCloseTo(peak * 2, 12);
+    expect(gainedRootY(peak, gain, peak)).toBeCloseTo(peak * CHARACTER_3D_JUMP_Y_GAIN, 12);
     const band = peak * CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO;
-    expect(gainedRootY(band / 2, gain, peak)).toBeCloseTo((band / 2) * 1.5, 12); // 带内渐入中值
+    // 带内渐入：k(y) 由 1 线性升到 k ⇒ 带中点增益 = 1 + (k−1)/2
+    expect(gainedRootY(band / 2, gain, peak)).toBeCloseTo(
+      (band / 2) * (1 + (CHARACTER_3D_JUMP_Y_GAIN - 1) / 2),
+      12,
+    ); // 带内渐入中值
     expect(gainedRootY(-0.001, gain, peak)).toBeLessThan(0); // 负侧连续（不跳变）
     // 其它 clip 的 root 策略不被本次改动波及（无锚表、无增益、无端点策略）
     for (const key of ['idle', 'walk', 'basic', 'charge', 'strike'] as const) {
