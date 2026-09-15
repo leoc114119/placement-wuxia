@@ -435,11 +435,26 @@ describe('B5 · 固定方向光必须随 facing 变换（语义：光在世界�
 
   it('right / rightup / left 逐向断言（模型空间光向 = R_y(−yaw) · 世界光向，归一）', () => {
     const { renderer, state } = makeRenderer();
+    // 期望值 = R_y(−yaw) · 世界光向（测试内独立重算：x/z 在屏幕平面内按 −yaw 旋转，y 不变）。
+    // 【T31 FE 朝向整改】yaw 口径 = 源视角yaw − 180 ⇒ right=+90 / rightup=+135 / left=−90。
+    const WORLD_LIGHT = [-0.4, 0.85, 1];
+    const wl = ((): number[] => {
+      const n = Math.hypot(WORLD_LIGHT[0], WORLD_LIGHT[1], WORLD_LIGHT[2]);
+      return [WORLD_LIGHT[0] / n, WORLD_LIGHT[1] / n, WORLD_LIGHT[2] / n];
+    })();
+    const expectedLightModel = (yawDeg: number): number[] => {
+      const r = (-yawDeg * Math.PI) / 180;
+      return [wl[0] * Math.cos(r) + wl[2] * Math.sin(r), wl[1], -wl[0] * Math.sin(r) + wl[2] * Math.cos(r)];
+    };
     const cases: [CharacterRenderCommand['facing'], number[]][] = [
-      ['right', [-0.291536, 0.619514, 0.728841]],
-      ['rightup', [0.309221, 0.619514, 0.721515]],
-      ['left', [0.291536, 0.619514, -0.728841]],
+      ['right', expectedLightModel(yawDegForFacing('right'))],
+      ['rightup', expectedLightModel(yawDegForFacing('rightup'))],
+      ['left', expectedLightModel(yawDegForFacing('left'))],
     ];
+    // 抽样硬编码（防"测试里也写错"）：right ⇒ (−z, y, x) 形态；left ⇒ (z, y, −x)
+    expect(expectedLightModel(90)[0]).toBeCloseTo(-0.728841, 5);
+    expect(expectedLightModel(90)[2]).toBeCloseTo(-0.291536, 5);
+    expect(expectedLightModel(-90)[0]).toBeCloseTo(0.728841, 5);
     for (const [facing, expected] of cases) {
       renderer.beginFrame();
       renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, yawDegForFacing(facing));

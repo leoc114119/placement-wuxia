@@ -1,0 +1,140 @@
+[
+ {
+  "facing": "right",
+  "actualFacingHex": "right",
+  "ok": true,
+  "label": "",
+  "skinMinusHairX": 6.4,
+  "skinN": 172,
+  "hairN": 879,
+  "skinRatio": 0.0999,
+  "skinOfFg": 0.1637,
+  "bbox": {
+   "minX": 41,
+   "minY": 11,
+   "maxX": 81,
+   "maxY": 135,
+   "w": 41,
+   "h": 125
+  },
+  "headBox": {
+   "minY": 11,
+   "headBottom": 52
+  }
+ },
+ {
+  "facing": "rightup",
+  "actualFacingHex": "rightup",
+  "ok": true,
+  "label": "",
+  "skinMinusHairX": 10,
+  "skinN": 67,
+  "hairN": 969,
+  "skinRatio": 0.0326,
+  "skinOfFg": 0.0647,
+  "bbox": {
+   "minX": 34,
+   "minY": 11,
+   "maxX": 82,
+   "maxY": 135,
+   "w": 49,
+   "h": 125
+  },
+  "headBox": {
+   "minY": 11,
+   "headBottom": 52
+  }
+ },
+ {
+  "facing": "leftup",
+  "actualFacingHex": "leftup",
+  "ok": true,
+  "label": "",
+  "skinMinusHairX": -9.8,
+  "skinN": 64,
+  "hairN": 932,
+  "skinRatio": 0.0339,
+  "skinOfFg": 0.0643,
+  "bbox": {
+   "minX": 27,
+   "minY": 11,
+   "maxX": 71,
+   "maxY": 135,
+   "w": 45,
+   "h": 125
+  },
+  "headBox": {
+   "minY": 11,
+   "headBottom": 52
+  }
+ },
+ {
+  "facing": "left",
+  "actualFacingHex": "left",
+  "ok": true,
+  "label": "",
+  "skinMinusHairX": -7.6,
+  "skinN": 177,
+  "hairN": 873,
+  "skinRatio": 0.0958,
+  "skinOfFg": 0.1686,
+  "bbox": {
+   "minX": 28,
+   "minY": 11,
+   "maxX": 71,
+   "maxY": 135,
+   "w": 44,
+   "h": 125
+  },
+  "headBox": {
+   "minY": 11,
+   "headBottom": 52
+  }
+ },
+ {
+  "facing": "leftdown",
+  "actualFacingHex": "leftdown",
+  "ok": true,
+  "label": "",
+  "skinMinusHairX": -3.8,
+  "skinN": 295,
+  "hairN": 750,
+  "skinRatio": 0.1494,
+  "skinOfFg": 0.2823,
+  "bbox": {
+   "minX": 29,
+   "minY": 11,
+   "maxX": 75,
+   "maxY": 135,
+   "w": 47,
+   "h": 125
+  },
+  "headBox": {
+   "minY": 11,
+   "headBottom": 52
+  }
+ },
+ {
+  "facing": "rightdown",
+  "actualFacingHex": "rightdown",
+  "ok": true,
+  "label": "",
+  "skinMinusHairX": 3.2,
+  "skinN": 270,
+  "hairN": 748,
+  "skinRatio": 0.1461,
+  "skinOfFg": 0.2652,
+  "bbox": {
+   "minX": 38,
+   "minY": 11,
+   "maxX": 81,
+   "maxY": 135,
+   "w": 44,
+   "h": 125
+  },
+  "headBox": {
+   "minY": 11,
+   "headBottom": 52
+  }
+ }
+]

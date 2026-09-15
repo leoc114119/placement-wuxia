@@ -26,15 +26,49 @@ describe('六向（方案 §4.2）', () => {
     });
   });
 
-  it('yaw = normalizeSigned(270 - sourceViewYaw) 逐向对上方案给的六个数值', () => {
-    expect(FACINGS.map(yawDegForFacing)).toEqual([0, -45, -135, 180, 135, 45]);
-    // 方案 §4.2 原文：right=0°、rightdown=45°、rightup=-45°、left=180°、leftdown=135°、leftup=-135°
-    expect(yawDegForFacing('right')).toBe(0);
+  it('yaw = normalizeSigned(sourceViewYaw − 180) 逐向对上（T31 FE 朝向整改后口径）', () => {
+    expect(FACINGS.map(yawDegForFacing)).toEqual([90, 135, -135, -90, -45, 45]);
+    expect(yawDegForFacing('right')).toBe(90);
     expect(yawDegForFacing('rightdown')).toBe(45);
-    expect(yawDegForFacing('rightup')).toBe(-45);
-    expect(yawDegForFacing('left')).toBe(180);
-    expect(yawDegForFacing('leftdown')).toBe(135);
+    expect(yawDegForFacing('rightup')).toBe(135);
+    expect(yawDegForFacing('left')).toBe(-90);
+    expect(yawDegForFacing('leftdown')).toBe(-45);
     expect(yawDegForFacing('leftup')).toBe(-135);
+  });
+
+  it('★ 六向语义锁（朝向整改的回归门）：把前向向量转出来验「屏幕左右 / 朝不朝观众」', () => {
+    // 基准（实测得出，见 config 注释）：相机在 +Z 看 −Z；模型自身前向 = (0,0,1)；
+    // 故 F(θ) = R_y(θ)·(0,0,1) = (sinθ, 0, cosθ)，屏幕 x 向右、z 越大越靠相机。
+    const forwardOf = (deg: number): { x: number; z: number } => {
+      const r = (deg * Math.PI) / 180;
+      return { x: Math.sin(r), z: Math.cos(r) };
+    };
+    /** 期望：fx 符号 = 屏幕左右（−/+）；fz 符号 = 背向/朝向观众（−/+）。 */
+    const EXPECT: Record<BattleFacingHex, { sx: 1 | -1 | 0; sz: 1 | -1 | 0 }> = {
+      right: { sx: 1, sz: 0 },
+      rightdown: { sx: 1, sz: 1 },
+      rightup: { sx: 1, sz: -1 },
+      left: { sx: -1, sz: 0 },
+      leftdown: { sx: -1, sz: 1 },
+      leftup: { sx: -1, sz: -1 },
+    };
+    for (const facing of FACINGS) {
+      const f = forwardOf(yawDegForFacing(facing));
+      const e = EXPECT[facing];
+      const sx = Math.abs(f.x) < 1e-9 ? 0 : f.x > 0 ? 1 : -1;
+      const sz = Math.abs(f.z) < 1e-9 ? 0 : f.z > 0 ? 1 : -1;
+      expect(sx, `${facing} 屏幕左右`).toBe(e.sx);
+      expect(sz, `${facing} 朝向观众/背向`).toBe(e.sz);
+    }
+    // left* 全在屏幕左、right* 全在屏幕右（防左右不成镜像的历史缺陷复发）
+    for (const facing of FACINGS) {
+      const f = forwardOf(yawDegForFacing(facing));
+      expect(Math.sign(f.x), facing).toBe(facing.startsWith('left') ? -1 : 1);
+    }
+    // 旧口径必须被明确拒绝（反射式换算：right 会渲成正面）
+    const legacy = (v: number): number => { let d = (270 - v) % 360; if (d > 180) d -= 360; else if (d <= -180) d += 360; return d; };
+    expect(legacy(HERO_3D_SOURCE_VIEW_YAW_DEG.right)).toBe(0);
+    expect(yawDegForFacing('right')).not.toBe(legacy(HERO_3D_SOURCE_VIEW_YAW_DEG.right));
   });
 
   it('normalizeSignedDeg 保留 +180（不作为 -180）', () => {

@@ -24,6 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decodePng, encodePng } from './cutout/png_codec.mjs';
+import { measureFace } from './tools/measure_face_dir.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
@@ -634,6 +635,87 @@ for (const dsf of [1, 2, 3]) {
 
 // ══════════ 汇总 ══════════
 for (const c of checks) console.log(c);
+// ══════════ ⑦ 朝向回归门（T31 FE 朝向整改）：六向「脸朝哪边」实测断言 ══════════
+// 判据（PM 口径，标定见 tools/measure_face_dir.mjs）：头部区域「肤重心 x − 发重心 x」；
+// 美术 2D 参照 left=−29.9 / right=+29.9。**断言**：left* 必须 < −2、right* 必须 > +2
+// （防「朝向映射错位」这类缺陷复发——历史缺陷：六向整体错位、left 渲成背面/right 渲成正面）。
+{
+  const page = await openPage('', 1, { width: 560, height: 700 });
+  await quiet(page);
+  const gateRows = [];
+  for (const facing of FACINGS) {
+    await setHero(page, { hexFacing: FACING_VEC[facing], animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1 });
+    await page.waitForTimeout(220);
+    // 人物层裁剪（浅底纯色，便于「≠底色」取 bbox；与 tools/measure_facing_runtime.mjs 同法）
+    const crop = await page.evaluate(([pad]) => {
+      const gl = window.__char3d.canvas;
+      const pl = window.__demo.character3d.placed?.get('hero');
+      const h = window.__demo.session.snapshot().actors.find((a) => a.id === 'hero');
+      if (!pl) return null;
+      const x0 = Math.max(0, Math.round(pl.cx - pl.w / 2 - pad));
+      const y0 = Math.max(0, Math.round(pl.top - pad));
+      const w = Math.min(gl.width - x0, Math.round(pl.w + pad * 2));
+      const hh = Math.min(gl.height - y0, Math.round(pl.h + pad * 2));
+      const t = document.createElement('canvas');
+      t.width = w; t.height = hh;
+      const tc = t.getContext('2d');
+      tc.fillStyle = '#00ff00';
+      tc.fillRect(0, 0, w, hh);
+      tc.drawImage(gl, x0, y0, w, hh, 0, 0, w, hh);
+      return { dataUrl: t.toDataURL('image/png'), facingHex: h ? h.facingHex : null };
+    }, [12]);
+    if (!crop) { check(`朝向门 ${facing} 有 placed`, false); continue; }
+    const f = path.join(outDir, `c3d_facing_${facing}.png`);
+    fs.writeFileSync(f, Buffer.from(crop.dataUrl.split(',')[1], 'base64'));
+    written.push(path.basename(f));
+    const img = decodePng(f);
+    const m = measureFaceOnBackdrop(img);
+    gateRows.push({ facing, actualFacingHex: crop.facingHex, ...m });
+  }
+  await page.close();
+  for (const r of gateRows) {
+    const left = r.facing.startsWith('left');
+    const ok = typeof r.skinMinusHairX === 'number' && (left ? r.skinMinusHairX < -2 : r.skinMinusHairX > 2);
+    check(
+      `朝向门 ${r.facing}（判据 ${r.skinMinusHairX}；left* 应 <−2 / right* 应 >+2）`,
+      ok && r.actualFacingHex === r.facing,
+      `actual=${r.actualFacingHex} skinOfFg=${r.skinOfFg}`,
+    );
+  }
+  // 左右镜像自证（幅度比值应有界，防"左右不成镜像"的历史形态）
+  for (const d of ['left', 'leftdown', 'leftup']) {
+    const l = gateRows.find((x) => x.facing === d);
+    const rr = gateRows.find((x) => x.facing === d.replace('left', 'right'));
+    if (l && rr && typeof l.skinMinusHairX === 'number' && typeof rr.skinMinusHairX === 'number') {
+      const ratio = Math.abs(rr.skinMinusHairX) / Math.max(1e-6, Math.abs(l.skinMinusHairX));
+      check(`朝向门 ${d}/${d.replace('left', 'right')} 幅度成镜像（比值 ${ratio.toFixed(2)} ∈ [0.4, 2.5]）`, ratio > 0.4 && ratio < 2.5);
+    }
+  }
+  fs.writeFileSync(path.join(outDir, 'c3d_facing_gate.json'), JSON.stringify(gateRows, null, 1));
+}
+
+/** 纯色底裁剪图 → 判据（bbox = 与底色差异明显者；复用 measureFace 的肤/发口径）。 */
+function measureFaceOnBackdrop(img) {
+  const { width: w, height: h, rgba } = img;
+  const bg = [rgba[0], rgba[1], rgba[2]];
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const o = (y * w + x) * 4;
+    const d = Math.abs(rgba[o] - bg[0]) + Math.abs(rgba[o + 1] - bg[1]) + Math.abs(rgba[o + 2] - bg[2]);
+    if (d > 40) { if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+  }
+  if (maxX < 0) return { ok: false };
+  const copy = new Uint8Array(rgba);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const o = (y * w + x) * 4;
+    const inside = x >= minX && x <= maxX && y >= minY && y <= maxY;
+    const bgLike = Math.abs(rgba[o] - bg[0]) + Math.abs(rgba[o + 1] - bg[1]) + Math.abs(rgba[o + 2] - bg[2]) <= 40;
+    if (!inside || bgLike) copy[o + 3] = 0;
+  }
+  return { ok: true, ...measureFace({ width: w, height: h, rgba: copy }) };
+}
+
+
 console.log(`\n[shot_character3d] 截图 ${written.length} 张 → ${outDir}`);
 console.log(
   `[shot_character3d] 脚底量测（层渲染像素底边 vs 格心）：` +

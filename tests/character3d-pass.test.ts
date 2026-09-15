@@ -16,6 +16,7 @@ import {
   HERO_3D_ACTION_MAP,
   HERO_3D_PROFILE,
   HERO_3D_PROFILE_ID,
+  yawDegForFacing,
 } from '../config/character-3d';
 import { heroClipRegistry, heroModel } from './character3d-fixtures';
 
@@ -145,9 +146,15 @@ describe('放置与 placed 输出（方案 §4.1 / §4.3）', () => {
     pass.render([command()], 0.016);
     const m = renderer.draws[0].matrix;
     const expected = EXPECTED_HEIGHT / HERO_3D_PROFILE.modelHeight;
-    expect(m[0]).toBeCloseTo(expected, 4);   // x 缩放
-    expect(-m[5]).toBeCloseTo(expected, 4);  // y 缩放（placement 的 y 翻转）
-    expect(m[10]).toBeCloseTo(1, 6);         // ★ z 不缩放（否则被裁成「丝带」）
+    // 【T31 FE 朝向整改】摆放矩阵 = placement · R_y(yaw)：x/z 元素随 yaw 变（θ=±90 时 m[0]≈0）。
+    // 按**闭式**逐项断言（比原来的单元素断言更完整，且把「z 不缩放」钉死）：
+    //   M = P·R_y(θ)，P = diag(s, −s, 1) ⇒ col_x = (s·cosθ, 0, −sinθ)、col_z = (s·sinθ, 0, cosθ)
+    const th = (yawDegForFacing('right') * Math.PI) / 180;
+    expect(m[0]).toBeCloseTo(expected * Math.cos(th), 4); // x 轴像的 x 分量 = s·cosθ
+    expect(m[2]).toBeCloseTo(-Math.sin(th), 4);           // ★ x 轴像的 z 分量 = −sinθ（**无 s**）
+    expect(m[8]).toBeCloseTo(expected * Math.sin(th), 4); // z 轴像的 x 分量 = s·sinθ
+    expect(m[10]).toBeCloseTo(Math.cos(th), 4);           // ★ z 轴像的 z 分量 = cosθ（**无 s** ⇒ z 不缩放，否则裁成「丝带」）
+    expect(-m[5]).toBeCloseTo(expected, 4);               // y 缩放（y 翻转，与 yaw 无关）
   });
 
   it('width 取 x/z 跨度较大者乘缩放（六向旋转不改变 HUD 宽度基准）', () => {
@@ -203,10 +210,13 @@ describe('放置与 placed 输出（方案 §4.1 / §4.3）', () => {
   it('六向 yaw 进入渲染（pass 把每个单位的 yaw 传给 renderer，供光向变换）', () => {
     const renderer = createStubRenderer();
     const pass = makePass(renderer);
+    // 【T31 FE 朝向整改】yaw 口径 = normalizeSigned(源视角yaw − 180)：left ⇒ −90、rightup ⇒ +135
     pass.render([command({ facing: 'left' })], 0.016);
-    expect(renderer.yaws).toEqual([180]);
+    expect(renderer.yaws).toEqual([yawDegForFacing('left')]);
     pass.render([command({ facing: 'rightup' })], 0.016);
-    expect(renderer.yaws[1]).toBe(-45);
+    expect(renderer.yaws[1]).toBe(yawDegForFacing('rightup'));
+    expect(renderer.yaws[0]).toBe(-90);
+    expect(renderer.yaws[1]).toBe(135);
   });
 
   it('20 单位容量：一次 beginFrame、20 次 drawUnit、20 条 placed', () => {

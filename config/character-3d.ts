@@ -102,7 +102,9 @@ export const HERO_3D_CLIP_REFS: Readonly<Record<Character3DClipKey, Character3DA
     'idle_v4.json',
     'application/json',
   ),
-  walk: { embedded: HERO_3D_EMBEDDED_CLIPS.walk.name },
+  // 【T31 FE · P0-B】移动槽位（快照 animState='walk'）**改播 GLB 内嵌 run**：
+  // 源视角表与其它槽位不变；只换嵌入式资产名（按名字取，禁按序号）。
+  walk: { embedded: HERO_3D_EMBEDDED_CLIPS.run.name },
   atk: assetRef(
     'hero-clip-atk-v4',
     '546ec94f99065cc2779cf479dbb8821a101beca1851e6aeb1028b741dbfb5bd1',
@@ -139,9 +141,25 @@ export const HERO_3D_SOURCE_VIEW_YAW_DEG: Readonly<Record<BattleFacingHex, numbe
   leftup: 45,
 };
 
-/** 六向 → 模型绕 Y 轴旋转角（度）。派生自**本文件的**源视角表，故随表变更自动同步；测试逐向锁定。 */
+/**
+ * 六向 → 模型绕 Y 轴旋转角（度）。派生自**本文件的**源视角表；测试逐向锁定。
+ *
+ * ★【T31 FE 朝向整改】公式为 `normalizeSigned(源视角yaw − 180)`，替换旧口径 `270 − 源视角yaw`。
+ *   推导依据（**实测基准 + 代数**，不是试错调参；证据：`proto/battle_demo/shots/face_*.png` 与
+ *   `tools/measure_facing_runtime.mjs` 的肤/发重心判据）：
+ *   ① 运行时正交相机固定：`orthoPixel` 的 z 映射为 `−z/zHalf`（z 越大越靠近相机）⇒ 相机在 **+Z** 看 **−Z**；
+ *   ② θ=0 时实拍看到人物**正面**（face_right.png，肤/发重心对称且肤色占比最高）⇒ 模型自身前向 = **+Z**；
+ *   ③ 美术参照帧语义（实测 + 目验）：`battle_idle_leftup` 是**背面** ⇒ 帧名 up/down 为标准 RPG 语义
+ *      （down=朝观众、up=背向观众），且 `battle_idle_left` = 纯左profile（肤/发重心 = −29.9）；
+ *   ④ 于是人物前向 `F(θ) = R_y(θ)·(0,0,1) = (sinθ, 0, cosθ)`（屏幕 x 向右、z 朝相机）。逐向要求：
+ *      right ⇒ F=+X ⇒ θ=+90；left ⇒ θ=−90；rightdown ⇒ (+x,+z) ⇒ +45；rightup ⇒ (+x,−z) ⇒ +135；
+ *      leftdown ⇒ (−x,+z) ⇒ −45；leftup ⇒ (−x,−z) ⇒ −135；
+ *   ⑤ 与源视角表逐向对上：`θ = normalizeSigned(源视角yaw − 180)`。
+ *   旧口径 `270 − 源视角yaw` 是**反射**而非常数偏置 ⇒ 六向整体错位、左右不成镜像、上下互换
+ *   （实测：旧口径下 right 渲成正面、left 渲成背面）。**禁**再回到旧式。
+ */
 export function yawDegForFacing(facing: BattleFacingHex): number {
-  return normalizeSignedDeg(270 - HERO_3D_SOURCE_VIEW_YAW_DEG[facing]);
+  return normalizeSignedDeg(HERO_3D_SOURCE_VIEW_YAW_DEG[facing] - 180);
 }
 
 /** 把角度夹到 (-180, 180]（180 保留为 +180：方案 §4.2 明文 left=180°，非 -180°）。
@@ -242,6 +260,9 @@ export const HERO_3D_ACTION_MAP: Readonly<Record<Character3DActionKey, Character
     crossFadeOnEnter: true,
   },
   walk: {
+    // 【T31 FE · P0-B】移动态改播 GLB 内嵌 **run**（Leo 09-11「战斗内移动改用 run 素材」口径；
+    // 方案 §5 原表写 walk，现按 Leo 明确口径改为 run）。槽位键仍是 'walk'（= 快照 animState），
+    // 但**资产**取 `preset:biped:run`（按名字解析，禁按序号；见 HERO_3D_EMBEDDED_CLIPS.run）。
     clip: 'walk',
     progressSource: 'viewClock',
     loop: true,

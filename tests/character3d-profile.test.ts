@@ -81,7 +81,8 @@ describe('现役 profile 自检', () => {
 
   it('五个动作槽位齐全：4 条 CDN json + 1 条 GLB 内嵌', () => {
     for (const key of CLIP_KEYS) expect(HERO_3D_PROFILE.clips[key], `槽位 ${key}`).toBeTruthy();
-    expect(HERO_3D_PROFILE.clips.walk).toEqual({ embedded: 'preset:biped:walk' });
+    // 【T31 FE · P0-B】移动槽位改播 GLB 内嵌 **run**（Leo 口径）；按名字取，禁按序号
+    expect(HERO_3D_PROFILE.clips.walk).toEqual({ embedded: HERO_3D_EMBEDDED_CLIPS.run.name });
     for (const key of ['idle', 'atk', 'cast', 'jump'] as const) {
       const ref = HERO_3D_PROFILE.clips[key] as Character3DAssetRef;
       expect(ref.mediaType).toBe('application/json');
@@ -114,7 +115,8 @@ describe('现役 profile 自检', () => {
     for (const facing of FACINGS) {
       expect(typeof HERO_3D_PROFILE.sourceViewYawDeg[facing]).toBe('number');
     }
-    expect(FACINGS.map(yawDegForFacing)).toEqual([0, -45, -135, 180, 135, 45]);
+    // T31 FE 朝向整改：yaw = normalizeSigned(源视角yaw − 180)（推导见 config 注释；语义锁在 math 用例）
+    expect(FACINGS.map(yawDegForFacing)).toEqual([90, 135, -135, -90, -45, 45]);
   });
 
   it('挂点：bone 是模型真骨、localMatrix 16 个数、enabled=false（素材过门前不得启用）', () => {
