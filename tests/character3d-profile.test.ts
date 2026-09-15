@@ -90,15 +90,17 @@ describe('现役 profile 自检', () => {
     expect(HERO_3D_PROFILE.modelHeight).toBeCloseTo(span, 12);
     // 公式锁：格高定尺 × PIECE 定尺 × CHARACTER_3D_HERO_SCALE（R2-3 · §4.4）
     expect(HERO_3D_PROFILE.screenHeightPxAtReference).toBeCloseTo(TILE_H * PIECE.heightPerTile * CHARACTER_3D_HERO_SCALE, 10);
-    // 改前基线 123.2（观感台 curH=123 同档）→ 60% 后 73.92；比例常量是**唯一**缩放承载点
+    // 改前基线 123.2（观感台 curH=123 同档）→ 0.78 ⇒ 96.096；比例常量是**唯一**缩放承载点
     expect(TILE_H * PIECE.heightPerTile).toBeCloseTo(123.2, 6);
-    expect(CHARACTER_3D_HERO_SCALE).toBe(0.6);
-    expect(HERO_3D_PROFILE.screenHeightPxAtReference).toBeCloseTo(73.92, 6);
+    expect(CHARACTER_3D_HERO_SCALE).toBe(0.78);
+    expect(HERO_3D_PROFILE.screenHeightPxAtReference).toBeCloseTo(96.096, 6);
+    // 取值沿革链：123.2 × 0.6 = 73.92（首版）→ ×1.3 = 96.096（Leo 09-15 裁定）
+    expect(123.2 * 0.6 * 1.3).toBeCloseTo(HERO_3D_PROFILE.screenHeightPxAtReference, 6);
   });
 
   it('R2-3 派生自动跟随：比例只改常量一处（缩放/PIECE 定尺与 2D 侧零改动）', () => {
     const cfgSrc = readFileSync(path.join(ROOT, 'config/character-3d.ts'), 'utf8');
-    // 参考高只由公式派生，禁裸写 73.92 / 123.2
+    // 参考高只由公式派生，禁裸写 96.096 / 123.2
     expect(cfgSrc).not.toMatch(/screenHeightPxAtReference:\s*\d/);
     expect(cfgSrc).toContain('TILE_H * PIECE.heightPerTile * CHARACTER_3D_HERO_SCALE');
     // PIECE 定尺与 2D 敌方口径所在配置本批不动（敌方仍按原比例渲染）
