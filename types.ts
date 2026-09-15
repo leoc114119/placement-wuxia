@@ -466,6 +466,13 @@ export interface CharacterRenderCommand {
   hopPx: number;
   alpha: number;
   squashY: number;
+  /** 【R2-2 · §4.1.3(4)】出招**表现窗时长**（演出秒，可选）——后续「出招速度」系统的**接缝字段**。
+   * 契约（本批**只留条文不实现**）：出招速度系统上线时，由宿主从 presentationCasts 注入
+   * `finishAtSec − startedAtSec`；charge 槽位的窗源由常量 `HERO_3D_SKILL_WINDOW_SEC` 切到本字段
+   *（字段缺省回退常量，常量退化为 fallback）。
+   * ⚠ 前置条件：接缝切换完成前，任何 castSpeed 非默认档的技能入库都会造成 3s 窗与 charge 态时长失配
+   *（源被截断 + 末姿跳变），须先触发接缝再入库。 */
+  stateWindowSec?: number;
 }
 
 /** 人物层 pass 输出（方案 §4.3）：canvas 为全视口透明离屏尺寸；placed 供 HUD 名条/技能钮定位，

@@ -310,7 +310,7 @@ for (const [vw, vh, tag] of VIEWPORTS) {
   await shot(page, `${tag}_state_basic_mid`);
   await setHero(page, { animState: 'idle', animLeftMs: 0 });
 
-  // charge：cast 源按 840ms 一轮循环（两帧相位）
+  // charge（R2-2 §4.1.3）：整段 cast 源压进固定 3s 表现窗（两帧相位：t≈0.15 / t≈0.47 ⇒ 相位 0.05 / 0.157）
   await quiet(page);
   await setHero(page, { animState: 'charge', animLeftMs: 9000 });
   await page.waitForTimeout(150);
@@ -318,7 +318,7 @@ for (const [vw, vh, tag] of VIEWPORTS) {
   await page.waitForTimeout(320);
   await shot(page, `${tag}_state_charge_b`);
 
-  // strike：从 2/3 归一位置播到末尾并保持（280ms 窗）
+  // strike（R2-2 §4.1.3）：末姿保持（相位恒 1，不再从 2/3 重扫）
   await quiet(page);
   await setHero(page, { animState: 'strike', animLeftMs: 9000 });
   await page.waitForTimeout(120);

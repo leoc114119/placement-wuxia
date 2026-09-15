@@ -14,7 +14,7 @@
 //   模型 hero_48k_20260914.glb：48,419 三角面 / 41 骨 / 1 mesh / 1 材质 / 1 primitive /
 //   3 × 4096² JPEG；SHA-256 = ff9202b4…f816f0，4,040,728 B。模型无指骨、无武器（剑需另备 3D 资产）。
 
-import { CAST_FRAME_PERIOD_MS, CHOREO, PIECE, TILE_H } from './battle-hex';
+import { CHOREO, PIECE, TILE_H } from './battle-hex';
 import type {
   BattleAnimState,
   BattleFacingHex,
@@ -280,18 +280,18 @@ export function jumpChannelProgressH(p: number, channel: Character3DJumpChannel)
   return t * t * (3 - 2 * t); // smoothstep：两端速度为零
 }
 
-/** charge / strike 共用的 cast 循环周期：一轮 = 既有 cast 三帧节拍 3 × CAST_FRAME_PERIOD_MS = 840ms
- *（方案 §5 charge/strike 行；不参与结算时点）。 */
-export const HERO_3D_CAST_CYCLE_SEC = (3 * CAST_FRAME_PERIOD_MS) / 1000;
+/** 【R2-2 · §4.1.3（Leo 已裁）】特技/绝学**固定 3s 表现窗**（演出秒）：
+ * charge 槽位把**整段源**映射进窗——源 >3s ⇒ 按窗压缩、3s 内播完一遍（现役 cast 源 4.5333s ⇒
+ * 压缩比 0.662、等效 1.511×）；源 <3s ⇒ 循环填满（1.5s 源恰 2 遍）。
+ * **不设独立播放速度参数**（后续「出招速度」系统的接缝＝`types.ts` 的 `stateWindowSec`，本批只留条文）。
+ * ⚠ 与 session 默认档 castDurationMs=3000ms 数值相等属**巧合不是耦合**：两常量独立演化，禁互相推导。
+ * 本条**废止**原 `HERO_3D_CAST_CYCLE_SEC`(840ms 一轮 = 5.4× 加速) 与 `HERO_3D_STRIKE_WINDOW_SEC`(280ms)。 */
+export const HERO_3D_SKILL_WINDOW_SEC = 3.0;
 
-/** strike 归一起点 = 2/3（cast2→3 兼容，方案 §5 strike 行）。 */
-export const HERO_3D_STRIKE_START_RATIO = 2 / 3;
-
-/** strike 段表现窗（秒）= **一个** cast 帧周期 280ms。
- * 依据：charge 的 840ms 一轮 = 三帧节拍三等分；strike 只走最后一等分（2/3 → 1），
- * 故走完这一等分的时间 = 一个 CAST_FRAME_PERIOD_MS，与既有 cast2→3 一拍在时长上等价
- *（也与 CHOREO.strikeSec=0.3 的收招窗同量级）。 */
-export const HERO_3D_STRIKE_WINDOW_SEC = CAST_FRAME_PERIOD_MS / 1000;
+/** strike 归一起点 = **1（末姿保持）**（§4.1.3(2)：charge 窗结束即源已播完，strike 不再从 2/3 起播重扫
+ *（原口径该段等效 10.8× 加速，是「还是加速播放」观感成因）；相位恒 1 至状态退出，随后既有 100ms 混合回 idle。
+ * 既有 2D directional 分支的 cast2→3 帧语义不变——本条只改 3D 槽位）。 */
+export const HERO_3D_STRIKE_START_RATIO = 1;
 
 /** 【R2-1 · §4.1.2(1)】3D 轻功**演出窗**（秒）：1.0 演出秒（x1 墙钟 1.0s；x2 沿既有演出钟 0.5s，
  * 禁额外距离倍率）。与素材源时长（1.5s）**解耦**——由本条相位重映射与增益承担观感，
@@ -349,19 +349,23 @@ export const HERO_3D_ACTION_MAP: Readonly<Record<Character3DActionKey, Character
     crossFadeOnEnter: true,
   },
   charge: {
+    // 【R2-2 §4.1.3(1)】整段 cast 源映射进固定 3s 窗：源 >3s ⇒ 压缩播完一遍；源 <3s ⇒ 循环填满。
+    // 相位 = (elapsed / 3) 取模（loop=true）；无 840ms 周期回卷（旧口径已废止）。
     clip: 'cast',
     progressSource: 'stateElapsed',
     loop: true,
-    playWindowSec: HERO_3D_CAST_CYCLE_SEC,
+    playWindowSec: HERO_3D_SKILL_WINDOW_SEC,
     startRatio: 0,
     rootMotion: 'track',
     crossFadeOnEnter: true,
   },
   strike: {
+    // 【R2-2 §4.1.3(2)】末姿保持：startRatio=1 ⇒ span=0 ⇒ 相位恒 1（t1 后 300ms 不再重扫），
+    // 随后既有 100ms 混合回 idle。session 时间轴/结算时点零改动。
     clip: 'cast',
     progressSource: 'stateElapsed',
     loop: false,
-    playWindowSec: HERO_3D_STRIKE_WINDOW_SEC,
+    playWindowSec: HERO_3D_SKILL_WINDOW_SEC,
     startRatio: HERO_3D_STRIKE_START_RATIO,
     rootMotion: 'track',
     crossFadeOnEnter: true,

@@ -12,12 +12,11 @@ import {
   CHARACTER_3D_JUMP_Y_GAIN,
   CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO,
   HERO_3D_ACTION_MAP,
-  HERO_3D_CAST_CYCLE_SEC,
+  HERO_3D_SKILL_WINDOW_SEC,
   HERO_3D_STRIKE_START_RATIO,
-  HERO_3D_STRIKE_WINDOW_SEC,
   type Character3DRootYGain,
 } from '../config/character-3d';
-import { CAST_FRAME_PERIOD_MS, CHOREO } from '../config/battle-hex';
+import { CHOREO } from '../config/battle-hex';
 import {
   applyEmbeddedClip,
   applyRetargetedClip,
@@ -400,44 +399,66 @@ describe('动作状态机（方案 §5）', () => {
     expect(sampleDigest(c)).toBe(atWindowEnd);
   });
 
-  it('charge：cast 循环，一轮 = 840ms（相位 0 与 0.84 同帧、0.42 不同帧）', () => {
+  it('charge（R2-2 §4.1.3）：固定 3s 窗循环——相位 0 与 3.0 同帧、1.5 不同帧；无 840ms 周期回卷', () => {
     const c = newController();
     c.update(0.016, { state: 'charge', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('cast');
     const p0 = sampleDigest(c);
-    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_CAST_CYCLE_SEC, moveProgress: null, isJump: false });
+    // 3.0s 走满整遍源 ⇒ 回到相位 0（窗取模）
+    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_SKILL_WINDOW_SEC, moveProgress: null, isJump: false });
     expect(sampleDigest(c)).toBe(p0);
-    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_CAST_CYCLE_SEC / 2, moveProgress: null, isJump: false });
+    // 半窗（1.5s）= 源相位 1/3（4.5333s 源被压进 3s），与相位 0 不同
+    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_SKILL_WINDOW_SEC / 2, moveProgress: null, isJump: false });
     expect(sampleDigest(c)).not.toBe(p0);
+    // ★ 旧口径回归断言：840ms 处**不得**回到相位 0（若有人改回 840ms 循环，本断言立刻报警）
+    c.update(0.016, { state: 'charge', stateElapsedSec: 0.84, moveProgress: null, isJump: false });
+    expect(sampleDigest(c)).not.toBe(p0);
+    // 840ms 处的相位 = 0.28（= 840/3000），与「相位 0.28 的参考采样」逐位一致
+    expect(sampleDigest(c)).toBe(referencePalette('cast', 0.28, true));
   });
 
-  it('strike：从 2/3 播到末尾并保持，走完一帧节拍（280ms）即到位', () => {
+  it('charge 相位斜率为 1/3（源 4.5333s 压进 3s ⇒ 等效 1.511×），逐点单调无回卷', () => {
     const c = newController();
-    c.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, isJump: false });
-    expect(c.activeClipKey).toBe('cast');
-    expect(HERO_3D_ACTION_MAP.strike.playWindowSec).toBeCloseTo(CAST_FRAME_PERIOD_MS / 1000, 12);
-    expect(HERO_3D_STRIKE_WINDOW_SEC).toBeCloseTo(0.28, 12);
-    // 起点 = 2/3（与 reference 的 2/3 相位同帧）
-    c.update(0.016, { state: 'charge', stateElapsedSec: 0, moveProgress: null, isJump: false });
+    const at = (t: number): number => {
+      c.update(0.016, { state: 'charge', stateElapsedSec: t, moveProgress: null, isJump: false });
+      return sampleDigest(c);
+    };
+    const frames = [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0];
+    const digests = frames.map(at);
+    // 窗内帧间两两不同（相位严格递增、无 840ms 级回卷）；窗尾（3.0s）恰回到相位 0（整遍播完）
+    expect(new Set(digests.slice(0, -1)).size).toBe(frames.length - 1);
+    expect(digests[digests.length - 1]).toBe(digests[0]);
+    // 每个采样点等于「相位 = t/3」的参考采样（压缩比逐点可验）
+    for (const t of [0.9, 1.5, 2.1]) {
+      expect(at(t)).toBe(referencePalette('cast', t / HERO_3D_SKILL_WINDOW_SEC, true));
+    }
+  });
+
+  it('strike（R2-2 §4.1.3）：末姿保持——窗内任意时刻相位恒 1（不再从 2/3 重扫）', () => {
     const c2 = newController();
     c2.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, isJump: false });
-    expect(sampleDigest(c2)).toBe(referencePalette('cast', HERO_3D_STRIKE_START_RATIO, false));
-    // 一帧节拍后 = 末帧
-    c2.update(0.016, { state: 'strike', stateElapsedSec: HERO_3D_STRIKE_WINDOW_SEC, moveProgress: null, isJump: false });
-    expect(sampleDigest(c2)).toBe(referencePalette('cast', 1, false));
+    expect(c2.activeClipKey).toBe('cast');
+    const last = referencePalette('cast', 1, false);
+    expect(sampleDigest(c2)).toBe(last);
+    // 300ms 快照窗内逐点恒为末帧（相位不推进、帧索引不变）
+    for (const t of [0.05, 0.1, 0.2, 0.29]) {
+      c2.update(0.016, { state: 'strike', stateElapsedSec: t, moveProgress: null, isJump: false });
+      expect(sampleDigest(c2), `t=${t}`).toBe(last);
+    }
+    // 反例自证：旧口径起点 2/3 与末帧不同（即「不再重扫」确有可观测差别）
+    expect(referencePalette('cast', 2 / 3, false)).not.toBe(last);
   });
 
-  it('charge→strike 不重启 clip（同一 cast 槽位、无抽搐式回到首帧）', () => {
+  it('charge→strike 不重启 clip（同一 cast 槽位）：charge 窗尾即源末帧，strike 续保持不再回扫', () => {
     const c = newController();
-    c.update(0.016, { state: 'charge', stateElapsedSec: 0.6, moveProgress: null, isJump: false });
+    c.update(0.016, { state: 'charge', stateElapsedSec: HERO_3D_SKILL_WINDOW_SEC, moveProgress: null, isJump: false });
     const chargeDigest = sampleDigest(c);
+    expect(chargeDigest).toBe(referencePalette('cast', 0, true)); // 窗尾相位回卷到 0（= 源首帧）
     c.update(0.016, { state: 'strike', stateElapsedSec: 0, moveProgress: null, isJump: false });
     expect(c.activeClipKey).toBe('cast');
     const strikeDigest = sampleDigest(c);
-    // strike 从 2/3 起播（不是从 0），且与 charge 相位不同的位置
-    expect(strikeDigest).toBe(referencePalette('cast', HERO_3D_STRIKE_START_RATIO, false));
+    expect(strikeDigest).toBe(referencePalette('cast', 1, false)); // 末姿保持
     expect(strikeDigest).not.toBe(chargeDigest);
-    expect(strikeDigest).not.toBe(referencePalette('cast', 0, false));
   });
 
   it('hit：不切专用动作（沿用当前 clip），dead：idle 首帧且不混回', () => {

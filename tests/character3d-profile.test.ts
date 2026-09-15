@@ -3,6 +3,10 @@
 // 「profile：SHA/byteLength/41 骨/1 primitive/clip/bone 名、六向映射完整；错误输入非零失败」。
 
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+declare const __dirname: string;
 import {
   CHARACTER_3D_CROSS_FADE_SEC,
   CHARACTER_3D_FXAA,
@@ -19,7 +23,7 @@ import {
   CHARACTER_3D_JUMP_PHASE_ANCHORS,
   CHARACTER_3D_JUMP_Y_GAIN,
   CHARACTER_3D_JUMP_Y_GAIN_BAND_RATIO,
-  HERO_3D_CAST_CYCLE_SEC,
+  HERO_3D_SKILL_WINDOW_SEC,
   jumpChannelProgressH,
   HERO_3D_CLIP_SOURCE_SEC,
   HERO_3D_EMBEDDED_CLIPS,
@@ -33,10 +37,12 @@ import {
   validateCharacter3DProfile,
   yawDegForFacing,
 } from '../config/character-3d';
-import { CAST_FRAME_PERIOD_MS, CHOREO, PIECE, TILE_H } from '../config/battle-hex';
+import { CHOREO, PIECE, TILE_H } from '../config/battle-hex';
 import type { Character3DAssetRef, Character3DProfile, BattleFacingHex } from '../types';
 import { gainedRootY, remapPhaseByAnchors } from '../ui/character3d/animation';
 import { heroClip, heroModel } from './character3d-fixtures';
+
+const ROOT = path.resolve(__dirname, '..');
 
 const FACINGS: BattleFacingHex[] = ['right', 'rightup', 'leftup', 'left', 'leftdown', 'rightdown'];
 const CLIP_KEYS = ['idle', 'walk', 'atk', 'cast', 'jump'] as const;
@@ -165,21 +171,27 @@ describe('动作映射（方案 §5 表逐行）', () => {
     expect(HERO_3D_ACTION_MAP.basic.playWindowSec).toBeCloseTo(0.7, 12); // BASIC_DURATION_MS=700
   });
 
-  it('charge：cast 循环，一轮 = 3 × CAST_FRAME_PERIOD_MS = 840ms（不参与结算时点）', () => {
+  it('charge（R2-2 §4.1.3）：整段 cast 源映射进固定 3s 窗循环（840ms 一轮旧口径已废止）', () => {
     expect(HERO_3D_ACTION_MAP.charge.clip).toBe('cast');
     expect(HERO_3D_ACTION_MAP.charge.loop).toBe(true);
-    expect(HERO_3D_CAST_CYCLE_SEC).toBeCloseTo((3 * CAST_FRAME_PERIOD_MS) / 1000, 12);
-    expect(HERO_3D_CAST_CYCLE_SEC).toBeCloseTo(0.84, 12);
-    expect(HERO_3D_ACTION_MAP.charge.playWindowSec).toBe(HERO_3D_CAST_CYCLE_SEC);
+    expect(HERO_3D_SKILL_WINDOW_SEC).toBeCloseTo(3.0, 12);
+    expect(HERO_3D_ACTION_MAP.charge.playWindowSec).toBe(HERO_3D_SKILL_WINDOW_SEC);
+    // 源 4.5333s 压进 3s ⇒ 等效 1.511×（不是 840ms 循环的 5.4×）
+    expect(HERO_3D_CLIP_SOURCE_SEC.cast / HERO_3D_SKILL_WINDOW_SEC).toBeCloseTo(1.5111, 3);
+    // 废止常量不再存在于本配置（防有人改回 840ms 循环口径）
+    const cfgSrc = readFileSync(path.join(ROOT, 'config/character-3d.ts'), 'utf8');
+    expect(cfgSrc).not.toContain('HERO_3D_CAST_CYCLE_SEC =');
+    expect(cfgSrc).not.toContain('HERO_3D_STRIKE_WINDOW_SEC =');
   });
 
-  it('strike：同一 cast 源，从 2/3 归一位置播到末尾并保持（cast2→3 兼容）', () => {
+  it('strike（R2-2 §4.1.3）：末姿保持（startRatio=1 ⇒ 相位恒 1），不再 2/3 起播重扫', () => {
     expect(HERO_3D_ACTION_MAP.strike.clip).toBe('cast');
-    expect(HERO_3D_ACTION_MAP.strike.startRatio).toBeCloseTo(2 / 3, 12);
-    expect(HERO_3D_STRIKE_START_RATIO).toBeCloseTo(2 / 3, 12);
+    expect(HERO_3D_STRIKE_START_RATIO).toBe(1);
+    expect(HERO_3D_ACTION_MAP.strike.startRatio).toBe(1);
     expect(HERO_3D_ACTION_MAP.strike.loop).toBe(false);
-    // 剩余窗 = 一轮的 1/3 = 280ms = 一个 CAST_FRAME_PERIOD_MS
-    expect((1 - HERO_3D_ACTION_MAP.strike.startRatio) * HERO_3D_CAST_CYCLE_SEC).toBeCloseTo(CAST_FRAME_PERIOD_MS / 1000, 12);
+    expect(HERO_3D_ACTION_MAP.strike.playWindowSec).toBe(HERO_3D_SKILL_WINDOW_SEC);
+    // span = 1 − startRatio = 0 ⇒ 任何 stateElapsed 都落在同一相位（相位恒 1）
+    expect(1 - HERO_3D_ACTION_MAP.strike.startRatio).toBe(0);
   });
 
   it('hit：不切专用动作（clip=null）且不重起混合', () => {

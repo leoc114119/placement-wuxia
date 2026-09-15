@@ -736,6 +736,37 @@ function realUnit(over: Partial<CombatantInput> & Pick<CombatantInput, 'id' | 's
     ...over,
   };
 }
+/** 【R2-2 零外溢用例】特技技能（kind=special + 武器匹配 ⇒ 走 charge→strike 真实链路） */
+function teSkillDef(): SkillDef {
+  return { id: 'te', name: '特技', kind: 'special', weapon: 'sword', grade: 1.7, growth: 3, level: 20, cooldownTurns: 2, neiliCost: 10 };
+}
+/** 【R2-2 零外溢用例】特技局：我方(4,8) 敌方(6,8)（射程 2 内），手动模式 */
+function castSession(): HexBattleSession {
+  const s = createHexBattle({
+    player: realUnit({ id: 'hero', side: 'player', weapon: 'sword', atk: 200, skills: [teSkillDef()] }),
+    enemies: [realUnit({ id: 'e1', side: 'enemy', name: 'npc-shanzei-a', jimin: 0 })],
+    mode: 'manual',
+    seed: 13,
+  });
+  const put = (id: string, q: number, r: number): void => {
+    const u = s._debug.units.find((x) => x.id === id)!;
+    u.hex = { q, r };
+    u.renderQ = q;
+    u.renderR = r;
+    u.moveFromQ = q;
+    u.moveFromR = r;
+    u.moveT = 1;
+    u.isJump = false;
+    u.animState = 'idle';
+    u.animLeftMs = 0;
+    u.bar = 0;
+    u.barWasMax = false;
+  };
+  put('hero', 4, 8);
+  put('e1', 6, 8);
+  return s;
+}
+
 /** 轻功技能（kind=qingGong，口径同 tests/battle-session.test.ts 的 qingSkill）。
  * level=45 是**用例口径**（movePower=基础+品阶 2+⌊45/5⌋ ⇒ 跳跃半径 ≥6 格）：让真实链路能同时
  * 取到 0.6s（≤2 格基准档）与 1.2s（≥6 格封顶档）两档演出时长，避免只测到中间档。 */
@@ -1187,6 +1218,63 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
     updateView(view2, freshSnap, DT_REAL, W, H);
     drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: DT_REAL }, freshSnap, assets2, view2);
     expect(cmds2.find((c) => c.actorId === 'hero')!.isJump).toBe(false);
+  });
+});
+
+// ══════════════════ 6'. 【R2-2】表现层零外溢（特/绝 3s 窗不改 session） ══════════════════
+describe('[T31-R2 · R2-2] 特/绝 3s 表现窗不触 session 时间轴（零外溢）', () => {
+  it('同一特技局两条路径：「注入 3D 层 + 逐帧 drawFrame」与「裸 session」事件序与结算量逐条一致', () => {
+    const run = (withView: boolean) => {
+      const s = castSession();
+      expect(tickToPending(s), '未到输入态').toBe(true);
+      let view: BattleHexView | null = null;
+      if (withView) view = view3d(makeRealPassLayer(DPR).layer);
+      const assets = withView ? makeAssets().assets : null;
+      // 受控 tick：两条路径**完全相同的 dt 序列**（只差表现层是否画）
+      const step = (dt: number): void => {
+        s.tick(dt);
+        if (view && assets) {
+          const snap = s.snapshot();
+          updateView(view, snap, dt, W, H);
+          drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt }, snap, assets, view);
+        }
+      };
+      expect(s.submit({ type: 'selectSkill', skillId: 'te' })).toBe(true);
+      const foe = s.snapshot().actors.find((a) => a.side === 'enemy')!;
+      expect(s.submit({ type: 'cast', to: foe.pos, skillId: 'te' }), '施放被拒').toBe(true);
+      const startIdx = s.events.length;
+      const samples: string[] = [];
+      const total = Math.ceil(3.6 / DT_REAL);
+      for (let i = 0; i < total; i++) {
+        step(DT_REAL);
+        const snap = s.snapshot();
+        const a = snap.actors.find((x) => x.id === 'hero')!;
+        const b = snap.actors.find((x) => x.id === 'e1')!;
+        samples.push(`t=${(i * DT_REAL).toFixed(3)} hero:${a.animState}:${a.hp}:${a.actionBar.toFixed(3)} e1:${b.hp}:${b.animState}`);
+      }
+      return {
+        events: s.events.slice(startIdx).map((e) => JSON.stringify(e)),
+        samples,
+        clock: s._debug.clock(),
+        phase: s.snapshot().phase,
+      };
+    };
+    const bare = run(false);
+    const painted = run(true);
+    // ① 事件序（含 t 与载荷：段 1 t0 内联段 / 段 2 t1 结算）逐条一致
+    expect(painted.events).toEqual(bare.events);
+    expect(bare.events.length).toBeGreaterThan(0);
+    expect(bare.events.some((e) => e.includes('skill'))).toBe(true); // 确有伤害结算事件（非空断言）
+    // ② 逐帧 HP / 行动条 / 动画态 / 时钟 / 相位全部逐条一致（表现层零外溢）
+    expect(painted.samples).toEqual(bare.samples);
+    expect(painted.clock).toBeCloseTo(bare.clock, 12);
+    expect(painted.phase).toBe(bare.phase);
+    // ③ 结算确实发生（防「两条路径都空跑」的假一致），且确经 charge→strike 两态
+    expect(bare.samples[bare.samples.length - 1]).not.toBe(bare.samples[0]);
+    expect(bare.samples.some((x) => x.includes('hero:charge'))).toBe(true);
+    // 实测口径（如实记录）：现役 session 的施法相 = charge → idle（t1 即收势，不经 strike 收招相，
+    // 见 systems/battle-session 的 AS-4 注释）⇒ strike 3D 槽位由「直接驱动命令」的用例与 shot 证据覆盖。
+    expect([...new Set(bare.samples.map((x) => x.split(' ')[1].split(':')[1]))]).toEqual(['charge', 'idle']);
   });
 });
 
