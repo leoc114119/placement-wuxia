@@ -58,7 +58,7 @@ function createStubRenderer(overrides: Partial<Character3DRenderer> = {}): StubR
     backbuffer: { width: 375, height: 667 },
     contextAttributes: { antialias: false } as WebGLContextAttributes,
     maxVertexUniformVectors: 1024,
-    counters: { drawCalls: 0, paletteUploads: 0, frames: 0, weaponDraws: 0 },
+    counters: { drawCalls: 0, unitDraws: 0, weaponDraws: 0, fxaaDraws: 0, paletteUploads: 0, frames: 0 },
     diagnostics: [],
     frames: 0,
     draws: [],

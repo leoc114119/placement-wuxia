@@ -33,10 +33,7 @@ import {
   validateWeaponAccount,
   type Character3DModel,
 } from '../../ui/character3d/glb';
-import {
-  buildWeaponVertexInterleave,
-  splitWeaponSegments,
-} from '../../ui/character3d/weapon';
+import { assembleWeaponRuntime, type WeaponRuntimeBundle } from './weapon-assembly';
 import { resolveClipSource, type Character3DAnimConfig, type Character3DClipRegistry } from '../../ui/character3d/animation';
 import { createCharacter3DRenderer, type Character3DRenderer, type Character3DEdgeMode } from '../../ui/character3d/renderer';
 import {
@@ -479,35 +476,21 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
       }
     }
     // ---- 【T32】武器资产：失败 = 无剑进战斗 + 诊断（**不阻塞**，方案 §6 裁定；有 LKG 用 LKG）----
-    let weapon: Character3DWeaponRuntime | null = null;
-    let weaponDiag = WEAPON_OFF ? 'weapon-off-by-query' : 'weapon-not-requested';
-    if (!WEAPON_OFF) {
-      const res = await loader.load(HERO_3D_WEAPON_REF);
-      if (res.status === 'failed' || !res.bytes) {
-        weaponDiag = 'weapon-load-failed';
-      } else {
-        try {
-          const mesh = loadCharacter3DStaticMesh(res.bytes);
-          const segs = splitWeaponSegments(mesh, HERO_3D_WEAPON_SEGMENT_BOUNDARIES);
-          weapon = {
-            assetId: HERO_3D_WEAPON_REF.id,
-            mesh,
-            segments: segs,
-            vertexData: buildWeaponVertexInterleave(mesh),
-          };
-          weaponDiag = 'weapon-ready:' + mesh.account.triangleCount + 'tri/' + mesh.account.vertexCount + 'v';
-        } catch (error) {
-          weaponDiag = 'weapon-parse-failed:' + String(error);
-        }
-      }
-    }
+    // 【T32 · 审核必修 1】四阶段失败边界（下载 / 解析+结构门 / 贴图解码）全在 assembleWeaponRuntime 内，
+    // 任一阶段失败只返回 null + 专用诊断 ⇒ 角色装配与战斗不受影响（GPU/标定两阶段分别在 renderer/pass 内）。
+    const weaponOutcome = WEAPON_OFF
+      ? { runtime: null as WeaponRuntimeBundle | null, diag: 'weapon-off-by-query' }
+      : await assembleWeaponRuntime(
+          { load: (ref) => loader.load(ref), decodeImage: (b, m, n) => platform.decodeImage(b, m, n) },
+          { ref: HERO_3D_WEAPON_REF, account: HERO_3D_WEAPON_ACCOUNT, segmentBoundaries: HERO_3D_WEAPON_SEGMENT_BOUNDARIES },
+        );
+    const weapon = weaponOutcome.runtime;
+    const weaponDiag = weaponOutcome.diag;
+    const weaponTexture = weapon ? weapon.baseColor : null;
 
     const baseColor = model.textureRoles.baseColor;
     if (!baseColor) return { ok: false, failures: ['模型缺 baseColor 贴图（§6.2 结构门）'] };
     const decoded = await platform.decodeImage(baseColor.bytes, baseColor.mimeType, baseColor.name);
-    const weaponTexture = weapon
-      ? await platform.decodeImage(weapon.mesh.baseColor.bytes, weapon.mesh.baseColor.mimeType, weapon.mesh.baseColor.name)
-      : null;
     // 【T31-FE-B · R3 = arch seq=418 Q2-2】按**目标背衬尺寸**直接建离屏画布（背衬 = round(逻辑 × dpr ×
     // renderScale)，与 renderer.resize 同一式）。此处首调 resize 若尺寸已相等即早退也无妨：投影矩阵由
     // renderer.beginFrame() 在每次上传 uProjection 前用 orthoPixel(backbufferW, backbufferH) 重建

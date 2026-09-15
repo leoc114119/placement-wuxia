@@ -149,8 +149,17 @@ describe('提交次数（方案 §7 / §9.1）', () => {
       renderer.beginFrame();
       for (let i = 0; i < 20; i++) renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
       renderer.endFrame();
+      // 【T32 审核必修 3】三类口径明确：人物 20 + 武器 0 + FXAA（fxaa 分支 1/帧、native 0）
       expect(renderer.counters.paletteUploads, mode).toBe(20);
-      expect(renderer.counters.drawCalls, mode).toBe(20);
+      expect(renderer.counters.unitDraws, mode).toBe(20);
+      expect(renderer.counters.weaponDraws, mode).toBe(0);
+      expect(renderer.counters.fxaaDraws, mode).toBe(mode === 'fxaa' ? 1 : 0);
+      expect(renderer.counters.drawCalls, mode).toBe(20 + (mode === 'fxaa' ? 1 : 0));
+      // 恒等式（可加和对账）与 FakeGL 实际调用数一致
+      expect(renderer.counters.drawCalls, mode).toBe(
+        renderer.counters.unitDraws + renderer.counters.weaponDraws + renderer.counters.fxaaDraws,
+      );
+      expect(renderer.counters.drawCalls, mode).toBe(state.drawElementsCalls.length + state.drawArraysCalls.length);
       expect(state.uniformMatrix4fvCalls.filter((c) => c[0] === null)).toHaveLength(0);
       // 20 个单位不应出现 820 次 uniform 调用（易错点 1）
       const boneUploads = state.uniformMatrix4fvCalls.filter(
@@ -208,7 +217,9 @@ describe('提交次数（方案 §7 / §9.1）', () => {
     renderer.endFrame();
     const alphaCalls = state.calls.get('uniform1f') ?? [];
     expect(alphaCalls.length).toBeGreaterThan(0);
-    expect(renderer.counters.drawCalls).toBe(1);
+    // 本用例走能力分支（FakeGL 默认 antialias=false ⇒ fxaa）：1 次人物 draw + 1 次 FXAA 全屏 pass
+    expect(renderer.counters.unitDraws).toBe(1);
+    expect(renderer.counters.drawCalls).toBe(renderer.edgeMode === 'fxaa' ? 2 : 1);
   });
 });
 

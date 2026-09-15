@@ -46,6 +46,9 @@ export interface FakeGlOptions {
   nullUniforms?: string[];
   /** 让着色器编译失败 */
   failShaderCompile?: boolean;
+  /** 【T32 审核必修 1】只让**指定 shader** 编译失败（注入用；例：仅武器 program）。
+   * 收到 shaderSource 时按源码判定，命中则该次 compile 失败——用于复现「角色 shader 成功、武器 shader 失败」。 */
+  failShaderCompileWhen?: (source: string) => boolean;
   /** getContextAttributes 返回 null（context lost 后的宿主行为） */
   nullContextAttributes?: boolean;
 }
@@ -57,6 +60,8 @@ export interface FakeGl {
 
 export function createFakeWebGL2(options: FakeGlOptions = {}): FakeGl {
   const calls = new Map<string, unknown[][]>();
+  /** 【T32 审核必修 1】最近一次 shaderSource 的源码（供 failShaderCompileWhen 定向判定） */
+  let lastShaderSource: string | null = null;
   const state: FakeGlState = {
     calls,
     boundFramebuffer: null,
@@ -163,14 +168,22 @@ export function createFakeWebGL2(options: FakeGlOptions = {}): FakeGl {
       rec('createShader', [type]);
       return { kind: 'shader', type };
     },
-    shaderSource(): void { rec('shaderSource', []); },
+    shaderSource(_shader: unknown, source: string): void {
+      rec('shaderSource', [source]);
+      lastShaderSource = source;
+    },
     compileShader(): void { rec('compileShader', []); },
     getShaderParameter(): boolean {
       rec('getShaderParameter', []);
-      return !options.failShaderCompile;
+      if (options.failShaderCompile) return false;
+      if (options.failShaderCompileWhen && lastShaderSource !== null) {
+        return !options.failShaderCompileWhen(lastShaderSource);
+      }
+      return true;
     },
     getShaderInfoLog(): string {
-      return options.failShaderCompile ? 'synthetic compile failure' : '';
+      const targeted = options.failShaderCompileWhen && lastShaderSource !== null && options.failShaderCompileWhen(lastShaderSource);
+      return options.failShaderCompile || targeted ? 'synthetic compile failure' : '';
     },
     deleteShader(): void { rec('deleteShader', []); },
 

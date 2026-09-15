@@ -82,12 +82,19 @@ export interface Character3DRendererOptions {
   forceEdgeMode?: Character3DEdgeMode;
 }
 
+/** 渲染计数（**三类口径明确、可加和对账**——T32 审核必修 3）：
+ *   · `drawCalls` = 本进程内**实际 GL draw 调用总数** = `unitDraws + weaponDraws + fxaaDraws`（恒等式，用例断言）；
+ *   · `unitDraws` = 人物（蒙皮）draw：每单位每帧 1 次；
+ *   · `weaponDraws` = 武器 draw：**默认全白合批 1 次/挂武器单位**；四段染色 **4 次/单位**（禁按合批外推性能）；
+ *   · `fxaaDraws` = FXAA 全屏 pass：fxaa 分支 1 次/帧，native-msaa 分支 0；
+ *   · `paletteUploads` = 骨骼 palette 上传次数（= 人物 draw 次数，仅人物有蒙皮）。 */
 export interface Character3DRendererCounters {
   drawCalls: number;
+  unitDraws: number;
+  weaponDraws: number;
+  fxaaDraws: number;
   paletteUploads: number;
   frames: number;
-  /** 【T32】武器 draw 次数（无染色 1 段合批 = 1/单位；四段染色 = 4/单位） */
-  weaponDraws: number;
 }
 
 export interface Character3DRenderer {
@@ -384,7 +391,14 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
   const { canvas, model, baseColor, platform, light, fxaa } = options;
   const jointCount = model.jointNodes.length;
   const diags: string[] = [];
-  const counters: Character3DRendererCounters = { drawCalls: 0, paletteUploads: 0, frames: 0, weaponDraws: 0 };
+  const counters: Character3DRendererCounters = {
+    drawCalls: 0,
+    unitDraws: 0,
+    weaponDraws: 0,
+    fxaaDraws: 0,
+    paletteUploads: 0,
+    frames: 0,
+  };
   const vertexData = buildVertexInterleave(model);
   const projection = new Float32Array(16);
   /** 世界（观感台）方向光，归一化；每单位再旋进模型空间（见 drawUnit） */
@@ -520,11 +534,52 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
     return { program, u, vao, vbo, ibo, texture };
   }
 
-  /** 【T32】装配武器 program + VAO/VBO/IBO + 贴图（**装配期一次、多单位共享**，W7）。
-   * 顶点布局沿用 16 float（joints/weights 恒 0）⇒ 与角色同一套 attrib 指针代码。 */
-  function buildWeaponProgram(src: Character3DWeaponSource): WeaponProgram {
+  /**
+   * 【T32 · 审核必修 1】**武器 GPU 装配的失败边界**：只让武器失败，不牵动角色。
+   * 失败时：① 删除本次已建的部分 GL 资源（program/VAO/VBO/IBO/贴图）；② **恢复 GL 绑定**到人物路径；
+   * ③ 记 `weapon-gpu-failed`（含原因）；④ 返回 null ⇒ 该单位空手；renderer.status 保持 ready。
+   * ⚠ 只有真正的 context 丢失才走整体恢复（notifyContextLost/handleContextRestored），两者不混。
+   */
+  function tryBuildWeaponProgram(src: Character3DWeaponSource): WeaponProgram | null {
+    const partial: Partial<WeaponProgram> & { program?: WebGLProgram } = {};
+    try {
+      return buildWeaponProgram(src, partial);
+    } catch (error) {
+      const g = gl as WebGL2RenderingContext;
+      // ① 清理部分资源（顺序：program → VAO → buffer → texture）
+      if (partial.program) g.deleteProgram(partial.program);
+      if (partial.vao) g.deleteVertexArray(partial.vao);
+      if (partial.vbo) g.deleteBuffer(partial.vbo);
+      if (partial.ibo) g.deleteBuffer(partial.ibo);
+      if (partial.texture) g.deleteTexture(partial.texture);
+      // ② 恢复 GL 绑定（撤下武器 VAO/程序，绑回人物）
+      g.bindVertexArray(null);
+      g.bindBuffer(g.ARRAY_BUFFER, null);
+      g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, null);
+      g.bindTexture(g.TEXTURE_2D, null);
+      const s2 = skin;
+      if (s2) {
+        g.useProgram(s2.program);
+        g.bindVertexArray(s2.vao);
+        g.activeTexture(g.TEXTURE1);
+        g.bindTexture(g.TEXTURE_2D, s2.texture);
+      }
+      note('weapon-gpu-failed');
+      note('weapon-gpu-failed:' + (error instanceof Error ? error.message : String(error)));
+      platform.log('warn', '[character3d/renderer] 武器 GPU 装配失败：无剑继续（角色不受影响）', {
+        message: String(error),
+      });
+      return null;
+    }
+  }
+
+  /** 装配武器 program + VAO/VBO/IBO + 贴图（**装配期一次、多单位共享**，W7）。
+   * 顶点布局沿用 16 float（joints/weights 恒 0）⇒ 与角色同一套 attrib 指针代码。
+   * `partial` 由调用方持有：任一步抛错时按已建资源逐项回收（失败边界见 tryBuildWeaponProgram）。 */
+  function buildWeaponProgram(src: Character3DWeaponSource, partial: Partial<WeaponProgram>): WeaponProgram {
     const g = gl as WebGL2RenderingContext;
     const program = link(WEAPON_VERTEX_SRC, WEAPON_FRAGMENT_SRC, 'weapon');
+    partial.program = program;
     const u = {
       projection: g.getUniformLocation(program, 'uProjection'),
       model: g.getUniformLocation(program, 'uModel'),
@@ -534,9 +589,11 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
     };
     const vao = g.createVertexArray();
     if (!vao) fail('createVertexArray(weapon) 返回空');
+    partial.vao = vao;
     g.bindVertexArray(vao);
     const vbo = g.createBuffer();
     if (!vbo) fail('createBuffer(weapon.vbo) 返回空');
+    partial.vbo = vbo;
     g.bindBuffer(g.ARRAY_BUFFER, vbo);
     g.bufferData(g.ARRAY_BUFFER, src.vertexData, g.STATIC_DRAW);
     g.enableVertexAttribArray(LOC.pos);
@@ -545,11 +602,13 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
     g.vertexAttribPointer(LOC.uv, 2, g.FLOAT, false, STRIDE, 24);
     const ibo = g.createBuffer();
     if (!ibo) fail('createBuffer(weapon.ibo) 返回空');
+    partial.ibo = ibo;
     g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, ibo);
     g.bufferData(g.ELEMENT_ARRAY_BUFFER, src.indices, g.STATIC_DRAW);
     g.bindVertexArray(null);
     const texture = g.createTexture();
     if (!texture) fail('createTexture(weapon) 返回空');
+    partial.texture = texture;
     g.bindTexture(g.TEXTURE_2D, texture);
     // UV 朝向与角色同口径（glTF 的 UV 原点在左上；不翻转 ⇒ 数据首行 = t=0）
     g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL, false);
@@ -646,7 +705,8 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       fail('MAX_VERTEX_UNIFORM_VECTORS=' + maxVertexUniformVectors + ' 装不下 ' + jointCount + ' 骨');
     }
     skin = buildSkinProgram();
-    if (options.weapon) weapon = buildWeaponProgram(options.weapon);
+    // 【T32 · 审核必修 1】武器 GPU 装配是**独立失败边界**：失败 ⇒ 无剑继续（角色 ready 不变）
+    if (options.weapon) weapon = tryBuildWeaponProgram(options.weapon);
     if (edgeMode === 'fxaa') {
       fxaaProgram = buildFxaaProgram();
       buildTargets();
@@ -774,6 +834,7 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
       g.uniformMatrix4fv(s.u.model, false, modelMatrix);
       g.uniform1f(s.u.alpha, alpha);
       g.drawElements(g.TRIANGLES, model.mesh.indexCount, indexGlType, 0);
+      counters.unitDraws++;
       counters.drawCalls++;
     },
 
@@ -792,6 +853,7 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
         g.uniform3f(w.u.tint, 1, 1, 1);
         g.drawElements(g.TRIANGLES, w.indexCount, w.indexType, 0);
         counters.weaponDraws++;
+        counters.drawCalls++;
       } else {
         for (let i = 0; i < w.segments.length; i++) {
           const seg = w.segments[i];
@@ -799,10 +861,11 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
           const t = tints[i] ?? tints[tints.length - 1];
           g.uniform3f(w.u.tint, t[0], t[1], t[2]);
           g.drawElements(g.TRIANGLES, seg.count, w.indexType, seg.start * (w.indexType === 0x1403 ? 2 : 4));
+          // ★ 审核必修 3：**每次实际 draw 各计一次**（四段染色 = 4 次，不得只记 1）
           counters.weaponDraws++;
+          counters.drawCalls++;
         }
       }
-      counters.drawCalls++;
       g.useProgram((skin as SkinProgram).program); // 归还角色程序（下一单位 drawUnit 直接可用）
       g.bindVertexArray((skin as SkinProgram).vao);
     },
@@ -831,6 +894,8 @@ export function createCharacter3DRenderer(options: Character3DRendererOptions): 
         g.uniform1f(f.u.alphaThreshold, fxaa.alphaThreshold);
         // 全屏三角形：无 VBO，3 顶点覆盖整屏
         g.drawArrays(g.TRIANGLES, 0, 3);
+        counters.fxaaDraws++;
+        counters.drawCalls++;
         g.bindVertexArray(null);
       }
       counters.frames++;

@@ -71,6 +71,40 @@ function jumpPhaseOf(p: number): number {
   return remapPhaseByAnchors(p, CHARACTER_3D_JUMP_PHASE_ANCHORS);
 }
 
+/** 【审核必修 2 用例】把 cast 槽位换成指定源（'atk' = 真实 1.5s / 'synthetic12' = 合成 1.2s），其余不动。 */
+function controllerWithCastClip(key: 'atk' | 'synthetic12'): CharacterAnimController {
+  const registry = heroClipRegistry(model);
+  if (key === 'atk') {
+    registry.cast = { kind: 'retargeted', ref: null, clip: heroClip('atk'), bound: bindRetargetedClip(heroClip('atk'), model) };
+  } else {
+    // 合成 1.2s 源（36 帧 @30fps；与原 clip 同构：单骨轨 + 零 root 轨）
+    const clip = parseCharacter3DClipJson(
+      {
+        fps: 30,
+        nFrames: 36,
+        duration: 1.2,
+        rootMode: 'y',
+        boneTracks: { L_Thigh: Array.from({ length: 36 }, (_v, i) => [0, Math.sin(i / 6) * 0.1, 0, Math.sqrt(1 - (Math.sin(i / 6) * 0.1) ** 2)]) },
+        rootTrack: Array.from({ length: 36 }, () => [0, 0, 0]),
+      },
+      'synthetic12',
+    );
+    registry.cast = { kind: 'retargeted', ref: null, clip, bound: bindRetargetedClip(clip, model) };
+  }
+  return new CharacterAnimController({
+    actionMap: HERO_3D_ACTION_MAP,
+    crossFadeSec: CHARACTER_3D_CROSS_FADE_SEC,
+    jumpToIdleBlendSec: CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+    clips: registry,
+  });
+}
+
+/** 采样某 elapsed 下的姿态 digest（同一控制器连续调用，模拟逐帧推进）。 */
+function digestOf(c: CharacterAnimController, elapsed: number, state: 'charge' | 'strike'): number {
+  c.update(0.016, { state, stateElapsedSec: elapsed, moveProgress: null, isJump: false });
+  return digestFloats(c.sample(model, createPose(model), createPose(model)), 1e-5);
+}
+
 function sampleDigest(controller: CharacterAnimController): number {
   const pose = createPose(model);
   const scratch = createPose(model);
@@ -427,6 +461,64 @@ describe('动作状态机（方案 §5）', () => {
     expect(sampleDigest(c)).not.toBe(p0);
     // 840ms 处的相位 = 0.28（= 840/3000），与「相位 0.28 的参考采样」逐位一致
     expect(sampleDigest(c)).toBe(referencePalette('cast', 0.28, true));
+  });
+
+  it('【审核必修 2】短源按**源周期**循环：1.5s 源（真实 atk）替到 cast 槽 ⇒ 3s 窗内两遍，elapsed=1.5 相位=0', () => {
+    // 审核方注入法：把测试注册表里的 cast 换成真实 atk（1.5s）源，其余不动
+    const c = controllerWithCastClip('atk');
+    const at = (t: number): { phase: number; digest: number } => {
+      c.update(0.016, { state: 'charge', stateElapsedSec: t, moveProgress: null, isJump: false });
+      const pose = c.sample(model, createPose(model), createPose(model));
+      return { phase: 0, digest: digestFloats(pose, 1e-5) };
+    };
+    // 姿态级判据（不依赖相位数字）：elapsed=1.5 必须是**第二遍起点** ⇒ 与 elapsed=0 同姿
+    const d0 = at(0).digest;
+    const d750 = at(0.75).digest; // 第一遍中点
+    const d1500 = at(1.5).digest; // 第二遍起点
+    expect(d1500, 'elapsed=1.5 应为第二遍起点（与 0 同姿）').toBe(d0);
+    expect(d750).not.toBe(d0);
+    // 相位级判据：相位 = (elapsed / min(S,W)) mod 1 = elapsed/1.5 mod 1
+    for (const [t, want] of [[0, 0], [0.375, 0.25], [0.75, 0.5], [1.125, 0.75], [1.5, 0]] as const) {
+      c.update(0.016, { state: 'charge', stateElapsedSec: t, moveProgress: null, isJump: false });
+      const clipSource = heroClip('atk');
+      const cycle = Math.min(clipSource.samplerDurationSec, HERO_3D_SKILL_WINDOW_SEC);
+      const expected = (t % cycle) / cycle;
+      const pose = createPose(model);
+      const reference = bindRetargetedClip(clipSource, model);
+      applyRetargetedClip(clipSource, reference, model, pose, expected, 'track', true);
+      const refDigest = digestFloats(resolvePose(model, pose), 1e-5);
+      expect(at(t).digest, `t=${t} 相位=${expected}`).toBe(refDigest);
+      if (want >= 0) expect(expected).toBeCloseTo(t / 1.5 - Math.floor(t / 1.5), 12);
+    }
+    // 两遍：窗尾（3.0s）也是遍界（3.0 % 1.5 = 0）
+    expect(at(HERO_3D_SKILL_WINDOW_SEC).digest).toBe(d0);
+    expect(Math.min(heroClip('atk').samplerDurationSec, HERO_3D_SKILL_WINDOW_SEC)).toBeCloseTo(1.5, 12);
+  });
+
+  it('【审核必修 2】非整除短源（1.2s）：按源周期循环，窗尾姿态 = (3.0 mod 1.2)/1.2 = 0.5（明确定义、不吸附）', () => {
+    const c = controllerWithCastClip('synthetic12');
+    const d0 = digestOf(c, 0, 'charge');
+    const d12 = digestOf(c, 1.2, 'charge');
+    const d24 = digestOf(c, 2.4, 'charge');
+    expect(d12, '1.2s 处 = 第二遍起点').toBe(d0);
+    expect(d24, '2.4s 处 = 第三遍起点').toBe(d0);
+    // 窗尾（3.0s）停在 0.5 相位（第三遍半分处）——与 0.6s 同姿（0.6/1.2 = 0.5）
+    const dWinEnd = digestOf(c, HERO_3D_SKILL_WINDOW_SEC, 'charge');
+    expect(dWinEnd).toBe(digestOf(c, 0.6, 'charge'));
+    expect(dWinEnd).not.toBe(d0);
+    // 旧口径反例自证：若按 (elapsed % W)/W，3.0 ⇒ 相位 0（与 0 同姿）——本实现必须不同
+    expect(dWinEnd).not.toBe(d0);
+  });
+
+  it('【审核必修 2】长源（真实 cast 4.5333s）分支不受影响：整段压进 3s，逐点 = 真实源相位 elapsed/3', () => {
+    const c = newController();
+    for (const t of [0, 0.75, 1.5, 2.25, 3.0]) {
+      c.update(0.016, { state: 'charge', stateElapsedSec: t, moveProgress: null, isJump: false });
+      expect(sampleDigest(c), `t=${t}`).toBe(referencePalette('cast', (t / 3) % 1, true));
+    }
+    // cycle 选择 = min(4.5333, 3.0) = 3.0（长源走窗）
+    expect(Math.min(heroClip('cast').samplerDurationSec, HERO_3D_SKILL_WINDOW_SEC)).toBeCloseTo(3.0, 12);
+    expect(1.5 / 4.533333333333333).toBeCloseTo(0.3309, 4); // 旧口径在 t=1.5 会读成源 33% 处（新口径仍是 50%，见上条）
   });
 
   it('charge 相位斜率为 1/3（源 4.5333s 压进 3s ⇒ 等效 1.511×），逐点单调无回卷', () => {

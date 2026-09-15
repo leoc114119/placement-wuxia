@@ -1,20 +1,12 @@
 {
  "jumpFrames": [
   {
-   "viewT": 3.083,
+   "viewT": 3.116,
    "snapState": "walk",
    "snapIsJump": true,
    "actionKey": "idle",
    "visible": true,
    "inMove": false
-  },
-  {
-   "viewT": 3.1,
-   "snapState": "walk",
-   "snapIsJump": true,
-   "actionKey": "jump",
-   "visible": false,
-   "inMove": true
   },
   {
    "viewT": 3.133,
@@ -25,7 +17,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.15,
+   "viewT": 3.166,
    "snapState": "walk",
    "snapIsJump": true,
    "actionKey": "jump",
@@ -33,7 +25,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.167,
+   "viewT": 3.183,
    "snapState": "walk",
    "snapIsJump": true,
    "actionKey": "jump",
@@ -41,15 +33,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.2,
-   "snapState": "walk",
-   "snapIsJump": true,
-   "actionKey": "jump",
-   "visible": false,
-   "inMove": true
-  },
-  {
-   "viewT": 3.216,
+   "viewT": 3.217,
    "snapState": "walk",
    "snapIsJump": true,
    "actionKey": "jump",
@@ -65,7 +49,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.266,
+   "viewT": 3.25,
    "snapState": "walk",
    "snapIsJump": true,
    "actionKey": "jump",
@@ -81,7 +65,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.316,
+   "viewT": 3.3,
    "snapState": "walk",
    "snapIsJump": true,
    "actionKey": "jump",
@@ -97,6 +81,14 @@
    "inMove": true
   },
   {
+   "viewT": 3.35,
+   "snapState": "walk",
+   "snapIsJump": true,
+   "actionKey": "jump",
+   "visible": false,
+   "inMove": true
+  },
+  {
    "viewT": 3.366,
    "snapState": "walk",
    "snapIsJump": true,
@@ -105,23 +97,15 @@
    "inMove": true
   },
   {
-   "viewT": 3.383,
-   "snapState": "walk",
-   "snapIsJump": false,
-   "actionKey": "jump",
-   "visible": false,
-   "inMove": true
-  },
-  {
    "viewT": 3.4,
    "snapState": "walk",
-   "snapIsJump": false,
+   "snapIsJump": true,
    "actionKey": "jump",
    "visible": false,
    "inMove": true
   },
   {
-   "viewT": 3.433,
+   "viewT": 3.416,
    "snapState": "walk",
    "snapIsJump": false,
    "actionKey": "jump",
@@ -137,6 +121,14 @@
    "inMove": true
   },
   {
+   "viewT": 3.466,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "jump",
+   "visible": false,
+   "inMove": true
+  },
+  {
    "viewT": 3.483,
    "snapState": "walk",
    "snapIsJump": false,
@@ -145,7 +137,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.5,
+   "viewT": 3.516,
    "snapState": "walk",
    "snapIsJump": false,
    "actionKey": "jump",
@@ -201,7 +193,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.667,
+   "viewT": 3.666,
    "snapState": "walk",
    "snapIsJump": false,
    "actionKey": "jump",
@@ -225,7 +217,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.733,
+   "viewT": 3.75,
    "snapState": "walk",
    "snapIsJump": false,
    "actionKey": "jump",
@@ -265,7 +257,7 @@
    "inMove": true
   },
   {
-   "viewT": 3.85,
+   "viewT": 3.866,
    "snapState": "walk",
    "snapIsJump": false,
    "actionKey": "jump",
@@ -338,6 +330,14 @@
   },
   {
    "viewT": 4.066,
+   "snapState": "walk",
+   "snapIsJump": false,
+   "actionKey": "jump",
+   "visible": false,
+   "inMove": true
+  },
+  {
+   "viewT": 4.1,
    "snapState": "walk",
    "snapIsJump": false,
    "actionKey": "jump",

@@ -237,26 +237,34 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
           rig.reason = 'hand-bone-missing:' + att.bone;
           note('weapon-' + rig.reason);
         } else {
-          // 绑定姿势（rest）下取一次手骨世界矩阵 + 拳心（rest 时几何 = 绑定姿势）
-          const restPose = createPose(runtime.model);
-          resetPose(restPose, runtime.model);
-          resolvePose(runtime.model, restPose);
-          const fist = fistCenterLocalOf(runtime.model.mesh, restPose.worldV[handNode], jointIndexInSkin);
-          const calibration = calibrateWeaponAttachment(
-            att,
-            runtime.profile.modelHeight,
-            fist.center,
-            fist.vertexCount,
-          );
-          rig.enabled = true;
-          rig.handNode = handNode;
-          rig.calibration = calibration;
-          rig.anchorLocal = calibration.anchorLocal;
-          rig.tints = tintSegmentsLinear(att.tints);
-          rig.attachmentName = name;
-          rig.segments = weapon.segments;
-          note('weapon-ready:' + name + ':' + weapon.assetId);
-          note('weapon-k=' + calibration.scale.toFixed(6) + ':ch=' + calibration.charHeightModel.toFixed(6));
+          // 【T32 · 审核必修 1】挂点标定/染色解析是**独立失败边界**：任何异常都不得冒泡出 render
+          //（方案 §6 裁定：武器失败 = 无剑 + 诊断，不阻塞战斗；角色照常 ready）。
+          try {
+            // 绑定姿势（rest）下取一次手骨世界矩阵 + 拳心（rest 时几何 = 绑定姿势）
+            const restPose = createPose(runtime.model);
+            resetPose(restPose, runtime.model);
+            resolvePose(runtime.model, restPose);
+            const fist = fistCenterLocalOf(runtime.model.mesh, restPose.worldV[handNode], jointIndexInSkin);
+            const calibration = calibrateWeaponAttachment(
+              att,
+              runtime.profile.modelHeight,
+              fist.center,
+              fist.vertexCount,
+            );
+            rig.enabled = true;
+            rig.handNode = handNode;
+            rig.calibration = calibration;
+            rig.anchorLocal = calibration.anchorLocal;
+            rig.tints = tintSegmentsLinear(att.tints);
+            rig.attachmentName = name;
+            rig.segments = weapon.segments;
+            note('weapon-ready:' + name + ':' + weapon.assetId);
+            note('weapon-k=' + calibration.scale.toFixed(6) + ':ch=' + calibration.charHeightModel.toFixed(6));
+          } catch (error) {
+            rig.enabled = false;
+            rig.reason = 'weapon-calibration-failed';
+            note('weapon-calibration-failed:' + name + ':' + (error instanceof Error ? error.message : String(error)));
+          }
         }
       }
     }
@@ -327,20 +335,29 @@ export function createCharacter3DPass(options: Character3DPassOptions): Characte
       // 规则表在 config（W6 甲：移动演出期间收剑）。
       const rig = weaponRigOf(runtime);
       if (rig.enabled && rig.calibration && !rig.sheathedActions.has(view.controller.actionKey)) {
-        mul(weaponMatrix, matrix, view.pose.worldV[rig.handNode]);
-        mul(weaponMatrix, weaponMatrix, rig.calibration.localMatrix);
-        renderer.drawWeapon(weaponMatrix, clampAlpha(cmd.alpha), rig.tints);
-        lastWeaponVisible = true;
-        lastWeaponActor = cmd.actorId;
-        // 证据面（W4 屏长仪器）：武器矩阵对「柄头 / 握点 / 剑尖」三点的投影（物理像素）
-        const entry = runtime.profile.attachments?.[rig.attachmentName ?? 'right-hand-blade'];
-        const gripPoint = entry?.gripLocal ?? [0, 0, 0];
-        const tipY = options.weapon?.mesh.bounds?.max?.[1] ?? 1;
-        lastWeaponScreen = {
-          pommel: point2(weaponMatrix, 0, 0, 0),
-          grip: point2(weaponMatrix, gripPoint[0], gripPoint[1], gripPoint[2]),
-          tip: point2(weaponMatrix, 0, tipY > 0 ? tipY : 1, 0),
-        };
+        // 【T32 · 审核必修 1】逐帧武器绘制同属失败边界：任何异常只关掉本 rig 并记诊断，不冒泡出 render
+        try {
+          mul(weaponMatrix, matrix, view.pose.worldV[rig.handNode]);
+          mul(weaponMatrix, weaponMatrix, rig.calibration.localMatrix);
+          renderer.drawWeapon(weaponMatrix, clampAlpha(cmd.alpha), rig.tints);
+          lastWeaponVisible = true;
+          lastWeaponActor = cmd.actorId;
+          // 证据面（W4 屏长仪器）：武器矩阵对「柄头 / 握点 / 剑尖」三点的投影（物理像素）
+          const entry = runtime.profile.attachments?.[rig.attachmentName ?? 'right-hand-blade'];
+          const gripPoint = entry?.gripLocal ?? [0, 0, 0];
+          const tipY = options.weapon?.mesh.bounds?.max?.[1] ?? 1;
+          lastWeaponScreen = {
+            pommel: point2(weaponMatrix, 0, 0, 0),
+            grip: point2(weaponMatrix, gripPoint[0], gripPoint[1], gripPoint[2]),
+            tip: point2(weaponMatrix, 0, tipY > 0 ? tipY : 1, 0),
+          };
+        } catch (error) {
+          rig.enabled = false;
+          rig.reason = 'weapon-draw-failed';
+          lastWeaponVisible = false;
+          lastWeaponScreen = null;
+          note('weapon-draw-failed:' + (error instanceof Error ? error.message : String(error)));
+        }
       }
       placed.set(cmd.actorId, box);
       for (const d of view.controller.diagnostics) note(cmd.actorId + ':' + d);

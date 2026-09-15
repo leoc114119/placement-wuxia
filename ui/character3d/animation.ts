@@ -773,7 +773,15 @@ export class CharacterAnimController {
       case 'stateElapsed': {
         const window = spec.playWindowSec ?? durationSec;
         if (spec.loop) {
-          return foldPhase(start + viewWindow(input.stateElapsedSec, window) * span, true);
+          // 【T32 审核必修 2】长/短源分支（方案 §4.1.3(1) 的「源 >3s 压缩一遍 / 源 <3s 循环填满」）：
+          //   循环周期 = **min(源时长, 表现窗)**——
+          //   · 长源（S > W）：整段源压缩进窗播完一遍（现役 cast 4.5333s → 3s ⇒ 等效 1.511×）；
+          //   · 短源（S ≤ W）：按**源周期** 1:1 推进并在窗内循环（1.5s 源在 3s 窗内恰两遍；elapsed=S ⇒ 相位 0）。
+          //   窗尾姿态定义：相位 = ((W mod S)/S)（短源非整除时停在**当遍进度**处，不吸附、不跳变；
+          //   随后 strike 槽位按既有口径持末帧，两者之间的 100ms 交叉淡化承担过渡）。
+          //   ⚠ 旧实现一律 (elapsed % W)/W ⇒ 短源会被按窗拉长（1.5s 源在 elapsed=1.5 时相位 0.5 ≠ 第二遍起点 0）。
+          const cycle = durationSec > 0 ? Math.min(durationSec, window > 0 ? window : durationSec) : window;
+          return foldPhase(start + viewWindow(input.stateElapsedSec, cycle) * span, true);
         }
         return foldPhase(start + clamp01(input.stateElapsedSec / (window > 0 ? window : 1)) * span, false);
       }

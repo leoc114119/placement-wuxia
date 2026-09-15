@@ -26,24 +26,13 @@ import {
   HERO_3D_PROFILE_ID,
 } from '../config/character-3d';
 import { heroClipRegistry } from './character3d-fixtures';
-import type { CharacterRenderCommand } from '../types';
+import { createCharacter3DRenderer } from '../ui/character3d/renderer';
+import { createFakeCanvas, createFakeWebGL2 } from './character3d-fake-gl';
+import { CHARACTER_3D_FXAA, CHARACTER_3D_LIGHT, CHARACTER_3D_ORTHO_Z_HALF, CHARACTER_3D_RENDER_SCALE } from '../config/character-3d';
+import { createBrowserCharacter3DPlatform } from '../ui/character3d/platform-browser';
+import { assembleWeaponRuntime } from '../proto/battle_demo/weapon-assembly';
+import { HERO_3D_WEAPON_SEGMENT_BOUNDARIES as SEG_BOUNDARIES_ALIAS } from '../config/character-3d';
 
-type Character3DRenderCommandFn = (c: Partial<CharacterRenderCommand>) => CharacterRenderCommand;
-import { createPose, resetPose, resolvePose } from '../ui/character3d/animation';
-import {
-  CHARACTER_3D_HERO_SCALE,
-  HERO_3D_ATTACHMENTS,
-  HERO_3D_PROFILE,
-  HERO_3D_WEAPON_ACCOUNT,
-  HERO_3D_WEAPON_REF,
-  HERO_3D_WEAPON_SEGMENT_BOUNDARIES,
-} from '../config/character-3d';
-import { readFileSync } from 'node:fs';
-import { heroModel, heroWeapon, readBytesSync, WEAPON_MODEL_PATH } from './character3d-fixtures';
-
-
-/** A4 §3.4 参考矩阵（列主序 16 浮点）——**测试数据**（金标准；生产模块禁含该字面量，见 W9 扫描用例）。
- * 出处：A4-T31 §3.4（Leo 观感台定稿参数、three.js 口径推导，含四关键点自检表）。 */
 const A4_REFERENCE_LOCAL_MATRIX: readonly number[] = [
   0.0, 0.724631, -0.127772, 0,
   0.66687, 0.053999, 0.306242, 0,
@@ -71,6 +60,38 @@ const A4_REFERENCE_KEYPOINTS: ReadonlyArray<{ name: string; src: readonly [numbe
 
 const model = heroModel();
 const weapon = heroWeapon();
+const platform = createBrowserCharacter3DPlatform();
+const IDENTITY_PALETTE = (() => {
+  const p = new Float32Array(model.jointNodes.length * 16);
+  for (let j = 0; j < model.jointNodes.length; j++) {
+    p[j * 16] = 1; p[j * 16 + 5] = 1; p[j * 16 + 10] = 1; p[j * 16 + 15] = 1;
+  }
+  return p;
+})();
+const IDENTITY_MODEL = (() => {
+  const m = new Float32Array(16);
+  m[0] = 1; m[5] = 1; m[10] = 1; m[15] = 1;
+  return m;
+})();
+import type { CharacterRenderCommand } from '../types';
+
+type Character3DRenderCommandFn = (c: Partial<CharacterRenderCommand>) => CharacterRenderCommand;
+import { createPose, resetPose, resolvePose } from '../ui/character3d/animation';
+import {
+  CHARACTER_3D_HERO_SCALE,
+  HERO_3D_ATTACHMENTS,
+  HERO_3D_PROFILE,
+  HERO_3D_WEAPON_ACCOUNT,
+  HERO_3D_WEAPON_REF,
+  HERO_3D_WEAPON_SEGMENT_BOUNDARIES,
+} from '../config/character-3d';
+import { readFileSync } from 'node:fs';
+import { heroModel, heroWeapon, readBytesSync, WEAPON_MODEL_PATH } from './character3d-fixtures';
+
+
+/** A4 §3.4 参考矩阵（列主序 16 浮点）——**测试数据**（金标准；生产模块禁含该字面量，见 W9 扫描用例）。
+ * 出处：A4-T31 §3.4（Leo 观感台定稿参数、three.js 口径推导，含四关键点自检表）。 */
+
 const attach = HERO_3D_ATTACHMENTS['right-hand-blade'];
 
 /** 现役标定（与 pass 装配期同一函数；同一组输入 ⇒ 同一结果）。 */
@@ -505,7 +526,7 @@ describe('W6 收剑（甲 · Leo 09-15 裁定）：技术源 = 控制器解析�
       backbuffer: { width: 375, height: 667 },
       contextAttributes: { antialias: false } as WebGLContextAttributes,
       maxVertexUniformVectors: 1024,
-      counters: { drawCalls: 0, paletteUploads: 0, frames: 0, weaponDraws: 0 },
+      counters: { drawCalls: 0, unitDraws: 0, weaponDraws: 0, fxaaDraws: 0, paletteUploads: 0, frames: 0 },
       diagnostics: [] as string[],
       weaponReady: true,
       beginFrame: () => {},
@@ -622,7 +643,7 @@ describe('W6 收剑（甲 · Leo 09-15 裁定）：技术源 = 控制器解析�
       drawWeapon: () => drawn.push({ model: new Float32Array(16) } as never),
       endFrame: () => {},
       status: 'ready' as const,
-      counters: { drawCalls: 0, paletteUploads: 0, frames: 0, weaponDraws: 0 },
+      counters: { drawCalls: 0, unitDraws: 0, weaponDraws: 0, fxaaDraws: 0, paletteUploads: 0, frames: 0 },
     };
     const pass2 = createCharacter3DPass({
       renderer: stub as never,
@@ -668,3 +689,293 @@ describe('W6 收剑（甲 · Leo 09-15 裁定）：技术源 = 控制器解析�
     expect(Array.from(drawn[0].model)).not.toEqual(Array.from(drawn[1].model)); // 各自摆放/手骨矩阵
   });
 });
+
+// ══════════════════ 审核必修 3 · 三类 draw 计数口径（对 FakeGL 实际调用数断言） ══════════════════
+
+describe('审核必修 3：draw 计数按实际调用计（人物/武器/FXAA 三类口径）', () => {
+  function makeWeaponRenderer(forceEdgeMode: 'fxaa' | 'native-msaa') {
+    const { gl, state } = createFakeWebGL2({ antialias: forceEdgeMode === 'native-msaa' });
+    const segments = splitWeaponSegments(weapon, HERO_3D_WEAPON_SEGMENT_BOUNDARIES);
+    const renderer = createCharacter3DRenderer({
+      canvas: createFakeCanvas(gl, 375, 667),
+      model,
+      baseColor: { image: { fake: 'char' }, width: 4096, height: 4096, mimeType: 'image/jpeg' },
+      platform,
+      light: {
+        ambientIntensity: CHARACTER_3D_LIGHT.ambientIntensity,
+        directionalIntensity: CHARACTER_3D_LIGHT.directionalIntensity,
+        direction: CHARACTER_3D_LIGHT.direction,
+        diffuseNormalization: CHARACTER_3D_LIGHT.diffuseNormalization,
+      },
+      orthoZHalf: CHARACTER_3D_ORTHO_Z_HALF,
+      renderScale: CHARACTER_3D_RENDER_SCALE,
+      fxaa: CHARACTER_3D_FXAA,
+      forceEdgeMode,
+      weapon: {
+        vertexData: buildWeaponVertexInterleave(weapon),
+        indices: segments.indices,
+        indexComponentType: segments.indexComponentType,
+        segments: [
+          segments.ranges.blade,
+          segments.ranges.guard,
+          segments.ranges.grip,
+          segments.ranges.pommel,
+        ],
+        baseColor: { image: { fake: 'sword' }, width: 1024, height: 1024, mimeType: 'image/jpeg' },
+        doubleSided: true,
+      },
+    });
+    return { renderer, state };
+  }
+
+  it('默认全白合批：1 单位 = 人物 1 + 武器 1（+FXAA 1）且与 FakeGL 实际调用数逐一致', () => {
+    for (const mode of ['native-msaa', 'fxaa'] as const) {
+      const { renderer, state } = makeWeaponRenderer(mode);
+      renderer.beginFrame();
+      renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
+      renderer.drawWeapon(IDENTITY_MODEL, 1, null);
+      renderer.endFrame();
+      const fxaa = mode === 'fxaa' ? 1 : 0;
+      expect(renderer.counters.unitDraws, mode).toBe(1);
+      expect(renderer.counters.weaponDraws, mode).toBe(1); // 合批 = 1
+      expect(renderer.counters.fxaaDraws, mode).toBe(fxaa);
+      expect(renderer.counters.drawCalls, mode).toBe(2 + fxaa);
+      expect(renderer.counters.drawCalls, mode).toBe(
+        renderer.counters.unitDraws + renderer.counters.weaponDraws + renderer.counters.fxaaDraws,
+      );
+      expect(renderer.counters.drawCalls, mode).toBe(state.drawElementsCalls.length + state.drawArraysCalls.length);
+    }
+  });
+
+  it('四段染色：武器 **4** draw（不是 1），总表 = 人物 1 + 武器 4（+FXAA）——禁按合批外推', () => {
+    const { renderer, state } = makeWeaponRenderer('native-msaa');
+    renderer.beginFrame();
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
+    renderer.drawWeapon(IDENTITY_MODEL, 1, [
+      Float32Array.from([1, 1, 1]),
+      Float32Array.from([0.1, 0.3, 0.1]),
+      Float32Array.from([0.05, 0.15, 0.3]),
+      Float32Array.from([0.5, 0.45, 0.3]),
+    ]);
+    renderer.endFrame();
+    expect(renderer.counters.weaponDraws).toBe(4);
+    expect(renderer.counters.drawCalls).toBe(5); // 1 人物 + 4 武器
+    // 与 FakeGL 的实际 draw 调用逐一对账（drawElements 5 次；FXAA=native ⇒ 0 次 drawArrays）
+    expect(state.drawElementsCalls).toHaveLength(5);
+    expect(state.drawArraysCalls).toHaveLength(0);
+    expect(renderer.counters.drawCalls).toBe(state.drawElementsCalls.length + state.drawArraysCalls.length);
+    // 四段各一次：每次 draw 的索引数 = 该段索引数（且总和 = 全索引数）
+    const counts = state.drawElementsCalls.slice(1).map((c) => c[1] as number);
+    const segments = splitWeaponSegments(weapon, HERO_3D_WEAPON_SEGMENT_BOUNDARIES);
+    expect(counts).toEqual([
+      segments.ranges.blade.count,
+      segments.ranges.guard.count,
+      segments.ranges.grip.count,
+      segments.ranges.pommel.count,
+    ]);
+    expect(counts.reduce((a, b) => a + b, 0)).toBe(segments.indices.length);
+  });
+
+  it('三单位 × 四段染色：总表 = 3×(1+4)（逐单位如实累计）', () => {
+    const { renderer, state } = makeWeaponRenderer('native-msaa');
+    const tints = [
+      Float32Array.from([1, 1, 1]),
+      Float32Array.from([0.1, 0.3, 0.1]),
+      Float32Array.from([0.05, 0.15, 0.3]),
+      Float32Array.from([0.5, 0.45, 0.3]),
+    ];
+    renderer.beginFrame();
+    for (let u = 0; u < 3; u++) {
+      renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
+      renderer.drawWeapon(IDENTITY_MODEL, 1, tints);
+    }
+    renderer.endFrame();
+    expect(renderer.counters.unitDraws).toBe(3);
+    expect(renderer.counters.weaponDraws).toBe(12);
+    expect(renderer.counters.drawCalls).toBe(15);
+    expect(renderer.counters.drawCalls).toBe(state.drawElementsCalls.length);
+  });
+});
+
+// ══════════════════ 审核必修 1 · 四阶段武器失败边界（角色持续 draw 且无剑） ══════════════════
+
+describe('审核必修 1：武器失败四阶段隔离（download / parse / texture / gpu / calibration）', () => {
+  it('① 下载阶段失败：weapon-load-failed，runtime=null（角色路径不感知）', async () => {
+    const out = await assembleWeaponRuntime(
+      { load: async (ref) => ({ ...loadResultStub(ref), status: 'failed' as const, bytes: null, diagnostics: ['sha-mismatch:deadbeef'] }), decodeImage: decodeOk },
+      ASSEMBLY_OPTS,
+    );
+    expect(out.runtime).toBeNull();
+    expect(out.diag).toContain('weapon-load-failed');
+  });
+
+  it('② 解析阶段失败：weapon-parse-failed（用真实**角色** GLB 冒充武器 ⇒ 结构门拒绝，不抛）', async () => {
+    const out = await assembleWeaponRuntime(
+      { load: async (ref) => ({ ...loadResultStub(ref), bytes: readBytesSync('assets/characters/hero/model/hero_48k_20260914.glb') }), decodeImage: decodeOk },
+      ASSEMBLY_OPTS,
+    );
+    expect(out.runtime).toBeNull();
+    expect(out.diag).toContain('weapon-parse-failed');
+  });
+
+  it('③ 贴图解码阶段失败：weapon-texture-failed（asset 解析已通过，仍返回 null 不抛）', async () => {
+    const out = await assembleWeaponRuntime(
+      { load: async (ref) => ({ ...loadResultStub(ref), bytes: readBytesSync(WEAPON_MODEL_PATH) }), decodeImage: async () => { throw new Error('decode rejected'); } },
+      ASSEMBLY_OPTS,
+    );
+    expect(out.runtime).toBeNull();
+    expect(out.diag).toContain('weapon-texture-failed');
+    expect(out.diag).toContain('decode rejected');
+  });
+
+  it('④ 正常路径：weapon-ready + runtime 齐备（三项全成）', async () => {
+    const out = await assembleWeaponRuntime(
+      { load: async (ref) => ({ ...loadResultStub(ref), bytes: readBytesSync(WEAPON_MODEL_PATH) }), decodeImage: decodeOk },
+      ASSEMBLY_OPTS,
+    );
+    expect(out.runtime).not.toBeNull();
+    expect(out.diag).toContain('weapon-ready:1758tri/1457v');
+    expect(out.runtime!.segments.indices.length).toBe(1758 * 3);
+  });
+
+  it('⑤ GPU 装配阶段失败（**只让武器 shader 编译失败**）：角色仍 ready、仍能 drawUnit、无剑', () => {
+    const { gl, state } = createFakeWebGL2({
+      antialias: false,
+      // 定向注入：只有武器 VS（含 `uProjection * uModel` 且**无** aJoints）失败；角色两个 shader 正常
+      failShaderCompileWhen: (src) => src.includes('uModel') && !src.includes('aJoints'),
+    });
+    const segments = splitWeaponSegments(weapon, HERO_3D_WEAPON_SEGMENT_BOUNDARIES);
+    const renderer = createCharacter3DRenderer({
+      canvas: createFakeCanvas(gl, 375, 667),
+      model,
+      baseColor: { image: { fake: 'char' }, width: 4096, height: 4096, mimeType: 'image/jpeg' },
+      platform,
+      light: {
+        ambientIntensity: CHARACTER_3D_LIGHT.ambientIntensity,
+        directionalIntensity: CHARACTER_3D_LIGHT.directionalIntensity,
+        direction: CHARACTER_3D_LIGHT.direction,
+        diffuseNormalization: CHARACTER_3D_LIGHT.diffuseNormalization,
+      },
+      orthoZHalf: CHARACTER_3D_ORTHO_Z_HALF,
+      renderScale: CHARACTER_3D_RENDER_SCALE,
+      fxaa: CHARACTER_3D_FXAA,
+      forceEdgeMode: 'native-msaa',
+      weapon: {
+        vertexData: buildWeaponVertexInterleave(weapon),
+        indices: segments.indices,
+        indexComponentType: segments.indexComponentType,
+        segments: [segments.ranges.blade, segments.ranges.guard, segments.ranges.grip, segments.ranges.pommel],
+        baseColor: { image: { fake: 'sword' }, width: 1024, height: 1024, mimeType: 'image/jpeg' },
+        doubleSided: true,
+      },
+    });
+    // ★ 角色不受影响：status 仍 ready（旧实现为 failed）
+    expect(renderer.status).toBe('ready');
+    expect(renderer.diagnostics.join('|')).toContain('weapon-gpu-failed');
+    expect(renderer.diagnostics.join('|')).toContain('weapon.vs 着色器编译失败');
+    expect(renderer.weaponReady).toBe(false);
+    // 角色照常绘制（真调 GL）：1 单位 = 1 次 drawElements，无武器 draw
+    renderer.beginFrame();
+    renderer.drawUnit(IDENTITY_PALETTE, IDENTITY_MODEL, 1, 0);
+    renderer.endFrame();
+    expect(renderer.counters.unitDraws).toBe(1);
+    expect(renderer.counters.weaponDraws).toBe(0);
+    expect(state.drawElementsCalls.length).toBe(1);
+  });
+
+  it('⑥ 标定阶段失败：weapon-calibration-failed（坏挂点参数），角色仍 drawUnit、零 drawWeapon', () => {
+    const drawnUnits: string[] = [];
+    const drawnWeapons: number[] = [];
+    const stub = {
+      weaponReady: true,
+      diagnostics: [] as string[],
+      status: 'ready' as const,
+      counters: { drawCalls: 0, unitDraws: 0, weaponDraws: 0, fxaaDraws: 0, paletteUploads: 0, frames: 0 },
+      beginFrame: () => {},
+      endFrame: () => {},
+      resize: () => {},
+      notifyContextLost: () => {},
+      handleContextRestored: () => true,
+      dispose: () => {},
+      drawUnit: () => drawnUnits.push('u'),
+      drawWeapon: () => drawnWeapons.push(1),
+    };
+    const badProfile = {
+      ...HERO_3D_PROFILE,
+      attachments: { 'right-hand-blade': { ...attach, lenRatio: undefined as unknown as number } },
+    };
+    const pass = createCharacter3DPass({
+      renderer: stub as never,
+      viewport: { width: 375, height: 667 },
+      runtimes: {
+        [HERO_3D_PROFILE_ID]: {
+          profile: badProfile,
+          model,
+          anim: {
+            actionMap: HERO_3D_ACTION_MAP,
+            crossFadeSec: CHARACTER_3D_CROSS_FADE_SEC,
+            jumpToIdleBlendSec: CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+            clips: heroClipRegistry(model),
+          },
+        },
+      },
+      loadState: 'ready',
+      weapon: {
+        assetId: HERO_3D_WEAPON_REF.id,
+        mesh: weapon,
+        segments: splitWeaponSegments(weapon, HERO_3D_WEAPON_SEGMENT_BOUNDARIES),
+        vertexData: buildWeaponVertexInterleave(weapon),
+      },
+    });
+    // render 不抛（旧实现会冒泡 weapon.ts 的异常）
+    const res = pass.render(
+      [
+        {
+          actorId: 'hero',
+          profileKey: HERO_3D_PROFILE_ID,
+          footX: 140,
+          footY: 429,
+          depthKey: 10,
+          facing: 'right' as const,
+          state: 'idle' as const,
+          isJump: false,
+          stateElapsedSec: 0,
+          moveProgress: null,
+          hopPx: 0,
+          alpha: 1,
+          squashY: 1,
+        },
+      ],
+      0.016,
+    );
+    expect(res.placed.size).toBe(1); // 角色照常产出 placed ⇒ 持续绘制
+    expect(drawnUnits.length).toBe(1);
+    expect(drawnWeapons.length).toBe(0);
+    expect(pass.weaponState.enabled).toBe(false);
+    expect(pass.weaponState.diagnostics.join('|')).toContain('weapon-calibration-failed');
+  });
+});
+
+// ── 审核必修 1 用例的公共脚手架 ──
+
+const ASSEMBLY_OPTS = {
+  ref: HERO_3D_WEAPON_REF,
+  account: HERO_3D_WEAPON_ACCOUNT,
+  segmentBoundaries: SEG_BOUNDARIES_ALIAS,
+};
+
+function loadResultStub(ref: typeof HERO_3D_WEAPON_REF) {
+  return {
+    assetId: ref.id,
+    ref,
+    status: 'downloaded' as const,
+    integrity: null,
+    bytes: null as Uint8Array | null,
+    savedPath: null,
+    attempts: 1,
+    diagnostics: [] as string[],
+    error: null,
+  };
+}
+
+const decodeOk = async () => ({ image: { fake: 'sword' }, width: 1024, height: 1024, mimeType: 'image/jpeg' });
