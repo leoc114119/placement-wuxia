@@ -4,6 +4,12 @@
 //   · 头部区域 = 人物 bbox 上部 1/3；
 //   · 肤色像素：R>G>B 且 R−B 较大（暖色皮肤）；深色（头发）像素：亮度低且饱和低；
 //   · 方向判据 = 肤重心 x − 发重心 x（像素）；>+2 ⇒ 脸朝右，<−2 ⇒ 脸朝左；
+//   · ★【T31-R2 · R2-3】**归一化判据** `skinMinusHairXN = skinMinusHairX / fgBbox.w`：
+//     绝对像素判据在人物显示比例变化时会假失败（60% 后 rightdown 基线 3.2→1.92 即跌破 ±2），
+//     归一化判据对**缩放是不变量**（分子分母同倍缩放）。朝向门用 n：left* ≤ −0.05 / right* ≥ +0.05
+//     （3D 运行时基线最紧 rightdown 0.073 / leftdown −0.081，余量 ≥1.45×）。
+//     标定（本工具 `art` 模式实测 2D 参照帧 battle_idle_*：bbox.w=144/134/138）：
+//       left −29.9/144 = −0.208 · right +0.208 · leftdown −0.188 · rightdown +0.188 · up 向 ±0.032（背面，弱）。
 //   · 附加"前后"判据（用于区分 down/up 语义）：头部区域**肤色像素占比**（正面多、背面少）。
 //
 // 用法：
@@ -54,10 +60,14 @@ export function measureFace(img, label = '') {
   const skinCx = skinN > 0 ? skinSumX / skinN : null;
   const hairCx = hairN > 0 ? hairSumX / hairN : null;
   const headPixels = (headBottom - minY + 1) * (maxX - minX + 1);
+  const fgW = maxX - minX + 1;
+  const skinMinusHairX = skinCx !== null && hairCx !== null ? +(skinCx - hairCx).toFixed(1) : null;
   return {
     label,
     ok: true,
-    skinMinusHairX: skinCx !== null && hairCx !== null ? +(skinCx - hairCx).toFixed(1) : null,
+    skinMinusHairX,
+    /** 【R2-3】归一化方向判据（÷前景 bbox 宽）：对缩放不变，朝向门用它（阈 ±0.05） */
+    skinMinusHairXN: skinMinusHairX !== null ? +(skinMinusHairX / fgW).toFixed(4) : null,
     skinN,
     hairN,
     /** 头部区域内肤色像素占比（正面视角高、背面低）——用于区分 down/up 语义 */

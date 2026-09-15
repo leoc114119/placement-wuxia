@@ -18,6 +18,7 @@ import {
   CHARACTER_3D_VERTEX_FLOATS,
   HERO_3D_ACTION_MAP,
   HERO_3D_ATTACHMENTS,
+  CHARACTER_3D_HERO_SCALE,
   CHARACTER_3D_JUMP_CHANNEL,
   CHARACTER_3D_JUMP_MOVE_SEC,
   CHARACTER_3D_JUMP_PHASE_ANCHORS,
@@ -83,13 +84,27 @@ describe('现役 profile 自检', () => {
     expect(model.account.generator).toBe('Tripo');
   });
 
-  it('modelHeight = 真实 bbox 的 y 跨度；参考屏高 = TILE_H × PIECE.heightPerTile', () => {
+  it('modelHeight = 真实 bbox 的 y 跨度；参考屏高 = TILE_H × PIECE.heightPerTile × 主角比例', () => {
     const model = heroModel();
     const span = model.bounds.max[1] - model.bounds.min[1];
     expect(HERO_3D_PROFILE.modelHeight).toBeCloseTo(span, 12);
-    expect(HERO_3D_PROFILE.screenHeightPxAtReference).toBeCloseTo(TILE_H * PIECE.heightPerTile, 10);
-    // 与观感台默认人高 123px 同档（assets/_trial_20260913/look_webgl3d stage 的 curH）
-    expect(HERO_3D_PROFILE.screenHeightPxAtReference).toBeCloseTo(123.2, 6);
+    // 公式锁：格高定尺 × PIECE 定尺 × CHARACTER_3D_HERO_SCALE（R2-3 · §4.4）
+    expect(HERO_3D_PROFILE.screenHeightPxAtReference).toBeCloseTo(TILE_H * PIECE.heightPerTile * CHARACTER_3D_HERO_SCALE, 10);
+    // 改前基线 123.2（观感台 curH=123 同档）→ 60% 后 73.92；比例常量是**唯一**缩放承载点
+    expect(TILE_H * PIECE.heightPerTile).toBeCloseTo(123.2, 6);
+    expect(CHARACTER_3D_HERO_SCALE).toBe(0.6);
+    expect(HERO_3D_PROFILE.screenHeightPxAtReference).toBeCloseTo(73.92, 6);
+  });
+
+  it('R2-3 派生自动跟随：比例只改常量一处（缩放/PIECE 定尺与 2D 侧零改动）', () => {
+    const cfgSrc = readFileSync(path.join(ROOT, 'config/character-3d.ts'), 'utf8');
+    // 参考高只由公式派生，禁裸写 73.92 / 123.2
+    expect(cfgSrc).not.toMatch(/screenHeightPxAtReference:\s*\d/);
+    expect(cfgSrc).toContain('TILE_H * PIECE.heightPerTile * CHARACTER_3D_HERO_SCALE');
+    // PIECE 定尺与 2D 敌方口径所在配置本批不动（敌方仍按原比例渲染）
+    expect(PIECE.heightPerTile).toBeGreaterThan(0);
+    const scale = HERO_3D_PROFILE.screenHeightPxAtReference / HERO_3D_PROFILE.modelHeight;
+    expect(scale).toBeCloseTo((123.2 * CHARACTER_3D_HERO_SCALE) / HERO_3D_PROFILE.modelHeight, 6);
   });
 
   it('五个动作槽位齐全：4 条 CDN json + 1 条 GLB 内嵌', () => {

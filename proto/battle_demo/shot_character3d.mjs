@@ -655,62 +655,109 @@ for (const dsf of [1, 2, 3]) {
 // ══════════ 汇总 ══════════
 for (const c of checks) console.log(c);
 // ══════════ ⑦ 朝向回归门（T31 FE 朝向整改）：六向「脸朝哪边」实测断言 ══════════
-// 判据（PM 口径，标定见 tools/measure_face_dir.mjs）：头部区域「肤重心 x − 发重心 x」；
-// 美术 2D 参照 left=−29.9 / right=+29.9。**断言**：left* 必须 < −2、right* 必须 > +2
-// （防「朝向映射错位」这类缺陷复发——历史缺陷：六向整体错位、left 渲成背面/right 渲成正面）。
+// 判据（PM 口径，标定见 tools/measure_face_dir.mjs）：头部区域「肤重心 x − 发重心 x」**按前景 bbox 宽归一**。
+// 【T31-R2 · R2-3】归一化判据（n = skinMinusHairX / bbox.w）：绝对像素判据在 R2-3（人物缩到 60%）后会假失败
+//   （rightdown 基线 3.2 → 1.92 跌破 ±2），归一化判据对缩放是不变量。断言：left* n ≤ −0.05 / right* n ≥ +0.05
+//   （3D 运行时基线最紧 rightdown 0.073 / leftdown −0.081，余量 ≥1.45×）；左右镜像比 [0.4, 2.5] 保留。
+// ★ 自证（缩放不变性）：同一套判据在「比例再乘 0.5」（?heroScale=0.5）下必须同样 6/6 过——见下方 invariance 段。
 {
-  const page = await openPage('', 1, { width: 560, height: 700 });
-  await quiet(page);
-  const gateRows = [];
-  for (const facing of FACINGS) {
-    await setHero(page, { hexFacing: FACING_VEC[facing], animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1 });
-    await page.waitForTimeout(220);
-    // 人物层裁剪（浅底纯色，便于「≠底色」取 bbox；与 tools/measure_facing_runtime.mjs 同法）
-    const crop = await page.evaluate(([pad]) => {
-      const gl = window.__char3d.canvas;
-      const pl = window.__demo.character3d.placed?.get('hero');
-      const h = window.__demo.session.snapshot().actors.find((a) => a.id === 'hero');
-      if (!pl) return null;
-      const x0 = Math.max(0, Math.round(pl.cx - pl.w / 2 - pad));
-      const y0 = Math.max(0, Math.round(pl.top - pad));
-      const w = Math.min(gl.width - x0, Math.round(pl.w + pad * 2));
-      const hh = Math.min(gl.height - y0, Math.round(pl.h + pad * 2));
-      const t = document.createElement('canvas');
-      t.width = w; t.height = hh;
-      const tc = t.getContext('2d');
-      tc.fillStyle = '#00ff00';
-      tc.fillRect(0, 0, w, hh);
-      tc.drawImage(gl, x0, y0, w, hh, 0, 0, w, hh);
-      return { dataUrl: t.toDataURL('image/png'), facingHex: h ? h.facingHex : null };
-    }, [12]);
-    if (!crop) { check(`朝向门 ${facing} 有 placed`, false); continue; }
-    const f = path.join(outDir, `c3d_facing_${facing}.png`);
-    fs.writeFileSync(f, Buffer.from(crop.dataUrl.split(',')[1], 'base64'));
-    written.push(path.basename(f));
-    const img = decodePng(f);
-    const m = measureFaceOnBackdrop(img);
-    gateRows.push({ facing, actualFacingHex: crop.facingHex, ...m });
-  }
-  await page.close();
-  for (const r of gateRows) {
-    const left = r.facing.startsWith('left');
-    const ok = typeof r.skinMinusHairX === 'number' && (left ? r.skinMinusHairX < -2 : r.skinMinusHairX > 2);
-    check(
-      `朝向门 ${r.facing}（判据 ${r.skinMinusHairX}；left* 应 <−2 / right* 应 >+2）`,
-      ok && r.actualFacingHex === r.facing,
-      `actual=${r.actualFacingHex} skinOfFg=${r.skinOfFg}`,
-    );
-  }
-  // 左右镜像自证（幅度比值应有界，防"左右不成镜像"的历史形态）
-  for (const d of ['left', 'leftdown', 'leftup']) {
-    const l = gateRows.find((x) => x.facing === d);
-    const rr = gateRows.find((x) => x.facing === d.replace('left', 'right'));
-    if (l && rr && typeof l.skinMinusHairX === 'number' && typeof rr.skinMinusHairX === 'number') {
-      const ratio = Math.abs(rr.skinMinusHairX) / Math.max(1e-6, Math.abs(l.skinMinusHairX));
-      check(`朝向门 ${d}/${d.replace('left', 'right')} 幅度成镜像（比值 ${ratio.toFixed(2)} ∈ [0.4, 2.5]）`, ratio > 0.4 && ratio < 2.5);
+  /** 单轮六向量测：返回每向判据行（含归一化值与门结论）。 */
+  const runFacingGate = async (query, dsf, tag) => {
+    const page = await openPage(query, dsf, { width: 560, height: 700 });
+    await quiet(page);
+    const rows = [];
+    for (const facing of FACINGS) {
+      await setHero(page, { hexFacing: FACING_VEC[facing], animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1 });
+      await page.waitForTimeout(220);
+      // 人物层裁剪（浅底纯色，便于「≠底色」取 bbox；与 tools/measure_facing_runtime.mjs 同法）
+      // ★ 坐标空间：placed 是**逻辑像素**，离屏背衬是**物理像素** ⇒ 裁剪前统一 ×dpr（BUG-20250915-38）。
+      const crop = await page.evaluate(([pad]) => {
+        const gl = window.__char3d.canvas;
+        const pl = window.__demo.character3d.placed?.get('hero');
+        const h = window.__demo.session.snapshot().actors.find((a) => a.id === 'hero');
+        if (!pl) return null;
+        const k = window.__demo.dpr || 1; // 背衬/逻辑 像素比（= 命令坐标空间换算，禁各自估）
+        const cx = pl.cx * k;
+        const top = pl.top * k;
+        const w = pl.w * k;
+        const hh = pl.h * k;
+        const x0 = Math.max(0, Math.round(cx - w / 2 - pad * k));
+        const y0 = Math.max(0, Math.round(top - pad * k));
+        const cw = Math.min(gl.width - x0, Math.round(w + pad * 2 * k));
+        const ch = Math.min(gl.height - y0, Math.round(hh + pad * 2 * k));
+        const t = document.createElement('canvas');
+        t.width = cw; t.height = ch;
+        const tc = t.getContext('2d');
+        tc.fillStyle = '#00ff00';
+        tc.fillRect(0, 0, cw, ch);
+        tc.drawImage(gl, x0, y0, cw, ch, 0, 0, cw, ch);
+        return {
+          dataUrl: t.toDataURL('image/png'),
+          facingHex: h ? h.facingHex : null,
+          dpr: k,
+          placedHLogical: pl.h,
+          placedWLogical: pl.w,
+        };
+      }, [12]);
+      if (!crop) { check(`朝向门 ${tag}${facing} 有 placed`, false); continue; }
+      const f = path.join(outDir, `c3d_facing_${facing}${tag ? '_' + tag : ''}.png`);
+      fs.writeFileSync(f, Buffer.from(crop.dataUrl.split(',')[1], 'base64'));
+      written.push(path.basename(f));
+      const img = decodePng(f);
+      const m = measureFaceOnBackdrop(img);
+      if (!m.ok) { check(`朝向门 ${tag}${facing} 非空裁剪`, false, '空裁剪（全底色）'); continue; }
+      const n = m.skinMinusHairXN;
+      const left = facing.startsWith('left');
+      const ok = typeof n === 'number' && (left ? n <= -0.05 : n >= 0.05);
+      rows.push({
+        facing,
+        actualFacingHex: crop.facingHex,
+        ...m,
+        // 证据自证字段：显示比例真的变了（placed.h 随 ?heroScale= 变），而归一化判据不变
+        dpr: crop.dpr,
+        placedHLogical: crop.placedHLogical,
+        placedWLogical: crop.placedWLogical,
+        gate: { normalized: n, threshold: 0.05, pass: ok },
+      });
+      check(
+        `朝向门 ${tag}${facing}（归一化判据 n=${n}；left* 应 ≤−0.05 / right* 应 ≥+0.05）`,
+        ok && crop.facingHex === facing,
+        `actual=${crop.facingHex} skinOfFg=${m.skinOfFg} bbox.w=${m.bbox?.w}`,
+      );
     }
-  }
+    await page.close();
+    // 左右镜像自证（幅度比值应有界，防"左右不成镜像"的历史形态）
+    for (const d of ['left', 'leftdown', 'leftup']) {
+      const l = rows.find((x) => x.facing === d);
+      const rr = rows.find((x) => x.facing === d.replace('left', 'right'));
+      if (l && rr && typeof l.skinMinusHairXN === 'number' && typeof rr.skinMinusHairXN === 'number') {
+        const ratio = Math.abs(rr.skinMinusHairXN) / Math.max(1e-6, Math.abs(l.skinMinusHairXN));
+        check(`朝向门 ${tag}${d}/${d.replace('left', 'right')} 幅度成镜像（比值 ${ratio.toFixed(2)} ∈ [0.4, 2.5]）`, ratio > 0.4 && ratio < 2.5);
+      }
+    }
+    return rows;
+  };
+
+  // ① 名义比例（config 的 CHARACTER_3D_HERO_SCALE）：基线随卡重录
+  const gateRows = await runFacingGate('', 1, '');
   fs.writeFileSync(path.join(outDir, 'c3d_facing_gate.json'), JSON.stringify(gateRows, null, 1));
+  // ② 缩放不变性自证：比例再乘 0.5（?heroScale=0.5，**证据专用注入**）仍须 6/6 过
+  //    （dsf=2：物理像素更细，量化噪声相对更小，判据抖动不掩盖结论）
+  const halfRows = await runFacingGate('?heroScale=0.5', 2, 'half');
+  fs.writeFileSync(
+    path.join(outDir, 'c3d_facing_gate_scale_half.json'),
+    JSON.stringify(
+      {
+        note:
+          'R2-3 缩放不变性自证：?heroScale=0.5（名义比例的 0.5 倍）、dsf=2。' +
+          '自证判读：placedHLogical 应为名义的 0.5（比例确实改了），而归一化判据 n 与名义轮同值同号、6/6 仍过' +
+          '（bbox 物理像素尺寸差 2× 由 dsf=2 抵回，故与名义轮数值相同——这正是「不变」的含义）。',
+        rows: halfRows,
+      },
+      null,
+      1,
+    ),
+  );
 }
 
 /** 纯色底裁剪图 → 判据（bbox = 与底色差异明显者；复用 measureFace 的肤/发口径）。 */

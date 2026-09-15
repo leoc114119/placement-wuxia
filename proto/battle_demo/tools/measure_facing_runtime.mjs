@@ -7,6 +7,8 @@
 //   · 附加：肤色占比（正面高 / 背面低）用于区分 up/down 语义。
 // 标签可信：每向都读**会话快照里的真值 facingHex**（不是脚本自己的入参），并记录当时的 yaw 公式值。
 //
+// 【T31-R2 · R2-3】判据改**归一化**（n = skinMinusHairX ÷ 前景 bbox 宽，阈 ±0.05）：对人物显示比例缩放不变；
+//   裁剪坐标统一乘 dpr（BUG-20250915-38），并对空裁剪做前置失败断言（exit 1）。
 // 用法：node proto/battle_demo/tools/measure_facing_runtime.mjs [--dsf=2] [--pad=10]
 // 产出：proto/battle_demo/shots/face_<facing>.png + stdout 每向一行 JSON（含 actualFacingHex/yawDeg）
 import fs from 'node:fs';
@@ -65,24 +67,46 @@ const setHero = (fields) => page.evaluate(([f]) => {
   for (const uu of window.__demo.session._debug.units) { uu.bar = 0; uu.barWasMax = false; }
 }, [fields]);
 
-/** 取「人物层裁剪图」（纯色底）+ 同帧诊断（真值 facingHex / placed）。 */
+/** 取「人物层裁剪图」（纯色底）+ 同帧诊断（真值 facingHex / placed）。
+ * ★【BUG-20250915-38】坐标空间：`placed` 是**逻辑像素**（生产侧已除过一次 pixelRatio），
+ *   而 `window.__char3d.canvas` 是**物理像素**背衬 ⇒ 裁剪前必须统一 × dpr；否则 --dsf≥2 时
+ *   裁剪窗落在空区（历史缺陷：前景像素 n=0、全绿底，会给出「判据无值」的假失败）。 */
 const cropLayer = (facing) => page.evaluate(([pad]) => {
   const gl = window.__char3d.canvas;
   const pl = window.__demo.character3d.placed?.get('hero');
   const h = window.__demo.session.snapshot().actors.find((a) => a.id === 'hero');
   if (!pl) return { ok: false, facingHex: h ? h.facingHex : null };
-  const x0 = Math.max(0, Math.round(pl.cx - pl.w / 2 - pad));
-  const y0 = Math.max(0, Math.round(pl.top - pad));
-  const w = Math.min(gl.width - x0, Math.round(pl.w + pad * 2));
-  const hh = Math.min(gl.height - y0, Math.round(pl.h + pad * 2));
+  const k = window.__demo.dpr || 1; // 背衬/逻辑 像素比（与 3D 命令坐标同一换算，禁各自估）
+  const cx = pl.cx * k;
+  const top = pl.top * k;
+  const w = pl.w * k;
+  const hh = pl.h * k;
+  const x0 = Math.max(0, Math.round(cx - w / 2 - pad * k));
+  const y0 = Math.max(0, Math.round(top - pad * k));
+  const cw = Math.min(gl.width - x0, Math.round(w + pad * 2 * k));
+  const ch = Math.min(gl.height - y0, Math.round(hh + pad * 2 * k));
   const t = document.createElement('canvas');
-  t.width = w; t.height = hh;
+  t.width = cw; t.height = ch;
   const tc = t.getContext('2d');
   tc.fillStyle = '#00ff00'; // 纯色底（度量 bbox 用「≠底色」判定，无需 alpha）
-  tc.fillRect(0, 0, w, hh);
-  tc.drawImage(gl, x0, y0, w, hh, 0, 0, w, hh);
-  return { ok: true, facingHex: h ? h.facingHex : null, placed: pl, dataUrl: t.toDataURL('image/png'), w, h: hh };
+  tc.fillRect(0, 0, cw, ch);
+  tc.drawImage(gl, x0, y0, cw, ch, 0, 0, cw, ch);
+  return { ok: true, facingHex: h ? h.facingHex : null, placed: pl, dpr: k, dataUrl: t.toDataURL('image/png'), w: cw, h: ch };
 }, [PAD]);
+
+/** 裁剪窗内前景像素数（≠ 纯色底）：0 ⇒ 裁剪落空区（坐标空间/口径错），必须**响亮失败**。 */
+function foregroundCount(img) {
+  const { width: w, height: h, rgba } = img;
+  const bg = [rgba[0], rgba[1], rgba[2]];
+  let n = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const o = (y * w + x) * 4;
+      if (Math.abs(rgba[o] - bg[0]) + Math.abs(rgba[o + 1] - bg[1]) + Math.abs(rgba[o + 2] - bg[2]) > 40) n++;
+    }
+  }
+  return n;
+}
 
 const rows = [];
 for (const facing of FACINGS) {
@@ -100,6 +124,12 @@ const measured = [];
 for (const r of rows) {
   if (!r.ok || !r.file) { console.log(JSON.stringify(r)); continue; }
   const img = decodePng(r.file);
+  // ★ 前置断言（BUG-20250915-38）：空裁剪必须响亮失败，禁把「裁到空区」静默成「判据无值」
+  const fg = foregroundCount(img);
+  if (fg <= 0) {
+    console.error(`[measure_facing_runtime] ❌ 裁剪窗内前景像素为 0（${r.intended}）：裁剪区落在空区（坐标空间/口径错）`);
+    process.exit(1);
+  }
   const m = measureFaceBboxFromBackdrop(img);
   const row = {
     intended: r.intended,
@@ -118,11 +148,12 @@ if (GATE) {
   const problems = [];
   for (const r of measured) {
     if (r.actualFacingHex !== r.intended) problems.push(`标签不符：intended=${r.intended} actual=${r.actualFacingHex}`);
-    if (typeof r.skinMinusHairX !== 'number') { problems.push(`${r.intended} 判据无值（肤色/头发像素不足）`); continue; }
     const left = r.intended.startsWith('left');
-    // 判据（PM 口径）：>+2 脸朝右、<−2 脸朝左
-    if (left && !(r.skinMinusHairX < -2)) problems.push(`${r.intended} 判据 ${r.skinMinusHairX} 未 < −2（应朝左）`);
-    if (!left && !(r.skinMinusHairX > 2)) problems.push(`${r.intended} 判据 ${r.skinMinusHairX} 未 > +2（应朝右）`);
+    // 【T31-R2 · R2-3】归一化判据：n = 肤−发重心差 ÷ 前景 bbox 宽（对显示比例缩放不变）；
+    // left* n ≤ −0.05 / right* n ≥ +0.05（绝对像素 ±2 口径在人物缩到 60% 后已失效，见 measure_face_dir 标定）
+    if (typeof r.skinMinusHairXN !== 'number') { problems.push(`${r.intended} 归一化判据无值`); continue; }
+    if (left && !(r.skinMinusHairXN <= -0.05)) problems.push(`${r.intended} n=${r.skinMinusHairXN} 未 ≤ −0.05（应朝左）`);
+    if (!left && !(r.skinMinusHairXN >= 0.05)) problems.push(`${r.intended} n=${r.skinMinusHairXN} 未 ≥ +0.05（应朝右）`);
     // 前后语义（辅助）：down = 朝观众（肤占比高）、up = 背向（低）
     if (r.intended.endsWith('down') && byFacing.get(r.intended.replace('down', 'up'))) {
       const up = byFacing.get(r.intended.replace('down', 'up'));
@@ -134,8 +165,8 @@ if (GATE) {
   // 左右镜像：同名左右向的判据幅度应大体成镜像（比值 0.5~2）
   for (const d of ['leftdown', 'leftup', 'left']) {
     const l = byFacing.get(d), rr = byFacing.get(d.replace('left', 'right'));
-    if (l && rr && typeof l.skinMinusHairX === 'number' && typeof rr.skinMinusHairX === 'number') {
-      const ratio = Math.abs(rr.skinMinusHairX) / Math.max(1e-6, Math.abs(l.skinMinusHairX));
+    if (l && rr && typeof l.skinMinusHairXN === 'number' && typeof rr.skinMinusHairXN === 'number') {
+      const ratio = Math.abs(rr.skinMinusHairXN) / Math.max(1e-6, Math.abs(l.skinMinusHairXN));
       if (!(ratio > 0.4 && ratio < 2.5)) problems.push(`${d}/${d.replace('left', 'right')} 幅度不成镜像（比值 ${ratio.toFixed(2)}）`);
     }
   }

@@ -183,6 +183,11 @@ export const HERO_3D_ATTACHMENTS: Character3DProfile['attachments'] = {
   },
 };
 
+/** 【R2-3 · §4.4（Leo 已裁）】主角 3D 显示比例：**唯一缩放参数承载点**（禁第二处裸写数值）。
+ * 只缩 3D 主角，2D 敌方与 PIECE 定尺/headOffsetPx 不动（S2 敌方 3D 化时按同参数口径对齐）。
+ * 派生全部自动：顶点统一缩放、placed.h/w、攻钮/四技能钮/名条锚/热区随框缩小；脚底对格心不受影响。 */
+export const CHARACTER_3D_HERO_SCALE = 0.6;
+
 /** 主角 3D profile（清单随代码发布；payload 走 CDN）。 */
 export const HERO_3D_PROFILE: Character3DProfile = {
   mode: 'webgl2-skinned',
@@ -194,11 +199,12 @@ export const HERO_3D_PROFILE: Character3DProfile = {
    * 用于把人物缩放到参考屏高，**禁**按 bbox 每帧自适应（方案 §4.1）。 */
   modelHeight: 0.98107916326262057,
   /** 参考屏高（**逻辑像素**；= 2D 世界层的逻辑坐标口径）：沿既有 PIECE 定尺——格高 TILE_H ×
-   * PIECE.heightPerTile。与观感台默认人高 123px 同档（assets/_trial_20260913/look_webgl3d 的 curH=123）。
+   * PIECE.heightPerTile，再乘 CHARACTER_3D_HERO_SCALE（R2-3 · §4.4：123.2 → 73.92）。
+   * 旧口径「与观感台默认人高 123px 同档」（assets/_trial_20260913/look_webgl3d 的 curH=123）为改前基线。
    * 【T31-FE-B · R2 = arch seq=418 Q2-1】本值是**逻辑**参考高；GL 正交像素空间是物理像素，故宿主在
    * 装配 pass 时统一乘一次 pixelRatio（运行时 profile 副本 = 物理参考高），pass 内禁再乘第二次。
    * 旧注释「画布物理像素」是错误口径（会误导成 pass 侧重复换算 → hidpi 下人物 ×dpr 过大）。 */
-  screenHeightPxAtReference: TILE_H * PIECE.heightPerTile,
+  screenHeightPxAtReference: TILE_H * PIECE.heightPerTile * CHARACTER_3D_HERO_SCALE,
   sourceViewYawDeg: HERO_3D_SOURCE_VIEW_YAW_DEG,
   attachments: HERO_3D_ATTACHMENTS,
 };

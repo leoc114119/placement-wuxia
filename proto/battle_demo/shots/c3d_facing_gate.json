@@ -4,22 +4,31 @@
   "actualFacingHex": "right",
   "ok": true,
   "label": "",
-  "skinMinusHairX": 6.2,
-  "skinN": 169,
-  "hairN": 881,
-  "skinRatio": 0.0981,
-  "skinOfFg": 0.161,
+  "skinMinusHairX": 3.6,
+  "skinMinusHairXN": 0.144,
+  "skinN": 62,
+  "hairN": 310,
+  "skinRatio": 0.0954,
+  "skinOfFg": 0.1667,
   "bbox": {
-   "minX": 41,
-   "minY": 11,
-   "maxX": 81,
-   "maxY": 135,
-   "w": 41,
-   "h": 125
+   "minX": 30,
+   "minY": 12,
+   "maxX": 54,
+   "maxY": 86,
+   "w": 25,
+   "h": 75
   },
   "headBox": {
-   "minY": 11,
-   "headBottom": 52
+   "minY": 12,
+   "headBottom": 37
+  },
+  "dpr": 1,
+  "placedHLogical": 73.91999999999999,
+  "placedWLogical": 52.00243642254626,
+  "gate": {
+   "normalized": 0.144,
+   "threshold": 0.05,
+   "pass": true
   }
  },
  {
@@ -27,22 +36,31 @@
   "actualFacingHex": "rightup",
   "ok": true,
   "label": "",
-  "skinMinusHairX": 10,
-  "skinN": 68,
-  "hairN": 970,
-  "skinRatio": 0.033,
-  "skinOfFg": 0.0655,
+  "skinMinusHairX": 6,
+  "skinMinusHairXN": 0.2069,
+  "skinN": 24,
+  "hairN": 342,
+  "skinRatio": 0.0318,
+  "skinOfFg": 0.0656,
   "bbox": {
-   "minX": 34,
-   "minY": 11,
-   "maxX": 82,
-   "maxY": 135,
-   "w": 49,
-   "h": 125
+   "minX": 26,
+   "minY": 12,
+   "maxX": 54,
+   "maxY": 86,
+   "w": 29,
+   "h": 75
   },
   "headBox": {
-   "minY": 11,
-   "headBottom": 52
+   "minY": 12,
+   "headBottom": 37
+  },
+  "dpr": 1,
+  "placedHLogical": 73.91999999999999,
+  "placedWLogical": 52.00243642254626,
+  "gate": {
+   "normalized": 0.2069,
+   "threshold": 0.05,
+   "pass": true
   }
  },
  {
@@ -50,22 +68,31 @@
   "actualFacingHex": "leftup",
   "ok": true,
   "label": "",
-  "skinMinusHairX": -9.8,
-  "skinN": 64,
-  "hairN": 932,
-  "skinRatio": 0.0339,
-  "skinOfFg": 0.0643,
+  "skinMinusHairX": -5.8,
+  "skinMinusHairXN": -0.2148,
+  "skinN": 25,
+  "hairN": 329,
+  "skinRatio": 0.0356,
+  "skinOfFg": 0.0706,
   "bbox": {
-   "minX": 27,
-   "minY": 11,
-   "maxX": 71,
-   "maxY": 135,
-   "w": 45,
-   "h": 125
+   "minX": 21,
+   "minY": 12,
+   "maxX": 47,
+   "maxY": 86,
+   "w": 27,
+   "h": 75
   },
   "headBox": {
-   "minY": 11,
-   "headBottom": 52
+   "minY": 12,
+   "headBottom": 37
+  },
+  "dpr": 1,
+  "placedHLogical": 73.91999999999999,
+  "placedWLogical": 52.00243642254626,
+  "gate": {
+   "normalized": -0.2148,
+   "threshold": 0.05,
+   "pass": true
   }
  },
  {
@@ -73,22 +100,31 @@
   "actualFacingHex": "left",
   "ok": true,
   "label": "",
-  "skinMinusHairX": -7.6,
-  "skinN": 177,
-  "hairN": 873,
-  "skinRatio": 0.0958,
-  "skinOfFg": 0.1686,
+  "skinMinusHairX": -4.6,
+  "skinMinusHairXN": -0.1769,
+  "skinN": 63,
+  "hairN": 306,
+  "skinRatio": 0.0932,
+  "skinOfFg": 0.1707,
   "bbox": {
-   "minX": 28,
-   "minY": 11,
-   "maxX": 71,
-   "maxY": 135,
-   "w": 44,
-   "h": 125
+   "minX": 22,
+   "minY": 12,
+   "maxX": 47,
+   "maxY": 86,
+   "w": 26,
+   "h": 75
   },
   "headBox": {
-   "minY": 11,
-   "headBottom": 52
+   "minY": 12,
+   "headBottom": 37
+  },
+  "dpr": 1,
+  "placedHLogical": 73.91999999999999,
+  "placedWLogical": 52.00243642254626,
+  "gate": {
+   "normalized": -0.1769,
+   "threshold": 0.05,
+   "pass": true
   }
  },
  {
@@ -96,22 +132,31 @@
   "actualFacingHex": "leftdown",
   "ok": true,
   "label": "",
-  "skinMinusHairX": -3.8,
-  "skinN": 295,
-  "hairN": 750,
-  "skinRatio": 0.1494,
-  "skinOfFg": 0.2823,
+  "skinMinusHairX": -2.4,
+  "skinMinusHairXN": -0.0828,
+  "skinN": 113,
+  "hairN": 257,
+  "skinRatio": 0.1499,
+  "skinOfFg": 0.3054,
   "bbox": {
-   "minX": 29,
-   "minY": 11,
-   "maxX": 75,
-   "maxY": 135,
-   "w": 47,
-   "h": 125
+   "minX": 22,
+   "minY": 12,
+   "maxX": 50,
+   "maxY": 86,
+   "w": 29,
+   "h": 75
   },
   "headBox": {
-   "minY": 11,
-   "headBottom": 52
+   "minY": 12,
+   "headBottom": 37
+  },
+  "dpr": 1,
+  "placedHLogical": 73.91999999999999,
+  "placedWLogical": 52.00243642254626,
+  "gate": {
+   "normalized": -0.0828,
+   "threshold": 0.05,
+   "pass": true
   }
  },
  {
@@ -119,22 +164,31 @@
   "actualFacingHex": "rightdown",
   "ok": true,
   "label": "",
-  "skinMinusHairX": 3.2,
-  "skinN": 270,
-  "hairN": 748,
-  "skinRatio": 0.1461,
-  "skinOfFg": 0.2652,
+  "skinMinusHairX": 1.8,
+  "skinMinusHairXN": 0.0667,
+  "skinN": 96,
+  "hairN": 262,
+  "skinRatio": 0.1368,
+  "skinOfFg": 0.2682,
   "bbox": {
-   "minX": 38,
-   "minY": 11,
-   "maxX": 81,
-   "maxY": 135,
-   "w": 44,
-   "h": 125
+   "minX": 27,
+   "minY": 12,
+   "maxX": 53,
+   "maxY": 86,
+   "w": 27,
+   "h": 75
   },
   "headBox": {
-   "minY": 11,
-   "headBottom": 52
+   "minY": 12,
+   "headBottom": 37
+  },
+  "dpr": 1,
+  "placedHLogical": 73.91999999999999,
+  "placedWLogical": 52.00243642254626,
+  "gate": {
+   "normalized": 0.0667,
+   "threshold": 0.05,
+   "pass": true
   }
  }
 ]

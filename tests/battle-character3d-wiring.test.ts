@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 declare const __dirname: string;
-import { JUMP, PIECE, SPRITE_PROFILES, TILE_H, hexToWorld, jumpParamsFor, type DirectionalSpriteProfile } from '../config/battle-hex';
+import { HUD, JUMP, PIECE, SPRITE_PROFILES, TILE_H, hexToWorld, jumpParamsFor, type DirectionalSpriteProfile } from '../config/battle-hex';
 import { SPEED_FACTOR } from '../config/battle';
 import {
   CHARACTER_3D_CROSS_FADE_SEC,
@@ -62,6 +62,8 @@ import type {
 } from '../types';
 
 const ROOT = path.resolve(__dirname, '..');
+/** 假层 placed 宽度（= 真 pass 的 w = max(x/z 跨度)×scale 的占位值；本批不动六向帧/模型） */
+const FAKE_BOX_W = 86.7;
 const W = 375;
 const H = 667;
 const DPR = 2; // 用例统一按 hidpi 口径跑（命令=物理像素 2× 逻辑），dpr=1 只是本式的特例
@@ -204,8 +206,13 @@ function makeFakeLayer(
           c.actorId,
           opts.box
             ? opts.box(c)
-            : // 默认：脚底=c.footY，高=c.heightHint（用 screenHeightPxAtReference 口径的 123.2×pixelRatio）
-              { cx: c.footX, top: c.footY - 123.2 * pixelRatio, w: 86.7 * pixelRatio, h: 123.2 * pixelRatio },
+            : // 默认：脚底=c.footY，高=config 逻辑参考高×pixelRatio（R2-3 后自动跟随 60% 比例）
+              {
+                cx: c.footX,
+                top: c.footY - HERO_3D_PROFILE.screenHeightPxAtReference * pixelRatio,
+                w: FAKE_BOX_W * pixelRatio,
+                h: HERO_3D_PROFILE.screenHeightPxAtReference * pixelRatio,
+              },
         );
       }
       return { status: 'ready', canvas: { width: W * pixelRatio, height: H * pixelRatio }, placed, diagnostics: [] };
@@ -353,11 +360,11 @@ describe('[T31-FE-B] depth 槽位与合成一次（§4.3）', () => {
     expect(fake.composites).toEqual([{ dx: 0, dy: 0 }]);
     // placed 镜像 = 逻辑像素（与 2D placed / HUD / 技能钮同一空间）
     const box = view.character3dPlaced?.get('hero');
-    const fakeH = 123.2 * DPR; // 假层的参考高（本用例只验镜像换算，与真 config 无关）
+    const fakeH = HERO_3D_PROFILE.screenHeightPxAtReference * DPR; // 假层按 config 参考高（R2-3 后 73.92）
     expect(box).toEqual({
       cx: logicalX,
       top: (logicalY * DPR - fakeH) / DPR,
-      w: 86.7,
+      w: FAKE_BOX_W,
       h: fakeH / DPR,
       // 【T31-R2 · §4.1.1】地面锚与 HUD 布局框**分标**：此帧无姿态补偿 ⇒ 锚 = 框底 = 命令 footY/ratio
       groundAnchorY: logicalY,
@@ -380,9 +387,17 @@ describe('[T31-FE-B] HUD/技能钮锚点来自 pass placed（与摆放矩阵同�
     const ops: RecordedOp[] = [];
     drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
     const box = view.character3dPlaced!.get('hero')!;
-    // 名条底 y = placed.top − HUD.aboveHead（fillRect 的第一个 op 组里可查）
-    const nameRect = ops.find((o) => o.op === 'fillRect' && Math.abs((o.args[1] as number) - (box.top - 11 - 7)) <= 1);
-    expect(nameRect, `未见 placed 锚定的名条：placed.top=${box.top}`).toBeTruthy();
+    // 名条矩形 y = round(placed.top − HUD.aboveHead − 7)、宽 = HUD.barW + 4（drawPieceHud 逐字口径）
+    const nameY = Math.round(box.top - HUD.aboveHead - 7);
+    const nameRect = ops.find(
+      (o) =>
+        o.op === 'fillRect' &&
+        Math.abs((o.args[1] as number) - nameY) <= 1 &&
+        Math.abs((o.args[2] as number) - (HUD.barW + 4)) <= 1,
+    );
+    expect(nameRect, `未见 placed 锚定的名条：placed.top=${box.top} 期望 y≈${nameY}`).toBeTruthy();
+    // 拖动镜头后名条与 placed 同幅平移（同源、无双轨）
+    const nameRectAfter = ops.length > 0;
     // 技能钮圆心 x 以 placed.cx 为基准（弧布位）
     const btn = view.layout.skillBtns.find((b) => b.id === 'te');
     expect(btn).toBeTruthy();
@@ -397,6 +412,14 @@ describe('[T31-FE-B] HUD/技能钮锚点来自 pass placed（与摆放矩阵同�
     expect(after.footX).toBe(before.footX - 40 * DPR);
     const box2 = view.character3dPlaced!.get('hero')!;
     expect(box2.cx).toBe(box.cx - 40);
+    const nameRect2 = ops2.find(
+      (o) =>
+        o.op === 'fillRect' &&
+        Math.abs((o.args[0] as number) - Math.round(box2.cx - HUD.barW / 2 - 2)) <= 1 &&
+        Math.abs((o.args[1] as number) - Math.round(box2.top - HUD.aboveHead - 7)) <= 1,
+    );
+    expect(nameRect2, '镜头拖动后名条未跟随 placed').toBeTruthy();
+    expect(nameRectAfter).toBe(true);
   });
 
   it('【T31-R2 · §4.1.1】待输入+轻功同帧：按钮圆心与命中框同源同步（同一 placed，无人自补 root y）', () => {
@@ -1312,7 +1335,8 @@ describe('[T31-FE-B · R2] 像素语义：宿主统一乘一次 pixelRatio，pas
     const passSrc = readFileSync(path.join(ROOT, 'ui/character3d/pass.ts'), 'utf8');
     expect(passSrc).not.toContain('pixelRatio'); // 禁 pass 再乘一次
     const mainSrc = readFileSync(path.join(ROOT, 'proto/battle_demo/main.ts'), 'utf8');
-    expect(mainSrc).toContain('HERO_3D_PROFILE.screenHeightPxAtReference * dpr'); // 宿主唯一换算点
+    // 宿主唯一换算点（R2-3 追加证据专用 ?heroScale= 倍数：默认 1，不改生产分支）
+    expect(mainSrc).toContain('HERO_3D_PROFILE.screenHeightPxAtReference * HERO_SCALE_OVERRIDE * dpr');
   });
 });
 

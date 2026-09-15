@@ -1,0 +1,59 @@
+{
+ "note": "R2-3 人物层像素包围盒（dpr 1/2/3，facing=right，idle）",
+ "rows": [
+  {
+   "dsf": 1,
+   "glW": 394,
+   "glH": 700,
+   "layerPx": 1132,
+   "bboxHPhys": 75,
+   "dpr": 1,
+   "placed": {
+    "cx": 140,
+    "top": 355.0757834932574,
+    "h": 73.91999999999999,
+    "w": 52.00243642254626,
+    "groundAnchorY": 429
+   },
+   "bboxHLogical": 75,
+   "placedHLogical": 73.91999999999999,
+   "placedWLogical": 52.00243642254626
+  },
+  {
+   "dsf": 2,
+   "glW": 788,
+   "glH": 1400,
+   "layerPx": 4379,
+   "bboxHPhys": 150,
+   "dpr": 2,
+   "placed": {
+    "cx": 140,
+    "top": 355.0720632143357,
+    "h": 73.91999999999999,
+    "w": 52.00243642254626,
+    "groundAnchorY": 429
+   },
+   "bboxHLogical": 75,
+   "placedHLogical": 73.91999999999999,
+   "placedWLogical": 52.00243642254626
+  },
+  {
+   "dsf": 3,
+   "glW": 1182,
+   "glH": 2100,
+   "layerPx": 9751,
+   "bboxHPhys": 225,
+   "dpr": 3,
+   "placed": {
+    "cx": 140,
+    "top": 355.07088341761624,
+    "h": 73.91999999999999,
+    "w": 52.00243642254626,
+    "groundAnchorY": 429
+   },
+   "bboxHLogical": 75,
+   "placedHLogical": 73.91999999999999,
+   "placedWLogical": 52.00243642254626
+  }
+ ]
+}

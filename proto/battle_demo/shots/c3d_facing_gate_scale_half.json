@@ -1,0 +1,197 @@
+{
+ "note": "R2-3 缩放不变性自证：?heroScale=0.5（名义比例的 0.5 倍）、dsf=2。自证判读：placedHLogical 应为名义的 0.5（比例确实改了），而归一化判据 n 与名义轮同值同号、6/6 仍过（bbox 物理像素尺寸差 2× 由 dsf=2 抵回，故与名义轮数值相同——这正是「不变」的含义）。",
+ "rows": [
+  {
+   "facing": "right",
+   "actualFacingHex": "right",
+   "ok": true,
+   "label": "",
+   "skinMinusHairX": 3.6,
+   "skinMinusHairXN": 0.144,
+   "skinN": 62,
+   "hairN": 312,
+   "skinRatio": 0.0954,
+   "skinOfFg": 0.1658,
+   "bbox": {
+    "minX": 42,
+    "minY": 24,
+    "maxX": 66,
+    "maxY": 98,
+    "w": 25,
+    "h": 75
+   },
+   "headBox": {
+    "minY": 24,
+    "headBottom": 49
+   },
+   "dpr": 2,
+   "placedHLogical": 36.959999999999994,
+   "placedWLogical": 26.00121821127313,
+   "gate": {
+    "normalized": 0.144,
+    "threshold": 0.05,
+    "pass": true
+   }
+  },
+  {
+   "facing": "rightup",
+   "actualFacingHex": "rightup",
+   "ok": true,
+   "label": "",
+   "skinMinusHairX": 6,
+   "skinMinusHairXN": 0.2069,
+   "skinN": 25,
+   "hairN": 341,
+   "skinRatio": 0.0332,
+   "skinOfFg": 0.0683,
+   "bbox": {
+    "minX": 38,
+    "minY": 24,
+    "maxX": 66,
+    "maxY": 98,
+    "w": 29,
+    "h": 75
+   },
+   "headBox": {
+    "minY": 24,
+    "headBottom": 49
+   },
+   "dpr": 2,
+   "placedHLogical": 36.959999999999994,
+   "placedWLogical": 26.00121821127313,
+   "gate": {
+    "normalized": 0.2069,
+    "threshold": 0.05,
+    "pass": true
+   }
+  },
+  {
+   "facing": "leftup",
+   "actualFacingHex": "leftup",
+   "ok": true,
+   "label": "",
+   "skinMinusHairX": -5.8,
+   "skinMinusHairXN": -0.2148,
+   "skinN": 25,
+   "hairN": 329,
+   "skinRatio": 0.0356,
+   "skinOfFg": 0.0706,
+   "bbox": {
+    "minX": 33,
+    "minY": 24,
+    "maxX": 59,
+    "maxY": 98,
+    "w": 27,
+    "h": 75
+   },
+   "headBox": {
+    "minY": 24,
+    "headBottom": 49
+   },
+   "dpr": 2,
+   "placedHLogical": 36.959999999999994,
+   "placedWLogical": 26.00121821127313,
+   "gate": {
+    "normalized": -0.2148,
+    "threshold": 0.05,
+    "pass": true
+   }
+  },
+  {
+   "facing": "left",
+   "actualFacingHex": "left",
+   "ok": true,
+   "label": "",
+   "skinMinusHairX": -4.6,
+   "skinMinusHairXN": -0.1769,
+   "skinN": 63,
+   "hairN": 306,
+   "skinRatio": 0.0932,
+   "skinOfFg": 0.1707,
+   "bbox": {
+    "minX": 34,
+    "minY": 24,
+    "maxX": 59,
+    "maxY": 98,
+    "w": 26,
+    "h": 75
+   },
+   "headBox": {
+    "minY": 24,
+    "headBottom": 49
+   },
+   "dpr": 2,
+   "placedHLogical": 36.959999999999994,
+   "placedWLogical": 26.00121821127313,
+   "gate": {
+    "normalized": -0.1769,
+    "threshold": 0.05,
+    "pass": true
+   }
+  },
+  {
+   "facing": "leftdown",
+   "actualFacingHex": "leftdown",
+   "ok": true,
+   "label": "",
+   "skinMinusHairX": -2.4,
+   "skinMinusHairXN": -0.0828,
+   "skinN": 113,
+   "hairN": 257,
+   "skinRatio": 0.1499,
+   "skinOfFg": 0.3054,
+   "bbox": {
+    "minX": 34,
+    "minY": 24,
+    "maxX": 62,
+    "maxY": 98,
+    "w": 29,
+    "h": 75
+   },
+   "headBox": {
+    "minY": 24,
+    "headBottom": 49
+   },
+   "dpr": 2,
+   "placedHLogical": 36.959999999999994,
+   "placedWLogical": 26.00121821127313,
+   "gate": {
+    "normalized": -0.0828,
+    "threshold": 0.05,
+    "pass": true
+   }
+  },
+  {
+   "facing": "rightdown",
+   "actualFacingHex": "rightdown",
+   "ok": true,
+   "label": "",
+   "skinMinusHairX": 1.8,
+   "skinMinusHairXN": 0.0667,
+   "skinN": 96,
+   "hairN": 260,
+   "skinRatio": 0.1368,
+   "skinOfFg": 0.2697,
+   "bbox": {
+    "minX": 39,
+    "minY": 24,
+    "maxX": 65,
+    "maxY": 98,
+    "w": 27,
+    "h": 75
+   },
+   "headBox": {
+    "minY": 24,
+    "headBottom": 49
+   },
+   "dpr": 2,
+   "placedHLogical": 36.959999999999994,
+   "placedWLogical": 26.00121821127313,
+   "gate": {
+    "normalized": 0.0667,
+    "threshold": 0.05,
+    "pass": true
+   }
+  }
+ ]
+}

@@ -74,6 +74,8 @@ let lastCmds3d: ReadonlyArray<{
   readonly state: string;
   readonly isJump: boolean;
   readonly moveProgress: number | null;
+  /** 【T31-R2】进态历时（特/绝 3s 表现窗的相位由它派生：phase=(stateElapsedSec/3)%1）——证据面只读 */
+  readonly stateElapsedSec: number;
 }> = [];
 const canvas = document.getElementById('cv') as HTMLCanvasElement;
 const dpr = Math.min(3, window.devicePixelRatio || 1);
@@ -352,6 +354,13 @@ const AA_FORCE: Character3DEdgeMode | null = (() => {
 })();
 const BG_OVERRIDE = PREVIEW_QUERY.get('bg');
 const CHAR3D_MODE = PREVIEW_QUERY.get('char3d'); // off | loading | 缺省=正常
+/** `?heroScale=<倍数>`：**证据专用**注入（默认 1 = config 的 CHARACTER_3D_HERO_SCALE 原值）。
+ * 用途：朝向门「归一化判据对缩放不变」自证（R2-3）——同一套判据在比例再乘 0.5 时须同样 6/6 过。
+ * 只缩放 3D 主角参考高（命令/缩放/HUD 全部派生自动）；不改 config、不影响任何生产分支。 */
+const HERO_SCALE_OVERRIDE = (() => {
+  const v = Number(PREVIEW_QUERY.get('heroScale'));
+  return Number.isFinite(v) && v > 0 && v !== 1 ? v : 1;
+})();
 const CHAR3D_OFF = CHAR3D_MODE === 'off';
 const CHAR3D_NOT_READY_DIAG = CHAR3D_MODE === 'loading';
 
@@ -478,7 +487,10 @@ async function loadCharacter3DRuntime(): Promise<Character3DLoadOutcome> {
       // 禁止在 pass 侧再加 pixelRatio（重复换算 = hidpi 下人物 ×dpr 过大）；config 本体不改（卡 A 冻结）。
       runtimes: {
         [HERO_3D_PROFILE_ID]: {
-          profile: { ...HERO_3D_PROFILE, screenHeightPxAtReference: HERO_3D_PROFILE.screenHeightPxAtReference * dpr },
+          profile: {
+            ...HERO_3D_PROFILE,
+            screenHeightPxAtReference: HERO_3D_PROFILE.screenHeightPxAtReference * HERO_SCALE_OVERRIDE * dpr,
+          },
           model,
           anim,
         },
@@ -814,7 +826,13 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
     loader: CharacterAssetLoaderStats | null;
     diagnostics: readonly string[];
     placed: ReadonlyMap<string, Placed3DMirror> | null;
-    lastCommands: ReadonlyArray<{ actorId: string; state: string; isJump: boolean; moveProgress: number | null }>;
+    lastCommands: ReadonlyArray<{
+      actorId: string;
+      state: string;
+      isJump: boolean;
+      moveProgress: number | null;
+      stateElapsedSec: number;
+    }>;
     activeClipKey: string | null;
   } {
     const r = char3d;
@@ -1005,6 +1023,7 @@ async function bootstrap(): Promise<void> {
             state: c.state,
             isJump: c.isJump,
             moveProgress: c.moveProgress,
+            stateElapsedSec: c.stateElapsedSec,
           }));
           return outcome.runtime.pass.render(commands, dtSec);
         },
