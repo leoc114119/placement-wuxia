@@ -1,5 +1,5 @@
 /* character3d_runtime_demo bundle —— 由 proto/character3d_runtime_demo/build.mjs 生成，勿手改 */
-var __CHAR3D_BUILD__ = {"commitSha":"8dc2e3f5bf3f70466e7d9071a0a3bb04decb601b","builtAt":"2026-09-14T14:08:26.136Z","payloadSuffix":".bin"};
+var __CHAR3D_BUILD__ = {"commitSha":"fa9c19cb955830a8f51611d9b66d7a626683233b","builtAt":"2026-09-15T00:58:51.137Z","payloadSuffix":".bin"};
 if (typeof globalThis !== "undefined") { globalThis.__CHAR3D_BUILD__ = __CHAR3D_BUILD__; }
 (function () {
   var __mods = Object.create(null);
@@ -1648,7 +1648,7 @@ function sleepWall(ms) {
   __def("config/character-3d", function (require, module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HERO_3D_PROFILE_ERRORS = exports.CHARACTER_3D_VERTEX_FLOATS = exports.CHARACTER_3D_RENDER_SCALE = exports.CHARACTER_3D_FXAA = exports.CHARACTER_3D_ORTHO_Z_HALF = exports.CHARACTER_3D_LIGHT = exports.CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC = exports.CHARACTER_3D_CROSS_FADE_SEC = exports.HERO_3D_ACTION_MAP = exports.HERO_3D_STRIKE_WINDOW_SEC = exports.HERO_3D_STRIKE_START_RATIO = exports.HERO_3D_CAST_CYCLE_SEC = exports.HERO_3D_PROFILE = exports.HERO_3D_ATTACHMENTS = exports.HERO_3D_SOURCE_VIEW_YAW_DEG = exports.HERO_3D_CLIP_REFS = exports.HERO_3D_MODEL_REF = exports.HERO_3D_CLIP_SOURCE_SEC = exports.HERO_3D_EMBEDDED_CLIPS = exports.HERO_3D_MODEL_ACCOUNT = exports.CHARACTER_3D_PROFILE_BY_SPRITE_KEY = exports.HERO_3D_PROFILE_ID = void 0;
+exports.HERO_3D_PROFILE_ERRORS = exports.CHARACTER_3D_VERTEX_FLOATS = exports.CHARACTER_3D_RENDER_SCALE = exports.CHARACTER_3D_FXAA = exports.CHARACTER_3D_ORTHO_Z_HALF = exports.CHARACTER_3D_LIGHT = exports.CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC = exports.CHARACTER_3D_CROSS_FADE_SEC = exports.CHARACTER_3D_JUMP_MOVE_SEC = exports.HERO_3D_ACTION_MAP = exports.HERO_3D_STRIKE_WINDOW_SEC = exports.HERO_3D_STRIKE_START_RATIO = exports.HERO_3D_CAST_CYCLE_SEC = exports.HERO_3D_PROFILE = exports.HERO_3D_ATTACHMENTS = exports.HERO_3D_SOURCE_VIEW_YAW_DEG = exports.HERO_3D_CLIP_REFS = exports.HERO_3D_MODEL_REF = exports.HERO_3D_CLIP_SOURCE_SEC = exports.HERO_3D_EMBEDDED_CLIPS = exports.HERO_3D_MODEL_ACCOUNT = exports.CHARACTER_3D_PROFILE_BY_SPRITE_KEY = exports.HERO_3D_PROFILE_ID = void 0;
 exports.yawDegForFacing = yawDegForFacing;
 exports.normalizeSignedDeg = normalizeSignedDeg;
 exports.isRelativeAssetPath = isRelativeAssetPath;
@@ -1690,7 +1690,7 @@ function assetRef(id, sha256, byteLength, fileName, mediaType) {
 exports.HERO_3D_MODEL_REF = assetRef('hero-model-48k-20260914', 'ff9202b48470c92ccdad0333108e77e193a4135f873ce68e7e3498e979f816f0', 4040728, 'hero_48k_20260914.glb', 'model/gltf-binary');
 exports.HERO_3D_CLIP_REFS = {
     idle: assetRef('hero-clip-idle-v4', '0d3262385d45febcb2930318baf74346340d3e9ccac9c8c607ac59a819171766', 726299, 'idle_v4.json', 'application/json'),
-    walk: { embedded: exports.HERO_3D_EMBEDDED_CLIPS.walk.name },
+    walk: { embedded: exports.HERO_3D_EMBEDDED_CLIPS.run.name },
     atk: assetRef('hero-clip-atk-v4', '546ec94f99065cc2779cf479dbb8821a101beca1851e6aeb1028b741dbfb5bd1', 162924, 'atk_v4.json', 'application/json'),
     cast: assetRef('hero-clip-cast-v4', '3bca2412358226236a19f908952502adc50c799d7bbc499d34341b4ddc446448', 490227, 'cast_v4.json', 'application/json'),
     jump: assetRef('hero-clip-jump-v6-1p5s', '2895612562c2a2b8bad8858e08bfbc2d90985a15a10c41172b50d538ef6222e5', 166799, 'jump_v6_1p5s.json', 'application/json'),
@@ -1704,7 +1704,7 @@ exports.HERO_3D_SOURCE_VIEW_YAW_DEG = {
     leftup: 45,
 };
 function yawDegForFacing(facing) {
-    return normalizeSignedDeg(270 - exports.HERO_3D_SOURCE_VIEW_YAW_DEG[facing]);
+    return normalizeSignedDeg(exports.HERO_3D_SOURCE_VIEW_YAW_DEG[facing] - 180);
 }
 function normalizeSignedDeg(deg) {
     let v = deg % 360;
@@ -1806,10 +1806,12 @@ exports.HERO_3D_ACTION_MAP = {
         loop: false,
         playWindowSec: exports.HERO_3D_CLIP_SOURCE_SEC.jump,
         startRatio: 0,
-        rootMotion: 'zero',
+        rootMotion: 'zero-xz',
+        endpointInclusive: true,
         crossFadeOnEnter: true,
     },
 };
+exports.CHARACTER_3D_JUMP_MOVE_SEC = exports.HERO_3D_CLIP_SOURCE_SEC.jump;
 exports.CHARACTER_3D_CROSS_FADE_SEC = 0.1;
 exports.CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC = 0.18;
 exports.CHARACTER_3D_LIGHT = {
@@ -4538,11 +4540,13 @@ function bindRetargetedClip(clip, model) {
     return { tracks, rootNode: rootIdx, rootRest: model.nodes.trs[rootIdx].t.slice(), coveredJoints: tracks.length };
 }
 const q4 = new Float32Array(4);
-function applyRetargetedClip(clip, bound, model, pose, phaseRatio, rootDisplacement, loop = true) {
+function applyRetargetedClip(clip, bound, model, pose, phaseRatio, rootDisplacement, loop = true, endpointInclusive = false) {
     resetPose(pose, model);
     const nF = clip.nFrames;
     const fps = clip.fps;
-    let fi = phaseRatio * clip.samplerDurationSec * fps;
+    let fi = endpointInclusive && !loop
+        ? phaseRatio * (nF - 1)
+        : phaseRatio * clip.samplerDurationSec * fps;
     if (loop)
         fi = fi - Math.floor(fi / nF) * nF;
     else
@@ -4565,9 +4569,18 @@ function applyRetargetedClip(clip, bound, model, pose, phaseRatio, rootDisplacem
     const r1 = clip.rootTrack[i1];
     const rt = pose.tV[bound.rootNode];
     const rr = bound.rootRest;
-    rt[0] = rr[0] + (r0[0] * (1 - a) + r1[0] * a);
-    rt[1] = rr[1] + (r0[1] * (1 - a) + r1[1] * a);
-    rt[2] = rr[2] + (r0[2] * (1 - a) + r1[2] * a);
+    const dx = r0[0] * (1 - a) + r1[0] * a;
+    const dy = r0[1] * (1 - a) + r1[1] * a;
+    const dz = r0[2] * (1 - a) + r1[2] * a;
+    if (rootDisplacement === 'zero-xz') {
+        rt[0] = rr[0];
+        rt[1] = rr[1] + dy;
+        rt[2] = rr[2];
+        return;
+    }
+    rt[0] = rr[0] + dx;
+    rt[1] = rr[1] + dy;
+    rt[2] = rr[2] + dz;
 }
 function segmentOf(times, t) {
     let lo = 0;
@@ -4700,6 +4713,7 @@ class CharacterAnimController {
                     phaseRatio: this.lastRatio,
                     loop: this.opts.actionMap[this.currentActionKey].loop,
                     rootDisplacement: this.opts.actionMap[this.currentActionKey].rootMotion,
+                    endpointInclusive: this.opts.actionMap[this.currentActionKey].endpointInclusive === true,
                     durationSec: dur > 0 ? dur : 1e-6,
                 };
                 this.fadeElapsedSec = 0;
@@ -4754,21 +4768,24 @@ class CharacterAnimController {
         if (fade) {
             const fadeSource = this.opts.clips[fade.clipKey];
             if (fadeSource) {
-                this.sampleOne(fadeSource, fade.phaseRatio, fade.rootDisplacement, fade.loop, model, scratchPose);
-                this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose);
+                this.sampleOne(fadeSource, fade.phaseRatio, fade.rootDisplacement, fade.loop, model, scratchPose, fade.endpointInclusive);
+                this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusive());
                 blendPoses(pose, scratchPose, pose, this.fadeWeight);
                 return resolvePose(model, pose);
             }
         }
-        this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose);
+        this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusive());
         return resolvePose(model, pose);
     }
     currentRootDisplacement() {
         return this.inherited ? this.inherited.rootDisplacement : this.opts.actionMap[this.currentActionKey].rootMotion;
     }
-    sampleOne(source, phaseRatio, rootDisplacement, loop, model, pose) {
+    currentEndpointInclusive() {
+        return this.opts.actionMap[this.currentActionKey].endpointInclusive === true;
+    }
+    sampleOne(source, phaseRatio, rootDisplacement, loop, model, pose, endpointInclusive = false) {
         if (source.kind === 'retargeted') {
-            applyRetargetedClip(source.clip, source.bound, model, pose, phaseRatio, rootDisplacement, loop);
+            applyRetargetedClip(source.clip, source.bound, model, pose, phaseRatio, rootDisplacement, loop, endpointInclusive);
         }
         else {
             applyEmbeddedClip(source.clip, model, pose, phaseRatio, rootDisplacement, loop);

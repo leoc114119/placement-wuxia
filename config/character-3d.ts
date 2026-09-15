@@ -230,8 +230,15 @@ export interface Character3DActionSpec {
   readonly playWindowSec: number | null;
   /** 归一化起点 [0,1)：strike 从 2/3 位置起播到末尾并保持（兼容既有 cast2→3 语义）。 */
   readonly startRatio: number;
-  /** 根位移策略：'zero' = 剥离 rootTrack 三轴位移（jump 防「双跳」，方案 §4.1）；'track' = 按源叠加。 */
-  readonly rootMotion: 'track' | 'zero';
+  /** 根位移策略（方案 v1.1 §4.1）：
+   *  · `'track'` = 按源叠加 rootTrack 三轴增量（walk 等）；
+   *  · `'zero-xz'` = **只清水平增量、保留 y**（jump：`Root.translation = rest + [0, sampledY, 0]`，
+   *    竖直唯一来源＝素材；不得抹掉 rest 平移、不钳负 y 蹲姿）；
+   *  · `'zero'` = 只留静止位移（历史口径，防双跳时代用过；当前无调用方）。 */
+  readonly rootMotion: 'track' | 'zero' | 'zero-xz';
+  /** 单播端点策略（方案 v1.1 §4.1，jump 专用）：true ⇒ 采样 `fi = phase × (nFrames − 1)`，
+   *  phase=1 **正好落末帧**（46 帧 ⇒ fi=0/22.5/45）；缺省 false = `phase × nFrames` 夹取（其它 clip 不变）。 */
+  readonly endpointInclusive?: boolean;
   /** 进入本状态时是否重置混合（dead 不混回，方案 §5 末段）。 */
   readonly crossFadeOnEnter: boolean;
 }
@@ -320,16 +327,26 @@ export const HERO_3D_ACTION_MAP: Readonly<Record<Character3DActionKey, Character
     crossFadeOnEnter: false,
   },
   jump: {
-    // moveProgress 0→1 映射完整 1.5s 源；root 三轴位移归零，外部 hop 唯一控制位移
+    // 【方案 v1.1 §4.1】moveProgress 0→1 映射完整 1.5s 源；**只剥 root x/z、保留 y**（竖直由素材提供），
+    // 程序 hop 恒 0（见 CHARACTER_3D_JUMP_MOVE_SEC 与 battle-hex-render 的 MoveAnim 创建）；
+    // endpointInclusive：fi = progress×(46−1) ⇒ progress=1 正好落末帧（禁 progress×46 提前到末帧）。
     clip: 'jump',
     progressSource: 'moveProgress',
     loop: false,
     playWindowSec: HERO_3D_CLIP_SOURCE_SEC.jump,
     startRatio: 0,
-    rootMotion: 'zero',
+    rootMotion: 'zero-xz',
+    endpointInclusive: true,
     crossFadeOnEnter: true,
   },
 };
+
+/**
+ * 3D 轻功移动的**演出时长**（秒）——方案 v1.1 §4.1：「3D jump 的 MoveAnim.duration 固定 1.5 演出秒」，
+ * 动作与水平路径**共用** `progress = clamp(elapsed / 1.5, 0, 1)`，**不再消费**按距离的 0.6~1.2s jump 时长。
+ * 全局 x2 下墙钟 0.75s（沿既有演出钟同步加速，**不加距离倍率**）；session 逻辑格/300ms 快照窗保持不动。
+ * 与源时长同值 ⇒ 1× 播放速率 = 1.0×（旧口径把 1.5s 源压进 0.6~1.2s ⇒ 1.25~2.5×，已废止）。 */
+export const CHARACTER_3D_JUMP_MOVE_SEC = HERO_3D_CLIP_SOURCE_SEC.jump;
 
 /** 状态切换默认交叉淡化 100ms；jump→idle 固定 180ms（方案 §5 末段）。 */
 export const CHARACTER_3D_CROSS_FADE_SEC = 0.1;

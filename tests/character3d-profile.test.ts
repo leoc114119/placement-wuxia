@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CHARACTER_3D_CROSS_FADE_SEC,
+  CHARACTER_3D_JUMP_MOVE_SEC,
   CHARACTER_3D_FXAA,
   CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
   CHARACTER_3D_LIGHT,
@@ -187,11 +188,20 @@ describe('动作映射（方案 §5 表逐行）', () => {
     expect(HERO_3D_ACTION_MAP.dead.crossFadeOnEnter).toBe(false);
   });
 
-  it('jump：moveProgress 0→1 映射完整 1.5s 源，**root 三轴位移归零**（防双跳）', () => {
+  it('jump（v1.1）：moveProgress 0→1 映射完整 1.5s 源、**只剥 root x/z 保留 y**、端点含末帧', () => {
     expect(HERO_3D_ACTION_MAP.jump.clip).toBe('jump');
     expect(HERO_3D_ACTION_MAP.jump.progressSource).toBe('moveProgress');
-    expect(HERO_3D_ACTION_MAP.jump.rootMotion).toBe('zero');
+    // 【方案 v1.1 §4.1】只剥水平（'zero-xz'）：竖直唯一来源＝素材 root y；旧 'zero'（三轴全清）已废止
+    expect(HERO_3D_ACTION_MAP.jump.rootMotion).toBe('zero-xz');
+    expect(HERO_3D_ACTION_MAP.jump.endpointInclusive).toBe(true);
     expect(HERO_3D_ACTION_MAP.jump.playWindowSec).toBeCloseTo(1.5, 12);
+    // 3D jump 演出时长固定 1.5 演出秒（= 源时长 ⇒ 1× 播放速率）
+    expect(CHARACTER_3D_JUMP_MOVE_SEC).toBeCloseTo(HERO_3D_CLIP_SOURCE_SEC.jump, 12);
+    // 其它 clip 的 root 策略不被本次改动波及
+    for (const key of ['idle', 'walk', 'basic', 'charge', 'strike'] as const) {
+      expect(HERO_3D_ACTION_MAP[key].rootMotion, key).toBe('track');
+      expect(HERO_3D_ACTION_MAP[key].endpointInclusive, key).toBeUndefined();
+    }
   });
 
   it('时长常量：交叉淡化 100ms、jump→idle 180ms', () => {

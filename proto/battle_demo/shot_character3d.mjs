@@ -115,7 +115,17 @@ const setHero = (page, fields) =>
 const flightSample = (page) =>
   page.evaluate(() => {
     const h = window.__demo.session.snapshot().actors.find((a) => a.id === 'hero');
-    return { hop: window.__demo.sampleHeroDraw().hop, isJump: h.isJump, state: h.animState };
+    const c = window.__demo.character3d;
+    const cmd = (c.lastCommands ?? []).find((x) => x.actorId === 'hero') ?? null;
+    return {
+      hop: window.__demo.sampleHeroDraw().hop,
+      isJump: h.isJump,
+      state: h.animState,
+      // 【v1.1】竖直改由素材提供 ⇒ 升/降段判据改用命令的 moveProgress（hop 恒 0，不能再当判据）
+      progress: cmd ? cmd.moveProgress : null,
+      cmdIsJump: cmd ? cmd.isJump : null,
+      clip: (c.controllers && c.controllers.get && c.controllers.get('hero')) ? c.controllers.get('hero').activeClipKey : null,
+    };
   });
 
 /** 【R1 证据】轻功时间线逐帧录制（**不只存图片**）：同一帧对照三层——快照 isJump（session 300ms 窗）/
@@ -157,7 +167,11 @@ const summarizeTimeline = (samples) => {
   // 取「降段末之后」而非「窗关闭之后」——采样跨帧时窗关闭瞬间可能落在两个演出之间，会误判成已释放）
   const afterDescend = descend.length > 0 ? samples.slice(samples.indexOf(descend[descend.length - 1]) + 1) : [];
   const released = afterDescend.find((s) => s.cmdIsJump === false) ?? null;
-  const peak = samples.reduce((a, b) => (b.hop > a.hop ? b : a), samples[0] ?? { hop: 0 });
+  // 【v1.1】竖直由素材提供 ⇒ 不再以 hop 论「顶点」；改为取**演出中点**（moveProgress 最接近 0.5 者）
+  const withProg = samples.filter((s) => s.moveProgress !== null && s.moveProgress !== undefined);
+  const peak = withProg.length
+    ? withProg.reduce((a, b) => (Math.abs(b.moveProgress - 0.5) < Math.abs(a.moveProgress - 0.5) ? b : a))
+    : (samples[0] ?? { hop: 0 });
   return {
     count: samples.length,
     takeoff,
@@ -320,18 +334,19 @@ for (const [vw, vh, tag] of VIEWPORTS) {
     await setHero(page, { animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1, renderQ: h2.q, renderR: h2.r, moveFromQ: h2.q, moveFromR: h2.r });
     await page.waitForTimeout(180); // 让 view 释放上一轮 moveAnim
     await setHero(page, { animState: 'walk', animLeftMs: 9000, isJump: true, moveFromQ: h2.q - 1, moveFromR: h2.r, moveT: 0.02 });
-    const rise = await waitFlight(page, (x) => x.hop > 12 && x.isJump, 1500);
+    // 【v1.1】升段 = 演出前段（progress<0.5）；降段 = 后段且快照窗已关（isJump=false）——hop 恒 0 不再作判据
+    const rise = await waitFlight(page, (x) => x.progress !== null && x.progress < 0.45 && x.cmdIsJump === true, 1500);
     if (rise) await shot(page, `${tag}_state_jump_rise`);
-    const desc = await waitFlight(page, (x) => x.hop > 12 && !x.isJump, 1500);
+    const desc = await waitFlight(page, (x) => x.progress !== null && x.progress > 0.6 && x.isJump === false && x.cmdIsJump === true, 1500);
     if (desc) {
       await shot(page, `${tag}_state_jump_descend`);
       const after = await flightSample(page);
-      if (after.hop > 8) jump = { rise, desc, after };
+      if (after.progress !== null && after.cmdIsJump === true) jump = { rise, desc, after };
     }
   }
   jumpEvidence[tag] = jump;
-  check(`${tag} 轻功升段 hop>0 且 isJump=true`, !!jump && jump.rise.hop > 12 && jump.rise.isJump, jump ? `hop=${jump.rise.hop} isJump=${jump.rise.isJump} state=${jump.rise.state}` : '未命中窗口');
-  check(`${tag} 轻功降段 hop>0 且快照 isJump=false（升段窗 300ms 短于演出 600ms）`, !!jump && jump.desc.hop > 12 && !jump.desc.isJump, jump ? `hop=${jump.desc.hop} isJump=${jump.desc.isJump} state=${jump.desc.state}` : '未命中窗口');
+  check(`${tag} 轻功升段（progress<0.45）命令已是 jump 且 hop 恒 0`, !!jump && jump.rise.progress < 0.45 && jump.rise.cmdIsJump === true && jump.rise.hop === 0, jump ? `progress=${jump.rise.progress} hop=${jump.rise.hop} cmd=${jump.rise.cmdIsJump} state=${jump.rise.state}` : '未命中窗口');
+  check(`${tag} 轻功降段（progress>0.6，快照窗已关）仍 jump 且 hop 恒 0`, !!jump && jump.desc.progress > 0.6 && jump.desc.isJump === false && jump.desc.cmdIsJump === true && jump.desc.hop === 0, jump ? `progress=${jump.desc.progress} isJump=${jump.desc.isJump} hop=${jump.desc.hop}` : '未命中窗口');
 
   // 【R1 = arch seq=419 修订乙】轻功时间线逐帧录制（记录 activeClipKey，不只存图片）：
   // 起一段**长距**轻功（4 格 → 0.6+0.15×2=0.9s 演出 > 300ms 快照窗），逐帧采三层（快照/命令/动作）。
@@ -358,7 +373,7 @@ for (const [vw, vh, tag] of VIEWPORTS) {
   jumpTimelines[tag] = tl ?? lastTl; // 完整取证优先；否则落最后一次（含 FAIL 详情，供定位）
   check(`${tag} 时间线：升段样本（快照窗内）command.isJump=true 且 activeClipKey=jump`, !!S && S.riseCount >= 2 && S.takeoff?.cmdIsJump === true && S.takeoff?.clip === 'jump', S ? `升段样本=${S.riseCount} 起跳 viewT=${S.takeoff?.viewT} hop=${S.takeoff?.hop} clip=${S.takeoff?.clip}` : '未取得时间线');
   check(`${tag} 时间线：快照 isJump 窗（≈300ms）关闭后 command/activeClipKey 仍为 jump（顶点/降段）`, !!S && S.descendCount >= 3 && S.descendAllJump === true && S.descendLast?.cmdIsJump === true, S ? `窗关闭样本 viewT=${S.windowClose?.viewT ?? 'n/a'} · 窗后 jump 样本=${S.descendCount}（viewT ${S.descendFirst?.viewT ?? 'n/a'}→${S.descendLast?.viewT ?? 'n/a'}）末样本 hop=${S.descendLast?.hop ?? 'n/a'} clip=${S.descendLast?.clip ?? 'n/a'}` : '未取得时间线');
-  check(`${tag} 时间线：顶点仍在 jump 且 hop 最大`, !!S && S.peak.hop > 12 && S.peak.cmdIsJump === true && S.peak.clip === 'jump', S ? `viewT=${S.peak.viewT} hop=${S.peak.hop} cmd=${S.peak.cmdIsJump} clip=${S.peak.clip}` : 'n/a');
+  check(`${tag} 时间线：演出中点（moveProgress≈0.5）仍在 jump、hop 恒 0`, !!S && S.peak.cmdIsJump === true && S.peak.clip === 'jump' && S.peak.hop === 0, S ? `viewT=${S.peak.viewT} progress=${S.peak.moveProgress} hop=${S.peak.hop} cmd=${S.peak.cmdIsJump} clip=${S.peak.clip}` : 'n/a');
   check(`${tag} 时间线：落地演出结束即释放（command.isJump=false）`, !!S && S.released?.cmdIsJump === false, S ? `viewT=${S.released?.viewT} state=${S.released?.cmdState} clip=${S.released?.clip}` : '未见释放样本');
   await setHero(page, { animState: 'idle', animLeftMs: 0, isJump: false, moveT: 1, renderQ: h2.q, renderR: h2.r, moveFromQ: h2.q, moveFromR: h2.r });
 

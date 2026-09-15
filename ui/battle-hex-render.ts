@@ -60,7 +60,10 @@ import {
 } from '../config/hero-weapon-layer'; // 【T29】武器层只读配置 v2（键=bodyFrame→48 行标定行+全局剑模；渲染只消费不算数值）
 // 【T31-FE-B】spriteKey → 3D profile 键（方案 §3 末段：由 config 决定该键走 3D 还是现有 2D profile）。
 // 只读查表：渲染层不持任何资产地址/时长（§6.1 资源 URL 只在 config）。
-import { CHARACTER_3D_PROFILE_BY_SPRITE_KEY } from '../config/character-3d';
+import {
+  CHARACTER_3D_PROFILE_BY_SPRITE_KEY,
+  CHARACTER_3D_JUMP_MOVE_SEC,
+} from '../config/character-3d';
 
 // ============ T31-FE-B · 3D 人物层接点（方案 §2/§4.1/§4.3；S1 仅主角 3D） ============
 //
@@ -830,7 +833,14 @@ export function updateView(
           .map((u) => `${u.pos.q},${u.pos.r}`),
       );
       const path = computeMovePath(from, pos, occupied, a.isJump);
-      const dur = a.isJump ? jp.duration : PIECE.moveLerpSec * Math.max(1, dist);
+      // ★【方案 v1.1 §4.1】3D 主角的轻功演出：**固定 1.5 演出秒**（动作与水平路径共用 progress），
+      //   **不再消费**按距离的 0.6~1.2s（旧口径把 1.5s 源压成 1.25~2.5×，观感即"空中蹬两次腿"之一因）；
+      //   hopHeight 恒 0（竖直唯一来源＝素材 root y；不叠 pieceHop、不逐帧脚底归零、不钳负 y 蹲姿）。
+      //   未迁移 2D 的角色（敌型）保持原 jumpParams 口径——v1.1 明确「不自动扩大到未迁移 2D 角色」。
+      const is3DJumper = CHARACTER_3D_PROFILE_BY_SPRITE_KEY[a.spriteKey] !== undefined;
+      const dur = a.isJump
+        ? (is3DJumper ? CHARACTER_3D_JUMP_MOVE_SEC : jp.duration)
+        : PIECE.moveLerpSec * Math.max(1, dist);
       view.moveAnims.set(a.id, {
         from,
         pos,
@@ -840,7 +850,7 @@ export function updateView(
         duration: dur,
         // 【R1 · 修订乙】轻功意图在此**一次性锁定**（本演出期间不再读快照 isJump；见 MoveAnim 注释）
         isJumpMove: a.isJump,
-        hopHeight: a.isJump ? jp.height : 0,
+        hopHeight: a.isJump && !is3DJumper ? jp.height : 0,
       });
     }
     // ---- 移动演出推进（演出计时主导：到时不删、定格终点等快照到位/离开 walk 才释放） ----
@@ -1436,7 +1446,9 @@ function character3DCommandOf(
     stateElapsedSec: pres.elapsedSec,
     // jump 专用：0→1 映射完整 jump 源（§5 末行）；无移动演出=null（状态机回落到 stateElapsed）
     moveProgress: ma ? Math.min(1, ma.t / ma.duration) : null,
-    hopPx: geo.hopPx * pixelRatio,
+    // ★【方案 v1.1 §4.1】3D jump 的 hopPx **恒 0**（竖直由素材 root y 提供；程序不再叠抛物线）。
+    //   非轻功移动沿用既有几何（hop 本就是 0，保留赋值形状以免扩大改动面）。
+    hopPx: isJump ? 0 : geo.hopPx * pixelRatio,
     alpha: dead ? PIECE.deadAlpha : 1,
     squashY: dead ? DEAD_SQUASH_Y : 1,
   };

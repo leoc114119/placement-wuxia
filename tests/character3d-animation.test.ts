@@ -42,17 +42,19 @@ function newController() {
   });
 }
 
-/** 参考实现：直接（不经状态机）采样某 clip 的某个相位并求解 palette。 */
+/** 参考实现：直接（不经状态机）采样某 clip 的某个相位并求解 palette。
+ *  root/endpointInclusive 按**方案 v1.1 §4.1** 的 jump 口径可传（'zero-xz' + 端点含末帧）。 */
 function referencePalette(
   key: 'idle' | 'atk' | 'cast' | 'jump',
   phase: number,
   loop: boolean,
-  root: 'track' | 'zero' = 'track',
+  root: 'track' | 'zero' | 'zero-xz' = 'track',
   pose: Character3DPose = createPose(model),
+  endpointInclusive = false,
 ): number {
   const clip = heroClip(key);
   const bound = bindRetargetedClip(clip, model);
-  applyRetargetedClip(clip, bound, model, pose, phase, root, loop);
+  applyRetargetedClip(clip, bound, model, pose, phase, root, loop, endpointInclusive);
   return digestFloats(resolvePose(model, pose), 1e-5);
 }
 
@@ -281,13 +283,13 @@ describe('动作状态机（方案 §5）', () => {
     expect(c.activeClipKey).toBe('idle');
   });
 
-  it('jump 采样期间 root 三轴归零（状态机透传 rootMotion=zero）', () => {
+  it('jump 采样：**只剥 root x/z、保留 y**（v1.1 §4.1；状态机透传 rootMotion=zero-xz）', () => {
     const c = newController();
     c.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, isJump: true });
     const palette = samplePalette(c);
     expect(palette.length).toBe(41 * 16);
-    const reference = referencePalette('jump', 0.5, false, 'zero');
-    // 相位 = moveProgress（0.5）× 完整 1.5s 源 ⇒ 与参考实现同帧
+    // 相位 = moveProgress（0.5）⇒ fi = 0.5×(46−1) = 22.5；root 只清 x/z、保留 y
+    const reference = referencePalette('jump', 0.5, false, 'zero-xz', createPose(model), true);
     const c2 = newController();
     c2.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.5, isJump: true });
     expect(sampleDigest(c2)).toBe(reference);
@@ -302,11 +304,11 @@ describe('动作状态机（方案 §5）', () => {
     expect(c.actionKey, '起点帧').toBe('jump');
     expect(c.activeClipKey, '起点帧').toBe('jump');
     const startDigest = sampleDigest(c);
-    expect(startDigest).toBe(referencePalette('jump', 0, false, 'zero'));
+    expect(startDigest).toBe(referencePalette('jump', 0, false, 'zero-xz', createPose(model), true));
     // 窗口末帧：hop 回到 0、moveProgress 仍非 null
     c.update(0.016, { state: 'walk', stateElapsedSec: 1.5, moveProgress: 1, isJump: true });
     expect(c.actionKey, '终点帧').toBe('jump');
-    expect(sampleDigest(c)).toBe(referencePalette('jump', 1, false, 'zero'));
+    expect(sampleDigest(c)).toBe(referencePalette('jump', 1, false, 'zero-xz', createPose(model), true));
     // 非轻功：hopPx 非 0 也不得被判成 jump（判据只认 isJump）
     c.update(0.016, { state: 'walk', stateElapsedSec: 0.2, moveProgress: 0.4, isJump: false });
     expect(c.actionKey).toBe('walk');

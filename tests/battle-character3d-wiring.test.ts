@@ -23,13 +23,21 @@ import {
   HERO_3D_ACTION_MAP,
   HERO_3D_PROFILE,
   HERO_3D_PROFILE_ID,
+  CHARACTER_3D_JUMP_MOVE_SEC,
 } from '../config/character-3d';
 import { createCharacter3DPass, type Character3DPass, type Character3DProfileRuntime } from '../ui/character3d/pass';
 import type { Character3DRenderer } from '../ui/character3d/renderer';
 import { createHostRuntime, type HostRuntime } from '../proto/battle_demo/host-runtime';
 import { createHexBattle, type HexBattleSession } from '../systems/battle-session';
 import { cubeDistance } from '../systems/hex';
-import { heroClipRegistry, heroModel } from './character3d-fixtures';
+import { heroClipRaw, heroClipRegistry, heroModel } from './character3d-fixtures';
+import {
+  applyRetargetedClip,
+  bindRetargetedClip,
+  createPose,
+  parseCharacter3DClipJson,
+  CharacterAnimController,
+} from '../ui/character3d/animation';
 import {
   createView,
   directionalBodySrcOf,
@@ -409,7 +417,7 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
     expect(cmd.isJump).toBe(false);
   });
 
-  it('轻功：演出起跳时锁定的意图透传（禁 hopPx 猜），hopPx 只作垂直位移且已按 pixelRatio 换算', () => {
+  it('轻功：演出起跳时锁定的意图透传（禁 hopPx 猜）；v1.1 起 hopPx 恒 0（竖直由素材 root y）', () => {
     const { assets } = makeAssets();
     const fake = makeFakeLayer();
     const view = view3d(fake.layer);
@@ -417,15 +425,17 @@ describe('[T31-FE-B] §5 状态映射：命令字段口径', () => {
     const snap0 = snap([hero]);
     updateView(view, snap0, 0.016, W, H); // updateView 起跳上升沿建 moveAnim
     const ma = view.moveAnims.get('hero')!;
-    expect(ma.hopHeight).toBeGreaterThan(0);
-    ma.t = ma.duration / 2; // 顶点：hop 最大
+    // 【方案 v1.1 §4.1】3D jump：hopHeight 恒 0、程序 hop 不作为竖直来源（竖直由素材 root y 提供）
+    expect(ma.hopHeight).toBe(0);
+    expect(ma.duration).toBeCloseTo(CHARACTER_3D_JUMP_MOVE_SEC, 10);
+    ma.t = ma.duration / 2; // 中点
     const ops: RecordedOp[] = [];
     drawFrame({ ctx: makeRecordingCtx(ops), width: W, height: H, dt: 0.016 }, snap0, assets, view);
     const cmd = fake.calls[fake.calls.length - 1][0];
     const w = hexToWorld(4, 8);
     expect(cmd.isJump).toBe(true);
-    expect(cmd.hopPx).toBeCloseTo(ma.hopHeight * DPR, 6); // 垂直位移唯一来源=pieceHop
-    expect(cmd.footY).toBe(Math.round(w.y - view.camera.y + H / 2) * DPR); // 锚仍是格心行（hop 另给）
+    expect(cmd.hopPx).toBe(0); // ★ v1.1：不叠 pieceHop
+    expect(cmd.footY).toBe(Math.round(w.y - view.camera.y + H / 2) * DPR); // 地面锚 = 格心行（不再减 hop）
     expect(cmd.moveProgress).toBeCloseTo(0.5, 6);
   });
 
@@ -770,7 +780,9 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
     expect(ma, '未建移动演出').toBeTruthy();
     expect(ma.isJumpMove).toBe(true); // 创建时从该次快照 isJump 锁定
     expect(ma.isJumpMove).toBe(s.snapshot().actors.find((a) => a.id === 'hero')!.isJump);
-    expect(ma.duration).toBeCloseTo(jumpParamsFor(dist).duration, 10);
+    // 【方案 v1.1 §4.1】3D jump 演出时长**固定 1.5 演出秒**（不再按距离取 0.6~1.2s）
+    expect(dist).toBeGreaterThan(0);
+    expect(ma.duration).toBeCloseTo(CHARACTER_3D_JUMP_MOVE_SEC, 10);
 
     const samples = driveFrames(s, view, pass, cmds, assets, Math.ceil((ma.duration + 0.2) / DT_REAL));
 
@@ -788,11 +800,13 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
     expect(descending.every((x) => x.clip === 'jump')).toBe(true);
     expect(descending.every((x) => x.state === 'walk')).toBe(true);
 
-    // ③ 顶点（hop 最大）仍在 jump
-    const peak = samples.reduce((a, b) => (b.hop > a.hop ? b : a));
-    expect(peak.hop).toBeGreaterThan(50);
-    expect(peak.cmdIsJump).toBe(true);
-    expect(peak.clip).toBe('jump');
+    // ③ 演出中点（moveProgress 最近 0.5 者）仍在 jump —— v1.1 起竖直由素材提供，不再以 hop 判顶点
+    const mid = samples.filter((x) => x.animT !== null).reduce((a, b) => (
+      Math.abs((b.animT! / ma.duration) - 0.5) < Math.abs((a.animT! / ma.duration) - 0.5) ? b : a
+    ));
+    expect(mid.cmdIsJump).toBe(true);
+    expect(mid.clip).toBe('jump');
+    expect(mid.hop).toBe(0); // v1.1：程序 hop 恒 0（2D hop 亦为 0 ⇒ 全程不叠）
 
     // ④ 演出有效期内恒 jump、结束后（释放）恒 false
     for (const x of samples) {
@@ -805,7 +819,7 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
     expect(samples[samples.length - 1].clip).not.toBe('jump');
   });
 
-  it('两档演出时长（0.6s / 1.2s）× 倍速 x1/x2：view 时间口径下不变量恒成立（不拉长 session 300ms 窗）', () => {
+  it('短/长路径均 1.5 演出秒 × 倍速 x1/x2（v1.1：仅全局倍率、无距离倍率、hop 恒 0）', () => {
     const observed: Array<{ speed: number; dist: number; duration: number }> = [];
     for (const speed of [1, 2] as const) {
       const dtView = DT_REAL * (speed === 2 ? SPEED_FACTOR.fast : SPEED_FACTOR.normal);
@@ -823,10 +837,9 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
         expect(s.submit({ type: 'move', to })).toBe(true);
         updateView(view, s.snapshot(), dtView, W, H);
         const ma = view.moveAnims.get('hero')!;
-        const expectDur = jumpParamsFor(dist).duration;
-        expect(ma.duration).toBeCloseTo(expectDur, 10);
-        expect(ma.duration).toBeGreaterThanOrEqual(JUMP.baseDuration);
-        expect(ma.duration).toBeLessThanOrEqual(JUMP.maxDuration);
+        // ★ v1.1：短/长路径**都是 1.5 演出秒**（不再消费 jumpParams 的 0.6~1.2s）
+        expect(ma.duration).toBeCloseTo(CHARACTER_3D_JUMP_MOVE_SEC, 10);
+        expect(ma.hopHeight).toBe(0);
         observed.push({ speed, dist, duration: ma.duration });
 
         const samples = driveFrames(s, view, pass, cmds, assets, Math.ceil((ma.duration + 0.25) / dtView), speed);
@@ -839,20 +852,119 @@ describe('[T31-FE-B · R1] 轻功意图=修订乙：真实链路 session→view�
         const afterWindow = samples.filter((x) => !x.snapIsJump && x.animT !== null && x.animT < ma.duration);
         expect(afterWindow.length, `speed=${speed} ${which} 窗后无采样`).toBeGreaterThan(0);
         expect(afterWindow.every((x) => x.cmdIsJump === true && x.clip === 'jump')).toBe(true);
-        // 结束即释放
+        // 演出期内 hop 恒 0（不叠程序抛物线）；结束即释放
+        expect(samples.every((x) => x.hop === 0)).toBe(true);
         const after = samples.filter((x) => x.t >= ma.duration);
         expect(after.length).toBeGreaterThan(0);
         expect(after.every((x) => x.cmdIsJump === false)).toBe(true);
       }
     }
-    // 两档覆盖：短距=基准 0.6s；长距≥6 格=封顶 1.2s（真实链路实测两档必须都取到）
+    // 短/长两档都取到，且**演出秒恒 1.5**（x1/x2 同值 ⇒ 只改墙钟倍率，不改演出时长）
     const short = observed.filter((o) => o.dist <= JUMP.baseCells);
     const far = observed.filter((o) => o.dist > JUMP.baseCells);
     expect(short.length).toBeGreaterThan(0);
-    expect(short.every((o) => o.duration === JUMP.baseDuration)).toBe(true);
-    expect(far.some((o) => o.duration === JUMP.maxDuration), `未取到 1.2s 封顶档：${JSON.stringify(observed)}`).toBe(true);
-    expect(observed.some((o) => o.duration === JUMP.baseDuration)).toBe(true);
-    for (const o of observed) expect(o.duration).toBeCloseTo(jumpParamsFor(o.dist).duration, 10);
+    expect(far.length).toBeGreaterThan(0);
+    for (const o of observed) {
+      expect(o.duration).toBeCloseTo(CHARACTER_3D_JUMP_MOVE_SEC, 10);
+    }
+    // x1 与 x2 的**演出秒**必须一致（仅全局倍率：墙钟 = 演出秒 / 倍率）
+    const x1 = observed.filter((o) => o.speed === 1);
+    const x2 = observed.filter((o) => o.speed === 2);
+    expect(new Set(x1.map((o) => o.duration))).toEqual(new Set([CHARACTER_3D_JUMP_MOVE_SEC]));
+    expect(new Set(x2.map((o) => o.duration))).toEqual(new Set([CHARACTER_3D_JUMP_MOVE_SEC]));
+  });
+
+  it('v1.1 §9.1：jump 只剥 root x/z —— y 逐点与源相符、x/z 恒为静止位移、hop=0', () => {
+    const s = jumpSession();
+    expect(tickToPending(s)).toBe(true);
+    const model = heroModel();
+    const jumpRaw = heroClipRaw('jump');
+    const clip = parseCharacter3DClipJson(jumpRaw, 'jump');
+    const bound = bindRetargetedClip(clip, model);
+    const probe = (ratio: number): { x: number; y: number; z: number } => {
+      const pose = createPose(model);
+      applyRetargetedClip(clip, bound, model, pose, ratio, 'zero-xz', false, true);
+      const t = pose.tV[bound.rootNode];
+      return { x: t[0], y: t[1], z: t[2] };
+    };
+    // 取三个相位（fi = ratio×45 ⇒ 0 / 22.5 / 45）
+    for (const ratio of [0, 0.5, 1]) {
+      const fi = ratio * (clip.nFrames - 1);
+      const i0 = Math.min(clip.nFrames - 1, Math.floor(fi));
+      const i1 = Math.min(clip.nFrames - 1, i0 + 1);
+      const a = fi - Math.floor(fi);
+      const wantY = bound.rootRest[1] + clip.rootTrack[i0][1] * (1 - a) + clip.rootTrack[i1][1] * a;
+      const got = probe(ratio);
+      expect(got.y, `ratio=${ratio} y 与源不符`).toBeCloseTo(wantY, 6); // pose 为 Float32 ⇒ 6 位足够
+      expect(got.x, `ratio=${ratio} x 必须为静止位移`).toBeCloseTo(bound.rootRest[0], 6);
+      expect(got.z, `ratio=${ratio} z 必须为静止位移`).toBeCloseTo(bound.rootRest[2], 6);
+    }
+    // y 曲线确实随相位变化（不是被抹平）：首/中/末三点互不相等
+    const ys = [0, 0.5, 1].map((r) => probe(r).y);
+    expect(new Set(ys.map((v) => v.toFixed(6))).size).toBe(3);
+    // 存在负 y（下蹲）段且**未被钳掉**
+    expect(Math.min(...clip.rootTrack.map((r: number[]) => r[1]))).toBeLessThan(0);
+    expect(probe(1).y).toBeLessThan(bound.rootRest[1]);
+    // 运行期：整个过程 hop=0（不叠程序抛物线）
+    const { layer, pass, cmds } = makeRealPassLayer(DPR);
+    const view = view3d(layer);
+    const { assets } = makeAssets();
+    expect(s.submit({ type: 'selectSkill', skillId: 'qing' })).toBe(true);
+    expect(s.submit({ type: 'move', to: pickJumpCell(s, 'far') })).toBe(true);
+    updateView(view, s.snapshot(), DT_REAL, W, H);
+    const ma = view.moveAnims.get('hero')!;
+    const samples = driveFrames(s, view, pass, cmds, assets, Math.ceil(ma.duration / DT_REAL));
+    expect(samples.every((x) => x.hop === 0)).toBe(true);
+  });
+
+  it('v1.1 §9.1：采样端点策略 —— fi=0/22.5/45 首中末单调、只播一次（不提前到末帧、不回卷）', () => {
+    const model = heroModel();
+    const clip = parseCharacter3DClipJson(heroClipRaw('jump'), 'jump');
+    expect(clip.nFrames).toBe(46);
+    const fiOf = (ratio: number): number => {
+      // 生产口径：endpointInclusive ⇒ fi = ratio×(nFrames−1)（禁 ratio×nFrames）
+      const fi = ratio * (clip.nFrames - 1);
+      return Math.min(clip.nFrames - 1, Math.max(0, fi));
+    };
+    expect(fiOf(0)).toBe(0);
+    expect(fiOf(0.5)).toBe(22.5);
+    expect(fiOf(1)).toBe(45);
+    // 单调且只播一次：区间内严格不减；到 1 后夹在末帧（不回卷到 0）
+    const seq = [0, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98, 1].map(fiOf);
+    for (let i = 1; i < seq.length; i++) expect(seq[i]).toBeGreaterThanOrEqual(seq[i - 1]);
+    expect(fiOf(1)).toBe(clip.nFrames - 1); // 夹在末帧 ⇒ 不出现「播完又从头」
+    // 反例自证（旧口径）：fi = ratio×nFrames ⇒ ratio=45/46=0.978 就 **已到末帧**（提前到末帧 ⇒ 收尾提前）
+    expect(45 / 46).toBeLessThan(1);
+    expect(Math.floor((45 / 46) * clip.nFrames)).toBe(clip.nFrames - 1); // 末帧在 progress 0.978 就被取到
+    // 新口径：同一 ratio 落在 43~44 帧之间 ⇒ 末帧只在 progress=1 取到
+    expect(Math.floor((45 / 46) * (clip.nFrames - 1))).toBeLessThan(clip.nFrames - 1);
+  });
+
+  it('v1.1 §9.1：末姿从落地姿态混合回 idle 180ms（不反播、不循环重启）', () => {
+    const c = new CharacterAnimController({
+      actionMap: HERO_3D_ACTION_MAP,
+      crossFadeSec: CHARACTER_3D_CROSS_FADE_SEC,
+      jumpToIdleBlendSec: CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+      clips: heroClipRegistry(heroModel()),
+    });
+    const model = heroModel();
+    const sampleWeight = (): number => c.fadeWeight;
+    c.update(0.016, { state: 'walk', stateElapsedSec: 0.1, moveProgress: 0.99, isJump: true });
+    expect(c.activeClipKey).toBe('jump');
+    // 切 idle：jump→idle 用 180ms 固定混合（不是默认 100ms）
+    c.update(0.016, { state: 'idle', stateElapsedSec: 0, moveProgress: null, isJump: false });
+    expect(c.activeClipKey).toBe('idle');
+    expect(sampleWeight()).toBe(0); // 混合起点：权重 0（上一段 jump 全显）——「从末姿混合」即此
+    c.update(0.016, { state: 'idle', stateElapsedSec: 0, moveProgress: null, isJump: false });
+    expect(sampleWeight()).toBeGreaterThan(0);
+    expect(sampleWeight()).toBeLessThan(1);
+    // 混合期约 180ms：喂到 0.18s 后权重应到 1（淡化结束）
+    for (let i = 0; i < 12; i++) c.update(0.016, { state: 'idle', stateElapsedSec: 0, moveProgress: null, isJump: false });
+    expect(sampleWeight()).toBeCloseTo(1, 6);
+    // 采样可达（不抛、不空）
+    const pose = createPose(model);
+    const pal = c.sample(model, pose, createPose(model));
+    expect(pal.length).toBe(41 * 16);
   });
 
   it('起落两点 hop=0 仍必须是 jump（禁 hop 反推）；演出结束/被替换即释放', () => {

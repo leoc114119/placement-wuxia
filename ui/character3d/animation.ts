@@ -8,7 +8,7 @@
 //      一律 nlerp 会让本应「段内保持」的骨跳到末端姿态。
 //
 // 方案口径：
-//   §4.1 jump 采样**剥离 rootTrack 三轴位移**（水平由既有 renderPos、垂直由 pieceHop 唯一控制，
+//   §4.1（v1.1）jump 采样**只剥 rootTrack 增量的 x/z、保留 y**（竖直唯一来源＝素材；程序 hop 恒 0，
 //        叠加会成「双跳」）；播完从落地蹲姿向 idle 混合 180ms，混合钟属 view 表现态。
 //   §5   动作映射与时长全部读 config/character-3d（本文件**禁写时长数字**）；
 //        timeScale 只控制表现，不改 session/事件/伤害/出招结算时钟（易错点 12）。
@@ -244,7 +244,11 @@ const q4 = new Float32Array(4);
 /**
  * 采样重定向 clip 写进姿态缓冲（**不含** local/world/palette 求解，见 resolvePose）。
  * @param phaseRatio 归一化相位：**循环**时 [0,1) 取模（1.0 等价于 0）；**单播**时 [0,1] 夹取
- * @param rootDisplacement 'track' = 叠 rootTrack 增量；'zero' = 剥离三轴位移只留静止位移（jump 防双跳）
+ * @param rootDisplacement root 位移策略：
+ *   · 'track' = 叠 rootTrack 三轴增量（walk 等）；
+ *   · 'zero'  = 只留静止位移（历史口径：防双跳时用过，现无调用方）；
+ *   · 'zero-xz' = **只清水平增量**（x/z 归静止位移）、**保留 y 增量**（v1.1 §4.1 jump 口径：
+ *     `Root.translation = rest + [0, sampledY, 0]`，竖直由素材提供，程序不再叠 pieceHop）。
  * @param loop 循环取模 / 单播夹取（方案 §5：basic 尾帧保持至状态退出 —— 单播若取模会跳回首帧）
  */
 export function applyRetargetedClip(
@@ -253,13 +257,20 @@ export function applyRetargetedClip(
   model: Character3DModel,
   pose: Character3DPose,
   phaseRatio: number,
-  rootDisplacement: 'track' | 'zero',
+  rootDisplacement: 'track' | 'zero' | 'zero-xz',
   loop = true,
+  endpointInclusive = false,
 ): void {
   resetPose(pose, model);
   const nF = clip.nFrames;
   const fps = clip.fps;
-  let fi = phaseRatio * clip.samplerDurationSec * fps;
+  // 帧索引映射：
+  //  · 默认（loop 或未声明端点策略）：fi = phase × nFrames，循环取模 / 单播夹取 —— 其它 clip 行为不变；
+  //  · endpointInclusive（v1.1 §4.1 jump）：fi = phase × (nFrames − 1)，让 phase=1 **正好落在末帧**，
+  //    禁 phase×nFrames（那会让 phase≈0.98 就到末帧 ⇒ 收尾提前、观感像"落地又蹬一次"）。
+  let fi = endpointInclusive && !loop
+    ? phaseRatio * (nF - 1)
+    : phaseRatio * clip.samplerDurationSec * fps;
   if (loop) fi = fi - Math.floor(fi / nF) * nF; // 取模（相位可能跨圈）
   else fi = Math.min(nF - 1, Math.max(0, fi));  // 单播：夹在 [0, nF-1]，末帧保持
   const i0 = Math.min(nF - 1, Math.max(0, Math.floor(fi)));
@@ -274,15 +285,25 @@ export function applyRetargetedClip(
     const q = pose.qV[bound.tracks[i].node];
     q[0] = q4[0]; q[1] = q4[1]; q[2] = q4[2]; q[3] = q4[3];
   }
-  if (rootDisplacement === 'zero') return; // jump：root 留静止位移，位移全由外部 hop 控制
+  if (rootDisplacement === 'zero') return; // 历史口径：root 只留静止位移（当前无调用方）
   // root 位移同极性：t=0→r0、t=1→r1（与上面的旋转一致，两轨不得反向）
   const r0 = clip.rootTrack[i0];
   const r1 = clip.rootTrack[i1];
   const rt = pose.tV[bound.rootNode];
   const rr = bound.rootRest;
-  rt[0] = rr[0] + (r0[0] * (1 - a) + r1[0] * a);
-  rt[1] = rr[1] + (r0[1] * (1 - a) + r1[1] * a);
-  rt[2] = rr[2] + (r0[2] * (1 - a) + r1[2] * a);
+  const dx = r0[0] * (1 - a) + r1[0] * a;
+  const dy = r0[1] * (1 - a) + r1[1] * a;
+  const dz = r0[2] * (1 - a) + r1[2] * a;
+  if (rootDisplacement === 'zero-xz') {
+    // ★ v1.1 §4.1：**只剥水平增量**，y 原样叠加在静止位移上（不得抹掉 rest 平移，不钳负 y 蹲姿）
+    rt[0] = rr[0];
+    rt[1] = rr[1] + dy;
+    rt[2] = rr[2];
+    return;
+  }
+  rt[0] = rr[0] + dx;
+  rt[1] = rr[1] + dy;
+  rt[2] = rr[2] + dz;
 }
 
 // ===== GLB 内嵌预设（② 号源）=====
@@ -348,7 +369,7 @@ export function applyEmbeddedClip(
   model: Character3DModel,
   pose: Character3DPose,
   phaseRatio: number,
-  rootDisplacement: 'track' | 'zero',
+  rootDisplacement: 'track' | 'zero' | 'zero-xz',
   loop = true,
 ): void {
   resetPose(pose, model);
@@ -432,7 +453,7 @@ interface Target {
   clipKey: Character3DClipKey;
   phaseRatio: number;
   loop: boolean;
-  rootDisplacement: 'track' | 'zero';
+  rootDisplacement: 'track' | 'zero' | 'zero-xz';
   /** true = 相位由快照显式给出（派生）；false = 由 view 演出钟累积 */
   derived: boolean;
 }
@@ -441,7 +462,9 @@ interface FadeState {
   clipKey: Character3DClipKey;
   phaseRatio: number;
   loop: boolean;
-  rootDisplacement: 'track' | 'zero';
+  rootDisplacement: 'track' | 'zero' | 'zero-xz';
+  /** 来源动作的端点策略（淡化期仍按来源自己的口径采样） */
+  endpointInclusive: boolean;
   durationSec: number;
 }
 
@@ -469,7 +492,7 @@ export class CharacterAnimController {
   /** 当前相位是否按循环口径解（决定末帧保持 vs 取模回卷） */
   private lastLoop = true;
   /** hit 继承：沿用进入 hit 时的 clip 与相位，继续推进（方案 §5 hit 行「不切专用动作」） */
-  private inherited: { clipKey: Character3DClipKey; phaseRatio: number; clockSec: number; loop: boolean; rootDisplacement: 'track' | 'zero' } | null = null;
+  private inherited: { clipKey: Character3DClipKey; phaseRatio: number; clockSec: number; loop: boolean; rootDisplacement: 'track' | 'zero' | 'zero-xz' } | null = null;
 
   constructor(opts: CharacterAnimControllerOptions) {
     this.opts = opts;
@@ -518,6 +541,7 @@ export class CharacterAnimController {
           phaseRatio: this.lastRatio,
           loop: this.opts.actionMap[this.currentActionKey].loop,
           rootDisplacement: this.opts.actionMap[this.currentActionKey].rootMotion,
+          endpointInclusive: this.opts.actionMap[this.currentActionKey].endpointInclusive === true,
           durationSec: dur > 0 ? dur : 1e-6,
         };
         this.fadeElapsedSec = 0;
@@ -575,31 +599,39 @@ export class CharacterAnimController {
     if (fade) {
       const fadeSource = this.opts.clips[fade.clipKey];
       if (fadeSource) {
-        this.sampleOne(fadeSource, fade.phaseRatio, fade.rootDisplacement, fade.loop, model, scratchPose);
-        this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose);
+        this.sampleOne(fadeSource, fade.phaseRatio, fade.rootDisplacement, fade.loop, model, scratchPose, fade.endpointInclusive);
+        this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusive());
         blendPoses(pose, scratchPose, pose, this.fadeWeight);
         return resolvePose(model, pose);
       }
     }
-    this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose);
+    this.sampleOne(source, this.lastRatio, this.currentRootDisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusive());
     return resolvePose(model, pose);
   }
 
-  private currentRootDisplacement(): 'track' | 'zero' {
+  private currentRootDisplacement(): 'track' | 'zero' | 'zero-xz' {
     return this.inherited ? this.inherited.rootDisplacement : this.opts.actionMap[this.currentActionKey].rootMotion;
+  }
+
+  /** 端点策略（v1.1 jump：phase=1 落末帧）——继承态（hit）沿用进入时的动作策略。 */
+  private currentEndpointInclusive(): boolean {
+    return this.opts.actionMap[this.currentActionKey].endpointInclusive === true;
   }
 
   private sampleOne(
     source: Character3DClipSource,
     phaseRatio: number,
-    rootDisplacement: 'track' | 'zero',
+    rootDisplacement: 'track' | 'zero' | 'zero-xz',
     loop: boolean,
     model: Character3DModel,
     pose: Character3DPose,
+    endpointInclusive = false,
   ): void {
     if (source.kind === 'retargeted') {
-      applyRetargetedClip(source.clip, source.bound, model, pose, phaseRatio, rootDisplacement, loop);
+      applyRetargetedClip(source.clip, source.bound, model, pose, phaseRatio, rootDisplacement, loop, endpointInclusive);
     } else {
+      // 嵌入 clip 按**时间**采样（t = start + r×duration ⇒ r=1 正好落末关键帧），不存在「相位×帧数」的
+      // 提前到末帧问题 ⇒ 无需端点策略（endpointInclusive 只对重定向 clip 的帧索引映射有意义）。
       applyEmbeddedClip(source.clip, model, pose, phaseRatio, rootDisplacement, loop);
     }
   }

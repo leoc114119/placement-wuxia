@@ -312,6 +312,28 @@ CDN 侧文件名不变（仍 `.json`）⇒ 身份校验回到**严格 byteLength
 - **`cacheHit` 的定义**：索引命中且**盘上文件与索引记录一致**（长度 + 实测摘要）；**不以"看起来像"为条件**。
 - 旧索引（上一版口径写的）在下一次启动会被摘掉一次并按新口径重建（自愈，仅多读一次）。
 
+### 7.4 朝向映射口径（T31 FE 整改定版）
+
+- **公式**：`yawDegForFacing = normalizeSigned(源视角yaw − 180)`。六向值：
+  `right=+90 · rightdown=+45 · rightup=+135 · left=−90 · leftdown=−45 · leftup=−135`。
+- **推导（实测基准 + 代数，非调参）**：① 运行时正交相机固定在 **+Z 看 −Z**（`orthoPixel` 的 z 越大越靠相机）；
+  ② 实拍 θ=0 看到人物**正面** ⇒ 模型自身前向 = **+Z**；③ 美术参照帧语义（目验 + 判据）：`battle_idle_leftup`
+  是背面 ⇒ 帧名 up/down 为标准 RPG 语义；④ 逐向要求解出上表 ⇒ ⑤ 与源视角表对上 `θ = 源视角yaw − 180`。
+  旧口径 `270 − 源视角yaw` 是**反射**（不是常数偏置）⇒ 整体错位、左右不成镜像、上下互换。
+- **回归门（两道）**：
+  · 离线（vitest）：`tests/character3d-math.test.ts` 的「六向语义锁」——把 yaw 转成前向向量，断言
+    left* 屏幕左/right* 屏幕右、down 朝观众/up 背向，并显式拒绝旧口径；
+  · 运行期（浏览器实拍）：`node proto/battle_demo/tools/measure_facing_runtime.mjs --gate=1`
+    （判据 = 头部「肤重心 x − 发重心 x」，left* < −2 / right* > 2），以及 `shot_character3d.mjs` 末尾
+    自动跑的同一门（`shots/c3d_facing_gate.json`）。
+
+### 7.5 移动态改播 run（T31 FE · P0-B）
+
+- 快照 `animState='walk'` 的槽位键不变，但**资产**改取 GLB 内嵌 `preset:biped:run`（按名字解析，禁按序号）：
+  见 `config/character-3d.ts` 的 `HERO_3D_CLIP_REFS.walk` 与 `HERO_3D_EMBEDDED_CLIPS.run`。
+- 依据：Leo 明确口径「战斗内移动改用 run 素材」（与 09-11 口径一致）；方案 §5 原表写 walk，以 Leo 口径为准。
+- 连带的播放节奏：嵌入 clip 的循环周期取该 clip 自身时长（run ≈ 1.25s，walk ≈ 2.33s）⇒ 跑动步频更快。
+
 ## 8. 已知缺口与不确定项（交付时如实登记）
 
 1. **CDN 未跑**（见 §5）——需要已备案域名才能补；不影响本卡其它判定。

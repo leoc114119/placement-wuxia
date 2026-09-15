@@ -1,5 +1,6 @@
 // T16 用例：渲染层红线扫描 + 六边形几何 + 帧组播报 + 镜头 + 输入翻译 + mock 快照渲染烟雾 + mock 会话契约咬合
 // 运行：npm run test:battle
+import { CHARACTER_3D_JUMP_MOVE_SEC } from '../config/character-3d';
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -253,8 +254,14 @@ describe('移动演出帧序列单调（查修一体复现转正）', () => {
     const snap = makeSnapshot([{ id: 'hero', animState: 'walk', pos: { q: 4, r: 8 }, renderPos: { q: 1, r: 8 } }]);
     const seq = drive(view, snap, snap.actors[0], { q: 1, r: 8 }, true, 50);
     expect(monotonic(seq)).toEqual([]);
-    // 0.3s 后快照 animState 已 idle，但演出期帧组仍 walk（空中不站立）
-    expect(seq[Math.floor(0.35 / 0.016)].hop).toBeGreaterThan(20); // 演出中段仍有抛物线高度
+    // 【方案 v1.1 §4.1】3D 主角的竖直位移不再由 2D 抛物线提供（hopHeight/hopPx 恒 0）⇒
+    // 「仍在空中」的判据改为**演出仍在进行**（MoveAnim 未走满且锁定意图为 jump），而非 hop 高度。
+    const ma = view.moveAnims.get('hero');
+    expect(ma?.isJumpMove).toBe(true); // 演出创建时锁定
+    expect(ma?.hopHeight).toBe(0);
+    // 0.35s 处仍在演出期内（v1.1：时长固定 1.5 演出秒，旧口径 0.6s 此时已结束）
+    expect(0.35).toBeLessThan(ma?.duration ?? 0);
+    expect(seq[Math.floor(0.35 / 0.016)].hop).toBe(0); // 全程不叠程序抛物线
   });
 
   it('普通移动 3 格：演出位置序列单调（纳入演出插值，消灭双轨闪变）', () => {
@@ -1010,14 +1017,25 @@ describe('渲染烟雾（Proxy ctx 计数）', () => {
     expect(pMax.duration).toBe(JUMP.maxDuration);
     expect(pMax.height).toBe(JUMP.maxHeight);
     expect(hexDist({ q: 0, r: 0 }, { q: 4, r: 0 })).toBe(4);
-    // 渲染侧：上升沿按距离锁定参数
+    // 渲染侧【方案 v1.1 §4.1】：**3D 主角**的轻功演出不再按距离插值 —— 固定 1.5 演出秒、hop 恒 0
     const view = createView();
     const snap = makeSnapshot([{ id: 'hero', animState: 'walk', isJump: true, pos: { q: 4, r: 8 }, renderPos: { q: 1, r: 8 } }]);
     updateView(view, snap, 0.016, 375, 667);
     const ma = view.moveAnims.get('hero');
+    expect(ma?.duration).toBeCloseTo(CHARACTER_3D_JUMP_MOVE_SEC, 10);
+    expect(ma?.hopHeight).toBe(0);
+    // 未迁移 2D 的角色（敌型）保持原口径：按距离插值 + 2D 抛物线高度（v1.1 明确「不自动扩大到未迁移 2D」）
+    const view2 = createView();
+    const enemy = {
+      id: 'e-2d', spriteKey: 'npc-shanzei-a', animState: 'walk' as const, isJump: true,
+      pos: { q: 4, r: 8 }, renderPos: { q: 1, r: 8 },
+    };
+    const snap2 = makeSnapshot([enemy]);
+    updateView(view2, snap2, 0.016, 375, 667);
+    const ma2 = view2.moveAnims.get('e-2d');
     const expectP = jumpParamsFor(hexDist({ q: 4, r: 8 }, { q: 1, r: 8 }));
-    expect(ma?.duration).toBeCloseTo(expectP.duration, 6);
-    expect(ma?.hopHeight).toBeCloseTo(expectP.height, 6);
+    expect(ma2?.duration).toBeCloseTo(expectP.duration, 6);
+    expect(ma2?.hopHeight).toBeCloseTo(expectP.height, 6);
   });
 
   it('T15 R3 rejected 消费：spawnNoteFx 头顶冒字（上浮渐隐，寿命到即亡）', () => {
@@ -1685,7 +1703,8 @@ describe('[六向接线 §3.2] directional 选帧语义（frameOf 升级：语�
     const snap = makeSnapshot([jumper]);
     updateView(view, snap, 0.016, 375, 667); // jumpRise 启动
     const ma = view.moveAnims.get('hero')!;
-    expect(ma.hopHeight).toBeGreaterThan(0); // 前置：确为跳跃演出
+    // 【方案 v1.1 §4.1】3D 主角的轻功 hopHeight 恒 0 ⇒ 二段选帧只能靠 actor.isJump（正是不许丢的判据）
+    expect(ma.hopHeight).toBe(0); // 前置：确为跳跃演出（判据 = isJump，不是 hop）
     const prof = SPRITE_PROFILES.hero as DirectionalSpriteProfile;
     const sels = new Set<string>();
     // 采样点含旧阈值两侧（0.2/0.34 < 0.35 ≤ 0.5）：旧两段代码在此分别取 _1/_2 → 本用例先红

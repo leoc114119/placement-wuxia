@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-14T14:09:40.702Z",
- "commitSha": "8dc2e3f5bf3f70466e7d9071a0a3bb04decb601b",
+ "generatedAt": "2026-09-15T00:59:42.119Z",
+ "commitSha": "fa9c19cb955830a8f51611d9b66d7a626683233b",
  "scenario": "standard（事件快路径）",
  "aa": "fxaa",
  "profile": "sim",
@@ -35,7 +35,7 @@
   {
    "name": "资源链证据：冷链（downloads>0）跑过",
    "ok": true,
-   "detail": "{\"downloadAttempts\":5,\"downloads\":5,\"downloadBytesTotal\":5586977,\"downloadMsTotal\":22,\"cacheHits\":0,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
+   "detail": "{\"downloadAttempts\":5,\"downloads\":5,\"downloadBytesTotal\":5586977,\"downloadMsTotal\":48,\"cacheHits\":0,\"staleFallbacks\":0,\"failures\":0,\"cacheWriteFailures\":0,\"structureRejects\":0,\"shaMismatches\":0,\"byteLengthMismatches\":0,\"timeouts\":0,\"networkErrors\":0,\"tempFilesRemoved\":0}"
   },
   {
    "name": "资源链证据：热链（cacheHits>0 且 downloads=0）跑过",
@@ -45,7 +45,7 @@
   {
    "name": "首启分段计时齐全（loader/解析/纹理解码/首传 GPU）",
    "ok": true,
-   "detail": "{\"subpackageMs\":0,\"loaderMs\":38,\"glbParseMs\":3,\"animParseMs\":2,\"textureDecodeMs\":1,\"firstGpuUploadMs\":63}"
+   "detail": "{\"subpackageMs\":1,\"loaderMs\":91,\"glbParseMs\":3,\"animParseMs\":2,\"textureDecodeMs\":4,\"firstGpuUploadMs\":276}"
   },
   {
    "name": "六向 6 行且逐向 expected==activeClipKey",
@@ -125,7 +125,7 @@
   {
    "name": "压测后先落 precontext 中间快照（自测失败也不丢测量结果）",
    "ok": true,
-   "detail": "/sim-user/char3d_hcrbug_result_run2_precontext.json /sim-user/char3d_hcrbug_result_run2.json"
+   "detail": "/sim-user/char3d_hcrbug_result_run1_precontext.json /sim-user/char3d_hcrbug_result_run1.json"
   },
   {
    "name": "FXAA 分支是生产分支（有效 antialias=false）",
@@ -140,7 +140,7 @@
   {
    "name": "20u 档：屏上 20 个角色全部可见",
    "ok": true,
-   "detail": "fillRatio=0.2629 bb=780x1688 · perf-0:18554,perf-1:20502,perf-2:20236,perf-3:20552,perf-4:19104,perf-5:18700,…"
+   "detail": "fillRatio=0.1919 bb=780x1688 · perf-0:12573,perf-1:14299,perf-2:14560,perf-3:14653,perf-4:14547,perf-5:12671,…"
   },
   {
    "name": "20u 档：判定引擎跑过（NON_SPEC 已被标注，不得当容量结论）",
@@ -160,7 +160,7 @@
   {
    "name": "结果回收：剪贴板成功（字符数 > 0）",
    "ok": true,
-   "detail": "29253"
+   "detail": "29137"
   },
   {
    "name": "结果回收：分享被调起",
@@ -180,7 +180,7 @@
   {
    "name": "运行历史跨启动累积（第 N 次启动读到 ≥N 条记录）",
    "ok": true,
-   "detail": "runs=2 / 启动次数=2"
+   "detail": "runs=1 / 启动次数=1"
   }
  ],
  "passCount": 34,
