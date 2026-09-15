@@ -455,11 +455,14 @@ export interface CharacterRenderCommand {
   depthKey: number;
   facing: BattleFacingHex;
   state: SnapshotActor['animState'];
-  /** 轻功意图：**直接透传 SnapshotActor.isJump**（方案 §3/§4.1，arch 9e824cb5 冻结）。
-   * 禁用 hopPx/坐标/时钟猜轻功 —— 抛物线起点与终点的 hop 恰为 0，猜会各漏一帧。 */
+  /** 轻功意图：**该次移动演出创建时锁定的 SnapshotActor.isJump**（方案 §3/§4.1；arch seq=418 修订乙）。
+   * 禁用 hopPx/坐标/时钟猜轻功 —— 起点与终点的 hop 恰为 0，猜会各漏一帧；也禁逐帧直读快照
+   * （session 的 isJump 窗 300ms 短于演出 1.5s）。 */
   isJump: boolean;
   stateElapsedSec: number;
   moveProgress: number | null;
+  /** 程序抛物线高度（物理像素）。【方案 v1.1 §4.1】3D 轻功**恒 0**：竖直位移唯一来源＝素材 root y
+   *（`rootMotion:'zero-xz'` 只剥 root 增量的 x/z，保留 y），不叠 pieceHop。未迁移 2D 角色仍用该值。 */
   hopPx: number;
   alpha: number;
   squashY: number;
