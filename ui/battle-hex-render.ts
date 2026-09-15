@@ -100,6 +100,19 @@ export function character3DProfileKeyOf(actor: SnapshotActor): string | null {
   return CHARACTER_3D_PROFILE_BY_SPRITE_KEY[actor.spriteKey] ?? null;
 }
 
+/** 【T31-R2 · §4.1.1】3D placed 调试面条目（2D 逻辑像素）：地面锚与 HUD 布局框**分标**。
+ * 生产消费方（名条/攻钮/技能钮/热区）统一用 `top/cx/h/w`（同一份结果，禁各自再补 root y）；
+ * `groundAnchorY` 只供量测/调试（脚底落地基准）。 */
+export interface Placed3DMirror {
+  /** HUD 布局框（= pass placed 的 baseTop/baseCx ＋ 最终姿态 Root 增量） */
+  cx: number;
+  top: number;
+  w: number;
+  h: number;
+  /** 地面锚 y（= 命令 footY − hopPx；不随姿态推移；人物真实脚底高度由渲染像素或专用几何锚测） */
+  groundAnchorY: number;
+}
+
 // ============ 资源与视图类型 ============
 
 /** 最小图片接口（WxImage / HTMLImageElement 结构均满足；drawImage 处统一收敛转型） */
@@ -423,8 +436,11 @@ export interface BattleHexView {
    * 不设=该角色继续走既有 2D profile（微信宿主 S1 未迁移，行为零变化）。 */
   character3d?: Character3DLayer;
   /** 【T31-FE-B】3D placed 本帧镜像（渲染私有 last-drawn，沿 topbarHud 先例）：供宿主/HUD 断言
-   * 复用 pass 返回的锚点；未注入 3D 层或未就绪=null。不进 types.ts、零契约新增。 */
-  character3dPlaced: ReadonlyMap<string, { cx: number; top: number; w: number; h: number }> | null;
+   * 复用 pass 返回的锚点；未注入 3D 层或未就绪=null。不进 types.ts、零契约新增。
+   * 【T31-R2 · §4.1.1】调试面**分标**两件（禁再混称）：`groundAnchorY` = 地面锚（脚底落地基准，
+   * 不随姿态推移）；`top/cx/h/w` = **HUD 布局框**（随最终姿态 Root 增量平移）。
+   * ★ 禁止再用 `top + h` 当「脚离地高度」——那是被姿态推移过的布局框底边，不是地面锚。 */
+  character3dPlaced: ReadonlyMap<string, Placed3DMirror> | null;
   layout: HitLayout;
 }
 
@@ -1498,7 +1514,7 @@ function drawPieces(
   const ratio3d = layer3d && layer3d.pixelRatio > 0 ? layer3d.pixelRatio : 1;
   /** 本帧实际喂给 HUD/热区的 3D 锚点（**2D 逻辑像素**，与 drawPieces 的 placed 同口径；
    * dead 不进=与 2D 口径一致）。既是 HUD 数据源也是宿主/断言的 last-drawn 镜像。 */
-  const placed3dLogical = new Map<string, { cx: number; top: number; w: number; h: number }>();
+  const placed3dLogical = new Map<string, Placed3DMirror>();
   let composed3d = false;
   const composeCharacterLayerOnce = (): void => {
     if (composed3d || !layer3d) return;
@@ -1528,7 +1544,15 @@ function drawPieces(
       if (box) {
         // pass 的 placed 在**命令坐标空间（物理像素）**；HUD/名条/技能钮热区全在 2D 逻辑像素空间绘制，
         // 故此处换算一次（易错点 10：placed 与脚底必须同源——换算是同一个 ratio，不引入第二套几何）。
-        const entry = { cx: box.cx / ratio3d, top: box.top / ratio3d, h: box.h / ratio3d, w: box.w / ratio3d };
+        // 【§4.1.1】同帧一并给出**地面锚**（geo 与 3D 命令同源）：调试/量测只认它量脚离地高度。
+        const geo3 = geom3d.get(actor.id);
+        const entry: Placed3DMirror = {
+          cx: box.cx / ratio3d,
+          top: box.top / ratio3d,
+          h: box.h / ratio3d,
+          w: box.w / ratio3d,
+          groundAnchorY: geo3 ? geo3.footY - geo3.hopPx : box.top / ratio3d + box.h / ratio3d,
+        };
         placed.push({ actor, ...entry });
         placed3dLogical.set(actor.id, entry);
       }

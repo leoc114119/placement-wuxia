@@ -18,7 +18,8 @@ import {
   HERO_3D_PROFILE_ID,
   yawDegForFacing,
 } from '../config/character-3d';
-import { heroClipRegistry, heroModel } from './character3d-fixtures';
+import { bindRetargetedClip, parseCharacter3DClipJson, type Character3DRetargetedClip } from '../ui/character3d/animation';
+import { heroClip, heroClipRegistry, heroModel } from './character3d-fixtures';
 
 const model = heroModel();
 const runtime: Character3DProfileRuntime = {
@@ -105,10 +106,12 @@ function makePass(renderer: Character3DRenderer, loadState: 'ready' | 'loading' 
 }
 
 describe('放置与 placed 输出（方案 §4.1 / §4.3）', () => {
+  // 【T31-R2 · §4.1.1】下列「几何框」断言统一喂 dt=0：该帧最终姿态 = rest（Root 增量为 0），
+  // placed 的姿态补偿项恰为 0 ⇒ 断言逐字锁几何关系（补偿本身由本文件 §4.1.1 专块逐条覆盖）。
   it('脚底锚 = footY - hopPx；placed.top = 脚底 − 参考屏高（同源）', () => {
     const renderer = createStubRenderer();
     const pass = makePass(renderer);
-    const res = pass.render([command({ footY: 420, hopPx: 0 })], 0.016);
+    const res = pass.render([command({ footY: 420, hopPx: 0 })], 0);
     expect(res.status).toBe('ready');
     expect(res.canvas).toEqual({ width: 375, height: 667 });
     const placed = res.placed.get('hero');
@@ -124,7 +127,7 @@ describe('放置与 placed 输出（方案 §4.1 / §4.3）', () => {
   it('hopPx 抬升：脚底与 placed.top 同步上移（不得只动一处）', () => {
     const renderer = createStubRenderer();
     const pass = makePass(renderer);
-    const res = pass.render([command({ footY: 420, hopPx: 88 })], 0.016);
+    const res = pass.render([command({ footY: 420, hopPx: 88 })], 0);
     const placed = res.placed.get('hero');
     expect(placed?.top).toBeCloseTo(420 - 88 - EXPECTED_HEIGHT, 10);
     expect(renderer.draws[0].matrix[13]).toBeCloseTo(420 - 88, 5);
@@ -133,7 +136,7 @@ describe('放置与 placed 输出（方案 §4.1 / §4.3）', () => {
   it('squashY 压扁：高度与顶部同步缩放，脚底不动（死亡压扁仍落原格）', () => {
     const renderer = createStubRenderer();
     const pass = makePass(renderer);
-    const res = pass.render([command({ footY: 420, squashY: 0.5 })], 0.016);
+    const res = pass.render([command({ footY: 420, squashY: 0.5 })], 0);
     const placed = res.placed.get('hero');
     expect(placed?.h).toBeCloseTo(EXPECTED_HEIGHT * 0.5, 10);
     expect(placed?.top).toBeCloseTo(420 - EXPECTED_HEIGHT * 0.5, 10);
@@ -352,5 +355,196 @@ describe('时钟口径（方案 §4.1：混合钟属 view 表现态）', () => {
     pass.render([cmd], 5.0);
     expect(Array.from(renderer.draws[1].palette)).toEqual(firstPalette);
     expect(first.placed.size).toBe(1);
+  });
+});
+
+// ══════════════════ 【T31-R2 · §4.1.1】placed = 随最终姿态平移的 HUD 布局框 ══════════════════
+// 判据（arch seq=438 取「甲」）：
+//   · `command.footX/footY` = 地面锚（不动）；placed = baseTop/baseCx ＋ 最终 pose 的 Root 增量
+//     经「父节点变换 ＋ 摆放矩阵线性部分」投影出的物理像素 delta；
+//   · 增量只进 placed，**人物矩阵/palette 不得再平移**（禁双抬升）；
+//   · 宽高沿稳定参考框（不按逐帧衣摆 bbox 重定尺）；rest 位移不重复计入；
+//   · 覆盖：正/负/0 y、起跳与落地、180ms 混合中点、dpr 1/2/3、死亡与 reset 不残留。
+//
+// 抗后续条文变动：主用例用**合成 clip**（4 帧、rootTrack y=[0,+0.2,−0.2,0]、fps=1）——
+// 相位与增量都能闭式解析，不依赖现役素材的相位口径（R2-1 重映射不会碰到本块）。
+function syntheticClip(): Character3DRetargetedClip {
+  return parseCharacter3DClipJson(
+    {
+      fps: 1,
+      nFrames: 4,
+      duration: 4,
+      rootMode: 'y',
+      boneTracks: { L_Thigh: [[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]] },
+      rootTrack: [[0, 0, 0], [0, 0.2, 0], [0, -0.2, 0], [0, 0, 0]],
+    },
+    'synthetic',
+  );
+}
+
+const SYNTH_DY = [0, 0.2, -0.2, 0];
+
+/** 合成运行时：atk 槽位挂合成 clip，basic 槽位把它按 0.4s 窗归一（相位 = elapsed/0.4）。 */
+function syntheticRuntime(profile: typeof HERO_3D_PROFILE = HERO_3D_PROFILE): Character3DProfileRuntime {
+  const clip = syntheticClip();
+  return {
+    profile,
+    model,
+    anim: {
+      actionMap: {
+        ...HERO_3D_ACTION_MAP,
+        // 合成槽位：把合成 clip 挂到 atk 键，按 0.4s 窗归一（相位 = elapsed/0.4，四帧逐点可解析）
+        basic: {
+          clip: 'atk',
+          progressSource: 'stateElapsed',
+          loop: false,
+          playWindowSec: 0.4,
+          startRatio: 0,
+          rootMotion: 'track',
+          crossFadeOnEnter: true,
+        },
+      },
+      crossFadeSec: CHARACTER_3D_CROSS_FADE_SEC,
+      jumpToIdleBlendSec: CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC,
+      clips: { atk: { kind: 'retargeted', ref: null, clip, bound: bindRetargetedClip(clip, model) } },
+    },
+  };
+}
+
+function passWith(rt: Character3DProfileRuntime, renderer: Character3DRenderer, loadState: 'ready' = 'ready') {
+  return createCharacter3DPass({
+    renderer,
+    viewport: { width: 375, height: 667 },
+    runtimes: { [HERO_3D_PROFILE_ID]: rt },
+    loadState,
+  });
+}
+
+describe('【T31-R2 · §4.1.1】placed 姿态补偿（HUD 布局框，不动人物）', () => {
+  it('正/负/0 y：placed.top 增量 = 摆放矩阵线性部分 × Root 增量；矩阵自身不平移', () => {
+    for (const [elapsed, dy] of [[0, 0], [0.1, SYNTH_DY[1]], [0.2, SYNTH_DY[2]], [0.4, SYNTH_DY[3]]] as const) {
+      const renderer = createStubRenderer();
+      const pass = passWith(syntheticRuntime(), renderer);
+      const res = pass.render([command({ state: 'basic', stateElapsedSec: elapsed, footY: 420, footX: 187.5 })], 0.016);
+      const placed = res.placed.get('hero')!;
+      const m = renderer.draws[0].matrix;
+      const base = 420 - EXPECTED_HEIGHT;
+      // 容差 1e-4：摆放矩阵是 Float32Array（m[5] 带 float32 量化 ≈4.6e-8 相对误差），非算法偏差
+      expect(placed.top, `elapsed=${elapsed}（期望 dy=${dy}）`).toBeCloseTo(base + m[5] * dy, 4);
+      expect(placed.cx, `elapsed=${elapsed}`).toBeCloseTo(187.5 + m[4] * dy, 4);
+      // ★ 人物矩阵**不得**被姿态补偿推移（禁双抬升）：平移列恒为地面锚
+      expect(m[13], `elapsed=${elapsed} 矩阵 y`).toBeCloseTo(420, 6);
+      expect(m[12], `elapsed=${elapsed} 矩阵 x`).toBeCloseTo(187.5, 6);
+      // 符号：正 y 蹲姿/腾空抬升 ⇒ 框上移（top 变小）；负 y 蹲姿 ⇒ 框下移
+      if (dy > 0) expect(placed.top).toBeLessThan(base - 1e-9);
+      else if (dy < 0) expect(placed.top).toBeGreaterThan(base + 1e-9);
+      else expect(placed.top).toBeCloseTo(base, 9);
+      // 宽高沿稳定参考框（不随姿态重定尺）
+      expect(placed.h).toBeCloseTo(EXPECTED_HEIGHT, 10);
+    }
+  });
+
+  it('同一命令、不同姿态帧：矩阵平移列逐位相同（人不动，只有布局框动）', () => {
+    const renderer = createStubRenderer();
+    const pass = passWith(syntheticRuntime(), renderer);
+    pass.render([command({ state: 'basic', stateElapsedSec: 0.1 })], 0.016); // dy=+0.2
+    pass.render([command({ state: 'basic', stateElapsedSec: 0.2 })], 0.016); // dy=−0.2
+    const [a, b] = renderer.draws.map((d) => Array.from(d.matrix));
+    expect(a.slice(12, 15)).toEqual(b.slice(12, 15)); // 平移列（地面锚）不变
+    expect(a.slice(0, 12)).toEqual(b.slice(0, 12));   // 线性部分（yaw/scale）不变
+    expect(Array.from(renderer.draws[0].palette)).not.toEqual(Array.from(renderer.draws[1].palette)); // 姿态确实不同
+  });
+
+  it('dpr 1/2/3：placed 增量随 dpr 线性（逻辑口径 dpr 无关），且 h/top 逻辑值恒等', () => {
+    const logicalRefH = HERO_3D_PROFILE.screenHeightPxAtReference;
+    const dy = SYNTH_DY[1];
+    for (const dpr of [1, 2, 3]) {
+      const renderer = createStubRenderer();
+      const rt = syntheticRuntime({ ...HERO_3D_PROFILE, screenHeightPxAtReference: logicalRefH * dpr });
+      const pass = passWith(rt, renderer);
+      const res = pass.render(
+        [command({ state: 'basic', stateElapsedSec: 0.1, footX: 187.5 * dpr, footY: 420 * dpr })],
+        0.016,
+      );
+      const placed = res.placed.get('hero')!;
+      const m = renderer.draws[0].matrix;
+      const scale = (logicalRefH * dpr) / HERO_3D_PROFILE.modelHeight;
+      expect(m[5], `dpr=${dpr}`).toBeCloseTo(-scale, 4);
+      // 逻辑口径：placed.top/dpr 的增量 = −(参考高/modelHeight)·dy（与 dpr 无关）
+      const logicalDelta = -((logicalRefH / HERO_3D_PROFILE.modelHeight) * dy);
+      expect((placed.top - 420 * dpr) / dpr - -logicalRefH, `dpr=${dpr} 逻辑增量`).toBeCloseTo(logicalDelta, 4);
+      expect(placed.h / dpr, `dpr=${dpr} 逻辑高`).toBeCloseTo(logicalRefH, 6);
+    }
+  });
+
+  it('死亡压扁：delta 与 h 同乘 squashY（框随压扁同步缩，脚底不动）', () => {
+    const renderer = createStubRenderer();
+    const pass = passWith(syntheticRuntime(), renderer);
+    const res = pass.render([command({ state: 'basic', stateElapsedSec: 0.1, squashY: 0.3, footY: 420 })], 0.016);
+    const placed = res.placed.get('hero')!;
+    const m = renderer.draws[0].matrix;
+    expect(placed.h).toBeCloseTo(EXPECTED_HEIGHT * 0.3, 8);
+    expect(placed.top).toBeCloseTo(420 - EXPECTED_HEIGHT * 0.3 + m[5] * SYNTH_DY[1], 6);
+    expect(m[13]).toBeCloseTo(420, 6);
+  });
+
+  it('reset/换状态不残留：回到零增量姿态后 placed.top 精确回到 baseTop', () => {
+    const rt = syntheticRuntime();
+    const renderer = createStubRenderer();
+    const pass = passWith(rt, renderer);
+    // 先来一帧大增量
+    const withDelta = pass.render([command({ state: 'basic', stateElapsedSec: 0.1 })], 0.016).placed.get('hero')!;
+    expect(Math.abs(withDelta.top - (420 - EXPECTED_HEIGHT))).toBeGreaterThan(1);
+    // 再回到零增量帧（合成 clip 的 phase 0 ⇒ 帧 0 的 root 增量 = 0）
+    const zero = pass.render([command({ state: 'basic', stateElapsedSec: 0 })], 0.016).placed.get('hero')!;
+    expect(zero.top).toBeCloseTo(420 - EXPECTED_HEIGHT, 9);
+    expect(zero.cx).toBeCloseTo(187.5, 9);
+    // 换新 actor 同帧：新控制器同样从帧 0 起（不继承别人的补偿）
+    const pass2 = passWith(rt, createStubRenderer());
+    const fresh = pass2.render([command({ actorId: 'hero2', state: 'basic', stateElapsedSec: 0.2 })], 0.016);
+    expect(fresh.placed.get('hero2')!.top).toBeGreaterThan(420 - EXPECTED_HEIGHT);
+  });
+
+  it('jump→idle 180ms 混合中点：placed 增量 = 两端姿态按混合权重线性组合（不另采跳跃曲线）', () => {
+    const renderer = createStubRenderer();
+    const pass = makePass(renderer); // 现役 profile + 现役动作表（真实 jump / idle 素材）
+    const jumpClip = heroClip('jump');
+    const idleClip = heroClip('idle');
+    const jumpSamplerSec = jumpClip.nFrames / jumpClip.fps;
+    const idleSamplerSec = idleClip.nFrames / idleClip.fps;
+    /** 逐帧 Root 增量（与 animation.applyRetargetedClip 同式）：phase → rootTrack y。 */
+    const dyAt = (clip: typeof jumpClip, phase: number, endpointInclusive: boolean, loop: boolean): number => {
+      const nF = clip.nFrames;
+      let fi = endpointInclusive && !loop ? phase * (nF - 1) : phase * clip.samplerDurationSec * clip.fps;
+      if (loop) fi -= Math.floor(fi / nF) * nF;
+      else fi = Math.min(nF - 1, Math.max(0, fi));
+      const i0 = Math.min(nF - 1, Math.max(0, Math.floor(fi)));
+      const i1 = loop ? (i0 + 1) % nF : Math.min(nF - 1, i0 + 1);
+      const a = fi - Math.floor(fi);
+      return clip.rootTrack[i0][1] * (1 - a) + clip.rootTrack[i1][1] * a;
+    };
+    // 起跳帧：jump，顶点附近（moveProgress 0.6 ⇒ 足底接近顶点）
+    const dt1 = 0.016;
+    pass.render([command({ state: 'walk', isJump: true, moveProgress: 0.6 })], dt1);
+    // 切 idle：**本帧**建立 180ms 混合（update 先推钟、后建淡化 ⇒ 建立帧权重恰为 0）
+    const dt2 = 0.03;
+    pass.render([command({ state: 'idle', isJump: false, moveProgress: null })], dt2);
+    expect(pass.controllers.get('hero')!.fadeWeight).toBe(0);
+    // 再推半窗 ⇒ 混合权重 0.5（来源相位继续按来源自己的口径推进）
+    const dt3 = CHARACTER_3D_JUMP_TO_IDLE_BLEND_SEC / 2;
+    const res = pass.render([command({ state: 'idle', isJump: false, moveProgress: null })], dt3);
+    const w = pass.controllers.get('hero')!.fadeWeight;
+    expect(w).toBeCloseTo(0.5, 6);
+    const viewClock1 = dt1;
+    const fromPhase = Math.min(1, 0.6 + (dt2 + dt3) / jumpSamplerSec); // jump 单播：夹取到 1
+    const toPhase = ((viewClock1 + dt2 + dt3) % idleSamplerSec) / idleSamplerSec;
+    const dyFrom = dyAt(jumpClip, fromPhase, true, false);
+    const dyTo = dyAt(idleClip, toPhase, false, true);
+    const dyBlend = dyFrom * (1 - w) + dyTo * w;
+    const m = renderer.draws[renderer.draws.length - 1].matrix;
+    const placed = res.placed.get('hero')!;
+    expect(placed.top).toBeCloseTo(420 - EXPECTED_HEIGHT + m[5] * dyBlend, 4);
+    // 中点确实在两段之间（不是二选一、也不是再采一条跳跃曲线）
+    expect(Math.abs(m[5] * dyBlend - m[5] * dyFrom)).toBeGreaterThan(1e-3);
   });
 });

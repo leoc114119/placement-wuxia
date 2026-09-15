@@ -47,6 +47,7 @@ import {
   weaponMissingTag,
   type BattleHexAssets,
   type Character3DLayer,
+  type Placed3DMirror,
   type DirectionalFrameStore,
   type ImgLike,
   type LegacyFrameStrip,
@@ -799,6 +800,8 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
   },
   /** 【T31-FE-B】3D 人物层只读诊断（shot/e2e 断言用；调试挂载不进正式接入）。
    * placed=pass 返回的**本帧**锚点（与摆放矩阵同源，易错点 10）；ctx=有效上下文属性实测值。
+   * 【T31-R2 · §4.1.1】placed 分标：`groundAnchorY`=地面锚（量脚离地高度只认它），
+   * `top/cx/h/w`=HUD 布局框（随最终姿态 Root 增量平移）。禁用 `top + h` 当脚离地高度。
    * lastCommands/activeClipKey=【R1】时间线证据面（同帧对照快照 isJump / 命令 isJump / 动作 clip）。 */
   get character3d(): {
     off: boolean;
@@ -810,7 +813,7 @@ function sampleHeroDrawPos(): { q: number; r: number; hop: number } {
     loadStatus: string | null;
     loader: CharacterAssetLoaderStats | null;
     diagnostics: readonly string[];
-    placed: ReadonlyMap<string, { cx: number; top: number; w: number; h: number }> | null;
+    placed: ReadonlyMap<string, Placed3DMirror> | null;
     lastCommands: ReadonlyArray<{ actorId: string; state: string; isJump: boolean; moveProgress: number | null }>;
     activeClipKey: string | null;
   } {

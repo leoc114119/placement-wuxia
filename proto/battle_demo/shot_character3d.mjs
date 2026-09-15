@@ -590,8 +590,11 @@ for (const dsf of [1, 2, 3]) {
   await shot(page, `measure_layer_dpr${dsf}`);
   const layerFoot = m.layerBBox ? m.layerBBox[3] + 1 : null; // 层内最后一个不透明行 + 1 = 脚底
   const err = layerFoot === null ? null : +Math.abs(layerFoot - m.cellPx.y).toFixed(2);
-  const anchor = m.placed ? (m.placed.top + m.placed.h) * m.dpr : null; // placed=逻辑像素 → 物理
+  // 【T31-R2 · §4.1.1】锚 = **地面锚**（placed.groundAnchorY），不再用 top+h：
+  // placed 的 top 是「HUD 布局框」顶部（随最终姿态 Root 增量平移），top+h 在腾空/蹲姿段 ≠ 地面锚。
+  const anchor = m.placed ? m.placed.groundAnchorY * m.dpr : null; // placed=逻辑像素 → 物理
   const anchorErr = anchor === null ? null : +Math.abs(anchor - m.cellPx.y).toFixed(2);
+  const hudDrift = m.placed ? +((m.placed.top + m.placed.h - m.placed.groundAnchorY) * m.dpr).toFixed(2) : null; // 姿态补偿量（证据）
   foot[dsf] = { ...m, layerFoot, err, anchor, anchorErr };
   check(
     `dpr=${dsf} 渲染脚底对格心 ≤2 物理像素`,
@@ -599,9 +602,10 @@ for (const dsf of [1, 2, 3]) {
     `层包围盒=${JSON.stringify(m.layerBBox)} 脚底=${layerFoot} 格心=${m.cellPx.y.toFixed(2)} 误差=${err}px（背衬 ${m.glW}x${m.glH}）`,
   );
   check(
-    `dpr=${dsf} placed 锚与格心同源（易错点 10）`,
+    `dpr=${dsf} placed 地面锚与格心同源（易错点 10；§4.1.1 分标）`,
     anchorErr !== null && anchorErr <= 1.5,
-    `锚=${anchor?.toFixed(2)} 格心=${m.cellPx.y.toFixed(2)} Δ=${anchorErr}px（=格心整数化 ≤0.5 逻辑像素）`,
+    `地面锚=${anchor?.toFixed(2)} 格心=${m.cellPx.y.toFixed(2)} Δ=${anchorErr}px（=格心整数化 ≤0.5 逻辑像素；` +
+      `HUD 布局框顶=${((m.placed?.top ?? 0) * m.dpr).toFixed(2)}，姿态补偿量=${hudDrift}px）`,
   );
   check(`dpr=${dsf} 人物层有像素且尺寸随 dpr`, m.layerPx > 500 && !!m.layerBBox, `层不透明像素=${m.layerPx}`);
   await page.close();

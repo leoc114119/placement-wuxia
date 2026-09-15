@@ -26,6 +26,7 @@ import {
   CHARACTER_3D_JUMP_MOVE_SEC,
 } from '../config/character-3d';
 import { createCharacter3DPass, type Character3DPass, type Character3DProfileRuntime } from '../ui/character3d/pass';
+import { pickAtkButton } from '../ui/battle-input';
 import type { Character3DRenderer } from '../ui/character3d/renderer';
 import { createHostRuntime, type HostRuntime } from '../proto/battle_demo/host-runtime';
 import { createHexBattle, type HexBattleSession } from '../systems/battle-session';
@@ -351,7 +352,15 @@ describe('[T31-FE-B] depth 槽位与合成一次（§4.3）', () => {
     expect(fake.composites).toEqual([{ dx: 0, dy: 0 }]);
     // placed 镜像 = 逻辑像素（与 2D placed / HUD / 技能钮同一空间）
     const box = view.character3dPlaced?.get('hero');
-    expect(box).toEqual({ cx: logicalX, top: (logicalY * DPR - 123.2 * DPR) / DPR, w: 86.7, h: 123.2 });
+    const fakeH = 123.2 * DPR; // 假层的参考高（本用例只验镜像换算，与真 config 无关）
+    expect(box).toEqual({
+      cx: logicalX,
+      top: (logicalY * DPR - fakeH) / DPR,
+      w: 86.7,
+      h: fakeH / DPR,
+      // 【T31-R2 · §4.1.1】地面锚与 HUD 布局框**分标**：此帧无姿态补偿 ⇒ 锚 = 框底 = 命令 footY/ratio
+      groundAnchorY: logicalY,
+    });
   });
 });
 
@@ -387,6 +396,104 @@ describe('[T31-FE-B] HUD/技能钮锚点来自 pass placed（与摆放矩阵同�
     expect(after.footX).toBe(before.footX - 40 * DPR);
     const box2 = view.character3dPlaced!.get('hero')!;
     expect(box2.cx).toBe(box.cx - 40);
+  });
+
+  it('【T31-R2 · §4.1.1】待输入+轻功同帧：按钮圆心与命中框同源同步（同一 placed，无人自补 root y）', () => {
+    const { assets } = makeAssets();
+    const { layer, pass } = makeRealPassLayer(DPR); // 真 pass：placed 带姿态补偿
+    const view = view3d(layer);
+    const opts = { pendingInput: true, turnActorId: 'hero', heroSkills: [{ id: 'te', disabled: false }] } as Partial<BattleSnapshot>;
+    const ground = actor({ animState: 'idle', isJump: false, pos: { q: 5, r: 8 }, renderPos: { q: 4, r: 8 } });
+    const snapGround = snap([ground], opts);
+
+    // ① 地面帧（idle）：按钮框 A（先推 240ms 让四钮弹出动画到位）
+    for (let i = 0; i < 12; i++) updateView(view, snapGround, 0.02, W, H);
+    const opsA: RecordedOp[] = [];
+    drawFrame({ ctx: makeRecordingCtx(opsA), width: W, height: H, dt: 0 }, snapGround, assets, view);
+    const groundBox = view.character3dPlaced!.get('hero')!;
+    const btnA = view.layout.atkBtn!;
+    const skillA = view.layout.skillBtns.find((b) => b.id === 'te')!;
+    expect(btnA).toBeTruthy();
+    expect(skillA).toBeTruthy();
+
+    // ② 轻功顶点帧（同一英雄 + 演出起跳时锁定的轻功意图）：钉住演出位置在顶点，推完 idle→jump 淡化
+    const jumping = actor({ ...ground, animState: 'walk', isJump: true });
+    const snapJump = snap([jumping], opts);
+    updateView(view, snapJump, DT_REAL, W, H); // 上升沿建 MoveAnim
+    const ma = view.moveAnims.get('hero')!;
+    expect(ma.isJumpMove).toBe(true);
+    // 钉住演出进度 = 顶点帧，连推 8 帧把 idle→jump 的 100ms 交叉淡化走完（顶点帧远在淡化之后）。
+    // ⚠ 控制器只吃 drawFrame → pass.render 的 dt（updateView 只推 view 侧演出态）。
+    for (let i = 0; i < 8; i++) {
+      updateView(view, snapJump, 0.02, W, H);
+      ma.t = ma.duration * 0.6;
+      drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: 0.02 }, snapJump, assets, view);
+    }
+    expect(pass.controllers.get('hero')!.fadeWeight).toBe(1);
+    const opsB: RecordedOp[] = [];
+    ma.t = ma.duration * 0.6;
+    drawFrame({ ctx: makeRecordingCtx(opsB), width: W, height: H, dt: 0 }, snapJump, assets, view);
+    const airBox = view.character3dPlaced!.get('hero')!;
+    const btnB = view.layout.atkBtn!;
+    const skillB = view.layout.skillBtns.find((b) => b.id === 'te')!;
+
+    // ③ 布局框被姿态抬高 ⇒ 攻钮/技能钮圆心**同帧同幅**跟随（唯一 placed 源；各消费者禁自补 root y）
+    const dTop = airBox.top - groundBox.top;
+    expect(dTop).toBeLessThan(-5);
+    expect(btnB.y - btnA.y).toBeCloseTo(dTop, 5);
+    expect(skillB.y - skillA.y).toBeCloseTo(dTop, 5);
+    // 画出钮的圆心（ctx.arc 的前两个参数）与热区矩形中心同源同帧
+    const arcA = opsA.find((o) => o.op === 'arc')!;
+    const arcB = opsB.find((o) => o.op === 'arc')!;
+    expect(arcA.args[0] as number).toBeCloseTo(btnA.x + btnA.w / 2, 5);
+    expect(arcA.args[1] as number).toBeCloseTo(btnA.y + btnA.h / 2, 5);
+    expect(arcB.args[0] as number).toBeCloseTo(btnB.x + btnB.w / 2, 5);
+    expect(arcB.args[1] as number).toBeCloseTo(btnB.y + btnB.h / 2, 5);
+    expect(btnB.w).toBeCloseTo(btnB.h, 8); // 热区 = 圆外接正方形
+    expect(pickAtkButton(view, btnB.x + btnB.w / 2, btnB.y + btnB.h / 2)).toBe(true);
+    expect(pass.controllers.get('hero')?.actionKey).toBe('jump');
+    // 地面锚与布局框**分标**（§4.1.1）：腾空期两者不再相等，脚离地高度只认渲染像素
+    expect(airBox.groundAnchorY - groundBox.groundAnchorY).toBeCloseTo(0, 0);
+    expect(airBox.top + airBox.h).not.toBeCloseTo(airBox.groundAnchorY, 1);
+  });
+
+  it('【T31-R2 · §4.1.1】热区严格跟随 placed：偏移超过钮径时，旧位误点不命中新位', () => {
+    // 真实轻功顶点的 placed 位移（≈12 逻辑像素 @60%）小于钮径（0.768×placed.w ≈ 40 逻辑像素），
+    // 几何上「旧位仍落在新矩形内」——故本条用**放大后的同一机制**（假层按 placed 契约偏移）
+    // 把几何断言做成可判：热区/钮圆心/技能钮全部只吃 placed，一处偏移即三处同步。
+    const { assets } = makeAssets();
+    const H_REF = HERO_3D_PROFILE.screenHeightPxAtReference;
+    let boxOffset = 0; // 逻辑像素（模拟姿态抬升：top 减小）
+    const fake = makeFakeLayer({
+      box: (c) => ({
+        cx: c.footX,
+        top: c.footY - H_REF * DPR - boxOffset * DPR,
+        w: 86.7 * DPR,
+        h: H_REF * DPR,
+      }),
+    });
+    const view = view3d(fake.layer);
+    const opts = { pendingInput: true, turnActorId: 'hero', heroSkills: [{ id: 'te', disabled: false }] } as Partial<BattleSnapshot>;
+    const snap0 = snap([actor()], opts);
+    const draw = (): void => {
+      for (let i = 0; i < 12; i++) updateView(view, snap0, 0.02, W, H); // 四钮弹出到位
+      drawFrame({ ctx: makeRecordingCtx([]), width: W, height: H, dt: 0 }, snap0, assets, view);
+    };
+    draw();
+    const btnA = view.layout.atkBtn!;
+    const skillA = view.layout.skillBtns.find((b) => b.id === 'te')!;
+    expect(skillA).toBeTruthy();
+    const oldPt = { x: btnA.x + btnA.w / 2, y: btnA.y + btnA.h / 2 };
+    expect(pickAtkButton(view, oldPt.x, oldPt.y)).toBe(true);
+    boxOffset = 120; // > 钮径（0.768×86.7≈66.6）
+    draw();
+    const btnB = view.layout.atkBtn!;
+    const skillB = view.layout.skillBtns.find((b) => b.id === 'te')!;
+    const newPt = { x: btnB.x + btnB.w / 2, y: btnB.y + btnB.h / 2 };
+    expect(btnB.y - btnA.y).toBeCloseTo(-120, 5);
+    expect(skillB.y - skillA.y).toBeCloseTo(-120, 5);
+    expect(pickAtkButton(view, newPt.x, newPt.y)).toBe(true);
+    expect(pickAtkButton(view, oldPt.x, oldPt.y)).toBe(false); // 旧位误点不命中新位
   });
 });
 
